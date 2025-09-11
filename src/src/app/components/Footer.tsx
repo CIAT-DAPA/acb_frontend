@@ -1,125 +1,64 @@
-import { Cloud, Mail, Phone, MapPin } from "lucide-react";
+import Link from "next/link";
+import { Cloud, Mail, Phone } from "lucide-react";
+import {
+  container,
+  brand,
+  brandIcon,
+  linkAccent,
+  muted,
+  sectionTitle,
+} from "./ui";
 
 export function Footer() {
   return (
-    <footer className="bg-primary text-primary-foreground py-16">
-      <div className="container mx-auto px-6">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+    <footer className="bg-gray-900 text-gray-300 border-t border-gray-800">
+      <div className={`${container} py-12`}>
+        <div className="grid gap-10 md:grid-cols-3">
+          {/* Marca y descripción */}
           <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Cloud className="h-8 w-8 text-secondary" />
-              <span className="text-xl font-medium">AgroClima Editor</span>
+            <div className={brand}>
+              <Cloud className={brandIcon} />
+              <span className="text-xl font-semibold text-white font-headers">
+                Bulletin builder
+              </span>
             </div>
-            <p className="text-primary-foreground/80 leading-relaxed">
-              Herramienta gratuita y de código abierto desarrollada por una
-              organización sin ánimo de lucro para facilitar la creación
-              colaborativa de boletines agroclimáticos.
+            <p className={`${muted} leading-relaxed`}>
+              Herramienta gratuita para crear boletines agroclimáticos de forma
+              colaborativa.
             </p>
-            <div className="flex space-x-4">
-              <div className="w-8 h-8 bg-primary-foreground/10 rounded-full flex items-center justify-center hover:bg-secondary hover:text-primary transition-colors cursor-pointer">
-                <Mail className="h-4 w-4" />
-              </div>
-              <div className="w-8 h-8 bg-primary-foreground/10 rounded-full flex items-center justify-center hover:bg-secondary hover:text-primary transition-colors cursor-pointer">
-                <Phone className="h-4 w-4" />
-              </div>
-            </div>
           </div>
 
+          {/* Enlaces simples */}
           <div className="space-y-4">
-            <h3 className="font-medium text-lg text-secondary">Producto</h3>
-            <ul className="space-y-2 text-primary-foreground/80">
+            <h3 className={sectionTitle}>Enlaces</h3>
+            <ul className="space-y-2">
               <li>
-                <a href="#" className="hover:text-secondary transition-colors">
-                  Características
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-secondary transition-colors">
+                <Link href="/templates" className={linkAccent}>
                   Plantillas
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-secondary transition-colors">
-                  Código Fuente
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-secondary transition-colors">
-                  Contribuir
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
 
+          {/* Contacto */}
           <div className="space-y-4">
-            <h3 className="font-medium text-lg text-secondary">Recursos</h3>
-            <ul className="space-y-2 text-primary-foreground/80">
-              <li>
-                <a href="#" className="hover:text-secondary transition-colors">
-                  Documentación
-                </a>
+            <h3 className={sectionTitle}>Contacto</h3>
+            <ul className={`space-y-3 ${muted}`}>
+              <li className="flex items-center gap-2">
+                <Mail className="h-4 w-4 text-blue-400" />
+                <span>test@example.com</span>
               </li>
-              <li>
-                <a href="#" className="hover:text-secondary transition-colors">
-                  Tutoriales
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-secondary transition-colors">
-                  Blog
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-secondary transition-colors">
-                  Soporte
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <div className="space-y-4">
-            <h3 className="font-medium text-lg text-secondary">Contacto</h3>
-            <div className="space-y-3 text-primary-foreground/80">
-              <div className="flex items-center space-x-2">
-                <Mail className="h-4 w-4 text-secondary" />
-                <span>info@agroclima.com</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Phone className="h-4 w-4 text-secondary" />
+              <li className="flex items-center gap-2">
+                <Phone className="h-4 w-4 text-blue-400" />
                 <span>+1 (555) 123-4567</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <MapPin className="h-4 w-4 text-secondary" />
-                <span>Ciudad, País</span>
-              </div>
-            </div>
+              </li>
+            </ul>
           </div>
         </div>
 
-        <div className="border-t border-primary-foreground/20 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-primary-foreground/70 text-sm">
-            © 2025 AgroClima Editor. Todos los derechos reservados.
-          </p>
-          <div className="flex space-x-6 mt-4 md:mt-0">
-            <a
-              href="#"
-              className="text-primary-foreground/70 hover:text-secondary text-sm transition-colors"
-            >
-              Privacidad
-            </a>
-            <a
-              href="#"
-              className="text-primary-foreground/70 hover:text-secondary text-sm transition-colors"
-            >
-              Términos
-            </a>
-            <a
-              href="#"
-              className="text-primary-foreground/70 hover:text-secondary text-sm transition-colors"
-            >
-              Cookies
-            </a>
-          </div>
+        {/* Barra inferior */}
+        <div className="border-t border-gray-800 mt-10 pt-6">
+          <p className={`${muted} text-sm`}>© 2025 Bulletin Builder.</p>
         </div>
       </div>
     </footer>
