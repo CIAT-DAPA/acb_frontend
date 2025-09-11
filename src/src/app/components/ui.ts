@@ -11,7 +11,7 @@ export const btnPrimary =
 
 // Hero helpers (generic, minimal)
 export const heroSection =
-  "relative overflow-hidden bg-gradient-to-br from-secondary to-accent min-h-[calc(100dvh-80px)] flex items-center";
+  "relative overflow-hidden bg-gradient-to-br from-secondary to-accent min-h-[calc(100dvh-80px)] flex items-center mt-10 lg:mt-0";
 export const heroGrid = "grid lg:grid-cols-2 gap-12 lg:gap-16 items-center";
 export const heroTitle =
   "text-4xl 2xl:text-6xl font-bold text-foreground leading-tight";

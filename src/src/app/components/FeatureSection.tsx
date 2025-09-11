@@ -1,4 +1,5 @@
 import { FileText, Download, GitBranch, Palette } from "lucide-react";
+import { container, dot } from "./ui";
 
 const features = [
   {
@@ -30,7 +31,7 @@ const features = [
 export function FeaturesSection() {
   return (
     <section className="py-20 lg:py-32 bg-white">
-      <div className="container mx-auto px-6">
+      <div className={`${container} mx-auto`}>
         <div className="text-center space-y-4 mb-16">
           <h2 className="text-3xl lg:text-5xl font-bold text-foreground">
             Todo lo que necesitas para crear
@@ -47,30 +48,21 @@ export function FeaturesSection() {
           {features.map((feature, index) => (
             <div
               key={index}
-              className="border-0 shadow-sm hover:shadow-lg transition-all duration-300 group"
+              className="rounded-2xl border border-gray-200/70 bg-white p-6 md:p-8 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 focus-within:ring-2 focus-within:ring-blue-100"
             >
               <div className="space-y-4">
-                <div className="w-12 h-12 bg-secondary rounded-lg flex items-center justify-center group-hover:bg-primary transition-colors duration-300">
-                  <feature.icon className="h-6 w-6 text-primary group-hover:text-white transition-colors duration-300" />
+                <div className="w-12 h-12 rounded-xl bg-blue-50 ring-1 ring-blue-100 flex items-center justify-center transition-colors">
+                  <feature.icon className="h-6 w-6 text-blue-500" />
                 </div>
-                <div className="text-xl">{feature.title}</div>
-              </div>
-              <div>
-                <div className="text-muted-foreground leading-relaxed">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {feature.title}
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
                   {feature.description}
-                </div>
+                </p>
               </div>
             </div>
           ))}
-        </div>
-
-        <div className="text-center mt-16">
-          <div className="inline-flex items-center space-x-2 bg-secondary text-primary px-4 py-2 rounded-full">
-            <div className="w-2 h-2 bg-primary rounded-full"></div>
-            <span className="text-sm font-medium">
-              Proyecto de código abierto para la comunidad agroclimática
-            </span>
-          </div>
         </div>
       </div>
     </section>
