@@ -1,58 +1,70 @@
 import Image from "next/image";
 import { AnimatedText } from "./AnimatedText";
+import { ArrowRight } from "lucide-react";
 import {
-  ArrowRight,
-  CloudRain,
-  BarChart3,
-  FileText,
-  AlertTriangle,
-} from "lucide-react";
+  container,
+  btnPrimary,
+  heroSection,
+  heroGrid,
+  heroTitle,
+  heroSubtext,
+  card,
+  dot,
+} from "./ui";
 
 export function HeroSection() {
+  const words = [
+    "información climática",
+    "recomendaciones",
+    "pronósticos",
+    "alertas tempranas",
+  ];
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-secondary to-accent py-20 lg:py-32">
+    <section className={heroSection}>
       {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-8">
+      <div
+        className="absolute inset-0 opacity-8 pointer-events-none select-none"
+        aria-hidden
+      >
         <div className="absolute top-20 left-10 w-32 h-32 border-2 border-primary/20 rounded-full"></div>
-        <div className="absolute bottom-32 right-20 w-24 h-24 border-2 border-primary/30 rounded-full"></div>
-        <div className="absolute top-40 right-40 w-16 h-16 border-2 border-primary/25 rounded-full"></div>
+        <div className="absolute bottom-25 right-15 w-24 h-24 border-2 border-primary/30 rounded-full"></div>
+        <div className="absolute top-20 right-40 w-16 h-16 border-2 border-primary/25 rounded-full"></div>
       </div>
 
-      <div className="container mx-auto px-6">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+      <div className={`${container} mx-auto w-full`}>
+        <div className={heroGrid}>
           <div className="space-y-8">
             <div className="space-y-6">
-              <h1 className="text-4xl lg:text-6xl font-bold text-foreground leading-tight">
-                Crea boletines con
-                <span className="block mt-2">
-                  <AnimatedText />
-                </span>
-                <span className="block text-muted-foreground">
-                  actualizados
+              <h1 className={heroTitle}>
+                <span className="block opacity-90">Crea boletines con</span>
+                <span className="block mt-2 leading-tight font-headers">
+                  <AnimatedText words={words} />
                 </span>
               </h1>
-              <p className="text-xl text-muted-foreground leading-relaxed max-w-lg">
-                Plataforma gratuita y de código abierto para crear, revisar y
-                distribuir boletines agroclimáticos profesionales de manera
-                colaborativa.
+              <p className={heroSubtext}>
+                Plataforma para crear, revisar y distribuir boletines
+                agroclimáticos profesionales de manera colaborativa.
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button className="text-lg px-8 py-6 bg-primary hover:bg-primary/90">
-                Comenzar a Crear
-                <ArrowRight className="ml-2 h-5 w-5" />
+            <div className="flex flex-row gap-4">
+              <button
+                type="button"
+                className={btnPrimary}
+                aria-label="Comenzar a crear boletines"
+              >
+                Comenzar a crear <ArrowRight className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="flex items-center space-x-8 text-sm text-muted-foreground">
+            <div className="flex items-center space-x-8 text-sm text-foreground/80">
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-primary rounded-full"></div>
-                <span>Completamente gratuito</span>
+                <div className={`${dot} bg-indigo-500`}></div>
+                <span>Boletines de 2 paises</span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-chart-2 rounded-full"></div>
-                <span>Código abierto</span>
+                <div className={`${dot} bg-green-500`}></div>
+                <span>Plantillas personalizables</span>
               </div>
             </div>
           </div>
@@ -62,7 +74,7 @@ export function HeroSection() {
             <div className="grid grid-cols-2 gap-4">
               {/* Large main image */}
               <div className="col-span-2 relative">
-                <div className="relative z-10 rounded-xl overflow-hidden shadow-lg">
+                <div className={card}>
                   <Image
                     width={800}
                     height={500}
@@ -75,7 +87,7 @@ export function HeroSection() {
 
               {/* Left bottom image */}
               <div className="relative">
-                <div className="relative z-10 rounded-xl overflow-hidden shadow-lg">
+                <div className={card}>
                   <Image
                     width={400}
                     height={250}
@@ -86,44 +98,18 @@ export function HeroSection() {
                 </div>
               </div>
 
-              {/* Right bottom - Features preview */}
-              <div className="bg-white rounded-xl shadow-lg p-4 flex flex-col justify-center space-y-3">
-                <div className="flex items-center space-x-2 text-sm">
-                  <CloudRain
-                    className="h-4 w-4"
-                    style={{ color: "var(--chart-2)" }}
+              {/* Right bottom image (replaces features preview) */}
+              <div className="relative">
+                <div className={card}>
+                  <Image
+                    width={400}
+                    height={250}
+                    src="/assets/img/temp1.jpg"
+                    alt="Visual de datos y mapas"
+                    className="w-full h-32 object-cover"
                   />
-                  <span className="text-foreground">Datos climáticos</span>
-                </div>
-                <div className="flex items-center space-x-2 text-sm">
-                  <BarChart3
-                    className="h-4 w-4"
-                    style={{ color: "var(--chart-1)" }}
-                  />
-                  <span className="text-foreground">Análisis avanzado</span>
-                </div>
-                <div className="flex items-center space-x-2 text-sm">
-                  <FileText className="h-4 w-4 text-primary" />
-                  <span className="text-foreground">
-                    Boletines profesionales
-                  </span>
-                </div>
-                <div className="flex items-center space-x-2 text-sm">
-                  <AlertTriangle
-                    className="h-4 w-4"
-                    style={{ color: "var(--chart-3)" }}
-                  />
-                  <span className="text-foreground">Alertas tempranas</span>
                 </div>
               </div>
-            </div>
-
-            {/* Floating elements */}
-            <div className="absolute -top-4 -right-4 w-20 h-20 bg-primary bg-opacity-10 rounded-full flex items-center justify-center">
-              <CloudRain className="h-8 w-8 text-primary" />
-            </div>
-            <div className="absolute -bottom-6 -left-6 w-16 h-16 bg-primary bg-opacity-10 rounded-full flex items-center justify-center">
-              <BarChart3 className="h-6 w-6 text-primary" />
             </div>
           </div>
         </div>

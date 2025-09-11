@@ -1,40 +1,78 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-const words = [
-  "información climática",
-  "recomendaciones",
-  "pronósticos",
-  "alertas tempranas",
-  "análisis de cultivos",
-  "datos meteorológicos",
-  "tendencias climáticas",
-];
+type AnimatedTextProps = {
+  words: string[];
+  typeSpeed?: number;
+  deleteSpeed?: number;
+  holdDelay?: number;
+  className?: string;
+  showCaret?: boolean;
+};
 
-export function AnimatedText() {
-  const [currentWordIndex, setCurrentWordIndex] = useState(0);
-  const [isVisible, setIsVisible] = useState(true);
+export function AnimatedText({
+  words,
+  typeSpeed = 50,
+  deleteSpeed = 35,
+  holdDelay = 1200,
+  className = "",
+  showCaret = true,
+}: AnimatedTextProps) {
+  // Estado
+  const [index, setIndex] = useState(0); // índice de palabra actual
+  const [display, setDisplay] = useState(""); // subcadena mostrada
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const current = useMemo(() => words[index], [index]);
+  const timeoutRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setIsVisible(false);
+    const clear = () => {
+      if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
+    };
 
-      setTimeout(() => {
-        setCurrentWordIndex((prevIndex) => (prevIndex + 1) % words.length);
-        setIsVisible(true);
-      }, 300);
-    }, 3000);
+    let delay = isDeleting ? deleteSpeed : typeSpeed;
 
-    return () => clearInterval(interval);
-  }, []);
+    if (!isDeleting && display === current) {
+      // Mantiene la palabra y luego inicia borrado
+      timeoutRef.current = window.setTimeout(
+        () => setIsDeleting(true),
+        holdDelay
+      );
+      return () => clear();
+    }
+
+    if (isDeleting && display === "") {
+      // Pasa a la siguiente palabra y vuelve a escribir
+      const next = (index + 1) % words.length;
+      timeoutRef.current = window.setTimeout(() => {
+        setIndex(next);
+        setIsDeleting(false);
+      }, 200);
+      return () => clear();
+    }
+
+    // Avanza escribiendo o borrando
+    timeoutRef.current = window.setTimeout(() => {
+      const nextText = isDeleting
+        ? current.slice(0, Math.max(0, display.length - 1))
+        : current.slice(0, display.length + 1);
+      setDisplay(nextText);
+    }, delay);
+
+    return () => clear();
+  }, [display, isDeleting, current, index]);
 
   return (
     <span
-      className={`text-primary transition-opacity duration-300 ${
-        isVisible ? "opacity-100" : "opacity-0"
-      }`}
+      className={`text-primary inline-block align-baseline whitespace-nowrap ${className}`}
     >
-      {words[currentWordIndex]}
+      {display}
+      {showCaret && (
+        <span className="caret" aria-hidden>
+          |
+        </span>
+      )}
     </span>
   );
 }

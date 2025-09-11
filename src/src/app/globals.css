@@ -27,3 +27,22 @@ h6 {
 .font-headers {
   font-family: var(--font-sintony), Arial, Helvetica, sans-serif;
 }
+
+/* Blinking caret for typewriter effect */
+.caret {
+  display: inline-block;
+  width: 1ch;
+  color: currentColor;
+  animation: caret-blink 1s step-end infinite;
+}
+
+@keyframes caret-blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50.01%,
+  100% {
+    opacity: 0;
+  }
+}
