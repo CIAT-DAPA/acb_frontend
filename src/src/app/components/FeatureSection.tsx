@@ -6,13 +6,13 @@ const features = [
     icon: FileText,
     title: "Generación de Boletines",
     description:
-      "Crea boletines agroclimáticos profesionales con un editor intuitivo diseñado específicamente para contenido técnico y científico.",
+      "Crea boletines agroclimáticos profesionales con un editor intuitivo diseñado específicamente para cada país.",
   },
   {
     icon: Download,
     title: "Exportación Flexible",
     description:
-      "Exporta tus boletines en múltiples formatos: PDF para impresión, HTML para web, o formatos compatibles con diferentes plataformas de distribución.",
+      "Exporta tus boletines en múltiples formatos: PDF para impresión o imágenes en formato PNG o JPG para compartir en redes sociales.",
   },
   {
     icon: GitBranch,
@@ -24,13 +24,13 @@ const features = [
     icon: Palette,
     title: "Plantillas Personalizadas",
     description:
-      "Crea y guarda plantillas reutilizables que se adapten a tus necesidades específicas y mantengan la consistencia de tu organización.",
+      "Crea y guarda plantillas reutilizables que se adapten a tus necesidades específicas.",
   },
 ];
 
 export function FeaturesSection() {
   return (
-    <section className="py-20 lg:py-32 bg-white">
+    <section className="bg-white py-10">
       <div className={`${container} mx-auto`}>
         <div className="text-center space-y-4 mb-16">
           <h2 className="text-3xl lg:text-5xl font-bold text-foreground">
@@ -38,9 +38,8 @@ export function FeaturesSection() {
             <span className="text-primary block">boletines excepcionales</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Una herramienta gratuita y colaborativa que simplifica el proceso de
-            creación, revisión y distribución de boletines agroclimáticos de
-            alta calidad.
+            Una herramienta colaborativa que simplifica el proceso de creación,
+            revisión y distribución de boletines agroclimáticos.
           </p>
         </div>
 
