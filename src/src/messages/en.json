@@ -1,5 +1,52 @@
 {
   "Navbar": {
-    "templates": "Templates"
+    "templates": "Templates",
+    "login": "Login"
+  },
+  "Hero": {
+    "title": "Create bulletins with",
+    "subtitle": "",
+    "description": "Platform to create, review and distribute professional agroclimatic bulletins collaboratively.",
+    "cta": "Start creating",
+    "stats": {
+      "countries": "Bulletins from 2 countries",
+      "templates": "Customizable templates"
+    },
+    "animatedWords": {
+      "word1": "climate information",
+      "word2": "recommendations",
+      "word3": "forecasts",
+      "word4": "early warnings"
+    }
+  },
+  "Features": {
+    "title": "Everything you need to create",
+    "titleHighlight": "exceptional bulletins",
+    "description": "A collaborative tool that simplifies the process of creating, reviewing and distributing agroclimatic bulletins.",
+    "feature1": {
+      "title": "Bulletin Generation",
+      "description": "Create professional agroclimatic bulletins with an intuitive editor designed specifically for each country."
+    },
+    "feature2": {
+      "title": "Flexible Export",
+      "description": "Export your bulletins in multiple formats: PDF for printing or images in PNG or JPG format to share on social networks."
+    },
+    "feature3": {
+      "title": "Review Workflow",
+      "description": "Complete collaborative review system with version control, comments and approvals to ensure content quality."
+    },
+    "feature4": {
+      "title": "Custom Templates",
+      "description": "Create and save reusable templates that adapt to your specific needs."
+    }
+  },
+  "Footer": {
+    "brand": "Bulletin builder",
+    "description": "Free tool to create agroclimatic bulletins collaboratively.",
+    "links": "Links",
+    "contact": "Contact",
+    "copyright": "© 2025 Bulletin Builder.",
+    "email": "test@example.com",
+    "phone": "+1 (555) 123-4567"
   }
 }

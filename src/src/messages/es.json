@@ -1,5 +1,52 @@
 {
   "Navbar": {
-    "templates": "Plantillas"
+    "templates": "Plantillas",
+    "login": "Iniciar sesión"
+  },
+  "Hero": {
+    "title": "Crea boletines con",
+    "subtitle": "",
+    "description": "Plataforma para crear, revisar y distribuir boletines agroclimáticos profesionales de manera colaborativa.",
+    "cta": "Comenzar a crear",
+    "stats": {
+      "countries": "Boletines de 2 paises",
+      "templates": "Plantillas personalizables"
+    },
+    "animatedWords": {
+      "word1": "información climática",
+      "word2": "recomendaciones",
+      "word3": "pronósticos",
+      "word4": "alertas tempranas"
+    }
+  },
+  "Features": {
+    "title": "Todo lo que necesitas para crear",
+    "titleHighlight": "boletines excepcionales",
+    "description": "Una herramienta colaborativa que simplifica el proceso de creación, revisión y distribución de boletines agroclimáticos.",
+    "feature1": {
+      "title": "Generación de Boletines",
+      "description": "Crea boletines agroclimáticos profesionales con un editor intuitivo diseñado específicamente para cada país."
+    },
+    "feature2": {
+      "title": "Exportación Flexible",
+      "description": "Exporta tus boletines en múltiples formatos: PDF para impresión o imágenes en formato PNG o JPG para compartir en redes sociales."
+    },
+    "feature3": {
+      "title": "Flujo de Revisión",
+      "description": "Sistema completo de revisión colaborativa con control de versiones, comentarios y aprobaciones para garantizar la calidad del contenido."
+    },
+    "feature4": {
+      "title": "Plantillas Personalizadas",
+      "description": "Crea y guarda plantillas reutilizables que se adapten a tus necesidades específicas."
+    }
+  },
+  "Footer": {
+    "brand": "Bulletin builder",
+    "description": "Herramienta gratuita para crear boletines agroclimáticos de forma colaborativa.",
+    "links": "Enlaces",
+    "contact": "Contacto",
+    "copyright": "© 2025 Bulletin Builder.",
+    "email": "test@example.com",
+    "phone": "+1 (555) 123-4567"
   }
 }

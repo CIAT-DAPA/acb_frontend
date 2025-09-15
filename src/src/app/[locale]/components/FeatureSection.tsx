@@ -1,45 +1,44 @@
+"use client";
+
+import { useTranslations } from "next-intl";
 import { FileText, Download, GitBranch, Palette } from "lucide-react";
 import { container } from "./ui";
 
-const features = [
-  {
-    icon: FileText,
-    title: "Generación de Boletines",
-    description:
-      "Crea boletines agroclimáticos profesionales con un editor intuitivo diseñado específicamente para cada país.",
-  },
-  {
-    icon: Download,
-    title: "Exportación Flexible",
-    description:
-      "Exporta tus boletines en múltiples formatos: PDF para impresión o imágenes en formato PNG o JPG para compartir en redes sociales.",
-  },
-  {
-    icon: GitBranch,
-    title: "Flujo de Revisión",
-    description:
-      "Sistema completo de revisión colaborativa con control de versiones, comentarios y aprobaciones para garantizar la calidad del contenido.",
-  },
-  {
-    icon: Palette,
-    title: "Plantillas Personalizadas",
-    description:
-      "Crea y guarda plantillas reutilizables que se adapten a tus necesidades específicas.",
-  },
-];
-
 export function FeaturesSection() {
+  const t = useTranslations("Features");
+
+  const features = [
+    {
+      icon: FileText,
+      title: t("feature1.title"),
+      description: t("feature1.description"),
+    },
+    {
+      icon: Download,
+      title: t("feature2.title"),
+      description: t("feature2.description"),
+    },
+    {
+      icon: GitBranch,
+      title: t("feature3.title"),
+      description: t("feature3.description"),
+    },
+    {
+      icon: Palette,
+      title: t("feature4.title"),
+      description: t("feature4.description"),
+    },
+  ];
   return (
     <section className="bg-white py-10">
       <div className={`${container} mx-auto`}>
         <div className="text-center space-y-4 mb-16">
           <h2 className="text-3xl lg:text-5xl font-bold text-foreground">
-            Todo lo que necesitas para crear
-            <span className="text-primary block">boletines excepcionales</span>
+            {t("title")}
+            <span className="text-primary block">{t("titleHighlight")}</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Una herramienta colaborativa que simplifica el proceso de creación,
-            revisión y distribución de boletines agroclimáticos.
+            {t("description")}
           </p>
         </div>
 
@@ -56,7 +55,7 @@ export function FeaturesSection() {
                 <h3 className="text-lg font-semibold text-[#283618]">
                   {feature.title}
                 </h3>
-                <p className="text-[#283618] leading-relaxed">  
+                <p className="text-[#283618] leading-relaxed">
                   {feature.description}
                 </p>
               </div>

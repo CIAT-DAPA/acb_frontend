@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { AnimatedText } from "./AnimatedText";
 import { ArrowRight } from "lucide-react";
@@ -13,11 +16,13 @@ import {
 } from "./ui";
 
 export function HeroSection() {
+  const t = useTranslations("Hero");
+
   const words = [
-    "información climática",
-    "recomendaciones",
-    "pronósticos",
-    "alertas tempranas",
+    t("animatedWords.word1"),
+    t("animatedWords.word2"),
+    t("animatedWords.word3"),
+    t("animatedWords.word4"),
   ];
   return (
     <section className={heroSection}>
@@ -84,34 +89,31 @@ export function HeroSection() {
           {/* Headline centered */}
           <div className="relative z-10 text-center max-w-3xl mx-auto space-y-6">
             <h1 className={heroTitle}>
-              <span className="block opacity-90">Crea boletines con</span>
+              <span className="block opacity-90">{t("title")}</span>
               <span className="block mt-2 leading-tight font-headers">
                 <AnimatedText words={words} />
               </span>
             </h1>
-            <p className={`${heroSubtext} mx-auto`}>
-              Plataforma para crear, revisar y distribuir boletines
-              agroclimáticos profesionales de manera colaborativa.
-            </p>
+            <p className={`${heroSubtext} mx-auto`}>{t("description")}</p>
 
             <div className="flex justify-center">
               <button
                 type="button"
                 className={`${btnPrimary} shadow-2xl shadow-black/20`}
-                aria-label="Comenzar a crear boletines"
+                aria-label={t("cta")}
               >
-                Comenzar a crear <ArrowRight className="h-5 w-5" />
+                {t("cta")} <ArrowRight className="h-5 w-5" />
               </button>
             </div>
 
             <div className="flex items-center justify-center gap-8 text-sm text-foreground/80">
               <div className="flex items-center gap-2">
                 <div className={`${dot} bg-indigo-500`}></div>
-                <span>Boletines de 2 paises</span>
+                <span>{t("stats.countries")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className={`${dot} bg-green-500`}></div>
-                <span>Plantillas personalizables</span>
+                <span>{t("stats.templates")}</span>
               </div>
             </div>
           </div>

@@ -86,7 +86,7 @@ export function Header() {
           {/* Botón de login */}
           <div className="flex items-center">
             <button onClick={login} className={btnOutlinePrimary}>
-              Iniciar sesión
+              {t("login")}
             </button>
           </div>
         </div>
@@ -130,7 +130,7 @@ export function Header() {
               }}
               className="flex items-center space-x-3"
             >
-              <div className={btnOutlinePrimary}>Iniciar sesión</div>
+              <div className={btnOutlinePrimary}>{t("login")}</div>
             </button>
           </div>
         </div>
