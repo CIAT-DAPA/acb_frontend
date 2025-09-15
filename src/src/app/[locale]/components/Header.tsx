@@ -1,24 +1,27 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X, Cloud } from "lucide-react";
 import { container, brand, brandIcon, btnOutlinePrimary } from "./ui";
+import { LanguageSelector } from "./LanguageSelector";
 
-// Navegación simple
-const NAV_ITEMS = [{ name: "Plantillas", path: "/templates" }];
-
-// Clases simples
+// Clases simples con colores corregidos
 const NAV_BASE = "py-2 px-3 transition-colors duration-200 relative";
 const NAV_ACTIVE =
-  "text-[#bc6c25] font-semibold after:content-[''] after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-[#bc6c25]";
+  "text-[#ffaf68] font-semibold after:content-[''] after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-[#ffaf68]";
 const NAV_INACTIVE =
-  "text-[#fefae0]/80 hover:text-[#bc6c25] hover:after:content-[''] hover:after:absolute hover:after:bottom-0 hover:after:left-3 hover:after:right-3 hover:after:h-0.5 hover:after:bg-[#bc6c25]";
+  "text-[#fefae0]/80 hover:text-[#ffaf68] hover:after:content-[''] hover:after:absolute hover:after:bottom-0 hover:after:left-3 hover:after:right-3 hover:after:h-0.5 hover:after:bg-[#ffaf68]";
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const t = useTranslations("Navbar");
+
+  // Navegación simple
+  const NAV_ITEMS = [{ name: t("templates"), path: "/templates" }];
 
   // Mock login function - replace with actual auth implementation
   const login = () => {
@@ -37,7 +40,7 @@ export function Header() {
         {/* Logo */}
         <Link
           href="/"
-          className={`${brand} text-2xl font-bold py-2 hover:text-[#bc6c25] transition-colors`}
+          className={`${brand} text-2xl font-bold py-2 hover:text-[#ffaf68] transition-colors`}
         >
           <Cloud className={brandIcon} />
           <span className="font-headers">Bulletin Builder</span>
@@ -57,7 +60,7 @@ export function Header() {
         </button>
 
         {/* Menú y usuario en escritorio */}
-        <div className="hidden lg:flex items-center space-x-2">
+        <div className="hidden lg:flex items-center space-x-4">
           {/* Links de navegación */}
           <ul className="flex font-medium space-x-1 items-center">
             {NAV_ITEMS.map(({ name, path }) => {
@@ -76,6 +79,9 @@ export function Header() {
               );
             })}
           </ul>
+
+          {/* Selector de idioma */}
+          <LanguageSelector />
 
           {/* Botón de login */}
           <div className="flex items-center">
@@ -98,8 +104,8 @@ export function Header() {
                     href={path}
                     className={`block transition-colors duration-200 ${
                       active
-                        ? "text-[#bc6c25] font-semibold"
-                        : "text-[#fefae0]/80 hover:text-[#bc6c25]"
+                        ? "text-[#ffaf68] font-semibold"
+                        : "text-[#fefae0]/80 hover:text-[#ffaf68]"
                     }`}
                     onClick={() => setIsOpen(false)}
                   >
@@ -110,8 +116,13 @@ export function Header() {
             })}
           </ul>
 
-          {/* Botón de login móvil */}
+          {/* Selector de idioma móvil */}
           <div className="pt-3 border-t border-[#283618]/60">
+            <LanguageSelector />
+          </div>
+
+          {/* Botón de login móvil */}
+          <div className="pt-3">
             <button
               onClick={() => {
                 login();
