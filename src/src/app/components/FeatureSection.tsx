@@ -50,13 +50,13 @@ export function FeaturesSection() {
               className="rounded-2xl border border-gray-200/70 bg-white p-6 md:p-8 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 focus-within:ring-2 focus-within:ring-blue-100"
             >
               <div className="space-y-4">
-                <div className="w-12 h-12 rounded-xl bg-blue-50 ring-1 ring-blue-100 flex items-center justify-center transition-colors">
-                  <feature.icon className="h-6 w-6 text-blue-500" />
+                <div className="w-12 h-12 rounded-xl bg-lime-50 ring-1 ring-lime-100 flex items-center justify-center transition-colors">
+                  <feature.icon className="h-6 w-6 text-[#283618]" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">
+                <h3 className="text-lg font-semibold text-[#283618]">
                   {feature.title}
                 </h3>
-                <p className="text-gray-600 leading-relaxed">
+                <p className="text-[#283618] leading-relaxed">  
                   {feature.description}
                 </p>
               </div>
