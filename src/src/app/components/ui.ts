@@ -9,8 +9,7 @@ export const btnOutlinePrimary =
 export const btnPrimary =
   "inline-flex items-center gap-2 rounded-full px-6 py-3 bg-blue-400 text-gray-900 font-semibold hover:bg-blue-300 transition-colors cursor-pointer";
 export const heroSection =
-  "relative overflow-hidden desk-texture min-h-[calc(100dvh-80px)] flex items-center";
-export const heroGrid = "grid lg:grid-cols-2 gap-12 lg:gap-16 items-center";
+  "relative overflow-hidden desk-texture desk-texture-strong min-h-[calc(100dvh-80px)] flex items-center";
 export const heroTitle =
   "text-4xl xl:text-6xl 2xl:text-7xl font-bold text-foreground leading-tight";
 export const heroSubtext =

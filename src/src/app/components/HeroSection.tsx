@@ -27,7 +27,7 @@ export function HeroSection() {
           {/* Side images floating like on a desk */}
           <div aria-hidden className="pointer-events-none select-none">
             <div
-              className={`hidden md:block absolute left-6 lg:left-12 top-8 rotate-[-3deg] ${elevated}`}
+              className={`hidden lg:block absolute left-6 lg:left-12 top-8 rotate-[-3deg] ${elevated}`}
             >
               <div className={`${card}`}>
                 <Image
@@ -40,12 +40,12 @@ export function HeroSection() {
               </div>
             </div>
             <div
-              className={`hidden md:block absolute -left-11 xl:-left-15 -bottom-30 rotate-[-10deg] ${elevated}`}
+              className={`hidden lg:block absolute -left-11 xl:-left-15 -bottom-30 rotate-[-10deg] ${elevated}`}
             >
               <div className={`${card}`}>
                 <Image
-                  width={366 / 2}
-                  height={638 / 2}
+                  width={183}
+                  height={319}
                   src="/assets/img/bol1.jpg"
                   alt=""
                   className="w-full h-full object-cover"
@@ -54,12 +54,12 @@ export function HeroSection() {
             </div>
 
             <div
-              className={`hidden md:block absolute -right-11 xl:-right-15 -bottom-35 rotate-[10deg] ${elevated}`}
+              className={`hidden lg:block absolute -right-11 xl:-right-15 top-8 rotate-[10deg] ${elevated}`}
             >
               <div className={`${card} `}>
                 <Image
-                  width={500 / 2}
-                  height={350 / 2}
+                  width={250}
+                  height={175}
                   src="/assets/img/bol4.jpg"
                   alt=""
                   className="w-full h-full object-cover"
@@ -67,12 +67,12 @@ export function HeroSection() {
               </div>
             </div>
             <div
-              className={`hidden md:block absolute -right-6 xl:right-15 bottom-15 rotate-[-15deg] ${elevated}`}
+              className={`hidden lg:block absolute right-6 xl:right-12 -bottom-30 rotate-[-3deg] ${elevated}`}
             >
               <div className={`${card}`}>
                 <Image
-                  width={500 / 2}
-                  height={350 / 2}
+                  width={250}
+                  height={175}
                   src="/assets/img/bol3.jpg"
                   alt=""
                   className="w-full h-full object-cover"

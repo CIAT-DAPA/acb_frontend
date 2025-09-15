@@ -1,5 +1,5 @@
 import { FileText, Download, GitBranch, Palette } from "lucide-react";
-import { container, dot } from "./ui";
+import { container } from "./ui";
 
 const features = [
   {
