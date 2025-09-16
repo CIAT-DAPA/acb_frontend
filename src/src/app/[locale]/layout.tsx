@@ -3,7 +3,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { Sintony, Poppins } from "next/font/google";
 import "./globals.css";
-import { Header } from "./components/Header";
+import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
 
 type Props = {
@@ -36,7 +36,7 @@ export default async function RootLayout({ children, params }: Props) {
     <html lang={locale}>
       <body className={`${sintony.variable} ${poppins.variable} antialiased`}>
         <NextIntlClientProvider messages={messages}>
-          <Header />
+          <Navbar />
           {children}
           <Footer />
         </NextIntlClientProvider>
