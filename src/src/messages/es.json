@@ -48,5 +48,40 @@
     "copyright": "© 2025 Bulletin Builder.",
     "email": "test@example.com",
     "phone": "+1 (555) 123-4567"
+  },
+  "Templates": {
+    "title": "Crea nuevas plantillas totalmente personalizables",
+    "subtitle": "Gestiona y crea plantillas de boletines agroclimáticos con los campos que desees, imágenes y gráficos.",
+    "createNew": "Crear Nueva",
+    "searchPlaceholder": "Buscar plantillas...",
+    "by": "por",
+    "lastModified": "Última modificación",
+    "view": "Ver",
+    "edit": "Editar",
+    "noResults": "No se encontraron plantillas",
+    "createFirst": "Crear tu primera plantilla",
+    "Create": {
+      "title": "Nueva Plantilla",
+      "subtitle": "Crea una nueva plantilla de boletín agroclimático",
+      "back": "Volver",
+      "name": "Nombre de la plantilla",
+      "namePlaceholder": "Ej. Boletín Mensual de Café",
+      "description": "Descripción",
+      "descriptionPlaceholder": "Describe el propósito de esta plantilla...",
+      "category": "Categoría",
+      "categories": {
+        "monthly": "Boletín Mensual",
+        "weekly": "Reporte Semanal",
+        "alerts": "Alertas Climáticas"
+      },
+      "create": "Crear Plantilla",
+      "cancel": "Cancelar"
+    }
+  },
+  "Bulletins": {
+    "by": "por",
+    "lastModified": "Última modificación",
+    "view": "Ver",
+    "download": "Descargar"
   }
 }

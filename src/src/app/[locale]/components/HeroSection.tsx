@@ -36,8 +36,8 @@ export function HeroSection() {
             >
               <div className={`${card}`}>
                 <Image
-                  width={480 / 2}
-                  height={320 / 2}
+                  width={183}
+                  height={319}
                   src="/assets/img/bol2.jpg"
                   alt=""
                   className="w-full h-full object-cover"

@@ -48,5 +48,40 @@
     "copyright": "© 2025 Bulletin Builder.",
     "email": "test@example.com",
     "phone": "+1 (555) 123-4567"
+  },
+  "Templates": {
+    "title": "Create fully customizable new templates",
+    "subtitle": "Manage and create agroclimatic bulletin templates with the fields you want, images and charts.",
+    "createNew": "Create New",
+    "searchPlaceholder": "Search templates...",
+    "by": "by",
+    "lastModified": "Last modified",
+    "view": "View",
+    "edit": "Edit",
+    "noResults": "No templates found",
+    "createFirst": "Create your first template",
+    "Create": {
+      "title": "New Template",
+      "subtitle": "Create a new agroclimatic bulletin template",
+      "back": "Back",
+      "name": "Template name",
+      "namePlaceholder": "e.g. Monthly Coffee Bulletin",
+      "description": "Description",
+      "descriptionPlaceholder": "Describe the purpose of this template...",
+      "category": "Category",
+      "categories": {
+        "monthly": "Monthly Bulletin",
+        "weekly": "Weekly Report",
+        "alerts": "Climate Alerts"
+      },
+      "create": "Create Template",
+      "cancel": "Cancel"
+    }
+  },
+  "Bulletins": {
+    "by": "by",
+    "lastModified": "Last modified",
+    "view": "View",
+    "download": "Download"
   }
 }

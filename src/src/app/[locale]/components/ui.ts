@@ -5,9 +5,9 @@ export const linkAccent = "hover:text-[#bc6c25] transition-colors";
 export const muted = "text-[#fefae0]/70";
 export const sectionTitle = "font-semibold text-[#fefae0]";
 export const btnOutlinePrimary =
-  "px-4 py-2 border-2 border-[#bc6c25] text-[#fefae0] rounded-full flex items-center justify-center font-medium text-sm hover:bg-[#bc6c25] hover:text-[#fefae0] transition-all duration-200 cursor-pointer";
+  "px-4 py-2 border-2 border-[#bc6c25] text-[#fefae0] rounded flex items-center justify-center font-medium text-sm hover:bg-[#bc6c25] hover:text-[#fefae0] transition-all duration-200 cursor-pointer";
 export const btnPrimary =
-  "inline-flex items-center gap-2 rounded-full px-6 py-3 bg-[#bc6c25] text-[#fefae0] font-semibold hover:bg-[#bc6c25]/90 transition-colors cursor-pointer";
+  "inline-flex items-center gap-2 rounded px-6 py-3 bg-[#bc6c25] text-[#fefae0] font-semibold hover:bg-[#bc6c25]/90 transition-colors cursor-pointer";
 export const heroSection =
   "relative overflow-hidden desk-texture desk-texture-strong min-h-[calc(100dvh-80px)] flex items-center";
 export const heroTitle =
@@ -18,3 +18,17 @@ export const card =
   "relative z-10 rounded-xl overflow-hidden shadow-xl shadow-black/10";
 export const elevated = "shadow-2xl shadow-black/20";
 export const dot = "w-2 h-2 rounded-full";
+
+// Clases adicionales para componentes comunes
+export const inputField =
+  "w-full px-4 py-3 border border-[#283618]/20 rounded-lg focus:ring-2 focus:ring-[#ffaf68] focus:border-transparent shadow-sm";
+export const searchField =
+  "w-full pl-10 pr-4 py-3 border border-[#283618]/20 rounded-lg focus:ring-2 focus:ring-[#ffaf68] focus:border-transparent shadow-sm";
+export const cardBase =
+  "bg-white border border-[#283618]/10 rounded-lg p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1";
+export const btnOutlineSecondary =
+  "flex-1 text-center border-2 border-[#bc6c25] text-[#283618] py-2 rounded hover:bg-[#bc6c25]/90 hover:text-[#fefae0] transition-colors";
+export const btnDark =
+  "flex-1 text-center bg-[#283618] text-[#fefae0] py-2 rounded hover:bg-[#283618]/80 transition-colors";
+export const pageTitle = "text-4xl font-bold text-[#283618] mb-4";
+export const pageSubtitle = "text-[#283618] text-lg max-w-2xl";
