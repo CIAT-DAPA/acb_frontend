@@ -4,9 +4,10 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, Cloud } from "lucide-react";
+import { Menu, X, Cloud, User, LogOut } from "lucide-react";
 import { container, brand, brandIcon, btnOutlinePrimary } from "./ui";
 import { LanguageSelector } from "./LanguageSelector";
+import { useAuth } from "../../../hooks/useAuth";
 
 // Clases simples con colores corregidos
 const NAV_BASE = "py-2 px-3 transition-colors duration-200 relative";
@@ -17,20 +18,38 @@ const NAV_INACTIVE =
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const pathname = usePathname();
   const t = useTranslations("Navbar");
 
-  // Navegación simple
-  const NAV_ITEMS = [{ name: t("templates"), path: "/templates" }];
+  // Hook de autenticación
+  const { authenticated, loading, userInfo, token, login, logout } = useAuth();
 
-  // Mock login function - replace with actual auth implementation
-  const login = () => {
-    // Implement actual login logic
-    console.log("Login clicked");
+  // Navegación condicional - solo mostrar rutas que requieren auth si está autenticado
+  const ALL_NAV_ITEMS = [
+    { name: t("templates"), path: "/templates", requiresAuth: true }
+  ];
+
+  // Filtrar items según autenticación
+  const NAV_ITEMS = ALL_NAV_ITEMS.filter(item => 
+    !item.requiresAuth || authenticated
+  );
+
+  // Función para toggle del menú móvil
+  const toggleMenu = () => setIsOpen(!isOpen);
+
+  const getInitials = (firstName?: string, lastName?: string) => {
+    const initials = [];
+    if (firstName) initials.push(firstName.charAt(0).toUpperCase());
+    if (lastName) initials.push(lastName.charAt(0).toUpperCase());
+    
+    // Si no hay iniciales, usar la primera letra del nombre de usuario
+    if (initials.length === 0 && userInfo?.preferred_username) {
+      initials.push(userInfo.preferred_username.charAt(0).toUpperCase());
+    }
+    
+    return initials.join("") || "U";
   };
-
-  // Handlers mínimos
-  const toggleMenu = () => setIsOpen((v) => !v);
 
   return (
     <nav className="bg-[#283618] border-b border-[#283618]/80 sticky top-0 z-50">
@@ -83,11 +102,46 @@ export function Navbar() {
           {/* Selector de idioma */}
           <LanguageSelector />
 
-          {/* Botón de login */}
+          {/* Botón de login/usuario */}
           <div className="flex items-center">
-            <button onClick={login} className={btnOutlinePrimary}>
-              {t("login")}
-            </button>
+            {loading ? (
+              <div className="animate-spin h-4 w-4 border-2 border-[#ffaf68] border-t-transparent rounded-full"></div>
+            ) : !authenticated ? (
+              <button onClick={login} className={btnOutlinePrimary}>
+                {t("login")}
+              </button>
+            ) : (
+              <div className="relative">
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center justify-center w-10 h-10 bg-[#bc6c25] text-[#fefae0] font-semibold rounded-full hover:bg-[#bc6c25]/90 transition-colors cursor-pointer"
+                  title={userInfo?.preferred_username || userInfo?.name || 'User'}
+                >
+                  {getInitials(userInfo?.given_name || '', userInfo?.family_name || '')}
+                </button>
+
+                {showUserMenu && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                    <div className="px-4 py-2 border-b border-gray-100">
+                      <p className="text-sm font-medium text-gray-900">
+                        {userInfo?.name || userInfo?.preferred_username}
+                      </p>
+                      <p className="text-xs text-gray-500">{userInfo?.email}</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        logout();
+                        setShowUserMenu(false);
+                      }}
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer"
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      {t("logout")}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -123,15 +177,46 @@ export function Navbar() {
 
           {/* Botón de login móvil */}
           <div className="pt-3">
-            <button
-              onClick={() => {
-                login();
-                setIsOpen(false);
-              }}
-              className="flex items-center space-x-3"
-            >
-              <div className={btnOutlinePrimary}>{t("login")}</div>
-            </button>
+            {loading ? (
+              <div className="flex items-center space-x-2">
+                <div className="animate-spin h-4 w-4 border-2 border-[#ffaf68] border-t-transparent rounded-full"></div>
+                <span className="text-[#fefae0]/80">Cargando...</span>
+              </div>
+            ) : !authenticated ? (
+              <button
+                onClick={() => {
+                  login();
+                  setIsOpen(false);
+                }}
+                className="flex items-center space-x-3"
+              >
+                <div className={btnOutlinePrimary}>{t("login")}</div>
+              </button>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2 text-[#fefae0]/80 pb-2 border-b border-[#283618]/60">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#bc6c25] text-[#fefae0] font-semibold cursor-pointer">
+                    {getInitials(userInfo?.given_name || '', userInfo?.family_name || '')}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">
+                      {userInfo?.name || userInfo?.preferred_username}
+                    </p>
+                    <p className="text-xs text-[#fefae0]/60">{userInfo?.email}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    logout();
+                    setIsOpen(false);
+                  }}
+                  className="flex items-center space-x-2 text-[#fefae0]/80 hover:text-[#ffaf68] transition-colors cursor-pointer"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span className="text-sm">{t("logout")}</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

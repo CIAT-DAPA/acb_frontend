@@ -5,6 +5,7 @@ import { Sintony, Poppins } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
+import { AuthProviderWrapper } from "@/components/AuthProviderWrapper";
 
 type Props = {
   children: React.ReactNode;
@@ -35,11 +36,13 @@ export default async function RootLayout({ children, params }: Props) {
   return (
     <html lang={locale}>
       <body className={`${sintony.variable} ${poppins.variable} antialiased`}>
-        <NextIntlClientProvider messages={messages}>
-          <Navbar />
-          {children}
-          <Footer />
-        </NextIntlClientProvider>
+        <AuthProviderWrapper>
+          <NextIntlClientProvider messages={messages}>
+            <Navbar />
+            {children}
+            <Footer />
+          </NextIntlClientProvider>
+        </AuthProviderWrapper>
       </body>
     </html>
   );
