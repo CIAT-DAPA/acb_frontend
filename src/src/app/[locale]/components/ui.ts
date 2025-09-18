@@ -29,6 +29,6 @@ export const cardBase =
 export const btnOutlineSecondary =
   "flex-1 text-center border-2 border-[#bc6c25] text-[#283618] py-2 rounded hover:bg-[#bc6c25]/90 hover:text-[#fefae0] transition-colors";
 export const btnDark =
-  "flex-1 text-center bg-[#283618] text-[#fefae0] py-2 rounded hover:bg-[#283618]/80 transition-colors";
+  "flex-1 text-center bg-[#283618] text-[#fefae0] content-evenly rounded hover:bg-[#283618]/80 transition-colors";
 export const pageTitle = "text-4xl font-bold text-[#283618] mb-4";
 export const pageSubtitle = "text-[#283618] text-lg max-w-2xl";

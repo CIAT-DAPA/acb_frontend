@@ -92,5 +92,298 @@
     "accessRestrictedTitle": "Acceso restringido",
     "accessRestrictedMessage": "Debes iniciar sesión para acceder a esta página.",
     "redirecting": "Redirigiendo a inicio de sesión..."
+  },
+  "CreateTemplate": {
+    "title": "Crear Nueva Plantilla",
+    "subtitle": "Diseña una plantilla personalizada para tus boletines agroclimáticos",
+    "back": "Volver a Plantillas",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "finish": "Crear Plantilla",
+    "creating": "Creando...",
+    "success": "¡Plantilla creada exitosamente!",
+    "error": "Error al crear la plantilla: {error}",
+    "steps": {
+      "basicInfo": {
+        "title": "Info Básica",
+        "description": "Nombre y descripción"
+      },
+      "generalConfig": {
+        "title": "Config General",
+        "description": "Estilos globales"
+      },
+      "headerFooter": {
+        "title": "Header/Footer",
+        "description": "Encabezados y pie"
+      },
+      "sections": {
+        "title": "Secciones",
+        "description": "Contenido principal"
+      }
+    },
+    "navigation": {
+      "next": "Siguiente",
+      "previous": "Anterior",
+      "finish": "Crear Plantilla"
+    },
+    "basicInfo": {
+      "title": "Información Básica",
+      "description": "Define los datos principales de tu plantilla",
+      "fields": {
+        "name": {
+          "label": "Nombre de la Plantilla",
+          "placeholder": "Ej: Boletín Agroclimático de Café - Nariño"
+        },
+        "description": {
+          "label": "Descripción",
+          "placeholder": "Describe el propósito y alcance de esta plantilla..."
+        },
+        "status": {
+          "label": "Estado",
+          "options": {
+            "draft": "Borrador",
+            "active": "Activa",
+            "archived": "Archivada"
+          }
+        },
+        "accessType": {
+          "label": "Tipo de Acceso",
+          "options": {
+            "public": "Público",
+            "restricted": "Restringido"
+          },
+          "help": {
+            "public": "Visible para todos los usuarios",
+            "restricted": "Solo visible para grupos específicos"
+          }
+        },
+        "allowedGroups": {
+          "label": "Grupos Permitidos",
+          "placeholder": "Selecciona los grupos que pueden acceder a esta plantilla..."
+        }
+      }
+    },
+    "generalConfig": {
+      "title": "Configuración General",
+      "description": "Define los estilos globales que se aplicarán a toda la plantilla",
+      "fields": {
+        "commitMessage": {
+          "label": "Mensaje de Versión",
+          "placeholder": "Describe los cambios de esta versión..."
+        }
+      },
+      "styles": {
+        "title": "Estilos Globales",
+        "font": {
+          "label": "Fuente"
+        },
+        "primaryColor": {
+          "label": "Color Primario"
+        },
+        "secondaryColor": {
+          "label": "Color Secundario"
+        },
+        "backgroundColor": {
+          "label": "Color de Fondo"
+        },
+        "fontSize": {
+          "label": "Tamaño de Fuente (px)"
+        },
+        "textAlign": {
+          "label": "Alineación del Texto",
+          "options": {
+            "left": "Izquierda",
+            "center": "Centro",
+            "right": "Derecha"
+          }
+        }
+      },
+      "preview": {
+        "title": "Vista Previa de Estilos",
+        "sampleText": "Así es como se verá tu texto",
+        "primaryText": "Ejemplo de texto con color primario",
+        "secondaryText": "Ejemplo de texto con color secundario",
+        "backgroundNote": "El color de fondo se aplicará a todo el documento",
+        "subtitle": "Subtítulo de ejemplo",
+        "text": "Este es un texto de ejemplo que muestra cómo se verá tu contenido con los estilos seleccionados.",
+        "smallText": "Texto pequeño para detalles adicionales y notas."
+      }
+    },
+    "headerFooter": {
+      "title": "Configuración de Header y Footer",
+      "description": "Configura los campos que aparecerán en el encabezado y pie de página",
+      "tabs": {
+        "header": "Encabezado",
+        "footer": "Pie de Página"
+      },
+      "info": {
+        "header": {
+          "title": "¿Qué es el Header?",
+          "description": "El header aparece al inicio de cada página del boletín. Es ideal para títulos, fechas, logos y información general."
+        },
+        "footer": {
+          "title": "¿Qué es el Footer?",
+          "description": "El footer aparece al final de cada página del boletín. Es perfecto para numeración de páginas, información de contacto y créditos."
+        }
+      },
+      "addField": "Agregar Campo",
+      "noFields": "Aún no se han agregado campos",
+      "removeField": "Eliminar Campo",
+      "fieldsList": "Lista de Campos ({count})",
+      "fields": {
+        "title": "Campos",
+        "add": "Agregar Campo",
+        "empty": "No hay campos configurados",
+        "emptyHint": "Agrega campos para personalizar este componente",
+        "type": "Tipo",
+        "form": "Formulario",
+        "bulletin": "Boletín"
+      },
+      "editField": {
+        "title": "Editar Campo"
+      }
+    },
+    "sections": {
+      "title": "Configuración de Secciones",
+      "description": "Diseña las secciones principales del contenido de tu plantilla",
+      "addSection": "Agregar Sección",
+      "info": "Total de secciones",
+      "noSections": {
+        "title": "Aún no hay secciones",
+        "description": "Las secciones son los bloques principales de tu plantilla. Cada sección puede contener múltiples bloques de contenido.",
+        "cta": "Agrega tu primera sección"
+      },
+      "empty": {
+        "title": "No hay secciones",
+        "description": "Agrega tu primera sección para comenzar a estructurar tu plantilla",
+        "addFirst": "Agregar Primera Sección"
+      },
+      "section": {
+        "editName": "Editar nombre de sección",
+        "addBlock": "Agregar Bloque",
+        "duplicate": "Duplicar",
+        "remove": "Eliminar",
+        "moveUp": "Mover Arriba",
+        "moveDown": "Mover Abajo",
+        "blocks": "Bloques",
+        "noBlocks": "No hay bloques en esta sección",
+        "sectionId": "ID de Sección",
+        "iconUrl": "URL del Icono"
+      },
+      "block": {
+        "editName": "Editar nombre del bloque",
+        "addField": "Agregar Campo",
+        "remove": "Eliminar Bloque",
+        "fields": "Campos",
+        "noFields": "No hay campos en este bloque"
+      }
+    },
+    "fieldEditor": {
+      "title": "Editor de Campos",
+      "basicInfo": "Información Básica",
+      "visibility": "Opciones de Visibilidad",
+      "validation": "Validación",
+      "specificConfig": "Configuración Específica del Campo",
+      "save": "Guardar Cambios",
+      "cancel": "Cancelar",
+      "noConfig": "No hay configuraciones específicas para este tipo de campo",
+      "fields": {
+        "fieldId": {
+          "label": "ID del Campo",
+          "help": "Identificador único (sin espacios ni caracteres especiales)"
+        },
+        "displayName": {
+          "label": "Nombre para Mostrar",
+          "help": "Nombre que verán los usuarios"
+        },
+        "type": {
+          "label": "Tipo de Campo"
+        },
+        "label": {
+          "label": "Etiqueta",
+          "help": "Etiqueta opcional para el usuario"
+        },
+        "description": {
+          "label": "Descripción",
+          "help": "Texto de ayuda para el usuario"
+        },
+        "form": {
+          "label": "Mostrar en formulario",
+          "help": "El campo aparecerá en el formulario de entrada de datos"
+        },
+        "bulletin": {
+          "label": "Mostrar en boletín",
+          "help": "El campo aparecerá en el boletín final"
+        },
+        "required": {
+          "label": "Campo obligatorio"
+        }
+      },
+      "textConfig": {
+        "subtype": {
+          "label": "Tipo de Texto",
+          "short": "Texto Corto",
+          "long": "Texto Largo",
+          "rich": "Texto Enriquecido"
+        },
+        "placeholder": {
+          "label": "Texto de Ejemplo"
+        },
+        "maxLength": {
+          "label": "Longitud Máxima"
+        },
+        "minLength": {
+          "label": "Longitud Mínima"
+        }
+      },
+      "numberConfig": {
+        "subtype": {
+          "label": "Tipo de Número",
+          "integer": "Entero",
+          "decimal": "Decimal"
+        },
+        "min": {
+          "label": "Valor Mínimo"
+        },
+        "max": {
+          "label": "Valor Máximo"
+        },
+        "step": {
+          "label": "Incremento"
+        },
+        "decimals": {
+          "label": "Lugares Decimales"
+        }
+      },
+      "dateConfig": {
+        "format": {
+          "label": "Formato de Fecha"
+        }
+      },
+      "pageNumberConfig": {
+        "format": {
+          "label": "Formato de Página",
+          "help": "Use {page} para página actual y {total} para total de páginas"
+        }
+      }
+    },
+    "preview": {
+      "title": "Vista Previa de Plantilla",
+      "untitled": "Plantilla Sin Título",
+      "noDescription": "Sin descripción",
+      "header": "ENCABEZADO",
+      "footer": "PIE DE PÁGINA",
+      "emptySection": "Sección vacía",
+      "emptyBlock": "Bloque vacío",
+      "sampleData": {
+        "textField": "Texto de ejemplo",
+        "dateField": "Fecha: {date}",
+        "dateRange": "Período: {start} - {end}",
+        "listTitle": "Lista de Ejemplo:",
+        "listItems": ["Elemento 1", "Elemento 2", "Elemento 3"],
+        "climateTitle": "Datos Climáticos:",
+        "climateData": ["Temperatura: 25°C", "Humedad: 65%", "Precipitación: 15mm"]
+      }
+    }
   }
 }

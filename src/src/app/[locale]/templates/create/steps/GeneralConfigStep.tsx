@@ -1,0 +1,346 @@
+"use client";
+
+import React, { useCallback } from "react";
+import { useTranslations } from "next-intl";
+import { CreateTemplateData } from "../../../../../types/template";
+import { StyleConfig } from "../../../../../types/core";
+
+interface GeneralConfigStepProps {
+  data: CreateTemplateData;
+  errors: Record<string, string[]>;
+  onDataChange: (
+    updater: (prevData: CreateTemplateData) => CreateTemplateData
+  ) => void;
+  onErrorsChange: (errors: Record<string, string[]>) => void;
+}
+
+// Fuentes disponibles
+const AVAILABLE_FONTS = [
+  "Arial",
+  "Helvetica",
+  "Times New Roman",
+  "Georgia",
+  "Roboto",
+  "Open Sans",
+  "Lato",
+  "Montserrat",
+];
+
+export function GeneralConfigStep({
+  data,
+  errors,
+  onDataChange,
+  onErrorsChange,
+}: GeneralConfigStepProps) {
+  const t = useTranslations("CreateTemplate.generalConfig");
+
+  const updateStyleConfig = useCallback(
+    (updates: Partial<StyleConfig>) => {
+      onDataChange((prevData) => ({
+        ...prevData,
+        version: {
+          ...prevData.version,
+          content: {
+            ...prevData.version.content,
+            style_config: {
+              ...prevData.version.content.style_config,
+              ...updates,
+            },
+          },
+        },
+      }));
+    },
+    [onDataChange]
+  );
+
+  const handleCommitMessageChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      onDataChange((prevData) => ({
+        ...prevData,
+        version: {
+          ...prevData.version,
+          commit_message: e.target.value,
+        },
+      }));
+    },
+    [onDataChange]
+  );
+
+  const currentStyleConfig = data.version.content.style_config || {};
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          {t("title", { default: "Configuración General" })}
+        </h2>
+        <p className="text-gray-600">
+          {t("description", {
+            default:
+              "Define los estilos globales que se aplicarán a toda la plantilla",
+          })}
+        </p>
+      </div>
+
+      <div className="space-y-6">
+        {/* Mensaje de Commit */}
+        <div>
+          <label
+            htmlFor="commit_message"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            {t("fields.commitMessage.label", { default: "Mensaje de Versión" })}
+          </label>
+          <textarea
+            id="commit_message"
+            rows={2}
+            value={data.version.commit_message}
+            onChange={handleCommitMessageChange}
+            className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
+                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder={t("fields.commitMessage.placeholder", {
+              default: "Describe los cambios de esta versión...",
+            })}
+          />
+        </div>
+
+        {/* Estilos Globales */}
+        <div>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
+            {t("styles.title", { default: "Estilos Globales" })}
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Fuente */}
+            <div>
+              <label
+                htmlFor="font"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                {t("styles.font.label", { default: "Fuente" })}
+              </label>
+              <select
+                id="font"
+                value={currentStyleConfig.font || "Arial"}
+                onChange={(e) => updateStyleConfig({ font: e.target.value })}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
+                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                {AVAILABLE_FONTS.map((font) => (
+                  <option key={font} value={font} style={{ fontFamily: font }}>
+                    {font}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Color Primario */}
+            <div>
+              <label
+                htmlFor="primary_color"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                {t("styles.primaryColor.label", { default: "Color Primario" })}
+              </label>
+              <div className="flex space-x-2">
+                <input
+                  type="color"
+                  id="primary_color"
+                  value={currentStyleConfig.primary_color || "#000000"}
+                  onChange={(e) =>
+                    updateStyleConfig({ primary_color: e.target.value })
+                  }
+                  className="block w-16 h-10 border border-gray-300 rounded-md cursor-pointer"
+                />
+                <input
+                  type="text"
+                  value={currentStyleConfig.primary_color || "#000000"}
+                  onChange={(e) =>
+                    updateStyleConfig({ primary_color: e.target.value })
+                  }
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm 
+                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="#000000"
+                />
+              </div>
+            </div>
+
+            {/* Color Secundario */}
+            <div>
+              <label
+                htmlFor="secondary_color"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                {t("styles.secondaryColor.label", {
+                  default: "Color Secundario",
+                })}
+              </label>
+              <div className="flex space-x-2">
+                <input
+                  type="color"
+                  id="secondary_color"
+                  value={currentStyleConfig.secondary_color || "#666666"}
+                  onChange={(e) =>
+                    updateStyleConfig({ secondary_color: e.target.value })
+                  }
+                  className="block w-16 h-10 border border-gray-300 rounded-md cursor-pointer"
+                />
+                <input
+                  type="text"
+                  value={currentStyleConfig.secondary_color || "#666666"}
+                  onChange={(e) =>
+                    updateStyleConfig({ secondary_color: e.target.value })
+                  }
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm 
+                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="#666666"
+                />
+              </div>
+            </div>
+
+            {/* Color de Fondo */}
+            <div>
+              <label
+                htmlFor="background_color"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                {t("styles.backgroundColor.label", {
+                  default: "Color de Fondo",
+                })}
+              </label>
+              <div className="flex space-x-2">
+                <input
+                  type="color"
+                  id="background_color"
+                  value={currentStyleConfig.background_color || "#ffffff"}
+                  onChange={(e) =>
+                    updateStyleConfig({ background_color: e.target.value })
+                  }
+                  className="block w-16 h-10 border border-gray-300 rounded-md cursor-pointer"
+                />
+                <input
+                  type="text"
+                  value={currentStyleConfig.background_color || "#ffffff"}
+                  onChange={(e) =>
+                    updateStyleConfig({ background_color: e.target.value })
+                  }
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm 
+                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="#ffffff"
+                />
+              </div>
+            </div>
+
+            {/* Tamaño de Fuente Base */}
+            <div>
+              <label
+                htmlFor="font_size"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                {t("styles.fontSize.label", {
+                  default: "Tamaño de Fuente Base",
+                })}{" "}
+                (px)
+              </label>
+              <input
+                type="number"
+                id="font_size"
+                min="8"
+                max="72"
+                value={currentStyleConfig.font_size || 16}
+                onChange={(e) =>
+                  updateStyleConfig({
+                    font_size: parseInt(e.target.value) || 16,
+                  })
+                }
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
+                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+
+            {/* Alineación de Texto */}
+            <div>
+              <label
+                htmlFor="text_align"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                {t("styles.textAlign.label", {
+                  default: "Alineación de Texto",
+                })}
+              </label>
+              <select
+                id="text_align"
+                value={currentStyleConfig.text_align || "left"}
+                onChange={(e) =>
+                  updateStyleConfig({
+                    text_align: e.target.value as "left" | "center" | "right",
+                  })
+                }
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
+                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="left">
+                  {t("styles.textAlign.options.left", { default: "Izquierda" })}
+                </option>
+                <option value="center">
+                  {t("styles.textAlign.options.center", { default: "Centro" })}
+                </option>
+                <option value="right">
+                  {t("styles.textAlign.options.right", { default: "Derecha" })}
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Vista Previa de Estilos */}
+        <div>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
+            {t("preview.title", { default: "Vista Previa de Estilos" })}
+          </h3>
+          <div
+            className="p-6 border rounded-lg"
+            style={{
+              fontFamily: currentStyleConfig.font || "Arial",
+              color: currentStyleConfig.primary_color || "#000000",
+              backgroundColor: currentStyleConfig.background_color || "#ffffff",
+              fontSize: `${currentStyleConfig.font_size || 16}px`,
+              textAlign:
+                (currentStyleConfig.text_align as
+                  | "left"
+                  | "center"
+                  | "right") || "left",
+            }}
+          >
+            <h4
+              className="text-xl font-bold mb-2"
+              style={{ color: currentStyleConfig.primary_color }}
+            >
+              {t("preview.title", { default: "Título de Ejemplo" })}
+            </h4>
+            <h5
+              className="text-lg font-semibold mb-2"
+              style={{ color: currentStyleConfig.secondary_color }}
+            >
+              {t("preview.subtitle", { default: "Subtítulo de Ejemplo" })}
+            </h5>
+            <p className="mb-2">
+              {t("preview.text", {
+                default:
+                  "Este es un texto de ejemplo para mostrar cómo se verán los estilos aplicados a tu plantilla.",
+              })}
+            </p>
+            <p
+              className="text-sm"
+              style={{ color: currentStyleConfig.secondary_color }}
+            >
+              {t("preview.smallText", {
+                default: "Texto secundario con color secundario aplicado.",
+              })}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

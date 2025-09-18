@@ -1,23 +1,13 @@
-// Tipos basados en la documentación de MongoDB
+// Tipos específicos para la comunicación con la API
 
-export interface LogObject {
-  created_at: string; // ISODate como string
-  creator_user_id: string; // ObjectId como string
-  updated_at: string; // ISODate como string
-  updater_user_id: string; // ObjectId como string
-}
-
-export interface AccessConfig {
-  access_type: 'public' | 'restricted' | 'private';
-  allowed_groups?: string[]; // Array de ObjectIds como strings
-}
+import { LogObject, AccessConfig, TemplateStatus } from "./core";
 
 export interface TemplateMaster {
   _id: string; // ObjectId como string
   template_name: string;
   description: string;
   log: LogObject;
-  status: 'activa' | 'archivada' | 'borrador';
+  status: TemplateStatus;
   current_version_id: string; // ObjectId como string
   access_config: AccessConfig;
 }
@@ -48,7 +38,7 @@ export interface GetTemplatesParams {
   page?: number;
   limit?: number;
   search?: string;
-  status?: 'activa' | 'archivada' | 'borrador';
-  sortBy?: 'name' | 'created_at' | 'updated_at';
-  sortOrder?: 'asc' | 'desc';
+  status?: TemplateStatus;
+  sortBy?: "name" | "created_at" | "updated_at";
+  sortOrder?: "asc" | "desc";
 }

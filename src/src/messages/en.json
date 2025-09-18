@@ -92,5 +92,302 @@
     "accessRestrictedTitle": "Access restricted",
     "accessRestrictedMessage": "You must be logged in to access this page.",
     "redirecting": "Redirecting to login..."
+  },
+  "CreateTemplate": {
+    "title": "Create New Template",
+    "subtitle": "Design a custom template for your agroclimatic bulletins",
+    "back": "Back to Templates",
+    "next": "Next",
+    "previous": "Previous",
+    "finish": "Create Template",
+    "creating": "Creating...",
+    "success": "Template created successfully!",
+    "error": "Error creating template: {error}",
+    "steps": {
+      "basicInfo": {
+        "title": "Basic Info",
+        "description": "Name and description"
+      },
+      "generalConfig": {
+        "title": "General Config",
+        "description": "Global styles"
+      },
+      "headerFooter": {
+        "title": "Header/Footer",
+        "description": "Headers and footers"
+      },
+      "sections": {
+        "title": "Sections",
+        "description": "Main content"
+      }
+    },
+    "navigation": {
+      "next": "Next",
+      "previous": "Previous",
+      "finish": "Create Template"
+    },
+    "basicInfo": {
+      "title": "Basic Information",
+      "description": "Define the main data for your template",
+      "fields": {
+        "name": {
+          "label": "Template Name",
+          "placeholder": "e.g. Coffee Agroclimatic Bulletin - Nariño"
+        },
+        "description": {
+          "label": "Description",
+          "placeholder": "Describe the purpose and scope of this template..."
+        },
+        "status": {
+          "label": "Status",
+          "options": {
+            "draft": "Draft",
+            "active": "Active",
+            "archived": "Archived"
+          }
+        },
+        "accessType": {
+          "label": "Access Type",
+          "options": {
+            "public": "Public",
+            "restricted": "Restricted"
+          },
+          "help": {
+            "public": "Visible to all users",
+            "restricted": "Only visible to specific groups"
+          }
+        },
+        "allowedGroups": {
+          "label": "Allowed Groups",
+          "placeholder": "Select groups that can access this template..."
+        }
+      }
+    },
+    "generalConfig": {
+      "title": "General Configuration",
+      "description": "Define the global styles that will be applied to the entire template",
+      "fields": {
+        "commitMessage": {
+          "label": "Version Message",
+          "placeholder": "Describe the changes in this version..."
+        }
+      },
+      "styles": {
+        "title": "Global Styles",
+        "font": {
+          "label": "Font"
+        },
+        "primaryColor": {
+          "label": "Primary Color"
+        },
+        "secondaryColor": {
+          "label": "Secondary Color"
+        },
+        "backgroundColor": {
+          "label": "Background Color"
+        },
+        "fontSize": {
+          "label": "Font Size (px)"
+        },
+        "textAlign": {
+          "label": "Text Alignment",
+          "options": {
+            "left": "Left",
+            "center": "Center",
+            "right": "Right"
+          }
+        }
+      },
+      "preview": {
+        "title": "Style Preview",
+        "sampleText": "This is how your text will look",
+        "primaryText": "Primary color text example",
+        "secondaryText": "Secondary color text example",
+        "backgroundNote": "Background color will be applied to the entire document",
+        "subtitle": "Sample subtitle",
+        "text": "This is sample body text that shows how your content will look with the selected styles.",
+        "smallText": "Small text for additional details and notes."
+      }
+    },
+    "headerFooter": {
+      "title": "Header and Footer Configuration",
+      "description": "Configure the fields that will appear in the header and footer",
+      "tabs": {
+        "header": "Header",
+        "footer": "Footer"
+      },
+      "info": {
+        "header": {
+          "title": "What is a Header?",
+          "description": "The header appears at the beginning of each page of the bulletin. It's ideal for titles, dates, logos and general information."
+        },
+        "footer": {
+          "title": "What is a Footer?",
+          "description": "The footer appears at the end of each page of the bulletin. It's perfect for page numbering, contact information and credits."
+        }
+      },
+      "addField": "Add Field",
+      "noFields": "No fields added yet",
+      "removeField": "Remove Field",
+      "fieldsList": "Fields List ({count})",
+      "fields": {
+        "title": "Fields",
+        "add": "Add Field",
+        "empty": "No fields configured",
+        "emptyHint": "Add fields to customize this component",
+        "type": "Type",
+        "form": "Form",
+        "bulletin": "Bulletin"
+      },
+      "editField": {
+        "title": "Edit Field"
+      }
+    },
+    "sections": {
+      "title": "Sections Configuration",
+      "description": "Design the main sections of your template content",
+      "addSection": "Add Section",
+      "info": "Total sections",
+      "noSections": {
+        "title": "No sections yet",
+        "description": "Sections are the main building blocks of your template. Each section can contain multiple content blocks.",
+        "cta": "Add your first section"
+      },
+      "empty": {
+        "title": "No sections",
+        "description": "Add your first section to start structuring your template",
+        "addFirst": "Add First Section"
+      },
+      "section": {
+        "editName": "Edit section name",
+        "addBlock": "Add Block",
+        "duplicate": "Duplicate",
+        "remove": "Remove",
+        "moveUp": "Move Up",
+        "moveDown": "Move Down",
+        "blocks": "Blocks",
+        "noBlocks": "No blocks in this section",
+        "sectionId": "Section ID",
+        "iconUrl": "Icon URL"
+      },
+      "block": {
+        "editName": "Edit block name",
+        "addField": "Add Field",
+        "remove": "Remove Block",
+        "fields": "Fields",
+        "noFields": "No fields in this block"
+      }
+    },
+    "fieldEditor": {
+      "title": "Field Editor",
+      "basicInfo": "Basic Information",
+      "visibility": "Visibility Options",
+      "validation": "Validation",
+      "specificConfig": "Field-Specific Configuration",
+      "save": "Save Changes",
+      "cancel": "Cancel",
+      "noConfig": "No specific configurations for this field type",
+      "fields": {
+        "fieldId": {
+          "label": "Field ID",
+          "help": "Unique identifier (no spaces or special characters)"
+        },
+        "displayName": {
+          "label": "Display Name",
+          "help": "Name shown to users"
+        },
+        "type": {
+          "label": "Field Type"
+        },
+        "label": {
+          "label": "Label",
+          "help": "Optional label for the user"
+        },
+        "description": {
+          "label": "Description",
+          "help": "Help text for the user"
+        },
+        "form": {
+          "label": "Show in form",
+          "help": "The field will appear in the data entry form"
+        },
+        "bulletin": {
+          "label": "Show in bulletin",
+          "help": "The field will appear in the final bulletin"
+        },
+        "required": {
+          "label": "Required field"
+        }
+      },
+      "textConfig": {
+        "subtype": {
+          "label": "Text Type",
+          "short": "Short Text",
+          "long": "Long Text",
+          "rich": "Rich Text"
+        },
+        "placeholder": {
+          "label": "Placeholder"
+        },
+        "maxLength": {
+          "label": "Maximum Length"
+        },
+        "minLength": {
+          "label": "Minimum Length"
+        }
+      },
+      "numberConfig": {
+        "subtype": {
+          "label": "Number Type",
+          "integer": "Integer",
+          "decimal": "Decimal"
+        },
+        "min": {
+          "label": "Minimum Value"
+        },
+        "max": {
+          "label": "Maximum Value"
+        },
+        "step": {
+          "label": "Step"
+        },
+        "decimals": {
+          "label": "Decimal Places"
+        }
+      },
+      "dateConfig": {
+        "format": {
+          "label": "Date Format"
+        }
+      },
+      "pageNumberConfig": {
+        "format": {
+          "label": "Page Format",
+          "help": "Use {page} for current page and {total} for total pages"
+        }
+      }
+    },
+    "preview": {
+      "title": "Template Preview",
+      "untitled": "Untitled Template",
+      "noDescription": "No description",
+      "header": "HEADER",
+      "footer": "FOOTER",
+      "emptySection": "Empty section",
+      "emptyBlock": "Empty block",
+      "sampleData": {
+        "textField": "Sample text",
+        "dateField": "Date: {date}",
+        "dateRange": "Period: {start} - {end}",
+        "listTitle": "Sample List:",
+        "listItems": ["Item 1", "Item 2", "Item 3"],
+        "climateTitle": "Climate Data:",
+        "climateData": [
+          "Temperature: 25°C",
+          "Humidity: 65%",
+          "Precipitation: 15mm"
+        ]
+      }
+    }
   }
 }
