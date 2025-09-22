@@ -280,12 +280,34 @@
     "fieldEditor": {
       "title": "Editor de Campos",
       "basicInfo": "Información Básica",
-      "visibility": "Opciones de Visibilidad",
-      "validation": "Validación",
-      "specificConfig": "Configuración Específica del Campo",
       "save": "Guardar Cambios",
       "cancel": "Cancelar",
       "noConfig": "No hay configuraciones específicas para este tipo de campo",
+      "basic": {
+        "fieldId": "ID del Campo",
+        "displayName": "Nombre para Mostrar",
+        "type": "Tipo de Campo",
+        "label": "Etiqueta",
+        "description": "Descripción"
+      },
+      "visibility": {
+        "title": "Visibilidad",
+        "form": "Mostrar en formulario de creación de boletín",
+        "bulletin": "Mostrar en boletín final"
+      },
+      "validation": {
+        "title": "Validación",
+        "required": "Campo obligatorio",
+        "minLength": "Longitud Mínima",
+        "maxLength": "Longitud Máxima"
+      },
+      "specificConfig": {
+        "title": "Configuración Específica"
+      },
+      "actions": {
+        "save": "Guardar",
+        "cancel": "Cancelar"
+      },
       "fields": {
         "fieldId": {
           "label": "ID del Campo",
@@ -318,13 +340,26 @@
           "label": "Campo obligatorio"
         }
       },
+      "fieldTypes": {
+        "text": "Texto",
+        "climate_data_puntual": "Datos Climáticos",
+        "list": "Lista",
+        "select": "Selección",
+        "select_with_icons": "Selección con Iconos",
+        "select_background": "Selección con Fondo",
+        "number": "Número",
+        "date": "Fecha",
+        "date_range": "Rango de Fechas",
+        "image_upload": "Subir Imagen",
+        "algorithm": "Algoritmo",
+        "page_number": "Número de Página",
+        "card": "Tarjeta",
+        "background_url": "URL de Fondo"
+      },
       "textConfig": {
-        "subtype": {
-          "label": "Tipo de Texto",
-          "short": "Texto Corto",
-          "long": "Texto Largo",
-          "rich": "Texto Enriquecido"
-        },
+        "subtype": "Tipo de Texto",
+        "short": "Corto",
+        "long": "Largo",
         "placeholder": {
           "label": "Texto de Ejemplo"
         },
@@ -352,18 +387,17 @@
         },
         "decimals": {
           "label": "Lugares Decimales"
-        }
+        },
+        "minValue": "Valor Mínimo",
+        "maxValue": "Valor Máximo",
+        "decimalPlaces": "Lugares Decimales"
       },
       "dateConfig": {
-        "format": {
-          "label": "Formato de Fecha"
-        }
+        "format": "Formato de Fecha"
       },
       "pageNumberConfig": {
-        "format": {
-          "label": "Formato de Página",
-          "help": "Use {page} para página actual y {total} para total de páginas"
-        }
+        "format": "Formato",
+        "help": "Use {page} para página actual y {total} para total de páginas"
       }
     },
     "preview": {
@@ -382,7 +416,11 @@
         "listTitle": "Lista de Ejemplo:",
         "listItems": ["Elemento 1", "Elemento 2", "Elemento 3"],
         "climateTitle": "Datos Climáticos:",
-        "climateData": ["Temperatura: 25°C", "Humedad: 65%", "Precipitación: 15mm"]
+        "climateData": [
+          "Temperatura: 25°C",
+          "Humedad: 65%",
+          "Precipitación: 15mm"
+        ]
       }
     }
   }

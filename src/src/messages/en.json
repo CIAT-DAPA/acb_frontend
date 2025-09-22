@@ -280,12 +280,34 @@
     "fieldEditor": {
       "title": "Field Editor",
       "basicInfo": "Basic Information",
-      "visibility": "Visibility Options",
-      "validation": "Validation",
-      "specificConfig": "Field-Specific Configuration",
       "save": "Save Changes",
       "cancel": "Cancel",
       "noConfig": "No specific configurations for this field type",
+      "basic": {
+        "fieldId": "Field ID",
+        "displayName": "Display Name",
+        "type": "Field Type",
+        "label": "Label",
+        "description": "Description"
+      },
+      "visibility": {
+        "title": "Visibility",
+        "form": "Show in form for bulletin creation",
+        "bulletin": "Show in final bulletin"
+      },
+      "validation": {
+        "title": "Validation",
+        "required": "Required field",
+        "minLength": "Minimum Length",
+        "maxLength": "Maximum Length"
+      },
+      "specificConfig": {
+        "title": "Specific Configuration"
+      },
+      "actions": {
+        "save": "Save",
+        "cancel": "Cancel"
+      },
       "fields": {
         "fieldId": {
           "label": "Field ID",
@@ -318,13 +340,26 @@
           "label": "Required field"
         }
       },
+      "fieldTypes": {
+        "text": "Text",
+        "climate_data_puntual": "Climate Data",
+        "list": "List",
+        "select": "Select",
+        "select_with_icons": "Select with Icons",
+        "select_background": "Select with Background",
+        "number": "Number",
+        "date": "Date",
+        "date_range": "Date Range",
+        "image_upload": "Image Upload",
+        "algorithm": "Algorithm",
+        "page_number": "Page Number",
+        "card": "Card",
+        "background_url": "Background URL"
+      },
       "textConfig": {
-        "subtype": {
-          "label": "Text Type",
-          "short": "Short Text",
-          "long": "Long Text",
-          "rich": "Rich Text"
-        },
+        "subtype": "Text Type",
+        "short": "Short",
+        "long": "Long",
         "placeholder": {
           "label": "Placeholder"
         },
@@ -352,18 +387,17 @@
         },
         "decimals": {
           "label": "Decimal Places"
-        }
+        },
+        "minValue": "Minimum Value",
+        "maxValue": "Maximum Value",
+        "decimalPlaces": "Decimal Places"
       },
       "dateConfig": {
-        "format": {
-          "label": "Date Format"
-        }
+        "format": "Date Format"
       },
       "pageNumberConfig": {
-        "format": {
-          "label": "Page Format",
-          "help": "Use {page} for current page and {total} for total pages"
-        }
+        "format": "Format",
+        "help": "Use {page} for current page and {total} for total pages"
       }
     },
     "preview": {

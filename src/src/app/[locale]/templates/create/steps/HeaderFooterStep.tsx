@@ -116,14 +116,9 @@ export function HeaderFooterStep({
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          {t("title", { default: "Configuración de Header y Footer" })}
+          {t("title")}
         </h2>
-        <p className="text-gray-600">
-          {t("description", {
-            default:
-              "Configura los campos que aparecerán en el encabezado y pie de página",
-          })}
-        </p>
+        <p className="text-gray-600">{t("description")}</p>
       </div>
 
       {/* Pestañas */}
@@ -137,7 +132,7 @@ export function HeaderFooterStep({
                 : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
             }`}
           >
-            {t("tabs.header", { default: "Header (Encabezado)" })}
+            {t("tabs.header")}
           </button>
           <button
             onClick={() => setActiveConfig("footer")}
@@ -147,7 +142,7 @@ export function HeaderFooterStep({
                 : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
             }`}
           >
-            {t("tabs.footer", { default: "Footer (Pie de página)" })}
+            {t("tabs.footer")}
           </button>
         </nav>
       </div>
@@ -158,26 +153,20 @@ export function HeaderFooterStep({
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h3 className="font-medium text-blue-900 mb-2">
             {activeConfig === "header"
-              ? t("info.header.title", { default: "¿Qué es el Header?" })
-              : t("info.footer.title", { default: "¿Qué es el Footer?" })}
+              ? t("info.header.title")
+              : t("info.footer.title")}
           </h3>
           <p className="text-sm text-blue-800">
             {activeConfig === "header"
-              ? t("info.header.description", {
-                  default:
-                    "El header aparece al inicio de cada página del boletín. Es ideal para títulos, fechas, logos y información general.",
-                })
-              : t("info.footer.description", {
-                  default:
-                    "El footer aparece al final de cada página del boletín. Es perfecto para numeración de páginas, información de contacto y créditos.",
-                })}
+              ? t("info.header.description")
+              : t("info.footer.description")}
           </p>
         </div>
 
         {/* Botón agregar campo */}
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-medium text-gray-900">
-            {t("fields.title", { default: "Campos" })}
+            {t("fields.title")}
           </h3>
           <button
             onClick={() => addField(activeConfig)}
@@ -186,7 +175,7 @@ export function HeaderFooterStep({
                      focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             <Plus className="w-4 h-4 mr-2" />
-            {t("fields.add", { default: "Agregar Campo" })}
+            {t("fields.add")}
           </button>
         </div>
 
@@ -194,14 +183,8 @@ export function HeaderFooterStep({
         <div className="space-y-3">
           {currentConfig?.fields?.length === 0 || !currentConfig?.fields ? (
             <div className="text-center py-8 text-gray-500">
-              <p>
-                {t("fields.empty", { default: "No hay campos configurados" })}
-              </p>
-              <p className="text-sm mt-1">
-                {t("fields.emptyHint", {
-                  default: "Agrega campos para personalizar este componente",
-                })}
-              </p>
+              <p>{t("fields.empty")}</p>
+              <p className="text-sm mt-1">{t("fields.emptyHint")}</p>
             </div>
           ) : (
             currentConfig.fields.map((field, index) => (
@@ -215,7 +198,7 @@ export function HeaderFooterStep({
                       {field.display_name}
                     </h4>
                     <p className="text-sm text-gray-600">
-                      {t("fields.type", { default: "Tipo" })}: {field.type}
+                      {t("fields.type")}: {field.type}
                     </p>
                   </div>
                   <div className="flex space-x-2">
@@ -237,7 +220,7 @@ export function HeaderFooterStep({
                 </div>
                 <div className="text-sm text-gray-600 grid grid-cols-2 gap-2">
                   <div>
-                    {t("fields.form", { default: "Formulario" })}:
+                    {t("fields.form")}:
                     <span
                       className={
                         field.form ? "text-green-600" : "text-gray-500"
@@ -247,7 +230,7 @@ export function HeaderFooterStep({
                     </span>
                   </div>
                   <div>
-                    {t("fields.bulletin", { default: "Boletín" })}:
+                    {t("fields.bulletin")}:
                     <span
                       className={
                         field.bulletin ? "text-green-600" : "text-gray-500"
@@ -269,7 +252,7 @@ export function HeaderFooterStep({
           <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold text-gray-900">
-                {t("editField.title", { default: "Editar Campo" })}
+                {t("editField.title")}
               </h3>
               <button
                 onClick={() => setEditingField(null)}
