@@ -109,6 +109,7 @@ export interface FieldBase {
   form: boolean;
   bulletin: boolean;
   style_config?: StyleConfig;
+  style_manually_edited?: boolean; // Flag para indicar si los estilos han sido editados manualmente
   validation?: ValidationRules;
   field_config?:
     | TextFieldConfig

@@ -9,7 +9,12 @@ import {
   Field,
   FIELD_TYPES,
 } from "../../../../../types/template";
+import { StyleConfig } from "../../../../../types/core";
 import { FieldEditor } from "../components/FieldEditor";
+import {
+  inheritStylesFromContainer,
+  propagateContainerStyleChanges,
+} from "../../../../../utils/styleInheritance";
 
 interface HeaderFooterStepProps {
   data: CreateTemplateData;
@@ -56,8 +61,37 @@ export function HeaderFooterStep({
     [onDataChange]
   );
 
+  const updateHeaderFooterStyle = useCallback(
+    (type: ConfigType, styleUpdates: Partial<StyleConfig>) => {
+      const currentConfig = (data.version.content[
+        `${type}_config` as keyof typeof data.version.content
+      ] as HeaderFooterConfig) || { fields: [] };
+
+      const updatedStyleConfig = {
+        ...(currentConfig.style_config || {}),
+        ...styleUpdates,
+      };
+
+      // Propagar cambios de estilos a campos no editados manualmente
+      const updatedFields = propagateContainerStyleChanges(
+        currentConfig.fields || [],
+        updatedStyleConfig
+      );
+
+      updateHeaderFooterConfig(type, {
+        style_config: updatedStyleConfig,
+        fields: updatedFields,
+      });
+    },
+    [data.version.content, updateHeaderFooterConfig]
+  );
+
   const addField = useCallback(
     (type: ConfigType) => {
+      const currentConfig = (data.version.content[
+        `${type}_config` as keyof typeof data.version.content
+      ] as HeaderFooterConfig) || { fields: [] };
+
       const newField: Field = {
         field_id: `${type}_field_${Date.now()}`,
         display_name: "Nuevo Campo",
@@ -65,14 +99,17 @@ export function HeaderFooterStep({
         form: true,
         bulletin: true,
         field_config: { subtype: "short" },
+        style_manually_edited: false, // Inicialmente no editado manualmente
       };
 
-      const currentConfig = (data.version.content[
-        `${type}_config` as keyof typeof data.version.content
-      ] as HeaderFooterConfig) || { fields: [] };
+      // Aplicar herencia automática de estilos del contenedor
+      const fieldWithInheritedStyles = inheritStylesFromContainer(
+        newField,
+        currentConfig.style_config
+      );
 
       updateHeaderFooterConfig(type, {
-        fields: [...(currentConfig.fields || []), newField],
+        fields: [...(currentConfig.fields || []), fieldWithInheritedStyles],
       });
     },
     [data.version.content, updateHeaderFooterConfig]
@@ -108,9 +145,9 @@ export function HeaderFooterStep({
     [data.version.content, updateHeaderFooterConfig]
   );
 
-  const currentConfig = data.version.content[
+  const currentConfig = (data.version.content[
     `${activeConfig}_config` as keyof typeof data.version.content
-  ] as HeaderFooterConfig;
+  ] as HeaderFooterConfig) || { fields: [] };
 
   return (
     <div className="space-y-6">
@@ -161,6 +198,228 @@ export function HeaderFooterStep({
               ? t("info.header.description")
               : t("info.footer.description")}
           </p>
+        </div>
+
+        {/* Estilos Globales del Header/Footer */}
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
+            {t("globalStyles.title", {
+              default:
+                activeConfig === "header"
+                  ? "Estilos Globales del Encabezado"
+                  : "Estilos Globales del Pie de Página",
+            })}
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t("globalStyles.color", { default: "Color del Texto" })}
+              </label>
+              <input
+                type="color"
+                value={currentConfig.style_config?.primary_color || "#000000"}
+                onChange={(e) =>
+                  updateHeaderFooterStyle(activeConfig, {
+                    primary_color: e.target.value,
+                  })
+                }
+                className="block w-16 h-8 border border-gray-300 rounded cursor-pointer"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t("globalStyles.backgroundColor", {
+                  default: "Color de Fondo",
+                })}
+              </label>
+              <input
+                type="color"
+                value={
+                  currentConfig.style_config?.background_color || "#ffffff"
+                }
+                onChange={(e) =>
+                  updateHeaderFooterStyle(activeConfig, {
+                    background_color: e.target.value,
+                  })
+                }
+                className="block w-16 h-8 border border-gray-300 rounded cursor-pointer"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t("globalStyles.fontSize", {
+                  default: "Tamaño de Fuente (px)",
+                })}
+              </label>
+              <input
+                type="number"
+                min="8"
+                max="72"
+                value={currentConfig.style_config?.font_size || ""}
+                onChange={(e) =>
+                  updateHeaderFooterStyle(activeConfig, {
+                    font_size: parseInt(e.target.value) || undefined,
+                  })
+                }
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                placeholder="16"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t("globalStyles.textAlign", {
+                  default: "Alineación del Texto",
+                })}
+              </label>
+              <select
+                value={currentConfig.style_config?.text_align || "left"}
+                onChange={(e) =>
+                  updateHeaderFooterStyle(activeConfig, {
+                    text_align: e.target.value as "left" | "center" | "right",
+                  })
+                }
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="left">
+                  {t("globalStyles.alignOptions.left", {
+                    default: "Izquierda",
+                  })}
+                </option>
+                <option value="center">
+                  {t("globalStyles.alignOptions.center", { default: "Centro" })}
+                </option>
+                <option value="right">
+                  {t("globalStyles.alignOptions.right", { default: "Derecha" })}
+                </option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t("globalStyles.borderColor", { default: "Color del Borde" })}
+              </label>
+              <input
+                type="color"
+                value={currentConfig.style_config?.border_color || "#000000"}
+                onChange={(e) =>
+                  updateHeaderFooterStyle(activeConfig, {
+                    border_color: e.target.value,
+                  })
+                }
+                className="block w-16 h-8 border border-gray-300 rounded cursor-pointer"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t("globalStyles.borderWidth", { default: "Grosor del Borde" })}
+              </label>
+              <input
+                type="text"
+                value={currentConfig.style_config?.border_width || ""}
+                onChange={(e) =>
+                  updateHeaderFooterStyle(activeConfig, {
+                    border_width: e.target.value,
+                  })
+                }
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                placeholder="1px"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t("globalStyles.borderRadius", { default: "Redondeado" })}
+              </label>
+              <input
+                type="text"
+                value={currentConfig.style_config?.border_radius || ""}
+                onChange={(e) =>
+                  updateHeaderFooterStyle(activeConfig, {
+                    border_radius: e.target.value,
+                  })
+                }
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                placeholder="0px"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t("globalStyles.padding", { default: "Espaciado Interno" })}
+              </label>
+              <input
+                type="text"
+                value={currentConfig.style_config?.padding || ""}
+                onChange={(e) =>
+                  updateHeaderFooterStyle(activeConfig, {
+                    padding: e.target.value,
+                  })
+                }
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                placeholder="16px"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t("globalStyles.margin", { default: "Espaciado Externo" })}
+              </label>
+              <input
+                type="text"
+                value={currentConfig.style_config?.margin || ""}
+                onChange={(e) =>
+                  updateHeaderFooterStyle(activeConfig, {
+                    margin: e.target.value,
+                  })
+                }
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                placeholder="0px"
+              />
+            </div>
+          </div>
+          <p className="mt-2 text-xs text-gray-500">
+            {t("globalStyles.help", {
+              default:
+                "Estos estilos se aplicarán a todo el " +
+                (activeConfig === "header" ? "encabezado" : "pie de página") +
+                ". Los estilos individuales de los campos pueden sobrescribir estos valores.",
+            })}
+          </p>
+        </div>
+
+        {/* Configuración de Layout */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
+            {t("layout.title", { 
+              default: activeConfig === "header" 
+                ? "Disposición de Campos del Encabezado" 
+                : "Disposición de Campos del Pie de Página"
+            })}
+          </h3>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t("layout.fieldsLayout.label", { default: "Organización de campos" })}
+            </label>
+            <select
+              value={currentConfig.style_config?.fields_layout || "horizontal"}
+              onChange={(e) =>
+                updateHeaderFooterStyle(activeConfig, {
+                  fields_layout: e.target.value as "horizontal" | "vertical"
+                })
+              }
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
+                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="horizontal">
+                {t("layout.fieldsLayout.options.horizontal", { default: "Horizontal (uno al lado del otro)" })}
+              </option>
+              <option value="vertical">
+                {t("layout.fieldsLayout.options.vertical", { default: "Vertical (uno debajo del otro)" })}
+              </option>
+            </select>
+            <p className="mt-2 text-xs text-gray-500">
+              {t("layout.fieldsLayout.help", {
+                default: `Define cómo se organizarán los campos del ${activeConfig === "header" ? "encabezado" : "pie de página"}.`
+              })}
+            </p>
+          </div>
         </div>
 
         {/* Botón agregar campo */}
@@ -264,6 +523,7 @@ export function HeaderFooterStep({
 
             <FieldEditor
               field={currentConfig.fields![editingField.index]}
+              containerStyle={currentConfig.style_config}
               onFieldChange={(updatedField: Field) =>
                 updateField(editingField.type, editingField.index, updatedField)
               }

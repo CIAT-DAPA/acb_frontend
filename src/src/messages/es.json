@@ -171,6 +171,16 @@
           "placeholder": "Describe los cambios de esta versión..."
         }
       },
+      "dimensions": {
+        "title": "Dimensiones del Boletín",
+        "width": {
+          "label": "Ancho (px)"
+        },
+        "height": {
+          "label": "Alto (px)"
+        },
+        "help": "Define el tamaño del boletín. Los valores por defecto son 638x366 píxeles."
+      },
       "styles": {
         "title": "Estilos Globales",
         "font": {
@@ -240,6 +250,35 @@
       },
       "editField": {
         "title": "Editar Campo"
+      },
+      "globalStyles": {
+        "title": "Estilos Globales",
+        "color": "Color del Texto",
+        "backgroundColor": "Color de Fondo",
+        "fontSize": "Tamaño de Fuente (px)",
+        "textAlign": "Alineación del Texto",
+        "borderColor": "Color del Borde",
+        "borderWidth": "Grosor del Borde",
+        "borderRadius": "Redondeado",
+        "padding": "Espaciado Interno",
+        "margin": "Espaciado Externo",
+        "help": "Estos estilos se aplicarán a todo el componente. Los estilos individuales de los campos pueden sobrescribir estos valores.",
+        "alignOptions": {
+          "left": "Izquierda",
+          "center": "Centro",
+          "right": "Derecha"
+        }
+      },
+      "layout": {
+        "title": "Disposición de Campos",
+        "fieldsLayout": {
+          "label": "Organización de campos",
+          "options": {
+            "horizontal": "Horizontal (uno al lado del otro)",
+            "vertical": "Vertical (uno debajo del otro)"
+          },
+          "help": "Define cómo se organizarán los campos del componente."
+        }
       }
     },
     "sections": {
@@ -398,6 +437,28 @@
       "pageNumberConfig": {
         "format": "Formato",
         "help": "Use {page} para página actual y {total} para total de páginas"
+      },
+      "value": {
+        "title": "Valor del Campo",
+        "label": "Valor",
+        "placeholder": "Valor que se mostrará en el boletín",
+        "help": "Como este campo no aparece en el formulario, debes definir aquí el valor que se mostrará"
+      },
+      "styleConfig": {
+        "title": "Estilos del Campo",
+        "color": "Color del Texto",
+        "fontSize": "Tamaño de Fuente (px)",
+        "textAlign": "Alineación del Texto",
+        "borderColor": "Color del Borde",
+        "borderWidth": "Grosor del Borde (px)",
+        "borderRadius": "Redondeado (px)",
+        "padding": "Padding (CSS)",
+        "margin": "Margin (CSS)",
+        "alignOptions": {
+          "left": "Izquierda",
+          "center": "Centro",
+          "right": "Derecha"
+        }
       }
     },
     "preview": {
@@ -407,6 +468,7 @@
       "noDescription": "Sin descripción",
       "header": "ENCABEZADO",
       "footer": "PIE DE PÁGINA",
+      "noSections": "No hay secciones configuradas",
       "emptySection": "Sección vacía",
       "emptyBlock": "Bloque vacío",
       "sampleData": {

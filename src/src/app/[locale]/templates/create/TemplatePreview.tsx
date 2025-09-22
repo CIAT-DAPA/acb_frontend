@@ -4,6 +4,7 @@ import React from "react";
 import { useTranslations } from "next-intl";
 import { CreateTemplateData, Field } from "../../../../types/template";
 import { StyleConfig } from "../../../../types/core";
+import { getEffectiveFieldStyles } from "../../../../utils/styleInheritance";
 
 interface TemplatePreviewProps {
   data: CreateTemplateData;
@@ -46,24 +47,52 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
     return "";
   };
 
-  const renderField = (field: Field, key: string | number) => {
+  const renderField = (
+    field: Field,
+    key: string | number,
+    containerStyle?: StyleConfig,
+    layout: "vertical" | "horizontal" = "vertical"
+  ) => {
+    // Usar herencia de estilos
+    const effectiveStyles = getEffectiveFieldStyles(field, containerStyle);
+
     const fieldStyles = {
       ...globalStyles,
-      color:
-        field.style_config?.color || styleConfig?.primary_color || "#000000",
-      fontSize: field.style_config?.font_size
-        ? `${field.style_config.font_size}px`
-        : undefined,
+      color: effectiveStyles.primary_color || globalStyles.color,
+      fontSize: effectiveStyles.font_size
+        ? `${effectiveStyles.font_size}px`
+        : globalStyles.fontSize,
       textAlign:
-        (field.style_config?.text_align as "left" | "center" | "right") ||
+        (effectiveStyles.text_align as "left" | "center" | "right") ||
         globalStyles.textAlign,
-      ...field.style_config,
+      backgroundColor: effectiveStyles.background_color,
+      padding: effectiveStyles.padding,
+      margin: effectiveStyles.margin,
+      ...(effectiveStyles.border_width && {
+        border: `${effectiveStyles.border_width} solid ${
+          effectiveStyles.border_color || "#000000"
+        }`,
+      }),
+      ...(effectiveStyles.border_radius && {
+        borderRadius: effectiveStyles.border_radius,
+      }),
     };
+
+    // Debug temporal para verificar estilos
+    if (effectiveStyles.border_width) {
+      console.log("Field with border:", field.display_name, {
+        border_width: effectiveStyles.border_width,
+        border_color: effectiveStyles.border_color,
+        finalBorder: `${effectiveStyles.border_width} solid ${
+          effectiveStyles.border_color || "#000000"
+        }`,
+      });
+    }
 
     switch (field.type) {
       case "text":
         return (
-          <div key={key} className="mb-2" style={fieldStyles}>
+          <div key={key} style={fieldStyles}>
             {renderFieldValue(field.value) ||
               field.display_name ||
               field.label ||
@@ -73,7 +102,7 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
 
       case "date":
         return (
-          <div key={key} className="mb-2" style={fieldStyles}>
+          <div key={key} style={fieldStyles}>
             <span className="text-sm text-gray-600">
               {field.label || field.display_name}:
             </span>
@@ -85,7 +114,7 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
 
       case "date_range":
         return (
-          <div key={key} className="mb-2" style={fieldStyles}>
+          <div key={key} style={fieldStyles}>
             <span className="text-sm text-gray-600">
               {field.label || field.display_name}:
             </span>
@@ -108,14 +137,17 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
           .replace("{page}", "1")
           .replace("{total}", "1");
         return (
-          <div key={key} className="mb-2" style={fieldStyles}>
+          <div key={key} style={fieldStyles}>
             {pageNumber}
           </div>
         );
 
       case "list":
         return (
-          <div key={key} className="mb-4" style={fieldStyles}>
+          <div
+            key={key}
+            style={fieldStyles}
+          >
             <div className="font-medium mb-2">
               {field.label || field.display_name}
             </div>
@@ -128,7 +160,11 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
 
       case "climate_data_puntual":
         return (
-          <div key={key} className="mb-4" style={fieldStyles}>
+          <div
+            key={key}
+            className={layout === "horizontal" ? "" : "mb-4"}
+            style={fieldStyles}
+          >
             <div className="font-medium mb-2">
               {field.label || field.display_name}
             </div>
@@ -141,7 +177,7 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
 
       default:
         return (
-          <div key={key} className="mb-2" style={fieldStyles}>
+          <div key={key} style={fieldStyles}>
             [{field.type}] {field.display_name}
           </div>
         );
@@ -167,31 +203,67 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
       </div>
 
       {/* Preview del documento */}
-      <div className="border-2 border-gray-300 rounded-lg overflow-hidden">
-        <div className="bg-white min-h-[600px] p-6" style={globalStyles}>
+      <div className="border-2 border-gray-300 rounded-lg overflow-hidden inline-block">
+        <div
+          className="bg-white flex flex-col"
+          style={{
+            ...globalStyles,
+            width: `${styleConfig?.bulletin_width || 366}px`,
+            height: `${styleConfig?.bulletin_height || 638}px`,
+            padding: 0,
+            overflow: "auto",
+          }}
+        >
           {/* Header Global */}
           {headerConfig &&
             headerConfig.fields &&
             headerConfig.fields.length > 0 && (
               <div
-                className="border-b border-gray-200 pb-4 mb-6"
+                className={`border-b border-gray-200 pb-4 mb-6 w-full px-4 pt-4 ${
+                  headerConfig.style_config?.fields_layout === "vertical" 
+                    ? "flex flex-col space-y-2" 
+                    : "flex items-center space-x-4"
+                }`}
                 style={{
+                  backgroundColor:
+                    headerConfig.style_config?.background_color ||
+                    "transparent",
+                  color:
+                    headerConfig.style_config?.primary_color ||
+                    globalStyles.color,
+                  fontSize: headerConfig.style_config?.font_size
+                    ? `${headerConfig.style_config.font_size}px`
+                    : globalStyles.fontSize,
                   textAlign:
                     (headerConfig.style_config?.text_align as
                       | "left"
                       | "center"
                       | "right") || "center",
+                  padding: headerConfig.style_config?.padding || "0",
+                  margin: headerConfig.style_config?.margin,
+                  ...(headerConfig.style_config?.border_width && {
+                    border: `${headerConfig.style_config.border_width} solid ${
+                      headerConfig.style_config.border_color || "#000000"
+                    }`,
+                  }),
+                  ...(headerConfig.style_config?.border_radius && {
+                    borderRadius: headerConfig.style_config.border_radius,
+                  }),
                 }}
               >
-                <div className="text-sm text-gray-500 mb-2">HEADER</div>
                 {headerConfig.fields.map((field, index) =>
-                  renderField(field, index)
+                  renderField(
+                    field,
+                    index,
+                    headerConfig.style_config,
+                    headerConfig.style_config?.fields_layout || "horizontal"
+                  )
                 )}
               </div>
             )}
 
           {/* Secciones */}
-          <div className="space-y-8">
+          <div className="space-y-8 flex-1 px-4">
             {sections.length === 0 ? (
               <div className="text-center py-12 text-gray-400">
                 <div className="text-4xl mb-4">📄</div>
@@ -205,14 +277,14 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
               sections.map((section, sectionIndex) => (
                 <div
                   key={`preview-section-${sectionIndex}`}
-                  className="section-preview"
+                  className="section-preview w-full"
                 >
                   {/* Header de sección */}
                   {section.header_config &&
                     section.header_config.fields &&
                     section.header_config.fields.length > 0 && (
                       <div
-                        className="mb-4 p-3 bg-gray-50 rounded"
+                        className="mb-4 p-3 bg-gray-50 rounded w-full"
                         style={{
                           textAlign:
                             (section.header_config.style_config?.text_align as
@@ -225,7 +297,11 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
                           HEADER DE SECCIÓN
                         </div>
                         {section.header_config.fields.map((field, index) =>
-                          renderField(field, `sh-${sectionIndex}-${index}`)
+                          renderField(
+                            field,
+                            `sh-${sectionIndex}-${index}`,
+                            section.header_config?.style_config
+                          )
                         )}
                       </div>
                     )}
@@ -251,7 +327,7 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
                   </div>
 
                   {/* Bloques de la sección */}
-                  <div className="space-y-6">
+                  <div className="space-y-6 w-full">
                     {section.blocks.length === 0 ? (
                       <div className="text-sm text-gray-500 italic pl-4">
                         No hay bloques en esta sección
@@ -260,7 +336,7 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
                       section.blocks.map((block, blockIndex) => (
                         <div
                           key={`preview-block-${sectionIndex}-${blockIndex}`}
-                          className="border-l-4 border-gray-200 pl-4"
+                          className="border-l-4 border-gray-200 pl-4 w-full"
                         >
                           <h3
                             className="font-semibold mb-3 text-lg"
@@ -283,7 +359,8 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
                                 .map((field, fieldIndex) =>
                                   renderField(
                                     field,
-                                    `preview-field-${sectionIndex}-${blockIndex}-${fieldIndex}`
+                                    `preview-field-${sectionIndex}-${blockIndex}-${fieldIndex}`,
+                                    section.style_config // Los campos en bloques heredan del estilo de la sección
                                   )
                                 )
                             )}
@@ -302,18 +379,45 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
             footerConfig.fields &&
             footerConfig.fields.length > 0 && (
               <div
-                className="border-t border-gray-200 pt-4 mt-8"
+                className={`border-t border-gray-200 pt-4 mt-8 w-full px-4 pb-4 ${
+                  footerConfig.style_config?.fields_layout === "vertical" 
+                    ? "flex flex-col space-y-2" 
+                    : "flex items-center space-x-4"
+                }`}
                 style={{
+                  backgroundColor:
+                    footerConfig.style_config?.background_color ||
+                    "transparent",
+                  color:
+                    footerConfig.style_config?.primary_color ||
+                    globalStyles.color,
+                  fontSize: footerConfig.style_config?.font_size
+                    ? `${footerConfig.style_config.font_size}px`
+                    : globalStyles.fontSize,
                   textAlign:
                     (footerConfig.style_config?.text_align as
                       | "left"
                       | "center"
                       | "right") || "center",
+                  padding: footerConfig.style_config?.padding || "0",
+                  margin: footerConfig.style_config?.margin,
+                  ...(footerConfig.style_config?.border_width && {
+                    border: `${footerConfig.style_config.border_width} solid ${
+                      footerConfig.style_config.border_color || "#000000"
+                    }`,
+                  }),
+                  ...(footerConfig.style_config?.border_radius && {
+                    borderRadius: footerConfig.style_config.border_radius,
+                  }),
                 }}
               >
-                <div className="text-sm text-gray-500 mb-2">FOOTER</div>
                 {footerConfig.fields.map((field, index) =>
-                  renderField(field, `footer-${index}`)
+                  renderField(
+                    field,
+                    `footer-${index}`,
+                    footerConfig.style_config,
+                    footerConfig.style_config?.fields_layout || "horizontal"
+                  )
                 )}
               </div>
             )}

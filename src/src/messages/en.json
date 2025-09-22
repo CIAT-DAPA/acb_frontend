@@ -171,6 +171,16 @@
           "placeholder": "Describe the changes in this version..."
         }
       },
+      "dimensions": {
+        "title": "Bulletin Dimensions",
+        "width": {
+          "label": "Width (px)"
+        },
+        "height": {
+          "label": "Height (px)"
+        },
+        "help": "Define the bulletin size. Default values are 638x366 pixels."
+      },
       "styles": {
         "title": "Global Styles",
         "font": {
@@ -240,6 +250,35 @@
       },
       "editField": {
         "title": "Edit Field"
+      },
+      "globalStyles": {
+        "title": "Global Styles",
+        "color": "Text Color",
+        "backgroundColor": "Background Color",
+        "fontSize": "Font Size (px)",
+        "textAlign": "Text Alignment",
+        "borderColor": "Border Color",
+        "borderWidth": "Border Width",
+        "borderRadius": "Border Radius",
+        "padding": "Padding",
+        "margin": "Margin",
+        "help": "These styles will be applied to the entire component. Individual field styles can override these values.",
+        "alignOptions": {
+          "left": "Left",
+          "center": "Center",
+          "right": "Right"
+        }
+      },
+      "layout": {
+        "title": "Fields Layout",
+        "fieldsLayout": {
+          "label": "Fields organization",
+          "options": {
+            "horizontal": "Horizontal (side by side)",
+            "vertical": "Vertical (one below the other)"
+          },
+          "help": "Define how fields will be organized within the component."
+        }
       }
     },
     "sections": {
@@ -398,6 +437,28 @@
       "pageNumberConfig": {
         "format": "Format",
         "help": "Use {page} for current page and {total} for total pages"
+      },
+      "value": {
+        "title": "Field Value",
+        "label": "Value",
+        "placeholder": "Value to display in the bulletin",
+        "help": "Since this field doesn't appear in the form, you must define here the value that will be shown"
+      },
+      "styleConfig": {
+        "title": "Field Styles",
+        "color": "Text Color",
+        "fontSize": "Font Size (px)",
+        "textAlign": "Text Alignment",
+        "borderColor": "Border Color",
+        "borderWidth": "Border Width (px)",
+        "borderRadius": "Border Radius (px)",
+        "padding": "Padding (CSS)",
+        "margin": "Margin (CSS)",
+        "alignOptions": {
+          "left": "Left",
+          "center": "Center",
+          "right": "Right"
+        }
       }
     },
     "preview": {
@@ -407,6 +468,7 @@
       "noDescription": "No description",
       "header": "HEADER",
       "footer": "FOOTER",
+      "noSections": "No sections configured",
       "emptySection": "Empty section",
       "emptyBlock": "Empty block",
       "sampleData": {

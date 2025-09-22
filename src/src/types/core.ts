@@ -24,6 +24,12 @@ export interface StyleConfig {
   margin?: string;
   primary_color?: string;
   secondary_color?: string;
+  border_color?: string;
+  border_width?: string;
+  border_radius?: string;
+  bulletin_width?: number; // Ancho del boletín en píxeles
+  bulletin_height?: number; // Alto del boletín en píxeles
+  fields_layout?: "horizontal" | "vertical"; // Layout de los campos
   [key: string]: string | number | boolean | undefined; // Para propiedades adicionales
 }
 

@@ -97,6 +97,68 @@ export function GeneralConfigStep({
           />
         </div>
 
+        {/* Dimensiones del Boletín */}
+        <div>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
+            {t("dimensions.title", { default: "Dimensiones del Boletín" })}
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label
+                htmlFor="bulletin_width"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                {t("dimensions.width.label", { default: "Ancho (px)" })}
+              </label>
+              <input
+                type="number"
+                id="bulletin_width"
+                min="200"
+                max="1200"
+                value={currentStyleConfig.bulletin_width || 366}
+                onChange={(e) =>
+                  updateStyleConfig({
+                    bulletin_width: parseInt(e.target.value) || 366,
+                  })
+                }
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
+                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="bulletin_height"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                {t("dimensions.height.label", { default: "Alto (px)" })}
+              </label>
+              <input
+                type="number"
+                id="bulletin_height"
+                min="200"
+                max="1200"
+                value={currentStyleConfig.bulletin_height || 638}
+                onChange={(e) =>
+                  updateStyleConfig({
+                    bulletin_height: parseInt(e.target.value) || 638,
+                  })
+                }
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
+                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          </div>
+
+          <p className="mt-2 text-xs text-gray-500">
+            {t("dimensions.help", {
+              default:
+                "Define el tamaño del boletín. Los valores por defecto son 638x366 píxeles.",
+            })}
+          </p>
+        </div>
+
         {/* Estilos Globales */}
         <div>
           <h3 className="text-lg font-medium text-gray-900 mb-4">
