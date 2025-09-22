@@ -72,14 +72,9 @@ export function GeneralConfigStep({
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          {t("title", { default: "Configuración General" })}
+          {t("title")}
         </h2>
-        <p className="text-gray-600">
-          {t("description", {
-            default:
-              "Define los estilos globales que se aplicarán a toda la plantilla",
-          })}
-        </p>
+        <p className="text-gray-600">{t("description")}</p>
       </div>
 
       <div className="space-y-6">
@@ -89,7 +84,7 @@ export function GeneralConfigStep({
             htmlFor="commit_message"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            {t("fields.commitMessage.label", { default: "Mensaje de Versión" })}
+            {t("fields.commitMessage.label")}
           </label>
           <textarea
             id="commit_message"
@@ -98,16 +93,14 @@ export function GeneralConfigStep({
             onChange={handleCommitMessageChange}
             className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
                      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder={t("fields.commitMessage.placeholder", {
-              default: "Describe los cambios de esta versión...",
-            })}
+            placeholder={t("fields.commitMessage.placeholder")}
           />
         </div>
 
         {/* Estilos Globales */}
         <div>
           <h3 className="text-lg font-medium text-gray-900 mb-4">
-            {t("styles.title", { default: "Estilos Globales" })}
+            {t("styles.title")}
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -117,7 +110,7 @@ export function GeneralConfigStep({
                 htmlFor="font"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                {t("styles.font.label", { default: "Fuente" })}
+                {t("styles.font.label")}
               </label>
               <select
                 id="font"
@@ -140,7 +133,7 @@ export function GeneralConfigStep({
                 htmlFor="primary_color"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                {t("styles.primaryColor.label", { default: "Color Primario" })}
+                {t("styles.primaryColor.label")}
               </label>
               <div className="flex space-x-2">
                 <input
@@ -171,9 +164,7 @@ export function GeneralConfigStep({
                 htmlFor="secondary_color"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                {t("styles.secondaryColor.label", {
-                  default: "Color Secundario",
-                })}
+                {t("styles.secondaryColor.label")}
               </label>
               <div className="flex space-x-2">
                 <input
@@ -204,9 +195,7 @@ export function GeneralConfigStep({
                 htmlFor="background_color"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                {t("styles.backgroundColor.label", {
-                  default: "Color de Fondo",
-                })}
+                {t("styles.backgroundColor.label")}
               </label>
               <div className="flex space-x-2">
                 <input
@@ -237,10 +226,7 @@ export function GeneralConfigStep({
                 htmlFor="font_size"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                {t("styles.fontSize.label", {
-                  default: "Tamaño de Fuente Base",
-                })}{" "}
-                (px)
+                {t("styles.fontSize.label")}
               </label>
               <input
                 type="number"
@@ -264,9 +250,7 @@ export function GeneralConfigStep({
                 htmlFor="text_align"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                {t("styles.textAlign.label", {
-                  default: "Alineación de Texto",
-                })}
+                {t("styles.textAlign.label")}
               </label>
               <select
                 id="text_align"
@@ -280,13 +264,13 @@ export function GeneralConfigStep({
                          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="left">
-                  {t("styles.textAlign.options.left", { default: "Izquierda" })}
+                  {t("styles.textAlign.options.left")}
                 </option>
                 <option value="center">
-                  {t("styles.textAlign.options.center", { default: "Centro" })}
+                  {t("styles.textAlign.options.center")}
                 </option>
                 <option value="right">
-                  {t("styles.textAlign.options.right", { default: "Derecha" })}
+                  {t("styles.textAlign.options.right")}
                 </option>
               </select>
             </div>
@@ -296,7 +280,7 @@ export function GeneralConfigStep({
         {/* Vista Previa de Estilos */}
         <div>
           <h3 className="text-lg font-medium text-gray-900 mb-4">
-            {t("preview.title", { default: "Vista Previa de Estilos" })}
+            {t("preview.title")}
           </h3>
           <div
             className="p-6 border rounded-lg"
@@ -316,27 +300,20 @@ export function GeneralConfigStep({
               className="text-xl font-bold mb-2"
               style={{ color: currentStyleConfig.primary_color }}
             >
-              {t("preview.title", { default: "Título de Ejemplo" })}
+              {t("preview.title")}
             </h4>
             <h5
               className="text-lg font-semibold mb-2"
               style={{ color: currentStyleConfig.secondary_color }}
             >
-              {t("preview.subtitle", { default: "Subtítulo de Ejemplo" })}
+              {t("preview.subtitle")}
             </h5>
-            <p className="mb-2">
-              {t("preview.text", {
-                default:
-                  "Este es un texto de ejemplo para mostrar cómo se verán los estilos aplicados a tu plantilla.",
-              })}
-            </p>
+            <p className="mb-2">{t("preview.text")}</p>
             <p
               className="text-sm"
               style={{ color: currentStyleConfig.secondary_color }}
             >
-              {t("preview.smallText", {
-                default: "Texto secundario con color secundario aplicado.",
-              })}
+              {t("preview.smallText")}
             </p>
           </div>
         </div>

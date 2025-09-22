@@ -16,8 +16,7 @@
     "animatedWords": {
       "word1": "información climática",
       "word2": "recomendaciones",
-      "word3": "pronósticos",
-      "word4": "alertas tempranas"
+      "word3": "pronósticos"
     }
   },
   "Features": {
@@ -369,6 +368,7 @@
     },
     "preview": {
       "title": "Vista Previa de Plantilla",
+      "subtitle": "Así es como se verá tu plantilla",
       "untitled": "Plantilla Sin Título",
       "noDescription": "Sin descripción",
       "header": "ENCABEZADO",

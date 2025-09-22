@@ -266,10 +266,10 @@ export interface TemplateMaster {
 
 // Tipos para el formulario de creación
 export interface CreateTemplateData {
-  master: Omit<TemplateMaster, "_id" | "log" | "current_version_id">;
+  master: Omit<TemplateMaster, "_id" | "current_version_id">;
   version: Omit<
     TemplateVersion,
-    "_id" | "template_master_id" | "log" | "previous_version_id"
+    "_id" | "template_master_id" | "previous_version_id"
   >;
 }
 

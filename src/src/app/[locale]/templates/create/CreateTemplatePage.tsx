@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useTranslations } from "next-intl";
+import { useAuth } from "../../../../hooks/useAuth";
 import {
   Stepper,
   StepContent,
@@ -14,14 +15,12 @@ import {
   TemplateCreationState,
 } from "../../../../types/template";
 
-// Componentes de paso (los crearemos después)
 import { BasicInfoStep } from "./steps/BasicInfoStep";
 import { GeneralConfigStep } from "./steps/GeneralConfigStep";
 import { HeaderFooterStep } from "./steps/HeaderFooterStep";
 import { SectionsStep } from "./steps/SectionsStep";
 import { TemplatePreview } from "./TemplatePreview";
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface CreateTemplatePageProps {
   // Podríamos recibir props como grupos disponibles, usuario actual, etc.
   // Por ahora no necesitamos props específicos
@@ -29,6 +28,7 @@ interface CreateTemplatePageProps {
 
 export default function CreateTemplatePage({}: CreateTemplatePageProps) {
   const t = useTranslations("CreateTemplate");
+  const { userInfo } = useAuth();
 
   // Estado del wizard
   const [creationState, setCreationState] = useState<TemplateCreationState>({
@@ -38,6 +38,10 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
         template_name: "",
         description: "",
         status: "borrador",
+        log: {
+          created_at: new Date().toISOString(),
+          creator_user_id: "",
+        },
         access_config: {
           access_type: "public",
           allowed_groups: [],
@@ -46,6 +50,10 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
       version: {
         version_num: 1,
         commit_message: "Versión inicial",
+        log: {
+          created_at: new Date().toISOString(),
+          creator_user_id: "",
+        },
         content: {
           style_config: {
             font: "Arial",
@@ -61,6 +69,40 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
     isValid: false,
   });
 
+  // Actualizar creator_user_id cuando userInfo esté disponible
+  useEffect(() => {
+    if (
+      userInfo?.sub &&
+      (!creationState.data.master.log.creator_user_id ||
+        !creationState.data.version.log.creator_user_id)
+    ) {
+      setCreationState((prev) => ({
+        ...prev,
+        data: {
+          ...prev.data,
+          master: {
+            ...prev.data.master,
+            log: {
+              ...prev.data.master.log,
+              creator_user_id: userInfo.sub!,
+            },
+          },
+          version: {
+            ...prev.data.version,
+            log: {
+              ...prev.data.version.log,
+              creator_user_id: userInfo.sub!,
+            },
+          },
+        },
+      }));
+    }
+  }, [
+    userInfo?.sub,
+    creationState.data.master.log.creator_user_id,
+    creationState.data.version.log.creator_user_id,
+  ]);
+
   const [isLoading, setIsLoading] = useState(false);
 
   // Configuración de pasos
@@ -68,31 +110,23 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
     () => [
       {
         id: "basic-info",
-        title: t("steps.basicInfo.title", { default: "Info Básica" }),
-        description: t("steps.basicInfo.description", {
-          default: "Nombre y descripción",
-        }),
+        title: t("steps.basicInfo.title"),
+        description: t("steps.basicInfo.description"),
       },
       {
         id: "general-config",
-        title: t("steps.generalConfig.title", { default: "Config General" }),
-        description: t("steps.generalConfig.description", {
-          default: "Estilos globales",
-        }),
+        title: t("steps.generalConfig.title"),
+        description: t("steps.generalConfig.description"),
       },
       {
         id: "header-footer",
-        title: t("steps.headerFooter.title", { default: "Header/Footer" }),
-        description: t("steps.headerFooter.description", {
-          default: "Encabezados y pie",
-        }),
+        title: t("steps.headerFooter.title"),
+        description: t("steps.headerFooter.description"),
       },
       {
         id: "sections",
-        title: t("steps.sections.title", { default: "Secciones" }),
-        description: t("steps.sections.description", {
-          default: "Contenido principal",
-        }),
+        title: t("steps.sections.title"),
+        description: t("steps.sections.description"),
       },
     ],
     [t]
@@ -213,16 +247,10 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       // Redirigir o mostrar mensaje de éxito
-      alert(
-        t("success.templateCreated", {
-          default: "Plantilla creada exitosamente",
-        })
-      );
+      alert(t("success.templateCreated"));
     } catch (error) {
       console.error("Error creando plantilla:", error);
-      alert(
-        t("error.createFailed", { default: "Error al crear la plantilla" })
-      );
+      alert(t("error.createFailed"));
     } finally {
       setIsLoading(false);
     }
@@ -233,15 +261,8 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            {t("title", { default: "Crear Nueva Plantilla" })}
-          </h1>
-          <p className="mt-2 text-gray-600">
-            {t("subtitle", {
-              default:
-                "Configura tu plantilla paso a paso con vista previa en tiempo real",
-            })}
-          </p>
+          <h1 className="text-3xl font-bold text-gray-900">{t("title")}</h1>
+          <p className="mt-2 text-gray-600">{t("subtitle")}</p>
         </div>
 
         {/* Stepper */}
@@ -297,13 +318,9 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
                 onFinish={handleFinish}
                 isNextDisabled={!isCurrentStepValid}
                 isLoading={isLoading}
-                nextLabel={t("navigation.next", { default: "Siguiente" })}
-                previousLabel={t("navigation.previous", {
-                  default: "Anterior",
-                })}
-                finishLabel={t("navigation.finish", {
-                  default: "Crear Plantilla",
-                })}
+                nextLabel={t("navigation.next")}
+                previousLabel={t("navigation.previous")}
+                finishLabel={t("navigation.finish")}
               />
             </div>
           </div>
@@ -313,13 +330,9 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
             <div className="bg-white rounded-lg shadow-lg p-6 sticky top-8">
               <div className="mb-4">
                 <h2 className="text-lg font-semibold text-gray-900">
-                  {t("preview.title", { default: "Vista Previa" })}
+                  {t("preview.title")}
                 </h2>
-                <p className="text-sm text-gray-600">
-                  {t("preview.subtitle", {
-                    default: "Ve cómo queda tu plantilla en tiempo real",
-                  })}
-                </p>
+                <p className="text-sm text-gray-600">{t("preview.subtitle")}</p>
               </div>
 
               <TemplatePreview data={creationState.data} />

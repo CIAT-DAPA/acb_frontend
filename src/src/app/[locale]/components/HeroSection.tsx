@@ -21,8 +21,7 @@ export function HeroSection() {
   const words = [
     t("animatedWords.word1"),
     t("animatedWords.word2"),
-    t("animatedWords.word3"),
-    t("animatedWords.word4"),
+    t("animatedWords.word3")
   ];
   return (
     <section className={heroSection}>

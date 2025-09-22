@@ -16,8 +16,7 @@
     "animatedWords": {
       "word1": "climate information",
       "word2": "recommendations",
-      "word3": "forecasts",
-      "word4": "early warnings"
+      "word3": "forecasts"
     }
   },
   "Features": {
@@ -369,6 +368,7 @@
     },
     "preview": {
       "title": "Template Preview",
+      "subtitle": "This is how your template will look",
       "untitled": "Untitled Template",
       "noDescription": "No description",
       "header": "HEADER",
