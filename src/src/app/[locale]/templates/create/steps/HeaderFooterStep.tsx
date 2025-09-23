@@ -152,10 +152,10 @@ export function HeaderFooterStep({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        <h2 className="text-xl font-semibold text-[#283618] mb-4">
           {t("title")}
         </h2>
-        <p className="text-gray-600">{t("description")}</p>
+        <p className="text-[#283618]">{t("description")}</p>
       </div>
 
       {/* Pestañas */}
@@ -163,20 +163,20 @@ export function HeaderFooterStep({
         <nav className="-mb-px flex space-x-8">
           <button
             onClick={() => setActiveConfig("header")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+            className={`py-2 px-1 border-b-2 font-medium text-sm cursor-pointer ${
               activeConfig === "header"
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                ? "border-[#bc6c25] text-[#bc6c25]"
+                : "border-transparent text-[#283618]/50 hover:text-[#283618] hover:border-[#bc6c25]"
             }`}
           >
             {t("tabs.header")}
           </button>
           <button
             onClick={() => setActiveConfig("footer")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+            className={`py-2 px-1 border-b-2 font-medium text-sm cursor-pointer ${
               activeConfig === "footer"
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                ? "border-[#bc6c25] text-[#bc6c25]"
+                : "border-transparent text-[#283618]/50 hover:text-[#283618] hover:border-[#bc6c25]"
             }`}
           >
             {t("tabs.footer")}
@@ -187,13 +187,13 @@ export function HeaderFooterStep({
       {/* Configuración activa */}
       <div className="space-y-4">
         {/* Información */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="font-medium text-blue-900 mb-2">
+        <div className="bg-orange-50 border border-[#bc6c25] rounded-lg p-4">
+          <h3 className="font-medium text-[#283618] mb-2">
             {activeConfig === "header"
               ? t("info.header.title")
               : t("info.footer.title")}
           </h3>
-          <p className="text-sm text-blue-800">
+          <p className="text-sm text-[#283618]">
             {activeConfig === "header"
               ? t("info.header.description")
               : t("info.footer.description")}
@@ -201,19 +201,14 @@ export function HeaderFooterStep({
         </div>
 
         {/* Estilos Globales del Header/Footer */}
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
-            {t("globalStyles.title", {
-              default:
-                activeConfig === "header"
-                  ? "Estilos Globales del Encabezado"
-                  : "Estilos Globales del Pie de Página",
-            })}
+        <div className="bg-green-50 border border-[#283618] rounded-lg p-4">
+          <h3 className="text-lg font-medium text-[#283618] mb-4">
+            {t("globalStyles.title")}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t("globalStyles.color", { default: "Color del Texto" })}
+              <label className="block text-sm font-medium text-[#283618] mb-2">
+                {t("globalStyles.color")}
               </label>
               <input
                 type="color"
@@ -227,10 +222,8 @@ export function HeaderFooterStep({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t("globalStyles.backgroundColor", {
-                  default: "Color de Fondo",
-                })}
+              <label className="block text-sm font-medium text-[#283618] mb-2">
+                {t("globalStyles.backgroundColor")}
               </label>
               <input
                 type="color"
@@ -246,10 +239,8 @@ export function HeaderFooterStep({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t("globalStyles.fontSize", {
-                  default: "Tamaño de Fuente (px)",
-                })}
+              <label className="block text-sm font-medium text-[#283618] mb-2">
+                {t("globalStyles.fontSize")}
               </label>
               <input
                 type="number"
@@ -261,15 +252,13 @@ export function HeaderFooterStep({
                     font_size: parseInt(e.target.value) || undefined,
                   })
                 }
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#bc6c25] focus:border-[#bc6c25]"
                 placeholder="16"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t("globalStyles.textAlign", {
-                  default: "Alineación del Texto",
-                })}
+              <label className="block text-sm font-medium text-[#283618] mb-2">
+                {t("globalStyles.textAlign")}
               </label>
               <select
                 value={currentConfig.style_config?.text_align || "left"}
@@ -278,24 +267,22 @@ export function HeaderFooterStep({
                     text_align: e.target.value as "left" | "center" | "right",
                   })
                 }
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#bc6c25] focus:border-[#bc6c25]"
               >
                 <option value="left">
-                  {t("globalStyles.alignOptions.left", {
-                    default: "Izquierda",
-                  })}
+                  {t("globalStyles.alignOptions.left")}
                 </option>
                 <option value="center">
-                  {t("globalStyles.alignOptions.center", { default: "Centro" })}
+                  {t("globalStyles.alignOptions.center")}
                 </option>
                 <option value="right">
-                  {t("globalStyles.alignOptions.right", { default: "Derecha" })}
+                  {t("globalStyles.alignOptions.right")}
                 </option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t("globalStyles.borderColor", { default: "Color del Borde" })}
+              <label className="block text-sm font-medium text-[#283618] mb-2">
+                {t("globalStyles.borderColor")}
               </label>
               <input
                 type="color"
@@ -309,8 +296,8 @@ export function HeaderFooterStep({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t("globalStyles.borderWidth", { default: "Grosor del Borde" })}
+              <label className="block text-sm font-medium text-[#283618] mb-2">
+                {t("globalStyles.borderWidth")}
               </label>
               <input
                 type="text"
@@ -325,8 +312,8 @@ export function HeaderFooterStep({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t("globalStyles.borderRadius", { default: "Redondeado" })}
+              <label className="block text-sm font-medium text-[#283618] mb-2">
+                {t("globalStyles.borderRadius")}
               </label>
               <input
                 type="text"
@@ -341,8 +328,8 @@ export function HeaderFooterStep({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t("globalStyles.padding", { default: "Espaciado Interno" })}
+              <label className="block text-sm font-medium text-[#283618] mb-2">
+                {t("globalStyles.padding")}
               </label>
               <input
                 type="text"
@@ -357,8 +344,8 @@ export function HeaderFooterStep({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t("globalStyles.margin", { default: "Espaciado Externo" })}
+              <label className="block text-sm font-medium text-[#283618] mb-2">
+                {t("globalStyles.margin")}
               </label>
               <input
                 type="text"
@@ -373,65 +360,54 @@ export function HeaderFooterStep({
               />
             </div>
           </div>
-          <p className="mt-2 text-xs text-gray-500">
-            {t("globalStyles.help", {
-              default:
-                "Estos estilos se aplicarán a todo el " +
-                (activeConfig === "header" ? "encabezado" : "pie de página") +
-                ". Los estilos individuales de los campos pueden sobrescribir estos valores.",
-            })}
+          <p className="mt-2 text-xs text-[#283618]">
+            {t("globalStyles.help")}
           </p>
         </div>
 
         {/* Configuración de Layout */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
-            {t("layout.title", { 
-              default: activeConfig === "header" 
-                ? "Disposición de Campos del Encabezado" 
-                : "Disposición de Campos del Pie de Página"
-            })}
+          <h3 className="text-lg font-medium text-[#283618] mb-4">
+            {t("layout.title")}
           </h3>
-          
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t("layout.fieldsLayout.label", { default: "Organización de campos" })}
+            <label className="block text-sm font-medium text-[#283618] mb-2">
+              {t("layout.fieldsLayout.label")}
             </label>
             <select
               value={currentConfig.style_config?.fields_layout || "horizontal"}
               onChange={(e) =>
                 updateHeaderFooterStyle(activeConfig, {
-                  fields_layout: e.target.value as "horizontal" | "vertical"
+                  fields_layout: e.target.value as "horizontal" | "vertical",
                 })
               }
               className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
                        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="horizontal">
-                {t("layout.fieldsLayout.options.horizontal", { default: "Horizontal (uno al lado del otro)" })}
+                {t("layout.fieldsLayout.options.horizontal")}
               </option>
               <option value="vertical">
-                {t("layout.fieldsLayout.options.vertical", { default: "Vertical (uno debajo del otro)" })}
+                {t("layout.fieldsLayout.options.vertical")}
               </option>
             </select>
-            <p className="mt-2 text-xs text-gray-500">
-              {t("layout.fieldsLayout.help", {
-                default: `Define cómo se organizarán los campos del ${activeConfig === "header" ? "encabezado" : "pie de página"}.`
-              })}
+            <p className="mt-2 text-xs text-[#283618]/50">
+              {t("layout.fieldsLayout.help")}
             </p>
           </div>
         </div>
 
         {/* Botón agregar campo */}
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-medium text-gray-900">
+          <h3 className="text-lg font-medium text-[#283618]">
             {t("fields.title")}
           </h3>
           <button
             onClick={() => addField(activeConfig)}
-            className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 
-                     font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 
-                     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="inline-flex items-center px-3 py-2 border-2 border-[#bc6c25] text-sm leading-4 
+                     font-medium rounded-md text-[#283618] hover:border-[#bc6c25]/50 
+                     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#bc6c25] cursor-pointer"
           >
             <Plus className="w-4 h-4 mr-2" />
             {t("fields.add")}
@@ -441,7 +417,7 @@ export function HeaderFooterStep({
         {/* Lista de campos */}
         <div className="space-y-3">
           {currentConfig?.fields?.length === 0 || !currentConfig?.fields ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-[#283618]/70">
               <p>{t("fields.empty")}</p>
               <p className="text-sm mt-1">{t("fields.emptyHint")}</p>
             </div>
@@ -453,10 +429,10 @@ export function HeaderFooterStep({
               >
                 <div className="flex items-center justify-between mb-2">
                   <div>
-                    <h4 className="font-medium text-gray-900">
+                    <h4 className="font-medium text-[#283618]">
                       {field.display_name}
                     </h4>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-[#283618]/50">
                       {t("fields.type")}: {field.type}
                     </p>
                   </div>
@@ -465,24 +441,24 @@ export function HeaderFooterStep({
                       onClick={() =>
                         setEditingField({ type: activeConfig, index })
                       }
-                      className="text-blue-600 hover:text-blue-800"
+                      className="text-[#283618]/50 hover:text-[#283618] cursor-pointer"
                     >
                       <Settings className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => removeField(activeConfig, index)}
-                      className="text-red-600 hover:text-red-800"
+                      className="text-[#283618]/50 hover:text-red-600 cursor-pointer"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
-                <div className="text-sm text-gray-600 grid grid-cols-2 gap-2">
+                <div className="text-sm text-[#283618] grid grid-cols-2 gap-2">
                   <div>
                     {t("fields.form")}:
                     <span
                       className={
-                        field.form ? "text-green-600" : "text-gray-500"
+                        field.form ? "text-green-600" : "text-[#283618]/50"
                       }
                     >
                       {field.form ? " Sí" : " No"}
@@ -492,7 +468,7 @@ export function HeaderFooterStep({
                     {t("fields.bulletin")}:
                     <span
                       className={
-                        field.bulletin ? "text-green-600" : "text-gray-500"
+                        field.bulletin ? "text-green-600" : "text-[#283618]/50"
                       }
                     >
                       {field.bulletin ? " Sí" : " No"}
@@ -510,12 +486,12 @@ export function HeaderFooterStep({
         <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold text-[#283618]">
                 {t("editField.title")}
               </h3>
               <button
                 onClick={() => setEditingField(null)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-[#283618]/60 hover:text-[#283618]"
               >
                 ×
               </button>

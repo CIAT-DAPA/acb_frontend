@@ -42,7 +42,7 @@ export function Stepper({
                       ? "bg-[#283618]/70 border-[#283618]/70 text-[#fefae0]"
                       : index === currentStepIndex
                       ? "border-[#283618] bg-[#283618] text-[#fefae0]"
-                      : "border-gray-300 bg-white text-gray-500"
+                      : "border-gray-300 bg-white text-[#283618]/50"
                   }
                   ${
                     onStepClick
@@ -81,7 +81,9 @@ export function Stepper({
             <div className="flex flex-col items-center max-w-24">
               <p
                 className={`text-xs font-medium text-center leading-tight ${
-                  index <= currentStepIndex ? "text-gray-900" : "text-gray-500"
+                  index <= currentStepIndex
+                    ? "text-[#283618]"
+                    : "text-[#283618]/50"
                 }`}
               >
                 {step.title}
@@ -155,7 +157,7 @@ export function StepNavigation({
           px-4 py-2 text-sm font-medium rounded-md transition-colors
           ${
             currentStep === 0 || isPreviousDisabled
-              ? "text-gray-400 cursor-not-allowed"
+              ? "text-[#283618]/50 cursor-not-allowed"
               : "border-2 border-[#bc6c25] text-[#283618] hover:border-[#bc6c25]/50 cursor-pointer"
           }
         `}
@@ -173,7 +175,7 @@ export function StepNavigation({
               px-6 py-2 text-sm font-medium rounded-md transition-colors
               ${
                 isNextDisabled || isLoading
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  ? "bg-gray-300 text-[#283618]/50 cursor-not-allowed"
                   : "bg-[#bc6c25] text-[#fefae0] hover:bg-[#bc6c25]/90 cursor-pointer"
               }
             `}
@@ -189,7 +191,7 @@ export function StepNavigation({
               px-6 py-2 text-sm font-medium rounded-md transition-colors
               ${
                 isNextDisabled || isLoading
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  ? "bg-gray-300 text-[#283618]/50 cursor-not-allowed"
                   : "bg-[#bc6c25] text-[#fefae0] hover:bg-[#bc6c25]/90 cursor-pointer"
               }
             `}

@@ -261,8 +261,8 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">{t("title")}</h1>
-          <p className="mt-2 text-gray-600">{t("subtitle")}</p>
+          <h1 className="text-3xl font-bold text-[#283618]">{t("title")}</h1>
+          <p className="mt-2 text-[#283618]/70">{t("subtitle")}</p>
         </div>
 
         {/* Stepper */}
@@ -329,10 +329,10 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
           <div className="flex-1 max-w-2xl">
             <div className="bg-white rounded-lg shadow-lg p-6 sticky top-8">
               <div className="mb-4">
-                <h2 className="text-lg font-semibold text-gray-900">
+                <h2 className="text-lg font-semibold text-[#283618]">
                   {t("preview.title")}
                 </h2>
-                <p className="text-sm text-gray-600">{t("preview.subtitle")}</p>
+                <p className="text-sm text-[#283618]/70">{t("preview.subtitle")}</p>
               </div>
 
               <TemplatePreview data={creationState.data} />

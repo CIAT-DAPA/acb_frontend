@@ -143,8 +143,8 @@ export function FieldEditor({
         return (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t("textConfig.subtype", { default: "Subtipo de texto" })}
+              <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+                {t("textConfig.subtype")}
               </label>
               <select
                 value={
@@ -154,19 +154,15 @@ export function FieldEditor({
                 onChange={(e) => updateFieldConfig({ subtype: e.target.value })}
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="short">
-                  {t("textConfig.short", { default: "Corto" })}
-                </option>
-                <option value="long">
-                  {t("textConfig.long", { default: "Largo" })}
-                </option>
+                <option value="short">{t("textConfig.short")}</option>
+                <option value="long">{t("textConfig.long")}</option>
               </select>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t("validation.minLength", { default: "Longitud mínima" })}
+                <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+                  {t("validation.minLength")}
                 </label>
                 <input
                   type="number"
@@ -181,8 +177,8 @@ export function FieldEditor({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t("validation.maxLength", { default: "Longitud máxima" })}
+                <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+                  {t("validation.maxLength")}
                 </label>
                 <input
                   type="number"
@@ -204,8 +200,8 @@ export function FieldEditor({
         return (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t("textConfig.subtype", { default: "Subtipo de texto" })}
+              <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+                {t("textConfig.subtype")}
               </label>
               <select
                 value={
@@ -215,20 +211,14 @@ export function FieldEditor({
                 onChange={(e) => updateFieldConfig({ subtype: e.target.value })}
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="short">
-                  {t("textConfig.short", { default: "Corto" })}
-                </option>
-                <option value="long">
-                  {t("textConfig.long", { default: "Largo" })}
-                </option>
+                <option value="short">{t("textConfig.short")}</option>
+                <option value="long">{t("textConfig.long")}</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t("textWithIconConfig.iconOptions", {
-                  default: "Opciones de Iconos",
-                })}
+              <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+                {t("textWithIconConfig.iconOptions")}
               </label>
               <div className="space-y-2">
                 {(
@@ -262,7 +252,7 @@ export function FieldEditor({
                       }}
                       className="px-3 py-2 text-sm bg-red-100 text-red-700 rounded-md hover:bg-red-200"
                     >
-                      {t("actions.remove", { default: "Eliminar" })}
+                      {t("actions.remove")}
                     </button>
                   </div>
                 ))}
@@ -276,17 +266,15 @@ export function FieldEditor({
                   }}
                   className="px-4 py-2 text-sm bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200"
                 >
-                  {t("textWithIconConfig.addIcon", {
-                    default: "Agregar Icono",
-                  })}
+                  {t("textWithIconConfig.addIcon")}
                 </button>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t("validation.minLength", { default: "Longitud mínima" })}
+                <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+                  {t("validation.minLength")}
                 </label>
                 <input
                   type="number"
@@ -301,8 +289,8 @@ export function FieldEditor({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t("validation.maxLength", { default: "Longitud máxima" })}
+                <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+                  {t("validation.maxLength")}
                 </label>
                 <input
                   type="number"
@@ -324,8 +312,8 @@ export function FieldEditor({
         return (
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t("numberConfig.minValue", { default: "Valor mínimo" })}
+              <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+                {t("numberConfig.minValue")}
               </label>
               <input
                 type="number"
@@ -339,8 +327,8 @@ export function FieldEditor({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t("numberConfig.maxValue", { default: "Valor máximo" })}
+              <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+                {t("numberConfig.maxValue")}
               </label>
               <input
                 type="number"
@@ -354,8 +342,8 @@ export function FieldEditor({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t("numberConfig.decimalPlaces", { default: "Decimales" })}
+              <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+                {t("numberConfig.decimalPlaces")}
               </label>
               <input
                 type="number"
@@ -377,8 +365,8 @@ export function FieldEditor({
       case "date":
         return (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t("dateConfig.format", { default: "Formato de fecha" })}
+            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+              {t("dateConfig.format")}
             </label>
             <select
               value={
@@ -401,8 +389,8 @@ export function FieldEditor({
       case "page_number":
         return (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t("pageNumberConfig.format", { default: "Formato" })}
+            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+              {t("pageNumberConfig.format")}
             </label>
             <input
               type="text"
@@ -414,22 +402,16 @@ export function FieldEditor({
               className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
               placeholder="Página {page} de {total}"
             />
-            <p className="mt-1 text-xs text-gray-500">
-              {t("pageNumberConfig.help", {
-                default:
-                  "Usa {page} para número actual y {total} para total de páginas",
-              })}
+            <p className="mt-1 text-xs text-[#283618]/50">
+              {t("pageNumberConfig.help")}
             </p>
           </div>
         );
 
       default:
         return (
-          <div className="text-center py-4 text-gray-500">
-            {t("noConfig", {
-              default:
-                "No hay configuraciones específicas para este tipo de campo",
-            })}
+          <div className="text-center py-4 text-[#283618]/50">
+            {t("noConfig")}
           </div>
         );
     }
@@ -441,8 +423,8 @@ export function FieldEditor({
       <div className="space-y-4">
         {/* ID del Campo */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            {t("basic.fieldId", { default: "ID del Campo" })} *
+          <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+            {t("basic.fieldId")} *
           </label>
           <input
             type="text"
@@ -455,8 +437,8 @@ export function FieldEditor({
 
         {/* Display Name */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            {t("basic.displayName", { default: "Nombre a Mostrar" })} *
+          <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+            {t("basic.displayName")} *
           </label>
           <input
             type="text"
@@ -469,8 +451,8 @@ export function FieldEditor({
 
         {/* Tipo de Campo */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            {t("basic.type", { default: "Tipo de Campo" })} *
+          <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+            {t("basic.type")} *
           </label>
           <select
             value={currentField.type}
@@ -481,7 +463,7 @@ export function FieldEditor({
           >
             {FIELD_TYPES.map((type) => (
               <option key={type} value={type}>
-                {t(`fieldTypes.${type}`, { default: type })}
+                {t(`fieldTypes.${type}`)}
               </option>
             ))}
           </select>
@@ -489,8 +471,8 @@ export function FieldEditor({
 
         {/* Visibilidad */}
         <div>
-          <h4 className="text-sm font-medium text-gray-900 mb-3">
-            {t("visibility.title", { default: "Visibilidad" })}
+          <h4 className="text-sm font-medium text-[#283618] mb-3">
+            {t("visibility.title")}
           </h4>
           <div className="space-y-3">
             <div className="flex items-center">
@@ -499,15 +481,13 @@ export function FieldEditor({
                 id="show_in_form"
                 checked={currentField.form}
                 onChange={(e) => updateField({ form: e.target.checked })}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
               />
               <label
                 htmlFor="show_in_form"
-                className="ml-2 text-sm text-gray-700"
+                className="ml-2 text-sm text-[#283618]/70 cursor-pointer"
               >
-                {t("visibility.form", {
-                  default: "Mostrar en formulario de creación de boletín",
-                })}
+                {t("visibility.form")}
               </label>
             </div>
             <div className="flex items-center">
@@ -516,25 +496,19 @@ export function FieldEditor({
                 id="show_in_bulletin"
                 checked={currentField.bulletin}
                 onChange={(e) => updateField({ bulletin: e.target.checked })}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
               />
               <label
                 htmlFor="show_in_bulletin"
-                className="ml-2 text-sm text-gray-700"
+                className="ml-2 text-sm text-[#283618]/70 cursor-pointer"
               >
-                {t("visibility.bulletin", {
-                  default: "Mostrar en boletín final",
-                })}
+                {t("visibility.bulletin")}
               </label>
             </div>
           </div>
           {!currentField.form && (
             <p className="mt-2 text-xs text-amber-600">
-              ℹ️{" "}
-              {t("visibility.formHelp", {
-                default:
-                  "Si no se muestra en el formulario, la etiqueta y descripción se asignarán automáticamente del nombre a mostrar",
-              })}
+              ℹ️ {t("visibility.formHelp")}
             </p>
           )}
         </div>
@@ -543,8 +517,8 @@ export function FieldEditor({
         {currentField.form && (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t("basic.label", { default: "Etiqueta" })}
+              <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+                {t("basic.label")}
               </label>
               <input
                 type="text"
@@ -556,8 +530,8 @@ export function FieldEditor({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t("basic.description", { default: "Descripción" })}
+              <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+                {t("basic.description")}
               </label>
               <textarea
                 rows={2}
@@ -574,12 +548,12 @@ export function FieldEditor({
       {/* Value - Solo mostrar si form es false y bulletin es true */}
       {!currentField.form && currentField.bulletin && (
         <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
-            {t("value.title", { default: "Valor del Campo" })}
+          <h3 className="text-lg font-medium text-[#283618] mb-4">
+            {t("value.title")}
           </h3>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t("value.label", { default: "Valor" })}
+            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+              {t("value.label")}
             </label>
             <input
               type="text"
@@ -588,16 +562,9 @@ export function FieldEditor({
               }
               onChange={(e) => updateField({ value: e.target.value })}
               className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              placeholder={t("value.placeholder", {
-                default: "Valor que se mostrará en el boletín",
-              })}
+              placeholder={t("value.placeholder")}
             />
-            <p className="mt-1 text-xs text-gray-500">
-              {t("value.help", {
-                default:
-                  "Como este campo no aparece en el formulario, debes definir aquí el valor que se mostrará",
-              })}
-            </p>
+            <p className="mt-1 text-xs text-[#283618]/50">{t("value.help")}</p>
           </div>
         </div>
       )}
@@ -605,8 +572,8 @@ export function FieldEditor({
       {/* Estilos del campo */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium text-gray-900">
-            {t("styleConfig.title", { default: "Estilos del Campo" })}
+          <h3 className="text-lg font-medium text-[#283618]">
+            {t("styleConfig.title")}
           </h3>
           {containerStyle && (
             <div className="flex items-center space-x-2 text-xs">
@@ -662,8 +629,8 @@ export function FieldEditor({
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t("styleConfig.color", { default: "Color del Texto" })}
+            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+              {t("styleConfig.color")}
             </label>
             <input
               type="color"
@@ -679,14 +646,14 @@ export function FieldEditor({
             />
             {!currentField.style_manually_edited &&
               inheritableStyles.primary_color && (
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-[#283618]/50 mt-1">
                   Heredado: {inheritableStyles.primary_color}
                 </p>
               )}
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t("styleConfig.fontSize", { default: "Tamaño de Fuente (px)" })}
+            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+              {t("styleConfig.fontSize")}
             </label>
             <input
               type="number"
@@ -707,14 +674,14 @@ export function FieldEditor({
             />
             {!currentField.style_manually_edited &&
               inheritableStyles.font_size && (
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-[#283618]/50 mt-1">
                   Heredado: {inheritableStyles.font_size}px
                 </p>
               )}
           </div>
           <div className="col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t("styleConfig.textAlign", { default: "Alineación del Texto" })}
+            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+              {t("styleConfig.textAlign")}
             </label>
             <select
               value={
@@ -727,19 +694,17 @@ export function FieldEditor({
               }
               className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="left">
-                {t("styleConfig.alignOptions.left", { default: "Izquierda" })}
-              </option>
+              <option value="left">{t("styleConfig.alignOptions.left")}</option>
               <option value="center">
-                {t("styleConfig.alignOptions.center", { default: "Centro" })}
+                {t("styleConfig.alignOptions.center")}
               </option>
               <option value="right">
-                {t("styleConfig.alignOptions.right", { default: "Derecha" })}
+                {t("styleConfig.alignOptions.right")}
               </option>
             </select>
             {!currentField.style_manually_edited &&
               inheritableStyles.text_align && (
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-[#283618]/50 mt-1">
                   Heredado: {inheritableStyles.text_align}
                 </p>
               )}
@@ -749,8 +714,8 @@ export function FieldEditor({
         {/* Propiedades de Borde */}
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t("styleConfig.borderColor", { default: "Color del Borde" })}
+            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+              {t("styleConfig.borderColor")}
             </label>
             <input
               type="color"
@@ -766,16 +731,14 @@ export function FieldEditor({
             />
             {!currentField.style_manually_edited &&
               inheritableStyles.border_color && (
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-[#283618]/50 mt-1">
                   Heredado: {inheritableStyles.border_color}
                 </p>
               )}
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t("styleConfig.borderWidth", {
-                default: "Grosor del Borde (px)",
-              })}
+            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+              {t("styleConfig.borderWidth")}
             </label>
             <input
               type="text"
@@ -792,14 +755,14 @@ export function FieldEditor({
             />
             {!currentField.style_manually_edited &&
               inheritableStyles.border_width && (
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-[#283618]/50 mt-1">
                   Heredado: {inheritableStyles.border_width}
                 </p>
               )}
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t("styleConfig.borderRadius", { default: "Redondeado (px)" })}
+            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+              {t("styleConfig.borderRadius")}
             </label>
             <input
               type="text"
@@ -816,7 +779,7 @@ export function FieldEditor({
             />
             {!currentField.style_manually_edited &&
               inheritableStyles.border_radius && (
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-[#283618]/50 mt-1">
                   Heredado: {inheritableStyles.border_radius}
                 </p>
               )}
@@ -826,8 +789,8 @@ export function FieldEditor({
         {/* Propiedades de Espaciado */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t("styleConfig.padding", { default: "Padding (CSS)" })}
+            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+              {t("styleConfig.padding")}
             </label>
             <input
               type="text"
@@ -842,14 +805,14 @@ export function FieldEditor({
             />
             {!currentField.style_manually_edited &&
               inheritableStyles.padding && (
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-[#283618]/50 mt-1">
                   Heredado: {inheritableStyles.padding}
                 </p>
               )}
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t("styleConfig.margin", { default: "Margin (CSS)" })}
+            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+              {t("styleConfig.margin")}
             </label>
             <input
               type="text"
@@ -864,7 +827,7 @@ export function FieldEditor({
             />
             {!currentField.style_manually_edited &&
               inheritableStyles.margin && (
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-[#283618]/50 mt-1">
                   Heredado: {inheritableStyles.margin}
                 </p>
               )}
@@ -875,19 +838,22 @@ export function FieldEditor({
       {/* Validación - Solo mostrar si form es true */}
       {currentField.form && (
         <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
-            {t("validation.title", { default: "Validación" })}
+          <h3 className="text-lg font-medium text-[#283618] mb-4">
+            {t("validation.title")}
           </h3>
-          <div className="flex items-center">
+          <div className="flex items-center ">
             <input
               type="checkbox"
               id="required"
               checked={currentField.validation?.required || false}
               onChange={(e) => updateValidation({ required: e.target.checked })}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
             />
-            <label htmlFor="required" className="ml-2 text-sm text-gray-700">
-              {t("validation.required", { default: "Campo obligatorio" })}
+            <label
+              htmlFor="required"
+              className="ml-2 text-sm text-[#283618]/70 cursor-pointer"
+            >
+              {t("validation.required")}
             </label>
           </div>
         </div>
@@ -896,8 +862,8 @@ export function FieldEditor({
       {/* Configuración específica del tipo - Solo mostrar si form es true */}
       {currentField.form && (
         <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
-            {t("specificConfig.title", { default: "Configuración Específica" })}
+          <h3 className="text-lg font-medium text-[#283618] mb-4">
+            {t("specificConfig.title")}
           </h3>
           {renderFieldSpecificConfig()}
         </div>
@@ -907,15 +873,15 @@ export function FieldEditor({
       <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
         <button
           onClick={onClose}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
+          className="px-4 py-2 text-sm font-medium text-[#283618]/70 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 cursor-pointer"
         >
-          {t("actions.cancel", { default: "Cancelar" })}
+          {t("actions.cancel")}
         </button>
         <button
           onClick={handleSave}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700"
+          className="px-4 py-2 text-sm font-medium bg-[#bc6c25] text-[#fefae0] rounded-md hover:bg-[#bc6c25]/90 cursor-pointer"
         >
-          {t("actions.save", { default: "Guardar" })}
+          {t("actions.save")}
         </button>
       </div>
     </div>

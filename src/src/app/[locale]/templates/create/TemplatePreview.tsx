@@ -103,7 +103,7 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
       case "date":
         return (
           <div key={key} style={fieldStyles}>
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-[#283618]/70">
               {field.label || field.display_name}:
             </span>
             <span className="ml-2">
@@ -115,7 +115,7 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
       case "date_range":
         return (
           <div key={key} style={fieldStyles}>
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-[#283618]/70">
               {field.label || field.display_name}:
             </span>
             <span className="ml-2">
@@ -265,7 +265,7 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
           {/* Secciones */}
           <div className="space-y-8 flex-1 px-4">
             {sections.length === 0 ? (
-              <div className="text-center py-12 text-gray-400">
+              <div className="text-center py-12 text-[#283618]/50">
                 <div className="text-4xl mb-4">📄</div>
                 <p>
                   {t("noSections", {
@@ -293,7 +293,7 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
                               | "right") || "left",
                         }}
                       >
-                        <div className="text-xs text-gray-500 mb-1">
+                        <div className="text-xs text-[#283618]/50 mb-1">
                           HEADER DE SECCIÓN
                         </div>
                         {section.header_config.fields.map((field, index) =>
@@ -321,7 +321,7 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
                     >
                       {section.display_name}
                     </h2>
-                    <span className="ml-2 text-sm text-gray-400">
+                    <span className="ml-2 text-sm text-[#283618]/50">
                       (#{section.order})
                     </span>
                   </div>
@@ -329,7 +329,7 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
                   {/* Bloques de la sección */}
                   <div className="space-y-6 w-full">
                     {section.blocks.length === 0 ? (
-                      <div className="text-sm text-gray-500 italic pl-4">
+                      <div className="text-sm text-[#283618]/50 italic pl-4">
                         No hay bloques en esta sección
                       </div>
                     ) : (
@@ -350,7 +350,7 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
                           {/* Campos del bloque */}
                           <div className="space-y-2">
                             {block.fields.length === 0 ? (
-                              <div className="text-sm text-gray-400 italic">
+                              <div className="text-sm text-[#283618]/50 italic">
                                 No hay campos en este bloque
                               </div>
                             ) : (
@@ -425,7 +425,7 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
       </div>
 
       {/* Información adicional */}
-      <div className="mt-4 text-xs text-gray-500 space-y-1">
+      <div className="mt-4 text-xs text-[#283618]/50 space-y-1">
         <div>Versión: {data.version.version_num}</div>
         <div>Mensaje: {data.version.commit_message}</div>
         <div>Secciones: {sections.length}</div>

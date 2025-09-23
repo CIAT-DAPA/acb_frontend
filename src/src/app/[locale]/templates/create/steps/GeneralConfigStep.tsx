@@ -71,10 +71,10 @@ export function GeneralConfigStep({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        <h2 className="text-xl font-semibold text-[#283618] mb-4">
           {t("title")}
         </h2>
-        <p className="text-gray-600">{t("description")}</p>
+        <p className="text-[#283618]/70">{t("description")}</p>
       </div>
 
       <div className="space-y-6">
@@ -82,7 +82,7 @@ export function GeneralConfigStep({
         <div>
           <label
             htmlFor="commit_message"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium text-[#283618]/70 mb-2"
           >
             {t("fields.commitMessage.label")}
           </label>
@@ -99,7 +99,7 @@ export function GeneralConfigStep({
 
         {/* Dimensiones del Boletín */}
         <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
+          <h3 className="text-lg font-medium text-[#283618] mb-4">
             {t("dimensions.title", { default: "Dimensiones del Boletín" })}
           </h3>
 
@@ -107,7 +107,7 @@ export function GeneralConfigStep({
             <div>
               <label
                 htmlFor="bulletin_width"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-[#283618]/70 mb-2"
               >
                 {t("dimensions.width.label", { default: "Ancho (px)" })}
               </label>
@@ -130,7 +130,7 @@ export function GeneralConfigStep({
             <div>
               <label
                 htmlFor="bulletin_height"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-[#283618]/70 mb-2"
               >
                 {t("dimensions.height.label", { default: "Alto (px)" })}
               </label>
@@ -151,7 +151,7 @@ export function GeneralConfigStep({
             </div>
           </div>
 
-          <p className="mt-2 text-xs text-gray-500">
+          <p className="mt-2 text-xs text-[#283618]/50">
             {t("dimensions.help", {
               default:
                 "Define el tamaño del boletín. Los valores por defecto son 638x366 píxeles.",
@@ -161,7 +161,7 @@ export function GeneralConfigStep({
 
         {/* Estilos Globales */}
         <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
+          <h3 className="text-lg font-medium text-[#283618] mb-4">
             {t("styles.title")}
           </h3>
 
@@ -170,7 +170,7 @@ export function GeneralConfigStep({
             <div>
               <label
                 htmlFor="font"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-[#283618]/70 mb-2"
               >
                 {t("styles.font.label")}
               </label>
@@ -193,7 +193,7 @@ export function GeneralConfigStep({
             <div>
               <label
                 htmlFor="primary_color"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-[#283618]/70 mb-2"
               >
                 {t("styles.primaryColor.label")}
               </label>
@@ -224,7 +224,7 @@ export function GeneralConfigStep({
             <div>
               <label
                 htmlFor="secondary_color"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-[#283618]/70 mb-2"
               >
                 {t("styles.secondaryColor.label")}
               </label>
@@ -255,7 +255,7 @@ export function GeneralConfigStep({
             <div>
               <label
                 htmlFor="background_color"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-[#283618]/70 mb-2"
               >
                 {t("styles.backgroundColor.label")}
               </label>
@@ -286,7 +286,7 @@ export function GeneralConfigStep({
             <div>
               <label
                 htmlFor="font_size"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-[#283618]/70 mb-2"
               >
                 {t("styles.fontSize.label")}
               </label>
@@ -310,7 +310,7 @@ export function GeneralConfigStep({
             <div>
               <label
                 htmlFor="text_align"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-[#283618]/70 mb-2"
               >
                 {t("styles.textAlign.label")}
               </label>
@@ -341,7 +341,7 @@ export function GeneralConfigStep({
 
         {/* Vista Previa de Estilos */}
         <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
+          <h3 className="text-lg font-medium text-[#283618] mb-4">
             {t("preview.title")}
           </h3>
           <div

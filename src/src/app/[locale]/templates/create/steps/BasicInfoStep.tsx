@@ -94,10 +94,10 @@ export function BasicInfoStep({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        <h2 className="text-xl font-semibold text-[#283618] mb-4">
           {t("title", { default: "Información Básica" })}
         </h2>
-        <p className="text-gray-600">
+        <p className="text-[#283618]/70">
           {t("description", {
             default: "Define los datos principales de tu plantilla",
           })}
@@ -109,7 +109,7 @@ export function BasicInfoStep({
         <div>
           <label
             htmlFor="template_name"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium text-[#283618]/70 mb-2"
           >
             {t("fields.name.label", { default: "Nombre de la Plantilla" })} *
           </label>
@@ -142,7 +142,7 @@ export function BasicInfoStep({
         <div>
           <label
             htmlFor="description"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium text-[#283618]/70 mb-2"
           >
             {t("fields.description.label", { default: "Descripción" })} *
           </label>
@@ -175,7 +175,7 @@ export function BasicInfoStep({
         <div>
           <label
             htmlFor="status"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium text-[#283618]/70 mb-2"
           >
             {t("fields.status.label", { default: "Estado" })}
           </label>
@@ -202,7 +202,7 @@ export function BasicInfoStep({
         <div>
           <label
             htmlFor="access_type"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium text-[#283618]/70 mb-2"
           >
             {t("fields.accessType.label", { default: "Tipo de Acceso" })}
           </label>
@@ -222,7 +222,7 @@ export function BasicInfoStep({
               })}
             </option>
           </select>
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-[#283618]/50">
             {data.master.access_config.access_type === "public"
               ? t("fields.accessType.help.public", {
                   default: "Visible para todos los usuarios",
@@ -236,13 +236,13 @@ export function BasicInfoStep({
         {/* Grupos permitidos (solo si es restringido) */}
         {data.master.access_config.access_type === "restricted" && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
               {t("fields.allowedGroups.label", {
                 default: "Grupos Permitidos",
               })}
             </label>
             <div className="border border-gray-300 rounded-md p-3 bg-gray-50">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-[#283618]/50">
                 {t("fields.allowedGroups.placeholder", {
                   default:
                     "Funcionalidad de selección de grupos estará disponible próximamente",

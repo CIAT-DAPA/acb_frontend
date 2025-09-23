@@ -222,52 +222,43 @@ export function SectionsStep({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          {t("title", { default: "Secciones del Template" })}
+        <h2 className="text-xl font-semibold text-[#283618] mb-4">
+          {t("title")}
         </h2>
-        <p className="text-gray-600">
-          {t("description", {
-            default:
-              "Define las secciones principales de tu plantilla. Cada sección puede tener múltiples bloques y campos.",
-          })}
-        </p>
+        <p className="text-[#283618]/70">{t("description")}</p>
       </div>
 
       {/* Información y botón agregar */}
       <div className="flex justify-between items-center">
-        <div className="text-sm text-gray-600">
-          {t("info", { default: "Total de secciones" })}:{" "}
-          {data.version.content.sections.length}
+        <div className="text-sm text-[#283618]/70">
+          {t("info")}: {data.version.content.sections.length}
         </div>
         <button
           onClick={addSection}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="inline-flex items-center px-3 py-2 border-2 border-[#bc6c25] text-sm leading-4 
+                     font-medium rounded-md text-[#283618] hover:border-[#bc6c25]/50 
+                     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#bc6c25] cursor-pointer"
         >
           <Plus className="w-4 h-4 mr-2" />
-          {t("addSection", { default: "Agregar Sección" })}
+          {t("addSection")}
         </button>
       </div>
 
       {/* Lista de secciones */}
       {data.version.content.sections.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-          <div className="text-gray-500">
+          <div className="text-[#283618]/70">
             <div className="text-6xl mb-4">📄</div>
-            <h3 className="text-lg font-medium mb-2">
-              {t("empty.title", { default: "No hay secciones" })}
-            </h3>
-            <p className="text-sm mb-4">
-              {t("empty.description", {
-                default:
-                  "Agrega tu primera sección para comenzar a estructurar tu plantilla",
-              })}
-            </p>
+            <h3 className="text-lg font-medium mb-2">{t("empty.title")}</h3>
+            <p className="text-sm mb-4">{t("empty.description")}</p>
             <button
               onClick={addSection}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+              className="inline-flex items-center px-3 py-2 border-2 border-[#bc6c25] text-sm leading-4 
+                     font-medium rounded-md text-[#283618] hover:border-[#bc6c25]/50 
+                     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#bc6c25] cursor-pointer"
             >
               <Plus className="w-4 h-4 mr-2" />
-              {t("empty.addFirst", { default: "Agregar Primera Sección" })}
+              {t("empty.addFirst")}
             </button>
           </div>
         </div>
@@ -281,7 +272,7 @@ export function SectionsStep({
               {/* Header de la sección */}
               <div className="flex items-center justify-between p-4 border-b border-gray-200">
                 <div className="flex items-center space-x-3">
-                  <div className="cursor-move text-gray-400 hover:text-gray-600">
+                  <div className="cursor-move text-[#283618]/50 hover:text-[#283618]">
                     <GripVertical className="w-5 h-5" />
                   </div>
                   <div className="flex-1">
@@ -293,10 +284,10 @@ export function SectionsStep({
                           display_name: e.target.value,
                         })
                       }
-                      className="text-lg font-semibold text-gray-900 bg-transparent border-none focus:outline-none focus:ring-0"
+                      className="text-lg font-semibold text-[#283618] bg-transparent border-none focus:outline-none focus:ring-0"
                       placeholder="Nombre de la sección"
                     />
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-[#283618]/70">
                       ID: {section.section_id} | Orden: {section.order} |
                       Bloques: {section.blocks.length}
                     </div>
@@ -310,19 +301,19 @@ export function SectionsStep({
                         expandedSection === sectionIndex ? null : sectionIndex
                       )
                     }
-                    className="text-gray-400 hover:text-gray-600"
+                    className="text-[#283618]/50 hover:text-[#283618] cursor-pointer"
                   >
                     <Settings className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => duplicateSection(sectionIndex)}
-                    className="text-gray-400 hover:text-blue-600"
+                    className="text-[#283618]/50 hover:text-blue-600 cursor-pointer"
                   >
                     <Copy className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => removeSection(sectionIndex)}
-                    className="text-gray-400 hover:text-red-600"
+                    className="text-[#283618]/50 hover:text-red-600 cursor-pointer"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -335,8 +326,8 @@ export function SectionsStep({
                   {/* Configuración básica de la sección */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        {t("section.sectionId", { default: "ID de Sección" })}
+                      <label className="block text-sm font-medium text-[#283618]/70 mb-1">
+                        {t("section.sectionId")}
                       </label>
                       <input
                         type="text"
@@ -350,8 +341,8 @@ export function SectionsStep({
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        {t("section.iconUrl", { default: "URL del Icono" })}
+                      <label className="block text-sm font-medium text-[#283618]/70 mb-1">
+                        {t("section.iconUrl")}
                       </label>
                       <input
                         type="url"
@@ -370,25 +361,22 @@ export function SectionsStep({
                   {/* Bloques de la sección */}
                   <div>
                     <div className="flex justify-between items-center mb-3">
-                      <h4 className="text-md font-medium text-gray-900">
-                        {t("section.blocks", { default: "Bloques" })} (
-                        {section.blocks.length})
+                      <h4 className="text-md font-medium text-[#283618]">
+                        {t("section.blocks")} ({section.blocks.length})
                       </h4>
                       <button
                         onClick={() => addBlock(sectionIndex)}
-                        className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-blue-600 bg-blue-50 hover:bg-blue-100"
+                        className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-blue-600 bg-blue-50 hover:bg-blue-100 cursor-pointer"
                       >
                         <Plus className="w-3 h-3 mr-1" />
-                        {t("section.addBlock", { default: "Agregar Bloque" })}
+                        {t("section.addBlock")}
                       </button>
                     </div>
 
                     {section.blocks.length === 0 ? (
                       <div className="text-center py-8 bg-gray-50 rounded-lg border border-gray-200">
-                        <p className="text-gray-500 text-sm">
-                          {t("section.noBlocks", {
-                            default: "No hay bloques en esta sección",
-                          })}
+                        <p className="text-[#283618]/50 text-sm">
+                          {t("section.noBlocks")}
                         </p>
                       </div>
                     ) : (
@@ -408,10 +396,10 @@ export function SectionsStep({
                                       display_name: e.target.value,
                                     })
                                   }
-                                  className="font-medium text-gray-900 bg-transparent border-none focus:outline-none focus:ring-0 text-sm"
+                                  className="font-medium text-[#283618] bg-transparent border-none focus:outline-none focus:ring-0 text-sm"
                                   placeholder="Nombre del bloque"
                                 />
-                                <div className="text-xs text-gray-500">
+                                <div className="text-xs text-[#283618]/50">
                                   ID: {block.block_id} | Campos:{" "}
                                   {block.fields.length}
                                 </div>
@@ -438,7 +426,7 @@ export function SectionsStep({
 
                             {/* Lista simple de campos */}
                             {block.fields.length > 0 && (
-                              <div className="text-xs text-gray-600">
+                              <div className="text-xs text-[#283618]/50">
                                 <span className="font-medium">Campos:</span>
                                 {block.fields.map((field, fieldIndex) => (
                                   <span
