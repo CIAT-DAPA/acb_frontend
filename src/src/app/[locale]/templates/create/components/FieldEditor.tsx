@@ -546,28 +546,34 @@ export function FieldEditor({
       </div>
 
       {/* Value - Solo mostrar si form es false y bulletin es true, pero no para page_number */}
-      {!currentField.form && currentField.bulletin && currentField.type !== "page_number" && (
-        <div>
-          <h3 className="text-lg font-medium text-[#283618] mb-4">
-            {t("value.title")}
-          </h3>
+      {!currentField.form &&
+        currentField.bulletin &&
+        currentField.type !== "page_number" && (
           <div>
-            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-              {t("value.label")}
-            </label>
-            <input
-              type="text"
-              value={
-                typeof currentField.value === "string" ? currentField.value : ""
-              }
-              onChange={(e) => updateField({ value: e.target.value })}
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              placeholder={t("value.placeholder")}
-            />
-            <p className="mt-1 text-xs text-[#283618]/50">{t("value.help")}</p>
+            <h3 className="text-lg font-medium text-[#283618] mb-4">
+              {t("value.title")}
+            </h3>
+            <div>
+              <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+                {t("value.label")}
+              </label>
+              <input
+                type="text"
+                value={
+                  typeof currentField.value === "string"
+                    ? currentField.value
+                    : ""
+                }
+                onChange={(e) => updateField({ value: e.target.value })}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                placeholder={t("value.placeholder")}
+              />
+              <p className="mt-1 text-xs text-[#283618]/50">
+                {t("value.help")}
+              </p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* Estilos del campo */}
       <div>
@@ -698,15 +704,33 @@ export function FieldEditor({
               }
               className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="100">{t("styleConfig.fontWeightOptions.thin")}</option>
-              <option value="200">{t("styleConfig.fontWeightOptions.extraLight")}</option>
-              <option value="300">{t("styleConfig.fontWeightOptions.light")}</option>
-              <option value="400">{t("styleConfig.fontWeightOptions.normal")}</option>
-              <option value="500">{t("styleConfig.fontWeightOptions.medium")}</option>
-              <option value="600">{t("styleConfig.fontWeightOptions.semiBold")}</option>
-              <option value="700">{t("styleConfig.fontWeightOptions.bold")}</option>
-              <option value="800">{t("styleConfig.fontWeightOptions.extraBold")}</option>
-              <option value="900">{t("styleConfig.fontWeightOptions.black")}</option>
+              <option value="100">
+                {t("styleConfig.fontWeightOptions.thin")}
+              </option>
+              <option value="200">
+                {t("styleConfig.fontWeightOptions.extraLight")}
+              </option>
+              <option value="300">
+                {t("styleConfig.fontWeightOptions.light")}
+              </option>
+              <option value="400">
+                {t("styleConfig.fontWeightOptions.normal")}
+              </option>
+              <option value="500">
+                {t("styleConfig.fontWeightOptions.medium")}
+              </option>
+              <option value="600">
+                {t("styleConfig.fontWeightOptions.semiBold")}
+              </option>
+              <option value="700">
+                {t("styleConfig.fontWeightOptions.bold")}
+              </option>
+              <option value="800">
+                {t("styleConfig.fontWeightOptions.extraBold")}
+              </option>
+              <option value="900">
+                {t("styleConfig.fontWeightOptions.black")}
+              </option>
             </select>
             {!currentField.style_manually_edited &&
               inheritableStyles.font_weight && (
@@ -730,8 +754,12 @@ export function FieldEditor({
               }
               className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="normal">{t("styleConfig.fontStyleOptions.normal")}</option>
-              <option value="italic">{t("styleConfig.fontStyleOptions.italic")}</option>
+              <option value="normal">
+                {t("styleConfig.fontStyleOptions.normal")}
+              </option>
+              <option value="italic">
+                {t("styleConfig.fontStyleOptions.italic")}
+              </option>
             </select>
             {!currentField.style_manually_edited &&
               inheritableStyles.font_style && (
@@ -755,9 +783,15 @@ export function FieldEditor({
               }
               className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="none">{t("styleConfig.textDecorationOptions.none")}</option>
-              <option value="underline">{t("styleConfig.textDecorationOptions.underline")}</option>
-              <option value="line-through">{t("styleConfig.textDecorationOptions.lineThrough")}</option>
+              <option value="none">
+                {t("styleConfig.textDecorationOptions.none")}
+              </option>
+              <option value="underline">
+                {t("styleConfig.textDecorationOptions.underline")}
+              </option>
+              <option value="line-through">
+                {t("styleConfig.textDecorationOptions.lineThrough")}
+              </option>
             </select>
             {!currentField.style_manually_edited &&
               inheritableStyles.text_decoration && (
@@ -960,26 +994,38 @@ export function FieldEditor({
       )}
 
       {/* Vista previa de paginación - Solo mostrar para page_number cuando form es false y bulletin es true */}
-      {!currentField.form && currentField.bulletin && currentField.type === "page_number" && (
-        <div>
-          <h3 className="text-lg font-medium text-[#283618] mb-4">
-            {t("pageNumberConfig.previewTitle", { default: "Vista Previa de Paginación" })}
-          </h3>
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-            <div className="text-sm text-[#283618]/70 mb-2">
-              {t("pageNumberConfig.formatLabel", { default: "Formato configurado:" })}
-            </div>
-            <div className="font-medium text-[#283618] text-lg">
-              {((currentField.field_config as PageNumberFieldConfig)?.format || "Página {page} de {total}")
-                .replace("{page}", "1")
-                .replace("{total}", "5")}
-            </div>
-            <div className="text-xs text-[#283618]/50 mt-2">
-              {t("pageNumberConfig.previewHelp", { default: "Esta es una vista previa. Los números de página se generarán automáticamente." })}
+      {!currentField.form &&
+        currentField.bulletin &&
+        currentField.type === "page_number" && (
+          <div>
+            <h3 className="text-lg font-medium text-[#283618] mb-4">
+              {t("pageNumberConfig.previewTitle", {
+                default: "Vista Previa de Paginación",
+              })}
+            </h3>
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <div className="text-sm text-[#283618]/70 mb-2">
+                {t("pageNumberConfig.formatLabel", {
+                  default: "Formato configurado:",
+                })}
+              </div>
+              <div className="font-medium text-[#283618] text-lg">
+                {(
+                  (currentField.field_config as PageNumberFieldConfig)
+                    ?.format || "Página {page} de {total}"
+                )
+                  .replace("{page}", "1")
+                  .replace("{total}", "5")}
+              </div>
+              <div className="text-xs text-[#283618]/50 mt-2">
+                {t("pageNumberConfig.previewHelp", {
+                  default:
+                    "Esta es una vista previa. Los números de página se generarán automáticamente.",
+                })}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* Botones */}
       <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
