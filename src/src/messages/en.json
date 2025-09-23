@@ -262,6 +262,7 @@
         "borderRadius": "Border Radius",
         "padding": "Padding",
         "margin": "Margin",
+        "gap": "Gap between Fields",
         "help": "These styles will be applied to the entire component. Individual field styles can override these values.",
         "alignOptions": {
           "left": "Left",
@@ -442,7 +443,10 @@
       },
       "pageNumberConfig": {
         "format": "Format",
-        "help": "Use {page} for current page and {total} for total pages"
+        "help": "Use {page} for current page and {total} for total pages",
+        "previewTitle": "Pagination Preview",
+        "formatLabel": "Configured format:",
+        "previewHelp": "This is a preview. Page numbers will be generated automatically."
       },
       "value": {
         "title": "Field Value",
@@ -454,6 +458,9 @@
         "title": "Field Styles",
         "color": "Text Color",
         "fontSize": "Font Size (px)",
+        "fontWeight": "Font Weight",
+        "fontStyle": "Font Style",
+        "textDecoration": "Text Decoration",
         "textAlign": "Text Alignment",
         "borderColor": "Border Color",
         "borderWidth": "Border Width (px)",
@@ -464,6 +471,26 @@
           "left": "Left",
           "center": "Center",
           "right": "Right"
+        },
+        "fontWeightOptions": {
+          "thin": "Thin (100)",
+          "extraLight": "Extra Light (200)",
+          "light": "Light (300)",
+          "normal": "Normal (400)",
+          "medium": "Medium (500)",
+          "semiBold": "Semi Bold (600)",
+          "bold": "Bold (700)",
+          "extraBold": "Extra Bold (800)",
+          "black": "Black (900)"
+        },
+        "fontStyleOptions": {
+          "normal": "Normal",
+          "italic": "Italic"
+        },
+        "textDecorationOptions": {
+          "none": "None",
+          "underline": "Underline",
+          "lineThrough": "Line Through"
         }
       }
     },

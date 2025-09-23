@@ -545,8 +545,8 @@ export function FieldEditor({
         )}
       </div>
 
-      {/* Value - Solo mostrar si form es false y bulletin es true */}
-      {!currentField.form && currentField.bulletin && (
+      {/* Value - Solo mostrar si form es false y bulletin es true, pero no para page_number */}
+      {!currentField.form && currentField.bulletin && currentField.type !== "page_number" && (
         <div>
           <h3 className="text-lg font-medium text-[#283618] mb-4">
             {t("value.title")}
@@ -679,6 +679,96 @@ export function FieldEditor({
                 </p>
               )}
           </div>
+        </div>
+
+        {/* Propiedades de Texto */}
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+              {t("styleConfig.fontWeight")}
+            </label>
+            <select
+              value={
+                currentField.style_manually_edited
+                  ? currentField.style_config?.font_weight || "400"
+                  : effectiveStyles.font_weight || "400"
+              }
+              onChange={(e) =>
+                updateStyleConfig({ font_weight: e.target.value })
+              }
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="100">{t("styleConfig.fontWeightOptions.thin")}</option>
+              <option value="200">{t("styleConfig.fontWeightOptions.extraLight")}</option>
+              <option value="300">{t("styleConfig.fontWeightOptions.light")}</option>
+              <option value="400">{t("styleConfig.fontWeightOptions.normal")}</option>
+              <option value="500">{t("styleConfig.fontWeightOptions.medium")}</option>
+              <option value="600">{t("styleConfig.fontWeightOptions.semiBold")}</option>
+              <option value="700">{t("styleConfig.fontWeightOptions.bold")}</option>
+              <option value="800">{t("styleConfig.fontWeightOptions.extraBold")}</option>
+              <option value="900">{t("styleConfig.fontWeightOptions.black")}</option>
+            </select>
+            {!currentField.style_manually_edited &&
+              inheritableStyles.font_weight && (
+                <p className="text-xs text-[#283618]/50 mt-1">
+                  Heredado: {inheritableStyles.font_weight}
+                </p>
+              )}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+              {t("styleConfig.fontStyle")}
+            </label>
+            <select
+              value={
+                currentField.style_manually_edited
+                  ? currentField.style_config?.font_style || "normal"
+                  : effectiveStyles.font_style || "normal"
+              }
+              onChange={(e) =>
+                updateStyleConfig({ font_style: e.target.value })
+              }
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="normal">{t("styleConfig.fontStyleOptions.normal")}</option>
+              <option value="italic">{t("styleConfig.fontStyleOptions.italic")}</option>
+            </select>
+            {!currentField.style_manually_edited &&
+              inheritableStyles.font_style && (
+                <p className="text-xs text-[#283618]/50 mt-1">
+                  Heredado: {inheritableStyles.font_style}
+                </p>
+              )}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+              {t("styleConfig.textDecoration")}
+            </label>
+            <select
+              value={
+                currentField.style_manually_edited
+                  ? currentField.style_config?.text_decoration || "none"
+                  : effectiveStyles.text_decoration || "none"
+              }
+              onChange={(e) =>
+                updateStyleConfig({ text_decoration: e.target.value })
+              }
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="none">{t("styleConfig.textDecorationOptions.none")}</option>
+              <option value="underline">{t("styleConfig.textDecorationOptions.underline")}</option>
+              <option value="line-through">{t("styleConfig.textDecorationOptions.lineThrough")}</option>
+            </select>
+            {!currentField.style_manually_edited &&
+              inheritableStyles.text_decoration && (
+                <p className="text-xs text-[#283618]/50 mt-1">
+                  Heredado: {inheritableStyles.text_decoration}
+                </p>
+              )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
           <div className="col-span-2">
             <label className="block text-sm font-medium text-[#283618]/70 mb-2">
               {t("styleConfig.textAlign")}
@@ -859,13 +949,35 @@ export function FieldEditor({
         </div>
       )}
 
-      {/* Configuración específica del tipo - Solo mostrar si form es true */}
-      {currentField.form && (
+      {/* Configuración específica del tipo - Mostrar siempre para page_number, solo si form es true para otros tipos */}
+      {(currentField.form || currentField.type === "page_number") && (
         <div>
           <h3 className="text-lg font-medium text-[#283618] mb-4">
             {t("specificConfig.title")}
           </h3>
           {renderFieldSpecificConfig()}
+        </div>
+      )}
+
+      {/* Vista previa de paginación - Solo mostrar para page_number cuando form es false y bulletin es true */}
+      {!currentField.form && currentField.bulletin && currentField.type === "page_number" && (
+        <div>
+          <h3 className="text-lg font-medium text-[#283618] mb-4">
+            {t("pageNumberConfig.previewTitle", { default: "Vista Previa de Paginación" })}
+          </h3>
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <div className="text-sm text-[#283618]/70 mb-2">
+              {t("pageNumberConfig.formatLabel", { default: "Formato configurado:" })}
+            </div>
+            <div className="font-medium text-[#283618] text-lg">
+              {((currentField.field_config as PageNumberFieldConfig)?.format || "Página {page} de {total}")
+                .replace("{page}", "1")
+                .replace("{total}", "5")}
+            </div>
+            <div className="text-xs text-[#283618]/50 mt-2">
+              {t("pageNumberConfig.previewHelp", { default: "Esta es una vista previa. Los números de página se generarán automáticamente." })}
+            </div>
+          </div>
         </div>
       )}
 

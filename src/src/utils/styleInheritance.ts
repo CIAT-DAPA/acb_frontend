@@ -22,6 +22,10 @@ export function combineStyles(
     if (parentStyle.background_color)
       combined.background_color = parentStyle.background_color;
     if (parentStyle.font_size) combined.font_size = parentStyle.font_size;
+    if (parentStyle.font_weight) combined.font_weight = parentStyle.font_weight;
+    if (parentStyle.font_style) combined.font_style = parentStyle.font_style;
+    if (parentStyle.text_decoration)
+      combined.text_decoration = parentStyle.text_decoration;
     if (parentStyle.text_align) combined.text_align = parentStyle.text_align;
     if (parentStyle.font) combined.font = parentStyle.font;
     if (parentStyle.secondary_color)
@@ -35,6 +39,10 @@ export function combineStyles(
     if (childStyle.background_color)
       combined.background_color = childStyle.background_color;
     if (childStyle.font_size) combined.font_size = childStyle.font_size;
+    if (childStyle.font_weight) combined.font_weight = childStyle.font_weight;
+    if (childStyle.font_style) combined.font_style = childStyle.font_style;
+    if (childStyle.text_decoration)
+      combined.text_decoration = childStyle.text_decoration;
     if (childStyle.text_align) combined.text_align = childStyle.text_align;
     // Las propiedades de layout/espaciado no se heredan, solo se toman del hijo
     if (childStyle.padding) combined.padding = childStyle.padding;
@@ -101,6 +109,15 @@ export function inheritStylesFromContainer(
   }
   if (containerStyle.font_size) {
     inheritedStyles.font_size = containerStyle.font_size;
+  }
+  if (containerStyle.font_weight) {
+    inheritedStyles.font_weight = containerStyle.font_weight;
+  }
+  if (containerStyle.font_style) {
+    inheritedStyles.font_style = containerStyle.font_style;
+  }
+  if (containerStyle.text_decoration) {
+    inheritedStyles.text_decoration = containerStyle.text_decoration;
   }
   if (containerStyle.text_align) {
     inheritedStyles.text_align = containerStyle.text_align;
@@ -203,6 +220,15 @@ export function getInheritableStyles(
   }
   if (containerStyle.font_size) {
     inheritable.font_size = containerStyle.font_size;
+  }
+  if (containerStyle.font_weight) {
+    inheritable.font_weight = containerStyle.font_weight;
+  }
+  if (containerStyle.font_style) {
+    inheritable.font_style = containerStyle.font_style;
+  }
+  if (containerStyle.text_decoration) {
+    inheritable.text_decoration = containerStyle.text_decoration;
   }
   if (containerStyle.text_align) {
     inheritable.text_align = containerStyle.text_align;

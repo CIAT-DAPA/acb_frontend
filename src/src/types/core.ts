@@ -19,9 +19,12 @@ export interface StyleConfig {
   background_color?: string;
   font_size?: number;
   font_weight?: string;
+  font_style?: "normal" | "italic";
+  text_decoration?: "none" | "underline" | "line-through";
   text_align?: "left" | "center" | "right";
   padding?: string;
   margin?: string;
+  gap?: string; // Espaciado entre campos
   primary_color?: string;
   secondary_color?: string;
   border_color?: string;
@@ -47,6 +50,9 @@ export interface ValidationRules {
 export const TEMPLATE_STATUS = ["activa", "archivada", "borrador"] as const;
 export const ACCESS_TYPES = ["public", "restricted", "private"] as const;
 export const TEXT_ALIGN_OPTIONS = ["left", "center", "right"] as const;
+export const FONT_WEIGHT_OPTIONS = ["100", "200", "300", "400", "500", "600", "700", "800", "900"] as const;
+export const FONT_STYLE_OPTIONS = ["normal", "italic"] as const;
+export const TEXT_DECORATION_OPTIONS = ["none", "underline", "line-through"] as const;
 
 export type TemplateStatus = (typeof TEMPLATE_STATUS)[number];
 export type AccessType = (typeof ACCESS_TYPES)[number];

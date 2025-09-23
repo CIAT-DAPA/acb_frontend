@@ -359,6 +359,22 @@ export function HeaderFooterStep({
                 placeholder="0px"
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-[#283618] mb-2">
+                {t("globalStyles.gap")}
+              </label>
+              <input
+                type="text"
+                value={currentConfig.style_config?.gap || ""}
+                onChange={(e) =>
+                  updateHeaderFooterStyle(activeConfig, {
+                    gap: e.target.value,
+                  })
+                }
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                placeholder="8px"
+              />
+            </div>
           </div>
           <p className="mt-2 text-xs text-[#283618]">
             {t("globalStyles.help")}

@@ -262,6 +262,7 @@
         "borderRadius": "Redondeado",
         "padding": "Espaciado Interno",
         "margin": "Espaciado Externo",
+        "gap": "Espaciado entre Campos",
         "help": "Estos estilos se aplicarán a todo el componente. Los estilos individuales de los campos pueden sobrescribir estos valores.",
         "alignOptions": {
           "left": "Izquierda",
@@ -443,7 +444,10 @@
       },
       "pageNumberConfig": {
         "format": "Formato",
-        "help": "Use {page} para página actual y {total} para total de páginas"
+        "help": "Use {page} para página actual y {total} para total de páginas",
+        "previewTitle": "Vista Previa de Paginación",
+        "formatLabel": "Formato configurado:",
+        "previewHelp": "Esta es una vista previa. Los números de página se generarán automáticamente."
       },
       "value": {
         "title": "Valor del Campo",
@@ -455,6 +459,9 @@
         "title": "Estilos del Campo",
         "color": "Color del Texto",
         "fontSize": "Tamaño de Fuente (px)",
+        "fontWeight": "Grosor del Texto",
+        "fontStyle": "Estilo del Texto",
+        "textDecoration": "Decoración del Texto",
         "textAlign": "Alineación del Texto",
         "borderColor": "Color del Borde",
         "borderWidth": "Grosor del Borde (px)",
@@ -465,6 +472,26 @@
           "left": "Izquierda",
           "center": "Centro",
           "right": "Derecha"
+        },
+        "fontWeightOptions": {
+          "thin": "Thin (100)",
+          "extraLight": "Extra Light (200)",
+          "light": "Light (300)",
+          "normal": "Normal (400)",
+          "medium": "Medium (500)",
+          "semiBold": "Semi Bold (600)",
+          "bold": "Bold (700)",
+          "extraBold": "Extra Bold (800)",
+          "black": "Black (900)"
+        },
+        "fontStyleOptions": {
+          "normal": "Normal",
+          "italic": "Cursiva"
+        },
+        "textDecorationOptions": {
+          "none": "Ninguna",
+          "underline": "Subrayado",
+          "lineThrough": "Tachado"
         }
       }
     },

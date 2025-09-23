@@ -62,6 +62,9 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
       fontSize: effectiveStyles.font_size
         ? `${effectiveStyles.font_size}px`
         : globalStyles.fontSize,
+      fontWeight: effectiveStyles.font_weight || "400",
+      fontStyle: effectiveStyles.font_style || "normal",
+      textDecoration: effectiveStyles.text_decoration || "none",
       textAlign:
         (effectiveStyles.text_align as "left" | "center" | "right") ||
         globalStyles.textAlign,
@@ -91,12 +94,40 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
 
     switch (field.type) {
       case "text":
+        // Para text, si form es false y tiene valor, mostrarlo. Si form es true, mostrar placeholder
+        const textValue =
+          !field.form && field.value
+            ? renderFieldValue(field.value)
+            : field.display_name || field.label || "Campo de texto";
+
         return (
           <div key={key} style={fieldStyles}>
-            {renderFieldValue(field.value) ||
-              field.display_name ||
-              field.label ||
-              "Campo de texto"}
+            {textValue}
+          </div>
+        );
+
+      case "text_with_icon":
+        // Para text_with_icon, si form es false, mostrar el value. Si form es true, mostrar placeholder
+        const textWithIconValue =
+          !field.form && field.value
+            ? renderFieldValue(field.value)
+            : field.form
+            ? field.display_name || field.label || "Texto con icono"
+            : field.display_name || field.label || "Texto con icono";
+
+        return (
+          <div
+            key={key}
+            style={fieldStyles}
+            className="flex items-center gap-2"
+          >
+            {field.field_config?.icon_options &&
+              field.field_config.icon_options.length > 0 && (
+                <span className="text-lg">
+                  {field.field_config.icon_options[0] || "📄"}
+                </span>
+              )}
+            <span>{textWithIconValue}</span>
           </div>
         );
 
@@ -144,10 +175,7 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
 
       case "list":
         return (
-          <div
-            key={key}
-            style={fieldStyles}
-          >
+          <div key={key} style={fieldStyles}>
             <div className="font-medium mb-2">
               {field.label || field.display_name}
             </div>
@@ -176,9 +204,15 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
         );
 
       default:
+        // Para cualquier otro tipo de campo, si form es false y tiene valor, mostrarlo
+        const defaultValue =
+          !field.form && field.value
+            ? renderFieldValue(field.value)
+            : `[${field.type}] ${field.display_name}`;
+
         return (
           <div key={key} style={fieldStyles}>
-            [{field.type}] {field.display_name}
+            {defaultValue}
           </div>
         );
     }
@@ -219,10 +253,10 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
             headerConfig.fields &&
             headerConfig.fields.length > 0 && (
               <div
-                className={`border-b border-gray-200 pb-4 mb-6 w-full px-4 pt-4 ${
-                  headerConfig.style_config?.fields_layout === "vertical" 
-                    ? "flex flex-col space-y-2" 
-                    : "flex items-center space-x-4"
+                className={`pb-4 mb-6 w-full px-4 pt-4 ${
+                  headerConfig.style_config?.fields_layout === "vertical"
+                    ? "flex flex-col"
+                    : "flex items-center"
                 }`}
                 style={{
                   backgroundColor:
@@ -234,13 +268,18 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
                   fontSize: headerConfig.style_config?.font_size
                     ? `${headerConfig.style_config.font_size}px`
                     : globalStyles.fontSize,
+                  fontWeight: headerConfig.style_config?.font_weight || "400",
+                  fontStyle: headerConfig.style_config?.font_style || "normal",
+                  textDecoration:
+                    headerConfig.style_config?.text_decoration || "none",
                   textAlign:
                     (headerConfig.style_config?.text_align as
                       | "left"
                       | "center"
                       | "right") || "center",
-                  padding: headerConfig.style_config?.padding || "0",
+                  padding: headerConfig.style_config?.padding || "16px",
                   margin: headerConfig.style_config?.margin,
+                  gap: headerConfig.style_config?.gap || "16px",
                   ...(headerConfig.style_config?.border_width && {
                     border: `${headerConfig.style_config.border_width} solid ${
                       headerConfig.style_config.border_color || "#000000"
@@ -379,10 +418,10 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
             footerConfig.fields &&
             footerConfig.fields.length > 0 && (
               <div
-                className={`border-t border-gray-200 pt-4 mt-8 w-full px-4 pb-4 ${
-                  footerConfig.style_config?.fields_layout === "vertical" 
-                    ? "flex flex-col space-y-2" 
-                    : "flex items-center space-x-4"
+                className={`pt-4 mt-8 w-full px-4 pb-4 ${
+                  footerConfig.style_config?.fields_layout === "vertical"
+                    ? "flex flex-col"
+                    : "flex items-center"
                 }`}
                 style={{
                   backgroundColor:
@@ -394,13 +433,18 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
                   fontSize: footerConfig.style_config?.font_size
                     ? `${footerConfig.style_config.font_size}px`
                     : globalStyles.fontSize,
+                  fontWeight: footerConfig.style_config?.font_weight || "400",
+                  fontStyle: footerConfig.style_config?.font_style || "normal",
+                  textDecoration:
+                    footerConfig.style_config?.text_decoration || "none",
                   textAlign:
                     (footerConfig.style_config?.text_align as
                       | "left"
                       | "center"
                       | "right") || "center",
-                  padding: footerConfig.style_config?.padding || "0",
+                  padding: footerConfig.style_config?.padding || "16px",
                   margin: footerConfig.style_config?.margin,
+                  gap: footerConfig.style_config?.gap || "16px",
                   ...(footerConfig.style_config?.border_width && {
                     border: `${footerConfig.style_config.border_width} solid ${
                       footerConfig.style_config.border_color || "#000000"
