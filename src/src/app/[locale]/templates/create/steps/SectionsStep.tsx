@@ -17,6 +17,8 @@ interface SectionsStepProps {
     updater: (prevData: CreateTemplateData) => CreateTemplateData
   ) => void;
   onErrorsChange: (errors: Record<string, string[]>) => void;
+  selectedSectionIndex?: number;
+  onSectionSelect?: (index: number) => void;
 }
 
 export function SectionsStep({
@@ -24,6 +26,8 @@ export function SectionsStep({
   errors,
   onDataChange,
   onErrorsChange,
+  selectedSectionIndex = 0,
+  onSectionSelect,
 }: SectionsStepProps) {
   const t = useTranslations("CreateTemplate.sections");
   const [expandedSection, setExpandedSection] = useState<number | null>(null);
@@ -225,23 +229,71 @@ export function SectionsStep({
         <h2 className="text-xl font-semibold text-[#283618] mb-4">
           {t("title")}
         </h2>
-        <p className="text-[#283618]/70">{t("description")}</p>
+        <div className="flex flex-col space-y-4">
+          <p className="text-[#283618]/70 flex-1">{t("description")}</p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 max-w">
+            <div className="flex items-center mb-2">
+              <span className="text-blue-700 font-medium text-sm">
+                📄 Información
+              </span>
+            </div>
+            <p className="text-xs text-blue-700">
+              Cada sección será <strong>una página independiente</strong> en el
+              boletín final.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Información y botón agregar */}
-      <div className="flex justify-between items-center">
-        <div className="text-sm text-[#283618]/70">
-          {t("info")}: {data.version.content.sections.length}
+      <div className="space-y-4">
+        {/* Selector de páginas si hay múltiples secciones */}
+        {data.version.content.sections.length > 1 && onSectionSelect && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-blue-700 font-medium text-sm">
+                  Navegación de páginas en preview:
+                </span>
+                <div className="flex gap-1">
+                  {data.version.content.sections.map((section, index) => (
+                    <button
+                      key={`page-nav-${index}`}
+                      onClick={() => onSectionSelect(index)}
+                      className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                        selectedSectionIndex === index
+                          ? "bg-blue-600 text-white"
+                          : "bg-white text-blue-600 hover:bg-blue-100"
+                      }`}
+                      title={`Ver página ${index + 1}: ${section.display_name}`}
+                    >
+                      {index + 1}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <span className="text-blue-600 text-xs">
+                Página actual: {selectedSectionIndex + 1}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Info y botón agregar */}
+        <div className="flex justify-between items-center">
+          <div className="text-sm text-[#283618]/70">
+            {t("info")}: {data.version.content.sections.length}
+          </div>
+          <button
+            onClick={addSection}
+            className="inline-flex items-center px-3 py-2 border-2 border-[#bc6c25] text-sm leading-4 
+                       font-medium rounded-md text-[#283618] hover:border-[#bc6c25]/50 
+                       focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#bc6c25] cursor-pointer"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            {t("addSection")}
+          </button>
         </div>
-        <button
-          onClick={addSection}
-          className="inline-flex items-center px-3 py-2 border-2 border-[#bc6c25] text-sm leading-4 
-                     font-medium rounded-md text-[#283618] hover:border-[#bc6c25]/50 
-                     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#bc6c25] cursor-pointer"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          {t("addSection")}
-        </button>
       </div>
 
       {/* Lista de secciones */}
@@ -270,26 +322,55 @@ export function SectionsStep({
               className="border border-gray-200 rounded-lg bg-white"
             >
               {/* Header de la sección */}
-              <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <div
+                className={`flex items-center justify-between p-4 border-b border-gray-200 ${
+                  selectedSectionIndex === sectionIndex
+                    ? "bg-blue-50 border-blue-200"
+                    : ""
+                }`}
+              >
                 <div className="flex items-center space-x-3">
                   <div className="cursor-move text-[#283618]/50 hover:text-[#283618]">
                     <GripVertical className="w-5 h-5" />
                   </div>
                   <div className="flex-1">
-                    <input
-                      type="text"
-                      value={section.display_name}
-                      onChange={(e) =>
-                        updateSection(sectionIndex, {
-                          display_name: e.target.value,
-                        })
-                      }
-                      className="text-lg font-semibold text-[#283618] bg-transparent border-none focus:outline-none focus:ring-0"
-                      placeholder="Nombre de la sección"
-                    />
-                    <div className="text-sm text-[#283618]/70">
-                      ID: {section.section_id} | Orden: {section.order} |
-                      Bloques: {section.blocks.length}
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={section.display_name}
+                        onChange={(e) =>
+                          updateSection(sectionIndex, {
+                            display_name: e.target.value,
+                          })
+                        }
+                        className="text-lg font-semibold text-[#283618] bg-transparent border-none focus:outline-none focus:ring-0"
+                        placeholder="Nombre de la sección"
+                      />
+                      {selectedSectionIndex === sectionIndex && (
+                        <span className="bg-blue-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+                          👁️ Vista en Preview
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-sm text-[#283618]/70 flex items-center flex-wrap gap-2">
+                      <span>ID: {section.section_id}</span>
+                      <span>•</span>
+                      <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-medium">
+                        📄 Página {section.order}
+                      </span>
+                      <span>•</span>
+                      <span>Bloques: {section.blocks.length}</span>
+                      {onSectionSelect && (
+                        <>
+                          <span>•</span>
+                          <button
+                            onClick={() => onSectionSelect(sectionIndex)}
+                            className="text-blue-600 hover:text-blue-800 underline text-xs font-medium"
+                          >
+                            Ver en preview →
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

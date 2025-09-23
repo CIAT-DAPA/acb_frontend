@@ -69,6 +69,9 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
     isValid: false,
   });
 
+  // Estado para controlar qué sección se muestra en el preview
+  const [selectedSectionIndex, setSelectedSectionIndex] = useState(0);
+
   // Actualizar creator_user_id cuando userInfo esté disponible
   useEffect(() => {
     if (
@@ -101,6 +104,19 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
     userInfo?.sub,
     creationState.data.master.log.creator_user_id,
     creationState.data.version.log.creator_user_id,
+  ]);
+
+  // Resetear la sección seleccionada cuando no existe o cambia el número de secciones
+  useEffect(() => {
+    const sectionsCount = creationState.data.version.content.sections.length;
+    if (sectionsCount === 0) {
+      setSelectedSectionIndex(0);
+    } else if (selectedSectionIndex >= sectionsCount) {
+      setSelectedSectionIndex(0);
+    }
+  }, [
+    creationState.data.version.content.sections.length,
+    selectedSectionIndex,
   ]);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -306,6 +322,8 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
                   errors={creationState.errors}
                   onDataChange={updateData}
                   onErrorsChange={updateErrors}
+                  selectedSectionIndex={selectedSectionIndex}
+                  onSectionSelect={setSelectedSectionIndex}
                 />
               </StepContent>
 
@@ -332,10 +350,15 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
                 <h2 className="text-lg font-semibold text-[#283618]">
                   {t("preview.title")}
                 </h2>
-                <p className="text-sm text-[#283618]/70">{t("preview.subtitle")}</p>
+                <p className="text-sm text-[#283618]/70">
+                  {t("preview.subtitle")}
+                </p>
               </div>
 
-              <TemplatePreview data={creationState.data} />
+              <TemplatePreview
+                data={creationState.data}
+                selectedSectionIndex={selectedSectionIndex}
+              />
             </div>
           </div>
         </div>

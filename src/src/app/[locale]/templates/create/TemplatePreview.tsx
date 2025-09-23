@@ -8,9 +8,13 @@ import { getEffectiveFieldStyles } from "../../../../utils/styleInheritance";
 
 interface TemplatePreviewProps {
   data: CreateTemplateData;
+  selectedSectionIndex?: number;
 }
 
-export function TemplatePreview({ data }: TemplatePreviewProps) {
+export function TemplatePreview({
+  data,
+  selectedSectionIndex = 0,
+}: TemplatePreviewProps) {
   const t = useTranslations("CreateTemplate.preview");
 
   const styleConfig = data.version.content.style_config;
@@ -301,10 +305,10 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
               </div>
             )}
 
-          {/* Secciones */}
-          <div className="space-y-8 flex-1 px-4">
+          {/* Secciones - Cada sección es una página independiente */}
+          <div className="flex-1 px-4 flex flex-col">
             {sections.length === 0 ? (
-              <div className="text-center py-12 text-[#283618]/50">
+              <div className="text-center py-12 text-[#283618]/50 flex-1 flex items-center justify-center flex-col">
                 <div className="text-4xl mb-4">📄</div>
                 <p>
                   {t("noSections", {
@@ -313,103 +317,116 @@ export function TemplatePreview({ data }: TemplatePreviewProps) {
                 </p>
               </div>
             ) : (
-              sections.map((section, sectionIndex) => (
-                <div
-                  key={`preview-section-${sectionIndex}`}
-                  className="section-preview w-full"
-                >
-                  {/* Header de sección */}
-                  {section.header_config &&
-                    section.header_config.fields &&
-                    section.header_config.fields.length > 0 && (
-                      <div
-                        className="mb-4 p-3 bg-gray-50 rounded w-full"
-                        style={{
-                          textAlign:
-                            (section.header_config.style_config?.text_align as
-                              | "left"
-                              | "center"
-                              | "right") || "left",
-                        }}
-                      >
-                        <div className="text-xs text-[#283618]/50 mb-1">
-                          HEADER DE SECCIÓN
-                        </div>
-                        {section.header_config.fields.map((field, index) =>
-                          renderField(
-                            field,
-                            `sh-${sectionIndex}-${index}`,
-                            section.header_config?.style_config
-                          )
-                        )}
-                      </div>
-                    )}
+              <div className="flex-1 flex flex-col">
+                {/* Mostrar la sección seleccionada */}
+                {sections.length > 0 && sections[selectedSectionIndex] && (
+                  <div className="section-preview w-full flex-1">
+                    {(() => {
+                      const section = sections[selectedSectionIndex];
+                      const sectionIndex = selectedSectionIndex;
+                      return (
+                        <>
+                          {/* Header de sección */}
+                          {section.header_config &&
+                            section.header_config.fields &&
+                            section.header_config.fields.length > 0 && (
+                              <div
+                                className="mb-4 p-3 bg-gray-50 rounded w-full"
+                                style={{
+                                  textAlign:
+                                    (section.header_config.style_config
+                                      ?.text_align as
+                                      | "left"
+                                      | "center"
+                                      | "right") || "left",
+                                }}
+                              >
+                                <div className="text-xs text-[#283618]/50 mb-1">
+                                  HEADER DE SECCIÓN
+                                </div>
+                                {section.header_config.fields.map(
+                                  (field, index) =>
+                                    renderField(
+                                      field,
+                                      `sh-${sectionIndex}-${index}`,
+                                      section.header_config?.style_config
+                                    )
+                                )}
+                              </div>
+                            )}
 
-                  {/* Título de la sección */}
-                  <div className="flex items-center mb-4">
-                    {section.icon_url && (
-                      <img
-                        src={section.icon_url}
-                        alt=""
-                        className="w-6 h-6 mr-3"
-                      />
-                    )}
-                    <h2
-                      className="text-xl font-bold"
-                      style={{ color: styleConfig?.primary_color || "#000" }}
-                    >
-                      {section.display_name}
-                    </h2>
-                    <span className="ml-2 text-sm text-[#283618]/50">
-                      (#{section.order})
-                    </span>
-                  </div>
+                          {/* Título de la sección */}
+                          <div className="flex items-center mb-4">
+                            {section.icon_url && (
+                              <img
+                                src={section.icon_url}
+                                alt=""
+                                className="w-6 h-6 mr-3"
+                              />
+                            )}
+                            <h2
+                              className="text-xl font-bold"
+                              style={{
+                                color: styleConfig?.primary_color || "#000",
+                              }}
+                            >
+                              {section.display_name}
+                            </h2>
+                            <span className="ml-2 text-sm text-[#283618]/50">
+                              (#{section.order})
+                            </span>
+                          </div>
 
-                  {/* Bloques de la sección */}
-                  <div className="space-y-6 w-full">
-                    {section.blocks.length === 0 ? (
-                      <div className="text-sm text-[#283618]/50 italic pl-4">
-                        No hay bloques en esta sección
-                      </div>
-                    ) : (
-                      section.blocks.map((block, blockIndex) => (
-                        <div
-                          key={`preview-block-${sectionIndex}-${blockIndex}`}
-                          className="border-l-4 border-gray-200 pl-4 w-full"
-                        >
-                          <h3
-                            className="font-semibold mb-3 text-lg"
-                            style={{
-                              color: styleConfig?.secondary_color || "#666",
-                            }}
-                          >
-                            {block.display_name}
-                          </h3>
-
-                          {/* Campos del bloque */}
-                          <div className="space-y-2">
-                            {block.fields.length === 0 ? (
-                              <div className="text-sm text-[#283618]/50 italic">
-                                No hay campos en este bloque
+                          {/* Bloques de la sección */}
+                          <div className="space-y-6 w-full">
+                            {section.blocks.length === 0 ? (
+                              <div className="text-sm text-[#283618]/50 italic pl-4">
+                                No hay bloques en esta sección
                               </div>
                             ) : (
-                              block.fields
-                                .filter((field) => field.bulletin) // Solo mostrar campos que van al boletín
-                                .map((field, fieldIndex) =>
-                                  renderField(
-                                    field,
-                                    `preview-field-${sectionIndex}-${blockIndex}-${fieldIndex}`,
-                                    section.style_config // Los campos en bloques heredan del estilo de la sección
-                                  )
-                                )
+                              section.blocks.map((block, blockIndex) => (
+                                <div
+                                  key={`preview-block-${sectionIndex}-${blockIndex}`}
+                                  className="border-l-4 border-gray-200 pl-4 w-full"
+                                >
+                                  <h3
+                                    className="font-semibold mb-3 text-lg"
+                                    style={{
+                                      color:
+                                        styleConfig?.secondary_color || "#666",
+                                    }}
+                                  >
+                                    {block.display_name}
+                                  </h3>
+
+                                  {/* Campos del bloque */}
+                                  <div className="space-y-2">
+                                    {block.fields.length === 0 ? (
+                                      <div className="text-sm text-[#283618]/50 italic">
+                                        No hay campos en este bloque
+                                      </div>
+                                    ) : (
+                                      block.fields
+                                        .filter((field) => field.bulletin) // Solo mostrar campos que van al boletín
+                                        .map((field, fieldIndex) =>
+                                          renderField(
+                                            field,
+                                            `preview-field-${sectionIndex}-${blockIndex}-${fieldIndex}`,
+                                            section.style_config // Los campos en bloques heredan del estilo de la sección
+                                          )
+                                        )
+                                    )}
+                                  </div>
+                                </div>
+                              ))
                             )}
                           </div>
-                        </div>
-                      ))
-                    )}
+                        </>
+                      );
+                    })()}
                   </div>
-                </div>
-              ))
+                )}
+              </div>
             )}
           </div>
 
