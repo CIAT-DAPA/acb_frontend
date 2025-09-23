@@ -6,6 +6,7 @@ import {
   Field,
   FIELD_TYPES,
   TextFieldConfig,
+  TextWithIconFieldConfig,
   ListFieldConfig,
   SelectFieldConfig,
   DateFieldConfig,
@@ -108,7 +109,31 @@ export function FieldEditor({
   );
 
   const handleSave = useCallback(() => {
-    onFieldChange(currentField);
+    // Si form es false, asignar automáticamente displayName a label y description
+    let fieldToSave = { ...currentField };
+    if (!currentField.form) {
+      fieldToSave = {
+        ...fieldToSave,
+        label: currentField.display_name,
+        description: currentField.display_name,
+      };
+    }
+
+    // Para text_with_icon, asegurar que tenga al menos field_config con icon_options
+    if (currentField.type === "text_with_icon") {
+      fieldToSave = {
+        ...fieldToSave,
+        field_config: {
+          subtype:
+            (fieldToSave.field_config as TextWithIconFieldConfig)?.subtype ||
+            "short",
+          icon_options: (fieldToSave.field_config as TextWithIconFieldConfig)
+            ?.icon_options || [""],
+        },
+      } as Field;
+    }
+
+    onFieldChange(fieldToSave);
     onClose();
   }, [currentField, onFieldChange, onClose]);
 
@@ -136,6 +161,126 @@ export function FieldEditor({
                   {t("textConfig.long", { default: "Largo" })}
                 </option>
               </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t("validation.minLength", { default: "Longitud mínima" })}
+                </label>
+                <input
+                  type="number"
+                  value={currentField.validation?.min_length || ""}
+                  onChange={(e) =>
+                    updateValidation({
+                      min_length: parseInt(e.target.value) || undefined,
+                    })
+                  }
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="0"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t("validation.maxLength", { default: "Longitud máxima" })}
+                </label>
+                <input
+                  type="number"
+                  value={currentField.validation?.max_length || ""}
+                  onChange={(e) =>
+                    updateValidation({
+                      max_length: parseInt(e.target.value) || undefined,
+                    })
+                  }
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="255"
+                />
+              </div>
+            </div>
+          </div>
+        );
+
+      case "text_with_icon":
+        return (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t("textConfig.subtype", { default: "Subtipo de texto" })}
+              </label>
+              <select
+                value={
+                  (currentField.field_config as TextWithIconFieldConfig)
+                    ?.subtype || "short"
+                }
+                onChange={(e) => updateFieldConfig({ subtype: e.target.value })}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="short">
+                  {t("textConfig.short", { default: "Corto" })}
+                </option>
+                <option value="long">
+                  {t("textConfig.long", { default: "Largo" })}
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t("textWithIconConfig.iconOptions", {
+                  default: "Opciones de Iconos",
+                })}
+              </label>
+              <div className="space-y-2">
+                {(
+                  (currentField.field_config as TextWithIconFieldConfig)
+                    ?.icon_options || []
+                ).map((iconUrl, index) => (
+                  <div key={index} className="flex items-center space-x-2">
+                    <input
+                      type="url"
+                      value={iconUrl}
+                      onChange={(e) => {
+                        const newIcons = [
+                          ...((
+                            currentField.field_config as TextWithIconFieldConfig
+                          )?.icon_options || []),
+                        ];
+                        newIcons[index] = e.target.value;
+                        updateFieldConfig({ icon_options: newIcons });
+                      }}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="https://ejemplo.com/icono.svg"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newIcons = (
+                          (currentField.field_config as TextWithIconFieldConfig)
+                            ?.icon_options || []
+                        ).filter((_, i) => i !== index);
+                        updateFieldConfig({ icon_options: newIcons });
+                      }}
+                      className="px-3 py-2 text-sm bg-red-100 text-red-700 rounded-md hover:bg-red-200"
+                    >
+                      {t("actions.remove", { default: "Eliminar" })}
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const currentIcons =
+                      (currentField.field_config as TextWithIconFieldConfig)
+                        ?.icon_options || [];
+                    updateFieldConfig({ icon_options: [...currentIcons, ""] });
+                  }}
+                  className="px-4 py-2 text-sm bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200"
+                >
+                  {t("textWithIconConfig.addIcon", {
+                    default: "Agregar Icono",
+                  })}
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -294,6 +439,7 @@ export function FieldEditor({
     <div className="space-y-6">
       {/* Información básica */}
       <div className="space-y-4">
+        {/* ID del Campo */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             {t("basic.fieldId", { default: "ID del Campo" })} *
@@ -307,6 +453,7 @@ export function FieldEditor({
           />
         </div>
 
+        {/* Display Name */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             {t("basic.displayName", { default: "Nombre a Mostrar" })} *
@@ -320,6 +467,7 @@ export function FieldEditor({
           />
         </div>
 
+        {/* Tipo de Campo */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             {t("basic.type", { default: "Tipo de Campo" })} *
@@ -339,74 +487,88 @@ export function FieldEditor({
           </select>
         </div>
 
+        {/* Visibilidad */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            {t("basic.label", { default: "Etiqueta" })}
-          </label>
-          <input
-            type="text"
-            value={currentField.label || ""}
-            onChange={(e) => updateField({ label: e.target.value })}
-            className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Etiqueta para el usuario"
-          />
+          <h4 className="text-sm font-medium text-gray-900 mb-3">
+            {t("visibility.title", { default: "Visibilidad" })}
+          </h4>
+          <div className="space-y-3">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="show_in_form"
+                checked={currentField.form}
+                onChange={(e) => updateField({ form: e.target.checked })}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label
+                htmlFor="show_in_form"
+                className="ml-2 text-sm text-gray-700"
+              >
+                {t("visibility.form", {
+                  default: "Mostrar en formulario de creación de boletín",
+                })}
+              </label>
+            </div>
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="show_in_bulletin"
+                checked={currentField.bulletin}
+                onChange={(e) => updateField({ bulletin: e.target.checked })}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label
+                htmlFor="show_in_bulletin"
+                className="ml-2 text-sm text-gray-700"
+              >
+                {t("visibility.bulletin", {
+                  default: "Mostrar en boletín final",
+                })}
+              </label>
+            </div>
+          </div>
+          {!currentField.form && (
+            <p className="mt-2 text-xs text-amber-600">
+              ℹ️{" "}
+              {t("visibility.formHelp", {
+                default:
+                  "Si no se muestra en el formulario, la etiqueta y descripción se asignarán automáticamente del nombre a mostrar",
+              })}
+            </p>
+          )}
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            {t("basic.description", { default: "Descripción" })}
-          </label>
-          <textarea
-            rows={2}
-            value={currentField.description || ""}
-            onChange={(e) => updateField({ description: e.target.value })}
-            className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Descripción o ayuda para el usuario"
-          />
-        </div>
-      </div>
+        {/* Etiqueta y Descripción - Solo si form es true */}
+        {currentField.form && (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t("basic.label", { default: "Etiqueta" })}
+              </label>
+              <input
+                type="text"
+                value={currentField.label || ""}
+                onChange={(e) => updateField({ label: e.target.value })}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Etiqueta para el usuario"
+              />
+            </div>
 
-      {/* Opciones de visibilidad */}
-      <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
-          {t("visibility.title", { default: "Visibilidad" })}
-        </h3>
-        <div className="space-y-3">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="show_in_form"
-              checked={currentField.form}
-              onChange={(e) => updateField({ form: e.target.checked })}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-            />
-            <label
-              htmlFor="show_in_form"
-              className="ml-2 text-sm text-gray-700"
-            >
-              {t("visibility.form", {
-                default: "Mostrar en formulario de creación de boletín",
-              })}
-            </label>
-          </div>
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="show_in_bulletin"
-              checked={currentField.bulletin}
-              onChange={(e) => updateField({ bulletin: e.target.checked })}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-            />
-            <label
-              htmlFor="show_in_bulletin"
-              className="ml-2 text-sm text-gray-700"
-            >
-              {t("visibility.bulletin", {
-                default: "Mostrar en boletín final",
-              })}
-            </label>
-          </div>
-        </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t("basic.description", { default: "Descripción" })}
+              </label>
+              <textarea
+                rows={2}
+                value={currentField.description || ""}
+                onChange={(e) => updateField({ description: e.target.value })}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Descripción o ayuda para el usuario"
+              />
+            </div>
+          </>
+        )}
       </div>
 
       {/* Value - Solo mostrar si form es false y bulletin es true */}

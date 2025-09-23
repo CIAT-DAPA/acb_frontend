@@ -13,6 +13,11 @@ export interface TextFieldConfig {
   subtype?: "short" | "long";
 }
 
+export interface TextWithIconFieldConfig {
+  subtype?: "short" | "long";
+  icon_options: string[]; // URLs de los iconos que se pueden seleccionar
+}
+
 export interface ClimateDataFieldConfig {
   available_parameters: Record<
     string,
@@ -91,6 +96,7 @@ export interface FieldBase {
   display_name: string;
   type:
     | "text"
+    | "text_with_icon"
     | "climate_data_puntual"
     | "list"
     | "select"
@@ -113,6 +119,7 @@ export interface FieldBase {
   validation?: ValidationRules;
   field_config?:
     | TextFieldConfig
+    | TextWithIconFieldConfig
     | ClimateDataFieldConfig
     | ListFieldConfig
     | SelectFieldConfig
@@ -132,6 +139,11 @@ export interface FieldBase {
 export interface TextField extends FieldBase {
   type: "text";
   field_config?: TextFieldConfig;
+}
+
+export interface TextWithIconField extends FieldBase {
+  type: "text_with_icon";
+  field_config: TextWithIconFieldConfig;
 }
 
 export interface ClimateDataField extends FieldBase {
@@ -201,6 +213,7 @@ export interface BackgroundUrlField extends FieldBase {
 // Union type para todos los tipos de campo
 export type Field =
   | TextField
+  | TextWithIconField
   | ClimateDataField
   | ListField
   | SelectField
@@ -291,6 +304,7 @@ export interface TemplateCreationState {
 // Constantes para los tipos de campo disponibles
 export const FIELD_TYPES = [
   "text",
+  "text_with_icon",
   "climate_data_puntual",
   "list",
   "select",

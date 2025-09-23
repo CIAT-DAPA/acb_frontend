@@ -332,7 +332,8 @@
       "visibility": {
         "title": "Visibilidad",
         "form": "Mostrar en formulario de creación de boletín",
-        "bulletin": "Mostrar en boletín final"
+        "bulletin": "Mostrar en boletín final",
+        "formHelp": "Si no se muestra en el formulario, la etiqueta y descripción se asignarán automáticamente del nombre a mostrar"
       },
       "validation": {
         "title": "Validación",
@@ -345,7 +346,8 @@
       },
       "actions": {
         "save": "Guardar",
-        "cancel": "Cancelar"
+        "cancel": "Cancelar",
+        "remove": "Eliminar"
       },
       "fields": {
         "fieldId": {
@@ -381,6 +383,7 @@
       },
       "fieldTypes": {
         "text": "Texto",
+        "text_with_icon": "Texto con Icono",
         "climate_data_puntual": "Datos Climáticos",
         "list": "Lista",
         "select": "Selección",
@@ -408,6 +411,10 @@
         "minLength": {
           "label": "Longitud Mínima"
         }
+      },
+      "textWithIconConfig": {
+        "iconOptions": "Opciones de Iconos",
+        "addIcon": "Agregar Icono"
       },
       "numberConfig": {
         "subtype": {

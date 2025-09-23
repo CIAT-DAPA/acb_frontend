@@ -345,7 +345,8 @@
       },
       "actions": {
         "save": "Save",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "remove": "Remove"
       },
       "fields": {
         "fieldId": {
@@ -381,6 +382,7 @@
       },
       "fieldTypes": {
         "text": "Text",
+        "text_with_icon": "Text with Icon",
         "climate_data_puntual": "Climate Data",
         "list": "List",
         "select": "Select",
@@ -408,6 +410,10 @@
         "minLength": {
           "label": "Minimum Length"
         }
+      },
+      "textWithIconConfig": {
+        "iconOptions": "Icon Options",
+        "addIcon": "Add Icon"
       },
       "numberConfig": {
         "subtype": {
