@@ -183,9 +183,37 @@ export function TemplatePreview({
             <div className="font-medium mb-2">
               {field.label || field.display_name}
             </div>
-            <div className="pl-4 space-y-1 text-sm">
-              <div>• Elemento de lista 1</div>
-              <div>• Elemento de lista 2</div>
+            <div className="pl-4 space-y-2">
+              {/* Renderizar elementos basados en item_schema */}
+              {[1, 2].map((itemIndex) => (
+                <div key={itemIndex} className="flex items-start gap-2">
+                  <span className="text-sm mt-1">•</span>
+                  <div className="flex-1 space-y-1">
+                    {field.field_config?.item_schema &&
+                    Object.keys(field.field_config.item_schema).length > 0 ? (
+                      Object.entries(field.field_config.item_schema).map(
+                        ([fieldKey, itemField], fieldIndex) => (
+                          <div key={fieldIndex}>
+                            {renderField(
+                              {
+                                ...itemField,
+                                value: itemField.value || undefined,
+                              } as Field,
+                              `${itemIndex}-${fieldIndex}`,
+                              containerStyle,
+                              "horizontal"
+                            )}
+                          </div>
+                        )
+                      )
+                    ) : (
+                      <div className="text-sm">
+                        Elemento de lista {itemIndex}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         );
@@ -355,28 +383,6 @@ export function TemplatePreview({
                               </div>
                             )}
 
-                          {/* Título de la sección */}
-                          <div className="flex items-center mb-4">
-                            {section.icon_url && (
-                              <img
-                                src={section.icon_url}
-                                alt=""
-                                className="w-6 h-6 mr-3"
-                              />
-                            )}
-                            <h2
-                              className="text-xl font-bold"
-                              style={{
-                                color: styleConfig?.primary_color || "#000",
-                              }}
-                            >
-                              {section.display_name}
-                            </h2>
-                            <span className="ml-2 text-sm text-[#283618]/50">
-                              (#{section.order})
-                            </span>
-                          </div>
-
                           {/* Bloques de la sección */}
                           <div className="space-y-6 w-full">
                             {section.blocks.length === 0 ? (
@@ -387,18 +393,8 @@ export function TemplatePreview({
                               section.blocks.map((block, blockIndex) => (
                                 <div
                                   key={`preview-block-${sectionIndex}-${blockIndex}`}
-                                  className="border-l-4 border-gray-200 pl-4 w-full"
+                                  className="border border-gray-200 rounded-lg p-4 w-full bg-gray-50/30"
                                 >
-                                  <h3
-                                    className="font-semibold mb-3 text-lg"
-                                    style={{
-                                      color:
-                                        styleConfig?.secondary_color || "#666",
-                                    }}
-                                  >
-                                    {block.display_name}
-                                  </h3>
-
                                   {/* Campos del bloque */}
                                   <div className="space-y-2">
                                     {block.fields.length === 0 ? (
