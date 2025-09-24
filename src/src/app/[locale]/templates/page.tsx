@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import { Plus, Search, Loader2 } from "lucide-react";
 import Image from "next/image";
 import ItemCard from "../components/ItemCard";
-import TemplateAPIService from "../../../services/templateApi";
+import { TemplateAPIService } from "../../../services/templateService";
 import { TemplateUIModel } from "../../../types/api";
 import { ProtectedRoute } from "../../../components/ProtectedRoute";
 import {
@@ -117,9 +117,7 @@ export default function Templates() {
           {loading && (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-[#ffaf68]" />
-              <span className="ml-2 text-[#283618]/60">
-                {t("loading")}
-              </span>
+              <span className="ml-2 text-[#283618]/60">{t("loading")}</span>
             </div>
           )}
 

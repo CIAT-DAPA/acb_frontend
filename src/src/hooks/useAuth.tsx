@@ -8,13 +8,18 @@ import React, {
   createContext,
 } from "react";
 import Keycloak, { KeycloakTokenParsed } from "keycloak-js";
+import {
+  AuthAPIService,
+  TokenValidationResponse,
+} from "@/services/authService";
 
 interface AuthContextType {
-  userInfo: KeycloakTokenParsed | null;
+  userInfo: any | null;
   token: string | null;
   tokenParsed: KeycloakTokenParsed | null;
   authenticated: boolean;
   loading: boolean;
+  validatedPayload: TokenValidationResponse | null;
   login: () => void;
   logout: () => void;
 }
@@ -26,15 +31,34 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [userInfo, setUserInfo] = useState<KeycloakTokenParsed | null>(null);
+  const [userInfo, setUserInfo] = useState<any | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [tokenParsed, setTokenParsed] = useState<KeycloakTokenParsed | null>(
     null
   );
   const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [validatedPayload, setValidatedPayload] =
+    useState<TokenValidationResponse | null>(null);
   const isRun = useRef(false);
   const keycloak = useRef<Keycloak | null>(null);
+
+  // Función para validar token con el backend
+  const validateTokenWithBackend = async (token: string) => {
+    try {
+      const validation = await AuthAPIService.validateToken(token);
+
+      if (validation.success && validation.data?.valid) {
+        setValidatedPayload(validation.data);
+      } else {
+        console.warn("Token validation failed:", validation.message);
+        setValidatedPayload(null);
+      }
+    } catch (error) {
+      console.error("Error validating token with backend:", error);
+      setValidatedPayload(null);
+    }
+  };
 
   useEffect(() => {
     // Prevent multiple initializations
@@ -43,10 +67,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     // Initialize Keycloak only on client side
     keycloak.current = new Keycloak({
-      url: process.env.NEXT_PUBLIC_KEYCLOAK_URL || "http://localhost:8080",
-      realm: process.env.NEXT_PUBLIC_KEYCLOAK_REALM || "aclimate",
-      clientId:
-        process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || "bulletin_builder",
+      url:
+        process.env.NEXT_PUBLIC_KEYCLOAK_URL ||
+        "https://ganausers.alliance.cgiar.org",
+      realm: process.env.NEXT_PUBLIC_KEYCLOAK_REALM || "GanaBosques",
+      clientId: process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || "GanabosquesWeb",
     });
 
     keycloak.current
@@ -55,19 +80,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         checkLoginIframe: false,
         pkceMethod: "S256",
       })
-      .then((authenticatedResult) => {
+      .then(async (authenticatedResult) => {
         console.log(
           "Keycloak initialized. Authenticated:",
           authenticatedResult
         );
         setAuthenticated(authenticatedResult);
-        setLoading(false);
 
         if (authenticatedResult && keycloak.current) {
           setToken(keycloak.current.token || null);
           setTokenParsed(keycloak.current.tokenParsed || null);
-          setUserInfo(keycloak.current.tokenParsed || null);
+
+          // Load user info from Keycloak
+          try {
+            const userInfo = await keycloak.current.loadUserInfo();
+            setUserInfo(userInfo);
+          } catch (error) {
+            console.error("Error loading user info:", error);
+            // Fallback to tokenParsed if loadUserInfo fails
+            setUserInfo(keycloak.current.tokenParsed || null);
+          }
+
+          // Validate token with backend
+          if (keycloak.current.token) {
+            await validateTokenWithBackend(keycloak.current.token);
+          }
         }
+
+        setLoading(false);
       })
       .catch((error) => {
         console.error("Error inicializando Keycloak:", error);
@@ -83,12 +123,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (keycloak.current) {
         keycloak.current
           .updateToken(60)
-          .then((refreshed) => {
+          .then(async (refreshed) => {
             if (refreshed && keycloak.current) {
               console.log("Token refreshed");
               setToken(keycloak.current.token || null);
               setTokenParsed(keycloak.current.tokenParsed || null);
-              setUserInfo(keycloak.current.tokenParsed || null);
+
+              // Reload user info after token refresh
+              try {
+                const userInfo = await keycloak.current.loadUserInfo();
+                setUserInfo(userInfo);
+              } catch (error) {
+                console.error("Error loading user info after refresh:", error);
+                setUserInfo(keycloak.current.tokenParsed || null);
+              }
+
+              // Revalidate token with backend
+              if (keycloak.current.token) {
+                await validateTokenWithBackend(keycloak.current.token);
+              }
             }
           })
           .catch(() => {
@@ -97,6 +150,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setToken(null);
             setTokenParsed(null);
             setUserInfo(null);
+            setValidatedPayload(null);
           });
       }
     }, 30000); // Check every 30 seconds
@@ -117,6 +171,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setToken(null);
       setTokenParsed(null);
       setAuthenticated(false);
+      setValidatedPayload(null);
     }
   };
 
@@ -126,6 +181,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     tokenParsed,
     authenticated,
     loading,
+    validatedPayload,
     login,
     logout,
   };
