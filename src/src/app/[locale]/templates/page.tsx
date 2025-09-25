@@ -132,16 +132,26 @@ export default function Templates() {
           {/* Templates Grid */}
           {!loading && !error && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {templates.map((template) => (
-              <ItemCard
-                key={template._id}
-                id={template._id!} // Pasar directamente como string
-                name={template.template_name}
-                author={template.log.creator_user_id}
-                lastModified={new Date(template.log.updated_at!).toLocaleDateString()}
-                type="template"
-              />
-              ))}
+              {templates
+                .filter((template, index, array) => {
+                  // Filter out templates without valid _id and remove duplicates
+                  return (
+                    template._id &&
+                    array.findIndex((t) => t._id === template._id) === index
+                  );
+                })
+                .map((template, index) => (
+                  <ItemCard
+                    key={template._id || `template-${index}`}
+                    id={template._id!} // Pasar directamente como string
+                    name={template.template_name}
+                    author={template.log.creator_user_id}
+                    lastModified={new Date(
+                      template.log.updated_at!
+                    ).toLocaleDateString()}
+                    type="template"
+                  />
+                ))}
             </div>
           )}
 

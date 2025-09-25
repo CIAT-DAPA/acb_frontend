@@ -20,11 +20,18 @@ export class TemplateAPIService extends BaseAPIService {
   static async getTemplates(): Promise<GetTemplatesResponse> {
     try {
       const data = await this.get<any>("/templates/");
+      const templates = data.templates || data.data || data;
+      
+      // Map API response to match TemplateMaster interface
+      const mappedTemplates = templates.map((template: any) => ({
+        ...template,
+        _id: template.id || template._id, // Map 'id' to '_id'
+      }));
 
       return {
         success: true,
-        data: data.templates || data.data || data,
-        total: data.total || (data.templates || data.data || data).length,
+        data: mappedTemplates,
+        total: data.total || templates.length,
       };
     } catch (error) {
       console.error("Error fetching templates:", error);
@@ -49,10 +56,17 @@ export class TemplateAPIService extends BaseAPIService {
   ): Promise<APIResponse<TemplateMaster>> {
     try {
       const data = await this.get<any>(`/templates/${id}`);
+      const template = data.template || data.data || data;
+      
+      // Map API response to match TemplateMaster interface
+      const mappedTemplate = {
+        ...template,
+        _id: template.id || template._id, // Map 'id' to '_id'
+      };
 
       return {
         success: true,
-        data: data.template || data.data || data,
+        data: mappedTemplate,
       };
     } catch (error) {
       console.error("Error fetching template:", error);
