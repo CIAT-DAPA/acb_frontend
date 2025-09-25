@@ -57,7 +57,7 @@ export const TextWithIconFieldTypeConfig: React.FC<
                   updateFieldConfig({ icon_options: newIcons });
                 }}
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                placeholder="https://ejemplo.com/icono.svg"
+                placeholder={t("textWithIconConfig.iconUrlPlaceholder")}
               />
               <button
                 type="button"

@@ -731,9 +731,6 @@ export function SectionsStep({
                       <h3 className="text-xl font-semibold text-[#283618]">
                         {currentSection.display_name || "Sin nombre"}
                       </h3>
-                      <span className="bg-blue-600 text-white px-2 py-1 rounded-full text-xs font-medium">
-                        👁️ En Preview
-                      </span>
                     </div>
                     <div className="text-sm text-[#283618]/70 mt-1">
                       Página {currentSection.order} •{" "}

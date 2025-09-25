@@ -253,9 +253,14 @@
       },
       "globalStyles": {
         "title": "Global Styles",
+        "font": "Font",
         "color": "Text Color",
+        "secondaryColor": "Secondary Color",
         "backgroundColor": "Background Color",
         "fontSize": "Font Size (px)",
+        "fontWeight": "Font Weight",
+        "fontStyle": "Font Style",
+        "textDecoration": "Text Decoration",
         "textAlign": "Text Alignment",
         "borderColor": "Border Color",
         "borderWidth": "Border Width",
@@ -417,7 +422,8 @@
       },
       "textWithIconConfig": {
         "iconOptions": "Icon Options",
-        "addIcon": "Add Icon"
+        "addIcon": "Add Icon",
+        "iconUrlPlaceholder": "https://example.com/icon.svg"
       },
       "numberConfig": {
         "subtype": {
@@ -446,7 +452,7 @@
       },
       "pageNumberConfig": {
         "format": "Format",
-        "help": "Use {page} for current page and {total} for total pages",
+        "help": "Use '{page}' for current page and '{total}' for total pages",
         "previewTitle": "Pagination Preview",
         "formatLabel": "Configured format:",
         "previewHelp": "This is a preview. Page numbers will be generated automatically."
@@ -454,7 +460,12 @@
       "selectWithIconsConfig": {
         "allowMultiple": "Allow multiple selection",
         "allowMultipleHelp": "If enabled, users will be able to select multiple options",
-        "optionsAndIcons": "Options and Icons"
+        "optionsAndIcons": "Options and Icons",
+        "optionLabel": "Option",
+        "optionPlaceholder": "Option text",
+        "noOptionsMessage": "No options defined. Click 'Add Option' to get started.",
+        "iconUrl": "Icon URL",
+        "iconUrlPlaceholder": "https://example.com/icon.png"
       },
       "climateDataConfig": {
         "availableParameters": "Available Climate Parameters",
@@ -469,7 +480,17 @@
         "helpParameter": "Each parameter represents a type of climate data",
         "helpColName": "The column name must match the data file",
         "helpType": "Use 'Number' for numeric values and 'Text' for observations",
-        "helpUnit": "The unit will be displayed alongside the value in the bulletin"
+        "helpUnit": "The unit will be displayed alongside the value in the bulletin",
+        "defaultTitle": "Climate Data",
+        "typeNumber": "Number",
+        "typeText": "Text",
+        "placeholders": {
+          "labelExample": "Ex: Maximum Temperature",
+          "unitExample": "Ex: °C, mm, %",
+          "colNameExample": "Ex: temp_max, precip",
+          "keyExample": "Ex: t_max, precip"
+        },
+        "previewExampleValue": "Example value"
       },
       "value": {
         "title": "Field Value",
@@ -515,6 +536,9 @@
           "underline": "Underline",
           "lineThrough": "Line Through"
         }
+      },
+      "preview": {
+        "title": "Preview"
       }
     },
     "preview": {

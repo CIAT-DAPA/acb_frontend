@@ -430,15 +430,11 @@ export function FieldEditor({
         currentField.type === "page_number" && (
           <div>
             <h3 className="text-lg font-medium text-[#283618] mb-4">
-              {t("pageNumberConfig.previewTitle", {
-                default: "Vista Previa de Paginación",
-              })}
+              {t("pageNumberConfig.previewTitle")}
             </h3>
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
               <div className="text-sm text-[#283618]/70 mb-2">
-                {t("pageNumberConfig.formatLabel", {
-                  default: "Formato configurado:",
-                })}
+                {t("pageNumberConfig.formatLabel")}
               </div>
               <div className="font-medium text-[#283618] text-lg">
                 {(
@@ -449,10 +445,7 @@ export function FieldEditor({
                   .replace("{total}", "5")}
               </div>
               <div className="text-xs text-[#283618]/50 mt-2">
-                {t("pageNumberConfig.previewHelp", {
-                  default:
-                    "Esta es una vista previa. Los números de página se generarán automáticamente.",
-                })}
+                {t("pageNumberConfig.previewHelp")}
               </div>
             </div>
           </div>

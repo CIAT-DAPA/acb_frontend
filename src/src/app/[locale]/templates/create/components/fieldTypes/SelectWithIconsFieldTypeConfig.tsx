@@ -81,15 +81,10 @@ export const SelectWithIconsFieldTypeConfig: React.FC<
             }
             className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
           />
-          {t("selectWithIconsConfig.allowMultiple", {
-            default: "Permitir selección múltiple",
-          })}
+          {t("selectWithIconsConfig.allowMultiple")}
         </label>
         <p className="text-xs text-gray-500 mt-1">
-          {t("selectWithIconsConfig.allowMultipleHelp", {
-            default:
-              "Si está activado, los usuarios podrán seleccionar múltiples opciones",
-          })}
+          {t("selectWithIconsConfig.allowMultipleHelp")}
         </p>
       </div>
 
@@ -97,16 +92,14 @@ export const SelectWithIconsFieldTypeConfig: React.FC<
       <div>
         <div className="flex items-center justify-between mb-3">
           <label className="block text-sm font-medium text-[#283618]/70">
-            {t("selectWithIconsConfig.optionsAndIcons", {
-              default: "Opciones e Iconos",
-            })}
+            {t("selectWithIconsConfig.optionsAndIcons")}
           </label>
           <button
             type="button"
             onClick={addOption}
             className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
           >
-            + {t("actions.addOption", { default: "Agregar Opción" })}
+            + {t("actions.addOption")}
           </button>
         </div>
 
@@ -119,28 +112,28 @@ export const SelectWithIconsFieldTypeConfig: React.FC<
               {/* Opción */}
               <div className="col-span-5">
                 <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Opción {index + 1}
+                  {t("selectWithIconsConfig.optionLabel")} {index + 1}
                 </label>
                 <input
                   type="text"
                   value={option}
                   onChange={(e) => updateOption(index, e.target.value)}
                   className="block w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Texto de la opción"
+                  placeholder={t("selectWithIconsConfig.optionPlaceholder")}
                 />
               </div>
 
               {/* URL del icono */}
               <div className="col-span-5">
                 <label className="block text-xs font-medium text-gray-700 mb-1">
-                  URL del Icono
+                  {t("selectWithIconsConfig.iconUrl")}
                 </label>
                 <input
                   type="url"
                   value={iconsUrl[index] || ""}
                   onChange={(e) => updateIcon(index, e.target.value)}
                   className="block w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="https://ejemplo.com/icono.png"
+                  placeholder={t("selectWithIconsConfig.iconUrlPlaceholder")}
                 />
               </div>
 
@@ -179,8 +172,7 @@ export const SelectWithIconsFieldTypeConfig: React.FC<
 
           {options.length === 0 && (
             <div className="text-center py-4 text-gray-500 text-sm border border-gray-200 rounded-md bg-gray-50">
-              No hay opciones definidas. Haz clic en "Agregar Opción" para
-              comenzar.
+              {t("selectWithIconsConfig.noOptionsMessage")}
             </div>
           )}
         </div>
@@ -190,7 +182,7 @@ export const SelectWithIconsFieldTypeConfig: React.FC<
       {options.length > 0 && (
         <div>
           <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-            {t("preview.title", { default: "Vista Previa" })}
+            {t("preview.title")}
           </label>
           <div className="p-3 border border-gray-200 rounded-md bg-white">
             <div className="space-y-2">
@@ -212,7 +204,7 @@ export const SelectWithIconsFieldTypeConfig: React.FC<
                     />
                   )}
                   <span className="text-sm">
-                    {option || `Opción ${index + 1}`}
+                    {option || `${t("selectWithIconsConfig.optionLabel")} ${index + 1}`}
                   </span>
                   {config.allow_multiple && (
                     <input type="checkbox" className="ml-auto" disabled />

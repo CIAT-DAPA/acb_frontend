@@ -95,9 +95,9 @@ export function StyleConfigurator({
   // Usar el namespace adecuado según el contexto
   const getLabel = (key: string, fallback: string = key) => {
     if (isFieldStyle) {
-      return t(key, { default: fallback });
+      return t(key);
     } else {
-      return tGlobal(key, { default: t(key, { default: fallback }) });
+      return tGlobal(key);
     }
   };
 

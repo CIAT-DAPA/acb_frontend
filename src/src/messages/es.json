@@ -253,9 +253,14 @@
       },
       "globalStyles": {
         "title": "Estilos Globales",
+        "font": "Fuente",
         "color": "Color del Texto",
+        "secondaryColor": "Color Secundario",
         "backgroundColor": "Color de Fondo",
         "fontSize": "Tamaño de Fuente (px)",
+        "fontWeight": "Grosor del Texto",
+        "fontStyle": "Estilo del Texto",
+        "textDecoration": "Decoración del Texto",
         "textAlign": "Alineación del Texto",
         "borderColor": "Color del Borde",
         "borderWidth": "Grosor del Borde",
@@ -418,7 +423,8 @@
       },
       "textWithIconConfig": {
         "iconOptions": "Opciones de Iconos",
-        "addIcon": "Agregar Icono"
+        "addIcon": "Agregar Icono",
+        "iconUrlPlaceholder": "https://ejemplo.com/icono.svg"
       },
       "numberConfig": {
         "subtype": {
@@ -447,7 +453,7 @@
       },
       "pageNumberConfig": {
         "format": "Formato",
-        "help": "Use {page} para página actual y {total} para total de páginas",
+        "help": "Use '{page}' para página actual y '{total}' para total de páginas",
         "previewTitle": "Vista Previa de Paginación",
         "formatLabel": "Formato configurado:",
         "previewHelp": "Esta es una vista previa. Los números de página se generarán automáticamente."
@@ -455,7 +461,12 @@
       "selectWithIconsConfig": {
         "allowMultiple": "Permitir selección múltiple",
         "allowMultipleHelp": "Si está activado, los usuarios podrán seleccionar múltiples opciones",
-        "optionsAndIcons": "Opciones e Iconos"
+        "optionsAndIcons": "Opciones e Iconos",
+        "optionLabel": "Opción",
+        "optionPlaceholder": "Texto de la opción",
+        "noOptionsMessage": "No hay opciones definidas. Haz clic en 'Agregar Opción' para comenzar.",
+        "iconUrl": "URL del Icono",
+        "iconUrlPlaceholder": "https://ejemplo.com/icono.png"
       },
       "climateDataConfig": {
         "availableParameters": "Parámetros Climáticos Disponibles",
@@ -470,7 +481,17 @@
         "helpParameter": "Cada parámetro representa un tipo de dato climático",
         "helpColName": "El nombre de columna debe coincidir con el archivo de datos",
         "helpType": "Usa 'Número' para valores numéricos y 'Texto' para observaciones",
-        "helpUnit": "La unidad se mostrará junto al valor en el boletín"
+        "helpUnit": "La unidad se mostrará junto al valor en el boletín",
+        "defaultTitle": "Datos Climáticos",
+        "typeNumber": "Número",
+        "typeText": "Texto",
+        "placeholders": {
+          "labelExample": "Ej: Temperatura Máxima",
+          "unitExample": "Ej: °C, mm, %",
+          "colNameExample": "Ej: temp_max, precip",
+          "keyExample": "Ej: t_max, precip"
+        },
+        "previewExampleValue": "Valor ejemplo"
       },
       "value": {
         "title": "Valor del Campo",
@@ -516,6 +537,9 @@
           "underline": "Subrayado",
           "lineThrough": "Tachado"
         }
+      },
+      "preview": {
+        "title": "Vista Previa"
       }
     },
     "preview": {
