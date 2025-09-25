@@ -348,7 +348,10 @@
       "actions": {
         "save": "Guardar",
         "cancel": "Cancelar",
-        "remove": "Eliminar"
+        "remove": "Eliminar",
+        "addOption": "Agregar Opción",
+        "addParameter": "Agregar Parámetro",
+        "add": "Agregar"
       },
       "fields": {
         "fieldId": {
@@ -449,6 +452,26 @@
         "formatLabel": "Formato configurado:",
         "previewHelp": "Esta es una vista previa. Los números de página se generarán automáticamente."
       },
+      "selectWithIconsConfig": {
+        "allowMultiple": "Permitir selección múltiple",
+        "allowMultipleHelp": "Si está activado, los usuarios podrán seleccionar múltiples opciones",
+        "optionsAndIcons": "Opciones e Iconos"
+      },
+      "climateDataConfig": {
+        "availableParameters": "Parámetros Climáticos Disponibles",
+        "parameterKey": "Clave del Parámetro",
+        "label": "Etiqueta",
+        "unit": "Unidad",
+        "type": "Tipo",
+        "colName": "Nombre de Columna",
+        "addNewParameter": "Agregar Nuevo Parámetro",
+        "noParameters": "No hay parámetros climáticos configurados. Haz clic en 'Agregar Parámetro' para comenzar.",
+        "helpTitle": "Información sobre Datos Climáticos",
+        "helpParameter": "Cada parámetro representa un tipo de dato climático",
+        "helpColName": "El nombre de columna debe coincidir con el archivo de datos",
+        "helpType": "Usa 'Número' para valores numéricos y 'Texto' para observaciones",
+        "helpUnit": "La unidad se mostrará junto al valor en el boletín"
+      },
       "value": {
         "title": "Valor del Campo",
         "label": "Valor",
@@ -496,7 +519,7 @@
       }
     },
     "preview": {
-      "title": "Vista Previa de Plantilla",
+      "title": "Vista Previa",
       "subtitle": "Así es como se verá tu plantilla",
       "untitled": "Plantilla Sin Título",
       "noDescription": "Sin descripción",

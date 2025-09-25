@@ -347,7 +347,10 @@
       "actions": {
         "save": "Save",
         "cancel": "Cancel",
-        "remove": "Remove"
+        "remove": "Remove",
+        "addOption": "Add Option",
+        "addParameter": "Add Parameter",
+        "add": "Add"
       },
       "fields": {
         "fieldId": {
@@ -448,6 +451,26 @@
         "formatLabel": "Configured format:",
         "previewHelp": "This is a preview. Page numbers will be generated automatically."
       },
+      "selectWithIconsConfig": {
+        "allowMultiple": "Allow multiple selection",
+        "allowMultipleHelp": "If enabled, users will be able to select multiple options",
+        "optionsAndIcons": "Options and Icons"
+      },
+      "climateDataConfig": {
+        "availableParameters": "Available Climate Parameters",
+        "parameterKey": "Parameter Key",
+        "label": "Label",
+        "unit": "Unit",
+        "type": "Type",
+        "colName": "Column Name",
+        "addNewParameter": "Add New Parameter",
+        "noParameters": "No climate parameters configured. Click 'Add Parameter' to get started.",
+        "helpTitle": "Climate Data Information",
+        "helpParameter": "Each parameter represents a type of climate data",
+        "helpColName": "The column name must match the data file",
+        "helpType": "Use 'Number' for numeric values and 'Text' for observations",
+        "helpUnit": "The unit will be displayed alongside the value in the bulletin"
+      },
       "value": {
         "title": "Field Value",
         "label": "Value",
@@ -495,7 +518,7 @@
       }
     },
     "preview": {
-      "title": "Template Preview",
+      "title": "Preview",
       "subtitle": "This is how your template will look",
       "untitled": "Untitled Template",
       "noDescription": "No description",
