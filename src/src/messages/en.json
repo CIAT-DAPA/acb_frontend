@@ -19,6 +19,26 @@
       "word3": "forecasts"
     }
   },
+  "MultimediaResources": {
+    "title": "Visual Resources",
+    "subtitle": "Manage multimedia files for your agroclimatic bulletins: images, graphics, videos and documents.",
+    "searchPlaceholder": "Search files...",
+    "uploadFile": "Upload File",
+    "allFiles": "All Files",
+    "images": "Images",
+    "videos": "Videos", 
+    "documents": "Documents",
+    "noResults": "No resources found",
+    "noResources": "No multimedia resources",
+    "tryDifferentSearch": "Try different search terms",
+    "uploadFirst": "Start by uploading your first multimedia files",
+    "uploadFirstFile": "Upload First File",
+    "uploadedBy": "Uploaded by",
+    "viewFile": "View File",
+    "downloadFile": "Download File",
+    "deleteFile": "Delete File",
+    "backToTemplates": "Back to Templates"
+  },
   "Features": {
     "title": "Everything you need to create",
     "titleHighlight": "exceptional bulletins",
@@ -53,6 +73,7 @@
     "title": "Create fully customizable new templates",
     "subtitle": "Manage and create agroclimatic bulletin templates with the fields you want, images and charts.",
     "createNew": "Create New",
+    "visualResources": "Visual Resources",
     "searchPlaceholder": "Search templates...",
     "by": "by",
     "lastModified": "Last modified",

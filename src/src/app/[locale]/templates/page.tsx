@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Plus, Search, Loader2 } from "lucide-react";
+import { Plus, Search, Loader2, Images } from "lucide-react";
 import Image from "next/image";
 import ItemCard from "../components/ItemCard";
 import { TemplateAPIService } from "../../../services/templateService";
@@ -84,7 +84,7 @@ export default function Templates() {
 
         {/* Content Section */}
         <div className={`${container} py-8`}>
-          {/* Search Bar y Botón Crear */}
+          {/* Search Bar y Botones */}
           <div className="flex gap-4 mb-8">
             {/* Search Bar */}
             <div className="relative flex-1">
@@ -97,6 +97,15 @@ export default function Templates() {
                 className={searchField}
               />
             </div>
+
+            {/* Botón Recursos Visuales */}
+            <Link
+              href="/templates/multimedia-resources"
+              className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-[#ffaf68] text-[#283618] rounded-lg hover:bg-[#ffaf68]/10 transition-colors whitespace-nowrap"
+            >
+              <Images className="h-5 w-5" />
+              <span>{t("visualResources")}</span>
+            </Link>
 
             {/* Botón Crear */}
             <Link

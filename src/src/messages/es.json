@@ -19,6 +19,26 @@
       "word3": "pronósticos"
     }
   },
+  "MultimediaResources": {
+    "title": "Recursos Visuales",
+    "subtitle": "Gestiona archivos multimedia para tus boletines agroclimáticos: imágenes, gráficos, videos y documentos.",
+    "searchPlaceholder": "Buscar archivos...",
+    "uploadFile": "Subir Archivo",
+    "allFiles": "Todos los Archivos",
+    "images": "Imágenes",
+    "videos": "Videos",
+    "documents": "Documentos",
+    "noResults": "No se encontraron recursos",
+    "noResources": "No hay recursos multimedia",
+    "tryDifferentSearch": "Intenta con diferentes términos de búsqueda",
+    "uploadFirst": "Comienza subiendo tus primeros archivos multimedia",
+    "uploadFirstFile": "Subir Primer Archivo",
+    "uploadedBy": "Subido por",
+    "viewFile": "Ver Archivo",
+    "downloadFile": "Descargar Archivo",
+    "deleteFile": "Eliminar Archivo",
+    "backToTemplates": "Volver a Plantillas"
+  },
   "Features": {
     "title": "Todo lo que necesitas para crear",
     "titleHighlight": "boletines excepcionales",
@@ -53,6 +73,7 @@
     "title": "Crea nuevas plantillas totalmente personalizables",
     "subtitle": "Gestiona y crea plantillas de boletines agroclimáticos con los campos que desees, imágenes y gráficos.",
     "createNew": "Crear Nueva",
+    "visualResources": "Recursos Visuales",
     "searchPlaceholder": "Buscar plantillas...",
     "by": "por",
     "lastModified": "Última modificación",
