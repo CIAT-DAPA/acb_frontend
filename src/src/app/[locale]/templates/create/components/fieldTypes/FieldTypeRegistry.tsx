@@ -1,0 +1,38 @@
+"use client";
+
+import React from "react";
+import { FieldTypeComponent } from "./BaseFieldTypeConfig";
+import { TextFieldTypeConfig } from "./TextFieldTypeConfig";
+import { TextWithIconFieldTypeConfig } from "./TextWithIconFieldTypeConfig";
+import { NumberFieldTypeConfig } from "./NumberFieldTypeConfig";
+import { DateFieldTypeConfig } from "./DateFieldTypeConfig";
+import { PageNumberFieldTypeConfig } from "./PageNumberFieldTypeConfig";
+import { ListFieldTypeConfig } from "./ListFieldTypeConfig";
+import { DefaultFieldTypeConfig } from "./DefaultFieldTypeConfig";
+
+// Registro de componentes por tipo de campo
+const FIELD_TYPE_COMPONENTS: Record<string, FieldTypeComponent> = {
+  text: TextFieldTypeConfig,
+  text_with_icon: TextWithIconFieldTypeConfig,
+  number: NumberFieldTypeConfig,
+  date: DateFieldTypeConfig,
+  page_number: PageNumberFieldTypeConfig,
+  list: ListFieldTypeConfig,
+};
+
+// Factory para obtener el componente correcto según el tipo
+export const getFieldTypeComponent = (fieldType: string): React.FC<any> => {
+  const Component = FIELD_TYPE_COMPONENTS[fieldType];
+
+  if (Component) {
+    return Component;
+  }
+
+  // Componente por defecto para tipos no implementados
+  return (props: any) => <DefaultFieldTypeConfig {...props} />;
+};
+
+// Hook personalizado para usar el componente de tipo de campo
+export const useFieldTypeComponent = (fieldType: string) => {
+  return getFieldTypeComponent(fieldType);
+};

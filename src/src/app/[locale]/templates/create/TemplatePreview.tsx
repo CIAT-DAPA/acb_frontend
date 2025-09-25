@@ -32,8 +32,44 @@ export function TemplatePreview({
       (styleConfig?.text_align as "left" | "center" | "right") || "left",
   };
 
+  // Helper function to format dates according to field configuration
+  const formatDateValue = (date: Date | string, format: string): string => {
+    let dateObj: Date;
+
+    if (typeof date === "string") {
+      dateObj = new Date(date);
+    } else {
+      dateObj = date;
+    }
+
+    if (isNaN(dateObj.getTime())) {
+      return "Fecha inválida";
+    }
+
+    const day = dateObj.getDate().toString().padStart(2, "0");
+    const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
+    const year = dateObj.getFullYear();
+    const dayName = dateObj.toLocaleDateString("es-ES", { weekday: "long" });
+    const dayNameCapitalized =
+      dayName.charAt(0).toUpperCase() + dayName.slice(1);
+
+    switch (format) {
+      case "DD/MM/YYYY":
+        return `${day}/${month}/${year}`;
+      case "MM/DD/YYYY":
+        return `${month}/${day}/${year}`;
+      case "DD-MM-YYYY":
+        return `${day}-${month}-${year}`;
+      case "dddd, DD - MM":
+        return `${dayNameCapitalized}, ${day} - ${month}`;
+      case "YYYY-MM-DD":
+      default:
+        return `${year}-${month}-${day}`;
+    }
+  };
+
   // Helper function to render field values safely
-  const renderFieldValue = (value: Field["value"]): string => {
+  const renderFieldValue = (value: Field["value"], field?: Field): string => {
     if (!value) return "";
     if (
       typeof value === "string" ||
@@ -43,6 +79,10 @@ export function TemplatePreview({
       return String(value);
     }
     if (value instanceof Date) {
+      // Si es un campo de fecha y tiene configuración de formato, usarla
+      if (field?.type === "date" && field.field_config?.date_format) {
+        return formatDateValue(value, field.field_config.date_format);
+      }
       return value.toLocaleDateString();
     }
     if (Array.isArray(value)) {
@@ -136,14 +176,20 @@ export function TemplatePreview({
         );
 
       case "date":
+        const dateFormat =
+          (field.field_config as any)?.date_format || "YYYY-MM-DD";
+
+        // Si no tiene valor, mostrar el patrón del formato
+        const displayValue = field.value
+          ? formatDateValue(field.value as Date | string, dateFormat)
+          : dateFormat;
+
         return (
           <div key={key} style={fieldStyles}>
             <span className="text-sm text-[#283618]/70">
               {field.label || field.display_name}:
             </span>
-            <span className="ml-2">
-              {renderFieldValue(field.value) || "DD/MM/AAAA"}
-            </span>
+            <span className="ml-2">{displayValue}</span>
           </div>
         );
 
