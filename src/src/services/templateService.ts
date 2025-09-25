@@ -7,38 +7,6 @@ import {
 import { TemplateStatus } from "@/types/core";
 import { BaseAPIService } from "./apiConfig";
 
-// Datos mock de usuarios (mantenemos para el mapeo temporal)
-const MOCK_USERS: Record<string, string> = {
-  "66b44a30e8d7f3e1f2b3c4d6": "Ana García",
-  "66b44a30e8d7f3e1f2b3c4d8": "Carlos Rodríguez",
-  "66a33b20d7c6e2f1e3b4c5d7": "María López",
-  "66e9a4c3e5d7a2b1c9f0e8d6": "Juan Pérez",
-  "66f8b5d4f6e8b3c2d0a1f9e7": "Laura Martínez",
-};
-
-// Datos mock de templates (para fallback durante desarrollo)
-const MOCK_TEMPLATES: TemplateMaster[] = [
-  {
-    _id: "66b44a30e8d7f3e1f2b3c4d5",
-    template_name: "Boletín Agroclimático de Café - Nariño",
-    description:
-      "Plantilla estándar para boletines de café en la región de Nariño, enfocada en clima y recomendaciones.",
-    log: {
-      created_at: "2025-07-01T10:00:00Z",
-      creator_user_id: "66b44a30e8d7f3e1f2b3c4d6",
-      updated_at: "2025-08-14T15:00:00Z",
-      updater_user_id: "66b44a30e8d7f3e1f2b3c4d8",
-    },
-    status: "activa",
-    current_version_id: "66b44a30e8d7f3e1f2b3c4d7",
-    access_config: {
-      access_type: "restricted",
-      allowed_groups: ["66b44a30e8d7f3e1f2b3c4da", "66c5e7b8c2d1e2f3a4b5c6d7"],
-    },
-  },
-  // Agregar más datos mock según necesites...
-];
-
 // Función para formatear fechas
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
@@ -51,9 +19,18 @@ const formatDate = (dateString: string): string => {
 
 // Función para mapear TemplateMaster a TemplateUIModel
 const mapToUIModel = (template: TemplateMaster): TemplateUIModel => {
-  const authorName = template.log?.creator_user_id
-    ? MOCK_USERS[template.log.creator_user_id] || "Usuario Desconocido"
-    : "Usuario Desconocido";
+  // Obtener el nombre del autor desde los datos disponibles en el template
+  let authorName = "Usuario Desconocido";
+
+  // Si el template incluye información expandida del usuario, usarla
+  if ((template as any).creator_info?.name) {
+    authorName = (template as any).creator_info.name;
+  } else if ((template as any).creator_info?.username) {
+    authorName = (template as any).creator_info.username;
+  } else if (template.log?.creator_user_id) {
+    // Fallback mostrando los últimos 8 caracteres del ID
+    authorName = `Usuario ${template.log.creator_user_id.slice(-8)}`;
+  }
 
   // Asignar imágenes de ejemplo basadas en el nombre del template
   let image: string | undefined;
@@ -111,12 +88,6 @@ export class TemplateAPIService extends BaseAPIService {
     } catch (error) {
       console.error("Error fetching templates:", error);
 
-      // Fallback a datos mock en desarrollo
-      if (process.env.NODE_ENV === "development") {
-        console.warn("Usando datos mock como fallback");
-        return this.getMockTemplates(params);
-      }
-
       return {
         success: false,
         data: [],
@@ -144,17 +115,6 @@ export class TemplateAPIService extends BaseAPIService {
       };
     } catch (error) {
       console.error("Error fetching template:", error);
-
-      if (process.env.NODE_ENV === "development") {
-        console.warn("Usando datos mock como fallback");
-        const template = MOCK_TEMPLATES.find((t) => t._id === id);
-
-        if (!template) {
-          return { success: false, message: "Plantilla no encontrada" };
-        }
-
-        return { success: true, data: template };
-      }
 
       return {
         success: false,
@@ -382,49 +342,32 @@ export class TemplateAPIService extends BaseAPIService {
   }
 
   /**
+   * Obtiene información de un usuario por ID
+   */
+  static async getUserById(userId: string): Promise<APIResponse<any>> {
+    try {
+      const data = await this.get<any>(`/users/${userId}`);
+      return {
+        success: true,
+        data: data.user || data.data || data,
+      };
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      return {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Error al obtener información del usuario",
+      };
+    }
+  }
+
+  /**
    * Convierte templates de la API al formato de UI
    */
   static mapTemplatesToUI(templates: TemplateMaster[]): TemplateUIModel[] {
     return templates.map(mapToUIModel);
-  }
-
-  /**
-   * Método privado para obtener datos mock con filtros aplicados
-   */
-  private static getMockTemplates(
-    params: GetTemplatesParams = {}
-  ): GetTemplatesResponse {
-    let filteredTemplates = [...MOCK_TEMPLATES];
-
-    // Aplicar filtros mock
-    if (params.search) {
-      const searchTerm = params.search.toLowerCase();
-      filteredTemplates = filteredTemplates.filter(
-        (template) =>
-          template.template_name.toLowerCase().includes(searchTerm) ||
-          template.description.toLowerCase().includes(searchTerm)
-      );
-    }
-
-    if (params.status) {
-      filteredTemplates = filteredTemplates.filter(
-        (template) => template.status === params.status
-      );
-    }
-
-    const page = params.page || 1;
-    const limit = params.limit || 10;
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    const paginatedTemplates = filteredTemplates.slice(startIndex, endIndex);
-
-    return {
-      success: true,
-      data: paginatedTemplates,
-      total: filteredTemplates.length,
-      page,
-      limit,
-    };
   }
 }
 

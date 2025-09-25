@@ -66,12 +66,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isRun.current = true;
 
     // Initialize Keycloak only on client side
-    keycloak.current = new Keycloak({
-      url:
-        process.env.NEXT_PUBLIC_KEYCLOAK_URL ||
-        "https://ganausers.alliance.cgiar.org",
-      realm: process.env.NEXT_PUBLIC_KEYCLOAK_REALM || "GanaBosques",
-      clientId: process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || "GanabosquesWeb",
+    keycloak.current = new Keycloak({   
+      url: process.env.NEXT_PUBLIC_KEYCLOAK_URL!,
+      realm: process.env.NEXT_PUBLIC_KEYCLOAK_REALM!,
+      clientId: process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID!,
     });
 
     keycloak.current
@@ -88,8 +86,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setAuthenticated(authenticatedResult);
 
         if (authenticatedResult && keycloak.current) {
-          setToken(keycloak.current.token || null);
+          const accessToken = keycloak.current.token;
+          setToken(accessToken || null);
           setTokenParsed(keycloak.current.tokenParsed || null);
+
+          // Guardar el token de Keycloak para uso en APIs
+          if (accessToken) {
+            AuthAPIService.saveKeycloakToken(accessToken);
+          }
 
           // Load user info from Keycloak
           try {
@@ -126,8 +130,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           .then(async (refreshed) => {
             if (refreshed && keycloak.current) {
               console.log("Token refreshed");
-              setToken(keycloak.current.token || null);
+              const newToken = keycloak.current.token;
+              setToken(newToken || null);
               setTokenParsed(keycloak.current.tokenParsed || null);
+
+              // Guardar el nuevo token para uso en APIs
+              if (newToken) {
+                AuthAPIService.saveKeycloakToken(newToken);
+              }
 
               // Reload user info after token refresh
               try {
@@ -139,13 +149,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               }
 
               // Revalidate token with backend
-              if (keycloak.current.token) {
-                await validateTokenWithBackend(keycloak.current.token);
+              if (newToken) {
+                await validateTokenWithBackend(newToken);
               }
             }
           })
           .catch(() => {
             console.warn("No se pudo actualizar el token, cerrando sesión");
+            // Limpiar tokens del localStorage
+            AuthAPIService.clearAllTokens();
+            // Limpiar estados
             setAuthenticated(false);
             setToken(null);
             setTokenParsed(null);
@@ -166,7 +179,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = () => {
     if (keycloak.current) {
+      // Limpiar tokens del localStorage
+      AuthAPIService.clearAllTokens();
+
+      // Logout de Keycloak
       keycloak.current.logout({ redirectUri: window.location.origin });
+
+      // Limpiar estados locales
       setUserInfo(null);
       setToken(null);
       setTokenParsed(null);

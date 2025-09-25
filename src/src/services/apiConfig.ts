@@ -56,8 +56,12 @@ export const handleFetchResponse = async <T = any>(
 
 // Función para crear opciones de fetch con headers por defecto
 export const createFetchOptions = (options: RequestInit = {}): RequestInit => {
+  // Buscar el token en ambas ubicaciones (primero keycloak_token, luego auth_token)
   const token =
-    typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+    typeof window !== "undefined"
+      ? localStorage.getItem("keycloak_token") ||
+        localStorage.getItem("auth_token")
+      : null;
 
   const headers = new Headers(API_CONFIG.DEFAULT_HEADERS);
 
