@@ -12,17 +12,6 @@ export interface TemplateMaster {
   access_config: AccessConfig;
 }
 
-// Tipo simplificado para la UI (similar al ItemCardProps)
-export interface TemplateUIModel {
-  id: string; // Mapeado desde _id
-  name: string; // Mapeado desde template_name
-  description: string;
-  author: string; // Extraído del log.creator_user_id (por ahora simularemos)
-  lastModified: string; // Mapeado desde log.updated_at (formateado)
-  status: string; // Mapeado desde status
-  image?: string; // Opcional para la UI
-}
-
 // Respuesta de la API para obtener templates
 export interface GetTemplatesResponse {
   success: boolean;
@@ -31,14 +20,4 @@ export interface GetTemplatesResponse {
   page?: number;
   limit?: number;
   message?: string;
-}
-
-// Parámetros de consulta para obtener templates
-export interface GetTemplatesParams {
-  page?: number;
-  limit?: number;
-  search?: string;
-  status?: TemplateStatus;
-  sortBy?: "name" | "created_at" | "updated_at";
-  sortOrder?: "asc" | "desc";
 }

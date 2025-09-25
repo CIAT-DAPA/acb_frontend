@@ -7,7 +7,6 @@ import { Plus, Search, Loader2 } from "lucide-react";
 import Image from "next/image";
 import ItemCard from "../components/ItemCard";
 import { TemplateAPIService } from "../../../services/templateService";
-import { TemplateUIModel } from "../../../types/api";
 import { ProtectedRoute } from "../../../components/ProtectedRoute";
 import {
   container,
@@ -16,11 +15,12 @@ import {
   pageTitle,
   pageSubtitle,
 } from "../components/ui";
+import { TemplateMaster } from "@/types/template";
 
 export default function Templates() {
   const t = useTranslations("Templates");
   const [searchTerm, setSearchTerm] = useState("");
-  const [templates, setTemplates] = useState<TemplateUIModel[]>([]);
+  const [templates, setTemplates] = useState<TemplateMaster[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,16 +35,11 @@ export default function Templates() {
     setError(null);
 
     try {
-      const response = await TemplateAPIService.getTemplates({
-        search,
-        status: "activa", // Solo mostrar templates activas
-        sortBy: "updated_at",
-        sortOrder: "desc",
-      });
+      const response = await TemplateAPIService.getTemplates();
 
       if (response.success) {
-        const uiTemplates = TemplateAPIService.mapTemplatesToUI(response.data);
-        setTemplates(uiTemplates);
+        console.log("Fetched templates:", response);
+        setTemplates(response.data);
       } else {
         setError(response.message || "Error al cargar las plantillas");
       }
@@ -138,15 +133,14 @@ export default function Templates() {
           {!loading && !error && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {templates.map((template) => (
-                <ItemCard
-                  key={template.id}
-                  id={template.id} // Pasar directamente como string
-                  name={template.name}
-                  author={template.author}
-                  lastModified={template.lastModified}
-                  type="template"
-                  image={template.image}
-                />
+              <ItemCard
+                key={template._id}
+                id={template._id!} // Pasar directamente como string
+                name={template.template_name}
+                author={template.log.creator_user_id}
+                lastModified={new Date(template.log.updated_at!).toLocaleDateString()}
+                type="template"
+              />
               ))}
             </div>
           )}

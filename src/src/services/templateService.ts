@@ -1,61 +1,6 @@
-import {
-  TemplateMaster,
-  TemplateUIModel,
-  GetTemplatesResponse,
-  GetTemplatesParams,
-} from "@/types/api";
+import { TemplateMaster, GetTemplatesResponse } from "@/types/api";
 import { TemplateStatus } from "@/types/core";
 import { BaseAPIService } from "./apiConfig";
-
-// Función para formatear fechas
-const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("es-ES", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-};
-
-// Función para mapear TemplateMaster a TemplateUIModel
-const mapToUIModel = (template: TemplateMaster): TemplateUIModel => {
-  // Obtener el nombre del autor desde los datos disponibles en el template
-  let authorName = "Usuario Desconocido";
-
-  // Si el template incluye información expandida del usuario, usarla
-  if ((template as any).creator_info?.name) {
-    authorName = (template as any).creator_info.name;
-  } else if ((template as any).creator_info?.username) {
-    authorName = (template as any).creator_info.username;
-  } else if (template.log?.creator_user_id) {
-    // Fallback mostrando los últimos 8 caracteres del ID
-    authorName = `Usuario ${template.log.creator_user_id.slice(-8)}`;
-  }
-
-  // Asignar imágenes de ejemplo basadas en el nombre del template
-  let image: string | undefined;
-  if (template.template_name?.toLowerCase().includes("café")) {
-    image = "/assets/img/temp1.jpg";
-  } else if (template.template_name?.toLowerCase().includes("arroz")) {
-    image = "/assets/img/bol2.jpg";
-  } else if (template.template_name?.toLowerCase().includes("maíz")) {
-    image = "/assets/img/temp1.jpg";
-  }
-
-  return {
-    id: template._id,
-    name: template.template_name || "Sin nombre",
-    description: template.description || "Sin descripción",
-    author: authorName,
-    lastModified: formatDate(
-      template.log?.updated_at ||
-        template.log?.created_at ||
-        new Date().toISOString()
-    ),
-    status: template.status || "inactiva",
-    image,
-  };
-};
 
 // Interfaz para respuestas de la API
 interface APIResponse<T = any> {
@@ -72,18 +17,14 @@ export class TemplateAPIService extends BaseAPIService {
   /**
    * Obtiene la lista de templates con filtros opcionales
    */
-  static async getTemplates(
-    params: GetTemplatesParams = {}
-  ): Promise<GetTemplatesResponse> {
+  static async getTemplates(): Promise<GetTemplatesResponse> {
     try {
-      const data = await this.get<any>("/templates/", params);
+      const data = await this.get<any>("/templates/");
 
       return {
         success: true,
         data: data.templates || data.data || data,
         total: data.total || (data.templates || data.data || data).length,
-        page: data.page || params.page || 1,
-        limit: data.limit || params.limit || 10,
       };
     } catch (error) {
       console.error("Error fetching templates:", error);
@@ -361,13 +302,6 @@ export class TemplateAPIService extends BaseAPIService {
             : "Error al obtener información del usuario",
       };
     }
-  }
-
-  /**
-   * Convierte templates de la API al formato de UI
-   */
-  static mapTemplatesToUI(templates: TemplateMaster[]): TemplateUIModel[] {
-    return templates.map(mapToUIModel);
   }
 }
 
