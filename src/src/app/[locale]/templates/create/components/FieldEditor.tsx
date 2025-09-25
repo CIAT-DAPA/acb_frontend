@@ -22,6 +22,7 @@ import {
   getInheritableStyles,
   inheritStylesFromContainer,
 } from "../../../../../utils/styleInheritance";
+import { StyleConfigurator } from "./StyleConfigurator";
 
 interface FieldEditorProps {
   field: Field;
@@ -2264,330 +2265,34 @@ export function FieldEditor({
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-              {t("styleConfig.color")}
-            </label>
-            <input
-              type="color"
-              value={
-                currentField.style_manually_edited
-                  ? currentField.style_config?.primary_color || "#000000"
-                  : effectiveStyles.primary_color || "#000000"
-              }
-              onChange={(e) =>
-                updateStyleConfig({ primary_color: e.target.value })
-              }
-              className="block w-16 h-8 border border-gray-300 rounded cursor-pointer"
-            />
-            {!currentField.style_manually_edited &&
-              inheritableStyles.primary_color && (
-                <p className="text-xs text-[#283618]/50 mt-1">
-                  Heredado: {inheritableStyles.primary_color}
-                </p>
-              )}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-              {t("styleConfig.fontSize")}
-            </label>
-            <input
-              type="number"
-              min="8"
-              max="72"
-              value={
-                currentField.style_manually_edited
-                  ? currentField.style_config?.font_size || ""
-                  : effectiveStyles.font_size || ""
-              }
-              onChange={(e) =>
-                updateStyleConfig({
-                  font_size: parseInt(e.target.value) || undefined,
-                })
-              }
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              placeholder={inheritableStyles.font_size?.toString() || "16"}
-            />
-            {!currentField.style_manually_edited &&
-              inheritableStyles.font_size && (
-                <p className="text-xs text-[#283618]/50 mt-1">
-                  Heredado: {inheritableStyles.font_size}px
-                </p>
-              )}
-          </div>
-        </div>
-
-        {/* Propiedades de Texto */}
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-              {t("styleConfig.fontWeight")}
-            </label>
-            <select
-              value={
-                currentField.style_manually_edited
-                  ? currentField.style_config?.font_weight || "400"
-                  : effectiveStyles.font_weight || "400"
-              }
-              onChange={(e) =>
-                updateStyleConfig({ font_weight: e.target.value })
-              }
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="100">
-                {t("styleConfig.fontWeightOptions.thin")}
-              </option>
-              <option value="200">
-                {t("styleConfig.fontWeightOptions.extraLight")}
-              </option>
-              <option value="300">
-                {t("styleConfig.fontWeightOptions.light")}
-              </option>
-              <option value="400">
-                {t("styleConfig.fontWeightOptions.normal")}
-              </option>
-              <option value="500">
-                {t("styleConfig.fontWeightOptions.medium")}
-              </option>
-              <option value="600">
-                {t("styleConfig.fontWeightOptions.semiBold")}
-              </option>
-              <option value="700">
-                {t("styleConfig.fontWeightOptions.bold")}
-              </option>
-              <option value="800">
-                {t("styleConfig.fontWeightOptions.extraBold")}
-              </option>
-              <option value="900">
-                {t("styleConfig.fontWeightOptions.black")}
-              </option>
-            </select>
-            {!currentField.style_manually_edited &&
-              inheritableStyles.font_weight && (
-                <p className="text-xs text-[#283618]/50 mt-1">
-                  Heredado: {inheritableStyles.font_weight}
-                </p>
-              )}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-              {t("styleConfig.fontStyle")}
-            </label>
-            <select
-              value={
-                currentField.style_manually_edited
-                  ? currentField.style_config?.font_style || "normal"
-                  : effectiveStyles.font_style || "normal"
-              }
-              onChange={(e) =>
-                updateStyleConfig({ font_style: e.target.value })
-              }
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="normal">
-                {t("styleConfig.fontStyleOptions.normal")}
-              </option>
-              <option value="italic">
-                {t("styleConfig.fontStyleOptions.italic")}
-              </option>
-            </select>
-            {!currentField.style_manually_edited &&
-              inheritableStyles.font_style && (
-                <p className="text-xs text-[#283618]/50 mt-1">
-                  Heredado: {inheritableStyles.font_style}
-                </p>
-              )}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-              {t("styleConfig.textDecoration")}
-            </label>
-            <select
-              value={
-                currentField.style_manually_edited
-                  ? currentField.style_config?.text_decoration || "none"
-                  : effectiveStyles.text_decoration || "none"
-              }
-              onChange={(e) =>
-                updateStyleConfig({ text_decoration: e.target.value })
-              }
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="none">
-                {t("styleConfig.textDecorationOptions.none")}
-              </option>
-              <option value="underline">
-                {t("styleConfig.textDecorationOptions.underline")}
-              </option>
-              <option value="line-through">
-                {t("styleConfig.textDecorationOptions.lineThrough")}
-              </option>
-            </select>
-            {!currentField.style_manually_edited &&
-              inheritableStyles.text_decoration && (
-                <p className="text-xs text-[#283618]/50 mt-1">
-                  Heredado: {inheritableStyles.text_decoration}
-                </p>
-              )}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="col-span-2">
-            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-              {t("styleConfig.textAlign")}
-            </label>
-            <select
-              value={
-                currentField.style_manually_edited
-                  ? currentField.style_config?.text_align || "left"
-                  : effectiveStyles.text_align || "left"
-              }
-              onChange={(e) =>
-                updateStyleConfig({ text_align: e.target.value })
-              }
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="left">{t("styleConfig.alignOptions.left")}</option>
-              <option value="center">
-                {t("styleConfig.alignOptions.center")}
-              </option>
-              <option value="right">
-                {t("styleConfig.alignOptions.right")}
-              </option>
-            </select>
-            {!currentField.style_manually_edited &&
-              inheritableStyles.text_align && (
-                <p className="text-xs text-[#283618]/50 mt-1">
-                  Heredado: {inheritableStyles.text_align}
-                </p>
-              )}
-          </div>
-        </div>
-
-        {/* Propiedades de Borde */}
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-              {t("styleConfig.borderColor")}
-            </label>
-            <input
-              type="color"
-              value={
-                currentField.style_manually_edited
-                  ? currentField.style_config?.border_color || "#000000"
-                  : effectiveStyles.border_color || "#000000"
-              }
-              onChange={(e) =>
-                updateStyleConfig({ border_color: e.target.value })
-              }
-              className="block w-16 h-8 border border-gray-300 rounded cursor-pointer"
-            />
-            {!currentField.style_manually_edited &&
-              inheritableStyles.border_color && (
-                <p className="text-xs text-[#283618]/50 mt-1">
-                  Heredado: {inheritableStyles.border_color}
-                </p>
-              )}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-              {t("styleConfig.borderWidth")}
-            </label>
-            <input
-              type="text"
-              value={
-                currentField.style_manually_edited
-                  ? currentField.style_config?.border_width || ""
-                  : effectiveStyles.border_width || ""
-              }
-              onChange={(e) =>
-                updateStyleConfig({ border_width: e.target.value })
-              }
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              placeholder={inheritableStyles.border_width || "1px"}
-            />
-            {!currentField.style_manually_edited &&
-              inheritableStyles.border_width && (
-                <p className="text-xs text-[#283618]/50 mt-1">
-                  Heredado: {inheritableStyles.border_width}
-                </p>
-              )}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-              {t("styleConfig.borderRadius")}
-            </label>
-            <input
-              type="text"
-              value={
-                currentField.style_manually_edited
-                  ? currentField.style_config?.border_radius || ""
-                  : effectiveStyles.border_radius || ""
-              }
-              onChange={(e) =>
-                updateStyleConfig({ border_radius: e.target.value })
-              }
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              placeholder={inheritableStyles.border_radius || "0px"}
-            />
-            {!currentField.style_manually_edited &&
-              inheritableStyles.border_radius && (
-                <p className="text-xs text-[#283618]/50 mt-1">
-                  Heredado: {inheritableStyles.border_radius}
-                </p>
-              )}
-          </div>
-        </div>
-
-        {/* Propiedades de Espaciado */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-              {t("styleConfig.padding")}
-            </label>
-            <input
-              type="text"
-              value={
-                currentField.style_manually_edited
-                  ? currentField.style_config?.padding || ""
-                  : effectiveStyles.padding || ""
-              }
-              onChange={(e) => updateStyleConfig({ padding: e.target.value })}
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              placeholder={inheritableStyles.padding || "0px"}
-            />
-            {!currentField.style_manually_edited &&
-              inheritableStyles.padding && (
-                <p className="text-xs text-[#283618]/50 mt-1">
-                  Heredado: {inheritableStyles.padding}
-                </p>
-              )}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-              {t("styleConfig.margin")}
-            </label>
-            <input
-              type="text"
-              value={
-                currentField.style_manually_edited
-                  ? currentField.style_config?.margin || ""
-                  : effectiveStyles.margin || ""
-              }
-              onChange={(e) => updateStyleConfig({ margin: e.target.value })}
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              placeholder={inheritableStyles.margin || "0px"}
-            />
-            {!currentField.style_manually_edited &&
-              inheritableStyles.margin && (
-                <p className="text-xs text-[#283618]/50 mt-1">
-                  Heredado: {inheritableStyles.margin}
-                </p>
-              )}
-          </div>
-        </div>
+        <StyleConfigurator
+          styleConfig={
+            currentField.style_manually_edited
+              ? currentField.style_config || {}
+              : effectiveStyles
+          }
+          onStyleChange={(updates: Partial<StyleConfig>) =>
+            updateStyleConfig(updates)
+          }
+          enabledFields={{
+            primaryColor: true,
+            fontSize: true,
+            fontWeight: true,
+            fontStyle: true,
+            textDecoration: true,
+            textAlign: true,
+            borderColor: true,
+            borderWidth: true,
+            borderRadius: true,
+            padding: true,
+            margin: true,
+          }}
+          showPreview={false}
+          inheritedStyles={
+            !currentField.style_manually_edited ? inheritableStyles : undefined
+          }
+          isFieldStyle={true}
+        />
       </div>
 
       {/* Validación - Solo mostrar si form es true */}

@@ -15,6 +15,7 @@ import {
   inheritStylesFromContainer,
   propagateContainerStyleChanges,
 } from "../../../../../utils/styleInheritance";
+import { StyleConfigurator } from "../components/StyleConfigurator";
 
 interface HeaderFooterStepProps {
   data: CreateTemplateData;
@@ -276,216 +277,45 @@ export function HeaderFooterStep({
 
         {/* Estilos Globales del Header/Footer */}
         <div className="bg-green-50 border border-[#283618] rounded-lg p-4">
-          <h3 className="text-lg font-medium text-[#283618] mb-4">
-            {t("globalStyles.title")}
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-[#283618] mb-2">
-                {t("globalStyles.color")}
-              </label>
-              <input
-                type="color"
-                value={currentConfig.style_config?.primary_color || "#000000"}
-                onChange={(e) =>
-                  updateHeaderFooterStyle(activeConfig, {
-                    primary_color: e.target.value,
-                  })
-                }
-                className="block w-16 h-8 border border-gray-300 rounded cursor-pointer"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#283618] mb-2">
-                {t("globalStyles.backgroundColor")}
-              </label>
-              <input
-                type="color"
-                value={
-                  currentConfig.style_config?.background_color || "#ffffff"
-                }
-                onChange={(e) =>
-                  updateHeaderFooterStyle(activeConfig, {
-                    background_color: e.target.value,
-                  })
-                }
-                className="block w-16 h-8 border border-gray-300 rounded cursor-pointer"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#283618] mb-2">
-                {t("globalStyles.fontSize")}
-              </label>
-              <input
-                type="number"
-                min="8"
-                max="72"
-                value={currentConfig.style_config?.font_size || ""}
-                onChange={(e) =>
-                  updateHeaderFooterStyle(activeConfig, {
-                    font_size: parseInt(e.target.value) || undefined,
-                  })
-                }
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#bc6c25] focus:border-[#bc6c25]"
-                placeholder="16"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#283618] mb-2">
-                {t("globalStyles.textAlign")}
-              </label>
-              <select
-                value={currentConfig.style_config?.text_align || "left"}
-                onChange={(e) =>
-                  updateHeaderFooterStyle(activeConfig, {
-                    text_align: e.target.value as "left" | "center" | "right",
-                  })
-                }
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#bc6c25] focus:border-[#bc6c25]"
-              >
-                <option value="left">
-                  {t("globalStyles.alignOptions.left")}
-                </option>
-                <option value="center">
-                  {t("globalStyles.alignOptions.center")}
-                </option>
-                <option value="right">
-                  {t("globalStyles.alignOptions.right")}
-                </option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#283618] mb-2">
-                {t("globalStyles.borderColor")}
-              </label>
-              <input
-                type="color"
-                value={currentConfig.style_config?.border_color || "#000000"}
-                onChange={(e) =>
-                  updateHeaderFooterStyle(activeConfig, {
-                    border_color: e.target.value,
-                  })
-                }
-                className="block w-16 h-8 border border-gray-300 rounded cursor-pointer"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#283618] mb-2">
-                {t("globalStyles.borderWidth")}
-              </label>
-              <input
-                type="text"
-                value={currentConfig.style_config?.border_width || ""}
-                onChange={(e) =>
-                  updateHeaderFooterStyle(activeConfig, {
-                    border_width: e.target.value,
-                  })
-                }
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                placeholder="1px"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#283618] mb-2">
-                {t("globalStyles.borderRadius")}
-              </label>
-              <input
-                type="text"
-                value={currentConfig.style_config?.border_radius || ""}
-                onChange={(e) =>
-                  updateHeaderFooterStyle(activeConfig, {
-                    border_radius: e.target.value,
-                  })
-                }
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                placeholder="0px"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#283618] mb-2">
-                {t("globalStyles.padding")}
-              </label>
-              <input
-                type="text"
-                value={currentConfig.style_config?.padding || ""}
-                onChange={(e) =>
-                  updateHeaderFooterStyle(activeConfig, {
-                    padding: e.target.value,
-                  })
-                }
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                placeholder="16px"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#283618] mb-2">
-                {t("globalStyles.margin")}
-              </label>
-              <input
-                type="text"
-                value={currentConfig.style_config?.margin || ""}
-                onChange={(e) =>
-                  updateHeaderFooterStyle(activeConfig, {
-                    margin: e.target.value,
-                  })
-                }
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                placeholder="0px"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#283618] mb-2">
-                {t("globalStyles.gap")}
-              </label>
-              <input
-                type="text"
-                value={currentConfig.style_config?.gap || ""}
-                onChange={(e) =>
-                  updateHeaderFooterStyle(activeConfig, {
-                    gap: e.target.value,
-                  })
-                }
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                placeholder="8px"
-              />
-            </div>
-          </div>
-          <p className="mt-2 text-xs text-[#283618]">
-            {t("globalStyles.help")}
-          </p>
+          <StyleConfigurator
+            styleConfig={currentConfig.style_config || {}}
+            onStyleChange={(updates: Partial<StyleConfig>) =>
+              updateHeaderFooterStyle(activeConfig, updates)
+            }
+            enabledFields={{
+              primaryColor: true,
+              backgroundColor: true,
+              fontSize: true,
+              textAlign: true,
+              borderColor: true,
+              borderWidth: true,
+              borderRadius: true,
+              padding: true,
+              margin: true,
+              gap: true,
+            }}
+            title={t("globalStyles.title")}
+            description={t("globalStyles.help")}
+            showPreview={false}
+            isFieldStyle={false}
+          />
         </div>
 
         {/* Configuración de Layout */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="text-lg font-medium text-[#283618] mb-4">
-            {t("layout.title")}
-          </h3>
-
-          <div>
-            <label className="block text-sm font-medium text-[#283618] mb-2">
-              {t("layout.fieldsLayout.label")}
-            </label>
-            <select
-              value={currentConfig.style_config?.fields_layout || "horizontal"}
-              onChange={(e) =>
-                updateHeaderFooterStyle(activeConfig, {
-                  fields_layout: e.target.value as "horizontal" | "vertical",
-                })
-              }
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
-                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="horizontal">
-                {t("layout.fieldsLayout.options.horizontal")}
-              </option>
-              <option value="vertical">
-                {t("layout.fieldsLayout.options.vertical")}
-              </option>
-            </select>
-            <p className="mt-2 text-xs text-[#283618]/50">
-              {t("layout.fieldsLayout.help")}
-            </p>
-          </div>
+          <StyleConfigurator
+            styleConfig={currentConfig.style_config || {}}
+            onStyleChange={(updates: Partial<StyleConfig>) =>
+              updateHeaderFooterStyle(activeConfig, updates)
+            }
+            enabledFields={{
+              fieldsLayout: true,
+            }}
+            title={t("layout.title")}
+            description={t("layout.fieldsLayout.help")}
+            showPreview={false}
+            isFieldStyle={false}
+          />
         </div>
 
         {/* Botón agregar campo */}
