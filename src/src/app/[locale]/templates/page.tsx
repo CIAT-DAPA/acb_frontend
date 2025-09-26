@@ -100,7 +100,7 @@ export default function Templates() {
 
             {/* Botón Recursos Visuales */}
             <Link
-              href="/templates/multimedia-resources"
+              href="/templates/visual-resources"
               className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-[#ffaf68] text-[#283618] rounded-lg hover:bg-[#ffaf68]/10 transition-colors whitespace-nowrap"
             >
               <Images className="h-5 w-5" />

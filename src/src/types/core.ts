@@ -50,9 +50,23 @@ export interface ValidationRules {
 export const TEMPLATE_STATUS = ["activa", "archivada", "borrador"] as const;
 export const ACCESS_TYPES = ["public", "restricted", "private"] as const;
 export const TEXT_ALIGN_OPTIONS = ["left", "center", "right"] as const;
-export const FONT_WEIGHT_OPTIONS = ["100", "200", "300", "400", "500", "600", "700", "800", "900"] as const;
+export const FONT_WEIGHT_OPTIONS = [
+  "100",
+  "200",
+  "300",
+  "400",
+  "500",
+  "600",
+  "700",
+  "800",
+  "900",
+] as const;
 export const FONT_STYLE_OPTIONS = ["normal", "italic"] as const;
-export const TEXT_DECORATION_OPTIONS = ["none", "underline", "line-through"] as const;
+export const TEXT_DECORATION_OPTIONS = [
+  "none",
+  "underline",
+  "line-through",
+] as const;
 
 export type TemplateStatus = (typeof TEMPLATE_STATUS)[number];
 export type AccessType = (typeof ACCESS_TYPES)[number];

@@ -63,7 +63,9 @@ export const createFetchOptions = (options: RequestInit = {}): RequestInit => {
         localStorage.getItem("auth_token")
       : null;
 
-  const headers = new Headers(API_CONFIG.DEFAULT_HEADERS);
+  // Para FormData, no establecer Content-Type (el navegador lo hace automáticamente)
+  const isFormData = options.body instanceof FormData;
+  const headers = new Headers(isFormData ? {} : API_CONFIG.DEFAULT_HEADERS);
 
   // Agregar token de autorización si existe
   if (token) {
