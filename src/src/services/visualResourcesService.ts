@@ -67,34 +67,45 @@ export class VisualResourcesService extends BaseAPIService {
     file?: File
   ): Promise<APIResponse<VisualResource>> {
     try {
-      // Si hay archivo, subimos usando FormData
+      // Si hay archivo, lo procesamos
       if (file) {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("metadata", JSON.stringify(data));
+        // 1. Determinar la ruta donde se guardará el archivo
+        const folderPath = this.getFolderPath(data.access_config);
+        const fileName = this.generateFileName(file, data.file_name);
+        const file_url = `${folderPath}${fileName}`;
 
-        const response = await this.request<any>(this.BASE_ENDPOINT, {
-          method: "POST",
-          body: formData,
-          headers: {}, // Sin Content-Type para que el navegador lo configure automáticamente con boundary
-        });
+        // 2. Subir el archivo al servidor
+        const uploadSuccess = await this.uploadFileToServer(file, file_url);
 
-        // Guardar archivo localmente si la respuesta es exitosa
-        if (response) {
-          await this.saveFileLocally(file, data.access_config);
+        if (!uploadSuccess) {
+          throw new Error("Error al subir el archivo al servidor");
         }
+
+        // 3. Preparar el body para la API
+        const apiBody = {
+          file_url: file_url,
+          file_name: data.file_name,
+          file_type: data.file_type,
+          status: data.status || "active",
+          access_config: {
+            access_type: data.access_config?.type || "public",
+            allowed_groups:
+              data.access_config?.type === "group"
+                ? [data.access_config.group_name]
+                : [],
+          },
+        };
+
+        // 4. Llamar a la API
+        const response = await this.post<any>(this.BASE_ENDPOINT, apiBody);
 
         return {
           success: true,
           data: response.resource || response.data || response,
         };
       } else {
-        // Solo metadatos sin archivo
-        const response = await this.post<any>(this.BASE_ENDPOINT, data);
-        return {
-          success: true,
-          data: response.resource || response.data || response,
-        };
+        // Solo metadatos sin archivo - esto probablemente no debería ocurrir
+        throw new Error("Se requiere un archivo para crear un recurso visual");
       }
     } catch (error) {
       console.error("Error creating visual resource:", error);
@@ -109,85 +120,68 @@ export class VisualResourcesService extends BaseAPIService {
   }
 
   /**
-   * Método privado para guardar archivo localmente
+   * Determinar la ruta de la carpeta según el tipo de acceso
    */
-  private static async saveFileLocally(
-    file: File,
-    accessConfig?: any
-  ): Promise<void> {
-    try {
-      // Determinar la ruta según el tipo de acceso
-      let folderPath = "assets/img/visualResources/";
+  private static getFolderPath(accessConfig?: any): string {
+    let folderPath = "/assets/img/visualResources/";
 
-      if (accessConfig?.type === "public") {
-        folderPath += "public/";
-      } else if (accessConfig?.type === "group" && accessConfig?.group_name) {
-        folderPath += `${accessConfig.group_name}/`;
+    if (accessConfig?.type === "public") {
+      folderPath += "public/";
+    } else if (accessConfig?.type === "group" && accessConfig?.group_name) {
+      folderPath += `${accessConfig.group_name}/`;
+    } else {
+      folderPath += "public/"; // Default a público
+    }
+
+    return folderPath;
+  }
+
+  /**
+   * Generar nombre de archivo único
+   */
+  private static generateFileName(file: File, finalFileName?: string): string {
+    const timestamp = new Date().getTime();
+
+    if (finalFileName?.trim()) {
+      // Si ya tenemos un nombre final, solo agregamos timestamp para evitar conflictos
+      const nameParts = finalFileName.split(".");
+      if (nameParts.length > 1) {
+        const extension = nameParts.pop();
+        const nameWithoutExt = nameParts.join(".");
+        return `${timestamp}_${nameWithoutExt}.${extension}`;
       } else {
-        folderPath += "public/"; // Default a público si no se especifica
+        return `${timestamp}_${finalFileName}`;
       }
-
-      // Crear el directorio si no existe
-      await this.createDirectoryIfNotExists(folderPath);
-
-      // Generar nombre único para evitar conflictos
-      const timestamp = new Date().getTime();
-      const fileName = `${timestamp}_${file.name}`;
-      const fullPath = `${folderPath}${fileName}`;
-
-      // Convertir archivo a buffer y guardarlo
-      const arrayBuffer = await file.arrayBuffer();
-      const buffer = new Uint8Array(arrayBuffer);
-
-      // Nota: En un entorno de navegador, necesitarías usar File System Access API
-      // o una alternativa como enviar el archivo al servidor para que lo guarde
-      if ("showSaveFilePicker" in window) {
-        // File System Access API (solo en navegadores compatibles)
-        const fileHandle = await (window as any).showSaveFilePicker({
-          suggestedName: fileName,
-          types: [
-            {
-              description: "Images",
-              accept: {
-                "image/*": [".png", ".jpg", ".jpeg", ".gif", ".svg"],
-              },
-            },
-          ],
-        });
-
-        const writable = await fileHandle.createWritable();
-        await writable.write(buffer);
-        await writable.close();
-      } else {
-        // Fallback: crear enlace de descarga
-        const blob = new Blob([buffer], { type: file.type });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      }
-
-      console.log(`File saved locally: ${fullPath}`);
-    } catch (error) {
-      console.error("Error saving file locally:", error);
-      // No lanzar error para no interrumpir el flujo principal
+    } else {
+      // Fallback al nombre original del archivo
+      const fileName = file.name || `unnamed_file_${timestamp}`;
+      return `${timestamp}_${fileName}`;
     }
   }
 
   /**
-   * Método privado para crear directorios
+   * Subir archivo al servidor
    */
-  private static async createDirectoryIfNotExists(path: string): Promise<void> {
+  private static async uploadFileToServer(
+    file: File,
+    targetPath: string
+  ): Promise<boolean> {
     try {
-      // En un entorno de navegador, esto sería manejado por el servidor
-      // o usando File System Access API con permisos de directorio
-      console.log(`Ensuring directory exists: ${path}`);
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("targetPath", targetPath);
+
+      // Llamar al endpoint de Next.js para subir archivos físicamente
+      const response = await fetch("/api/upload-visual-resource", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+      return result && result.success;
     } catch (error) {
-      console.error("Error creating directory:", error);
+      console.error("Error uploading file to server:", error);
+      return false;
     }
   }
 

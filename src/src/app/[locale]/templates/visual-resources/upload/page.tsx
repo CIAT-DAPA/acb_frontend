@@ -31,10 +31,15 @@ import {
 import { AccessConfig } from "@/types/core";
 import { VisualResourcesService } from "@/services/visualResourcesService";
 
-interface FileWithPreview extends File {
+interface FileWithPreview {
+  file: File; // El archivo original sin modificar
   preview?: string;
   customName?: string;
   id: string;
+  // Propiedades delegadas del File original
+  name: string;
+  size: number;
+  type: string;
 }
 
 export default function UploadVisualResource() {
@@ -138,11 +143,14 @@ export default function UploadVisualResource() {
         }
 
         // Crear preview para imágenes y agregar ID único
-        const fileWithPreview = file as FileWithPreview;
-        fileWithPreview.id = `${Date.now()}-${Math.random()
-          .toString(36)
-          .substr(2, 9)}`;
-        fileWithPreview.customName = "";
+        const fileWithPreview: FileWithPreview = {
+          file: file, // El archivo original sin modificar
+          id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          customName: "",
+          name: file.name,
+          size: file.size,
+          type: file.type,
+        };
 
         if (file.type.startsWith("image/")) {
           fileWithPreview.preview = URL.createObjectURL(file);
@@ -237,13 +245,16 @@ export default function UploadVisualResource() {
     });
     setUploadResults(results);
 
+    let successCount = 0;
+    let errorCount = 0;
+
     try {
       for (let i = 0; i < selectedFiles.length; i++) {
         const file = selectedFiles[i];
 
         try {
           // Simular progreso de subida
-          for (let progress = 0; progress <= 100; progress += 20) {
+          for (let progress = 0; progress <= 80; progress += 20) {
             setUploadProgress((prev) => ({
               ...prev,
               [file.id]: progress,
@@ -252,40 +263,77 @@ export default function UploadVisualResource() {
           }
 
           // Determinar el nombre final del archivo
+          const fileName = file.name || `unnamed_file_${Date.now()}`;
+          const fileExtension = fileName.includes(".")
+            ? fileName.split(".").pop()
+            : "unknown";
+
           const finalFileName = file.customName?.trim()
-            ? `${file.customName}.${file.name.split(".").pop()}`
-            : file.name;
+            ? `${file.customName}.${fileExtension}`
+            : fileName;
 
           const uploadMetadata = {
             file_name: finalFileName,
             file_type: fileType,
             status: "active" as VisualResourceStatus,
             access_config: {
-              access_type: accessType,
-              ...(accessType === "group" && { group_id: selectedGroup }),
-            } as AccessConfig,
+              type: accessType,
+              ...(accessType === "group" && { group_name: selectedGroup }),
+            },
           };
 
-          const response = await VisualResourcesService.uploadVisualResource(
-            file,
-            uploadMetadata
+          // Usar createVisualResource con archivo y metadatos
+          const response = await VisualResourcesService.createVisualResource(
+            uploadMetadata,
+            file.file // Usar el archivo original
           );
 
-          // Si llega aquí sin lanzar error, la subida fue exitosa
-          setUploadResults((prev) => ({
+          // Actualizar progreso a 100%
+          setUploadProgress((prev) => ({
             ...prev,
-            [file.id]: "success",
+            [file.id]: 100,
           }));
+
+          if (response.success) {
+            setUploadResults((prev) => ({
+              ...prev,
+              [file.id]: "success",
+            }));
+            successCount++;
+          } else {
+            throw new Error(response.message || "Error al subir el archivo");
+          }
         } catch (error) {
           console.error(`Error uploading ${file.name}:`, error);
           setUploadResults((prev) => ({ ...prev, [file.id]: "error" }));
+          errorCount++;
         }
       }
 
-      // Mostrar mensaje de éxito y redirigir después de un momento
-      setTimeout(() => {
-        router.push("/templates/visual-resources");
-      }, 2000);
+      // Mostrar mensaje de resultado
+      if (successCount > 0 && errorCount === 0) {
+        setSuccessMessage(
+          `Se subieron correctamente ${successCount} archivo${
+            successCount !== 1 ? "s" : ""
+          }`
+        );
+        // Redirigir después de un momento
+        setTimeout(() => {
+          router.push("/templates/visual-resources");
+        }, 2000);
+      } else if (successCount > 0 && errorCount > 0) {
+        setSuccessMessage(
+          `Se subieron ${successCount} archivo${
+            successCount !== 1 ? "s" : ""
+          } correctamente. ${errorCount} archivo${
+            errorCount !== 1 ? "s fallaron" : " falló"
+          }.`
+        );
+      } else {
+        setError(
+          "No se pudo subir ningún archivo. Revisa los errores e intenta de nuevo."
+        );
+      }
     } catch (error) {
       console.error("Upload error:", error);
       setError("Error general durante la subida de archivos");

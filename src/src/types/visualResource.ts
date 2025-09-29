@@ -11,7 +11,7 @@ export type VisualResourceStatus = (typeof VISUAL_RESOURCE_STATUS)[number];
 // Interfaz para recursos visuales
 export interface VisualResource {
   id: string;
-  file_path: string;
+  file_url: string;
   file_name: string;
   file_type: VisualResourceFileType;
   status: VisualResourceStatus;

@@ -35,7 +35,7 @@ export default function VisualResources() {
   const t = useTranslations("VisualResources");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<"all" | "image" | "icon">("all");
-  const [resources, setResources] = useState<VisualResource[]>([]);
+  const [allResources, setAllResources] = useState<VisualResource[]>([]); // Todos los recursos originales
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedResource, setSelectedResource] =
@@ -43,17 +43,10 @@ export default function VisualResources() {
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
-  // Cargar recursos visuales al montar el componente
+  // Cargar recursos visuales al montar el componente (solo una vez)
   useEffect(() => {
     loadVisualResources();
   }, []);
-
-  // Cargar recursos cuando cambian los filtros
-  useEffect(() => {
-    if (searchTerm || filterType !== "all") {
-      loadVisualResources();
-    }
-  }, [searchTerm, filterType]);
 
   // Efecto para cerrar el modal con la tecla Escape
   useEffect(() => {
@@ -80,20 +73,33 @@ export default function VisualResources() {
     setError(null);
 
     try {
-      const allResources = await VisualResourcesService.getAllVisualResources();
+      const allResourcesResponse =
+        await VisualResourcesService.getAllVisualResources();
 
-      setResources(allResources.data || []); // Usar datos del servicio o array vacío
+      setAllResources(allResourcesResponse.data || []); // Guardar todos los recursos originales
+      console.log("Recursos visuales cargados:", allResourcesResponse.data);
     } catch (err) {
       setError("Error de conexión al cargar los recursos visuales");
       console.error("Error loading visual resources:", err);
-      setResources([]); // Limpiar recursos en caso de error
+      setAllResources([]); // Limpiar recursos en caso de error
     } finally {
       setLoading(false);
     }
   };
 
-  // Los recursos ya vienen filtrados del servicio
-  const filteredResources = resources;
+  // Filtrar recursos localmente basado en el término de búsqueda y tipo
+  const filteredResources = allResources.filter((resource) => {
+    // Filtrar por tipo si no es "all"
+    const matchesType =
+      filterType === "all" || resource.file_type === filterType;
+
+    // Filtrar por término de búsqueda (en nombre del archivo)
+    const matchesSearch =
+      searchTerm === "" ||
+      resource.file_name.toLowerCase().includes(searchTerm.toLowerCase());
+
+    return matchesType && matchesSearch;
+  });
 
   // Función para formatear el tamaño del archivo (si está disponible en los logs)
   const formatFileSize = (resource: VisualResource) => {
@@ -142,8 +148,8 @@ export default function VisualResources() {
       await VisualResourcesService.deleteVisualResource(resource.id);
 
       // Remover el recurso de la lista local
-      setResources((prevResources) =>
-        prevResources.filter((r) => r.id !== resource.id)
+      setAllResources((prevResources: VisualResource[]) =>
+        prevResources.filter((r: VisualResource) => r.id !== resource.id)
       );
 
       console.log(`Recurso eliminado: ${resource.file_name}`);
@@ -161,11 +167,10 @@ export default function VisualResources() {
       setDownloadingId(resource.id);
 
       // Construir la URL completa del recurso
-      const baseUrl =
-        process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
-      const fullImageUrl = resource.file_path.startsWith("http")
-        ? resource.file_path
-        : `${baseUrl}${resource.file_path}`;
+      const baseUrl = window.location.origin;
+      const fullImageUrl = resource.file_url.startsWith("http")
+        ? resource.file_url
+        : `${baseUrl}${resource.file_url}`;
 
       // Fetch la imagen como blob para asegurar la descarga
       const response = await fetch(fullImageUrl);
@@ -305,14 +310,7 @@ export default function VisualResources() {
                   {/* Thumbnail */}
                   <div className="aspect-square bg-gray-100 relative overflow-hidden">
                     <Image
-                      src={
-                        resource.file_path.startsWith("http")
-                          ? resource.file_path
-                          : `${
-                              process.env.NEXT_PUBLIC_API_BASE_URL ||
-                              "http://127.0.0.1:8000"
-                            }${resource.file_path}`
-                      }
+                      src={resource.file_url}
                       alt={resource.file_name}
                       fill
                       className="object-contain group-hover:scale-105 transition-transform"
@@ -455,14 +453,7 @@ export default function VisualResources() {
             <div className="p-4">
               <div className="flex items-center justify-center bg-gray-50 rounded-lg min-h-[400px]">
                 <Image
-                  src={
-                    selectedResource.file_path.startsWith("http")
-                      ? selectedResource.file_path
-                      : `${
-                          process.env.NEXT_PUBLIC_API_BASE_URL ||
-                          "http://127.0.0.1:8000"
-                        }${selectedResource.file_path}`
-                  }
+                  src={selectedResource.file_url}
                   alt={selectedResource.file_name}
                   width={800}
                   height={600}
