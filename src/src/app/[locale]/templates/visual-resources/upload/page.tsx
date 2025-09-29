@@ -28,7 +28,6 @@ import {
   VisualResourceFileType,
   VisualResourceStatus,
 } from "@/types/visualResource";
-import { AccessConfig } from "@/types/core";
 import { VisualResourcesService } from "@/services/visualResourcesService";
 
 interface FileWithPreview {
@@ -367,7 +366,7 @@ export default function UploadVisualResource() {
                     className="flex items-center gap-2 text-[#283618]/60 hover:text-[#283618] transition-colors"
                   >
                     <ArrowLeft className="h-5 w-5" />
-                    <span>{t("backToTemplates")}</span>
+                    <span>{t("backToVisualResources")}</span>
                   </Link>
                 </div>
                 <h1 className={pageTitle}>{t("uploadFile")}</h1>
@@ -403,7 +402,7 @@ export default function UploadVisualResource() {
                       <option value="image">{t("images")}</option>
                       <option value="icon">{t("icons")}</option>
                     </select>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-[#283618]/80 mt-1">
                       {fileType === "image"
                         ? "Imágenes: JPG, PNG, GIF, WebP, SVG (máx. 10MB)"
                         : "Iconos: SVG, PNG, ICO (máx. 2MB)"}
@@ -459,7 +458,7 @@ export default function UploadVisualResource() {
                   className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
                     isDragActive
                       ? "border-[#ffaf68] bg-[#ffaf68]/10"
-                      : "border-gray-300 hover:border-[#ffaf68]/50"
+                      : "border-[#283618]/60 hover:border-[#ffaf68]/50"
                   }`}
                   onDragEnter={handleDragEnter}
                   onDragLeave={handleDragLeave}
@@ -475,7 +474,9 @@ export default function UploadVisualResource() {
                       <h3 className="text-lg font-medium text-[#283618] mb-2">
                         {isDragActive ? t("dropFiles") : t("dragFiles")}
                       </h3>
-                      <p className="text-gray-500 mb-4">{t("clickToSelect")}</p>
+                      <p className="text-[#283618]/80 mb-4">
+                        {t("clickToSelect")}
+                      </p>
                     </div>
 
                     <input
@@ -490,10 +491,7 @@ export default function UploadVisualResource() {
                       className="hidden"
                       id="file-input"
                     />
-                    <label
-                      htmlFor="file-input"
-                      className={btnOutlineSecondary + " cursor-pointer"}
-                    >
+                    <label htmlFor="file-input" className={btnOutlineSecondary}>
                       {t("selectFiles")}
                     </label>
                   </div>
@@ -526,9 +524,9 @@ export default function UploadVisualResource() {
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
                               {fileType === "image" ? (
-                                <ImageIcon className="h-8 w-8 text-gray-400" />
+                                <ImageIcon className="h-8 w-8 text-[#283618]/80" />
                               ) : (
-                                <FileText className="h-8 w-8 text-gray-400" />
+                                <FileText className="h-8 w-8 text-[#283618]/80" />
                               )}
                             </div>
                           )}
@@ -542,7 +540,7 @@ export default function UploadVisualResource() {
                           >
                             {file.name}
                           </p>
-                          <p className="text-gray-500">
+                          <p className="text-[#283618]/80">
                             {(file.size / 1024 / 1024).toFixed(2)} MB
                           </p>
                         </div>

@@ -7,15 +7,10 @@ import {
   ArrowLeft,
   Upload,
   Search,
-  Grid3X3,
-  List,
-  Filter,
   Image as ImageIcon,
-  FileText,
   Trash2,
   Eye,
   Download,
-  MoreHorizontal,
   Loader2,
   AlertCircle,
 } from "lucide-react";
@@ -28,7 +23,7 @@ import {
   pageTitle,
   pageSubtitle,
 } from "../../components/ui";
-import { VisualResource, VisualResourceFileType } from "@/types/visualResource";
+import { VisualResource } from "@/types/visualResource";
 import { VisualResourcesService } from "@/services/visualResourcesService";
 
 export default function VisualResources() {
@@ -325,7 +320,7 @@ export default function VisualResources() {
                         className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
                         title={t("viewFile")}
                       >
-                        <Eye className="h-4 w-4 text-white" />
+                        <Eye className="h-4 w-4 text-white cursor-pointer" />
                       </button>
                       <button
                         onClick={() => handleDownloadResource(resource)}
@@ -336,7 +331,7 @@ export default function VisualResources() {
                         {downloadingId === resource.id ? (
                           <Loader2 className="h-4 w-4 text-white animate-spin" />
                         ) : (
-                          <Download className="h-4 w-4 text-white" />
+                          <Download className="h-4 w-4 text-white cursor-pointer" />
                         )}
                       </button>
                       <button
@@ -344,7 +339,7 @@ export default function VisualResources() {
                         className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
                         title={t("deleteFile")}
                       >
-                        <Trash2 className="h-4 w-4 text-white" />
+                        <Trash2 className="h-4 w-4 text-white cursor-pointer" />
                       </button>
                     </div>
                   </div>
