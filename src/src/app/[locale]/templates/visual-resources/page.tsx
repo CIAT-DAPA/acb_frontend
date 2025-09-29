@@ -41,7 +41,10 @@ export default function VisualResources() {
   const [selectedResource, setSelectedResource] =
     useState<VisualResource | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [resourceToDelete, setResourceToDelete] = useState<VisualResource | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Estados para la edición
   const [editForm, setEditForm] = useState({
@@ -59,15 +62,19 @@ export default function VisualResources() {
     loadAvailableGroups();
   }, []);
 
-  // Efecto para cerrar el modal con la tecla Escape
+  // Efecto para cerrar los modales con la tecla Escape
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && showEditModal) {
-        handleCloseEdit();
+      if (event.key === "Escape") {
+        if (showEditModal) {
+          handleCloseEdit();
+        } else if (showDeleteModal && !isDeleting) {
+          handleCloseDeleteModal();
+        }
       }
     };
 
-    if (showEditModal) {
+    if (showEditModal || showDeleteModal) {
       document.addEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "hidden"; // Prevenir scroll del fondo
     }
@@ -76,7 +83,7 @@ export default function VisualResources() {
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "unset"; // Restaurar scroll
     };
-  }, [showEditModal]);
+  }, [showEditModal, showDeleteModal, isDeleting]);
 
   // Función para cargar recursos visuales desde el servicio
   const loadVisualResources = async () => {
@@ -220,29 +227,38 @@ export default function VisualResources() {
     }
   };
 
-  // Función para eliminar un recurso
-  const handleDeleteResource = async (resource: VisualResource) => {
-    const confirmDelete = window.confirm(
-      `¿Estás seguro de que deseas eliminar "${resource.file_name}"? Esta acción no se puede deshacer.`
-    );
+  // Función para mostrar el modal de confirmación de eliminación
+  const handleDeleteResource = (resource: VisualResource) => {
+    setResourceToDelete(resource);
+    setShowDeleteModal(true);
+  };
 
-    if (!confirmDelete) return;
+  // Función para cerrar el modal de eliminación
+  const handleCloseDeleteModal = () => {
+    setShowDeleteModal(false);
+    setResourceToDelete(null);
+    setIsDeleting(false);
+  };
+
+  // Función para confirmar la eliminación
+  const handleConfirmDelete = async () => {
+    if (!resourceToDelete) return;
 
     try {
-      setLoading(true);
-      await VisualResourcesService.deleteVisualResource(resource.id);
+      setIsDeleting(true);
+      await VisualResourcesService.deleteVisualResource(resourceToDelete.id);
 
       // Remover el recurso de la lista local
       setAllResources((prevResources: VisualResource[]) =>
-        prevResources.filter((r: VisualResource) => r.id !== resource.id)
+        prevResources.filter((r: VisualResource) => r.id !== resourceToDelete.id)
       );
 
-      console.log(`Recurso eliminado: ${resource.file_name}`);
+      console.log(`Recurso eliminado: ${resourceToDelete.file_name}`);
+      handleCloseDeleteModal();
     } catch (error) {
       console.error("Error al eliminar el recurso:", error);
       setError("Error al eliminar el recurso. Por favor, intenta de nuevo.");
-    } finally {
-      setLoading(false);
+      setIsDeleting(false);
     }
   };
 
@@ -683,6 +699,110 @@ export default function VisualResources() {
                   )}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Confirmación de Eliminación */}
+      {showDeleteModal && resourceToDelete && (
+        <div
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+          onClick={handleCloseDeleteModal}
+        >
+          <div
+            className="bg-white rounded-lg max-w-md w-full mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header del modal */}
+            <div className="flex items-center justify-between p-4 border-b">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-red-100 rounded-full">
+                  <Trash2 className="h-5 w-5 text-red-600" />
+                </div>
+                <h3 className="text-lg font-medium text-[#283618]">
+                  {t("deleteConfirmTitle")}
+                </h3>
+              </div>
+              <button
+                onClick={handleCloseDeleteModal}
+                className="p-2 text-[#283618]/80 hover:text-[#283618] transition-colors cursor-pointer"
+                disabled={isDeleting}
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Contenido del modal */}
+            <div className="p-6">
+              <div className="flex gap-4">
+                {/* Vista previa pequeña del recurso */}
+                <div className="flex-shrink-0">
+                  <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
+                    <Image
+                      src={resourceToDelete.file_url}
+                      alt={resourceToDelete.file_name}
+                      width={64}
+                      height={64}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = "/assets/img/imageNotFound.png";
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Mensaje de confirmación */}
+                <div className="flex-1">
+                  <p className="text-[#283618] mb-2">
+                    {t("deleteConfirmMessage", { fileName: resourceToDelete.file_name })}
+                  </p>
+                  <div className="text-sm text-[#283618]/70">
+                    <p>Tipo: {resourceToDelete.file_type}</p>
+                    <p>ID: {resourceToDelete.id}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Mensajes de error */}
+              {error && (
+                <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="h-5 w-5" />
+                    <p>{error}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Botones de acción */}
+            <div className="flex gap-3 justify-end p-4 border-t bg-gray-50">
+              <button
+                onClick={handleCloseDeleteModal}
+                className={btnOutlineSecondary}
+                disabled={isDeleting}
+              >
+                {t("cancelDelete")}
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={isDeleting}
+                className={`bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium transition-colors ${
+                  isDeleting ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>{t("deleting")}</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="h-4 w-4" />
+                    <span>{t("confirmDelete")}</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>

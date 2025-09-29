@@ -76,7 +76,13 @@
     "allowedGroup": "Grupo permitido",
     "saveChanges": "Guardar Cambios",
     "saving": "Guardando...",
-    "cancelEdit": "Cancelar"
+    "cancelEdit": "Cancelar",
+    "deleteResource": "Eliminar Recurso",
+    "deleteConfirmTitle": "¿Eliminar recurso visual?",
+    "deleteConfirmMessage": "¿Estás seguro de que deseas eliminar \"{fileName}\"? Esta acción no se puede deshacer.",
+    "confirmDelete": "Sí, eliminar",
+    "cancelDelete": "Cancelar",
+    "deleting": "Eliminando..."
   },
   "Features": {
     "title": "Todo lo que necesitas para crear",

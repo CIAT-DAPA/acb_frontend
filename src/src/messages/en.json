@@ -76,7 +76,13 @@
     "allowedGroup": "Allowed group",
     "saveChanges": "Save Changes",
     "saving": "Saving...",
-    "cancelEdit": "Cancel"
+    "cancelEdit": "Cancel",
+    "deleteResource": "Delete Resource",
+    "deleteConfirmTitle": "Delete visual resource?",
+    "deleteConfirmMessage": "Are you sure you want to delete \"{fileName}\"? This action cannot be undone.",
+    "confirmDelete": "Yes, delete",
+    "cancelDelete": "Cancel",
+    "deleting": "Deleting..."
   },
   "Features": {
     "title": "Everything you need to create",
