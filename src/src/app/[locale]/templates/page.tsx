@@ -152,13 +152,13 @@ export default function Templates() {
                 .map((template, index) => (
                   <ItemCard
                     key={template._id || `template-${index}`}
+                    type="template"
                     id={template._id!} // Pasar directamente como string
                     name={template.template_name}
                     author={template.log.creator_user_id}
                     lastModified={new Date(
                       template.log.updated_at!
                     ).toLocaleDateString()}
-                    type="template"
                   />
                 ))}
             </div>

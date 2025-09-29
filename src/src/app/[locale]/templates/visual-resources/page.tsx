@@ -9,8 +9,6 @@ import {
   Search,
   Image as ImageIcon,
   Trash2,
-  Edit3,
-  Download,
   Loader2,
   AlertCircle,
   Save,
@@ -18,6 +16,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { ProtectedRoute } from "../../../../components/ProtectedRoute";
+import ItemCard from "../../components/ItemCard";
 import {
   container,
   btnPrimary,
@@ -25,7 +24,6 @@ import {
   pageTitle,
   pageSubtitle,
   inputField,
-  btnOutlinePrimary,
   btnOutlineSecondary,
 } from "../../components/ui";
 import { VisualResource } from "@/types/visualResource";
@@ -42,7 +40,8 @@ export default function VisualResources() {
     useState<VisualResource | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [resourceToDelete, setResourceToDelete] = useState<VisualResource | null>(null);
+  const [resourceToDelete, setResourceToDelete] =
+    useState<VisualResource | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -250,7 +249,9 @@ export default function VisualResources() {
 
       // Remover el recurso de la lista local
       setAllResources((prevResources: VisualResource[]) =>
-        prevResources.filter((r: VisualResource) => r.id !== resourceToDelete.id)
+        prevResources.filter(
+          (r: VisualResource) => r.id !== resourceToDelete.id
+        )
       );
 
       console.log(`Recurso eliminado: ${resourceToDelete.file_name}`);
@@ -404,83 +405,20 @@ export default function VisualResources() {
           {!loading && !error && (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
               {filteredResources.map((resource) => (
-                <div
+                <ItemCard
                   key={resource.id}
-                  className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow group"
-                >
-                  {/* Thumbnail */}
-                  <div className="aspect-square bg-gray-100 relative overflow-hidden">
-                    <Image
-                      src={resource.file_url}
-                      alt={resource.file_name}
-                      fill
-                      className="object-contain group-hover:scale-105 transition-transform"
-                      onError={(e) => {
-                        e.currentTarget.src = "/assets/img/imageNotFound.png";
-                      }}
-                    />
-                    {/* Overlay con acciones */}
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                      <button
-                        onClick={() => handleEditResource(resource)}
-                        className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
-                        title={t("editFile")}
-                      >
-                        <Edit3 className="h-4 w-4 text-white cursor-pointer" />
-                      </button>
-                      <button
-                        onClick={() => handleDownloadResource(resource)}
-                        className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
-                        title={t("downloadFile")}
-                        disabled={downloadingId === resource.id}
-                      >
-                        {downloadingId === resource.id ? (
-                          <Loader2 className="h-4 w-4 text-white animate-spin" />
-                        ) : (
-                          <Download className="h-4 w-4 text-white cursor-pointer" />
-                        )}
-                      </button>
-                      <button
-                        onClick={() => handleDeleteResource(resource)}
-                        className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
-                        title={t("deleteFile")}
-                      >
-                        <Trash2 className="h-4 w-4 text-white cursor-pointer" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Info */}
-                  <div className="p-4">
-                    <h3 className="font-medium text-sm text-[#283618] truncate mb-1">
-                      {resource.file_name}
-                    </h3>
-                    <p className="text-xs text-[#283618]/80 mb-2">
-                      {formatFileSize(resource)}
-                    </p>
-
-                    {/* Tags */}
-                    {getResourceTags(resource).length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {getResourceTags(resource)
-                          .slice(0, 2)
-                          .map((tag) => (
-                            <span
-                              key={tag}
-                              className="px-2 py-1 bg-[#ffaf68]/20 text-[#283618] text-xs rounded-full"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        {getResourceTags(resource).length > 2 && (
-                          <span className="px-2 py-1 bg-gray-100 text-[#283618]/80 text-xs rounded-full">
-                            +{getResourceTags(resource).length - 2}
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
+                  type="visual-resource"
+                  id={resource.id}
+                  name={resource.file_name}
+                  image={resource.file_url}
+                  fileType={resource.file_type}
+                  fileSize={formatFileSize(resource)}
+                  tags={getResourceTags(resource)}
+                  onEdit={() => handleEditResource(resource)}
+                  onDownload={() => handleDownloadResource(resource)}
+                  onDelete={() => handleDeleteResource(resource)}
+                  isDownloading={downloadingId === resource.id}
+                />
               ))}
             </div>
           )}
@@ -755,7 +693,9 @@ export default function VisualResources() {
                 {/* Mensaje de confirmación */}
                 <div className="flex-1">
                   <p className="text-[#283618] mb-2">
-                    {t("deleteConfirmMessage", { fileName: resourceToDelete.file_name })}
+                    {t("deleteConfirmMessage", {
+                      fileName: resourceToDelete.file_name,
+                    })}
                   </p>
                   <div className="text-sm text-[#283618]/70">
                     <p>Tipo: {resourceToDelete.file_type}</p>

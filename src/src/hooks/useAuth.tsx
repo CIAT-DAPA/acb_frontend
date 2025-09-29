@@ -66,7 +66,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isRun.current = true;
 
     // Initialize Keycloak only on client side
-    keycloak.current = new Keycloak({   
+    keycloak.current = new Keycloak({
       url: process.env.NEXT_PUBLIC_KEYCLOAK_URL!,
       realm: process.env.NEXT_PUBLIC_KEYCLOAK_REALM!,
       clientId: process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID!,
