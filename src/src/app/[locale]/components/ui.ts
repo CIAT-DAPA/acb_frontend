@@ -21,7 +21,7 @@ export const dot = "w-2 h-2 rounded-full";
 
 // Clases adicionales para componentes comunes
 export const inputField =
-  "w-full px-4 py-3 border border-[#283618]/20 rounded-lg focus:ring-2 focus:ring-[#ffaf68] focus:border-transparent shadow-sm";
+  "inline-flex items-center gap-2 px-6 py-3 border border-[#283618]/20 rounded-lg focus:ring-2 focus:ring-[#ffaf68] focus:border-transparent shadow-sm";
 export const searchField =
   "w-full pl-10 pr-4 py-3 border border-[#283618]/20 rounded-lg focus:ring-2 focus:ring-[#ffaf68] focus:border-transparent shadow-sm";
 export const cardBase =

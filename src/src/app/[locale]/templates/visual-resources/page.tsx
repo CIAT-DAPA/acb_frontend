@@ -9,10 +9,12 @@ import {
   Search,
   Image as ImageIcon,
   Trash2,
-  Eye,
+  Edit3,
   Download,
   Loader2,
   AlertCircle,
+  Save,
+  X,
 } from "lucide-react";
 import Image from "next/image";
 import { ProtectedRoute } from "../../../../components/ProtectedRoute";
@@ -22,6 +24,9 @@ import {
   searchField,
   pageTitle,
   pageSubtitle,
+  inputField,
+  btnOutlinePrimary,
+  btnOutlineSecondary,
 } from "../../components/ui";
 import { VisualResource } from "@/types/visualResource";
 import { VisualResourcesService } from "@/services/visualResourcesService";
@@ -35,23 +40,34 @@ export default function VisualResources() {
   const [error, setError] = useState<string | null>(null);
   const [selectedResource, setSelectedResource] =
     useState<VisualResource | null>(null);
-  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+  // Estados para la edición
+  const [editForm, setEditForm] = useState({
+    file_name: "",
+    file_type: "image" as "image" | "icon",
+    access_type: "public" as "public" | "private" | "restricted",
+    group_name: "",
+  });
+  const [isEditing, setIsEditing] = useState(false);
+  const [availableGroups, setAvailableGroups] = useState<string[]>([]);
 
   // Cargar recursos visuales al montar el componente (solo una vez)
   useEffect(() => {
     loadVisualResources();
+    loadAvailableGroups();
   }, []);
 
   // Efecto para cerrar el modal con la tecla Escape
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && showPreviewModal) {
-        handleClosePreview();
+      if (event.key === "Escape" && showEditModal) {
+        handleCloseEdit();
       }
     };
 
-    if (showPreviewModal) {
+    if (showEditModal) {
       document.addEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "hidden"; // Prevenir scroll del fondo
     }
@@ -60,7 +76,7 @@ export default function VisualResources() {
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "unset"; // Restaurar scroll
     };
-  }, [showPreviewModal]);
+  }, [showEditModal]);
 
   // Función para cargar recursos visuales desde el servicio
   const loadVisualResources = async () => {
@@ -118,16 +134,90 @@ export default function VisualResources() {
     return tags;
   };
 
-  // Función para abrir el modal de vista previa
-  const handleViewResource = (resource: VisualResource) => {
-    setSelectedResource(resource);
-    setShowPreviewModal(true);
+  // Función para cargar grupos disponibles
+  const loadAvailableGroups = async () => {
+    try {
+      const response = await VisualResourcesService.getAvailableGroups();
+      if (response.success && response.data) {
+        setAvailableGroups(response.data);
+      }
+    } catch (error) {
+      console.error("Error loading available groups:", error);
+      // Fallback: usar grupos de ejemplo si el endpoint no está disponible
+      setAvailableGroups(["Admin", "Research", "Public"]);
+    }
   };
 
-  // Función para cerrar el modal de vista previa
-  const handleClosePreview = () => {
+  // Función para abrir el modal de edición
+  const handleEditResource = (resource: VisualResource) => {
+    setSelectedResource(resource);
+    setEditForm({
+      file_name: resource.file_name,
+      file_type: resource.file_type,
+      access_type: resource.access_config.access_type,
+      group_name: resource.access_config.allowed_groups?.[0] || "",
+    });
+    setShowEditModal(true);
+  };
+
+  // Función para cerrar el modal de edición
+  const handleCloseEdit = () => {
     setSelectedResource(null);
-    setShowPreviewModal(false);
+    setShowEditModal(false);
+    setIsEditing(false);
+    setEditForm({
+      file_name: "",
+      file_type: "image",
+      access_type: "public",
+      group_name: "",
+    });
+  };
+
+  // Función para guardar los cambios
+  const handleSaveChanges = async () => {
+    if (!selectedResource) return;
+
+    setIsEditing(true);
+    setError(null);
+
+    try {
+      const updateData = {
+        file_name: editForm.file_name,
+        file_type: editForm.file_type,
+        status: "active" as const,
+        access_config: {
+          access_type: editForm.access_type,
+          allowed_groups:
+            editForm.access_type === "restricted" && editForm.group_name
+              ? [editForm.group_name]
+              : [],
+        },
+      };
+
+      const response = await VisualResourcesService.updateVisualResource(
+        selectedResource.id,
+        updateData
+      );
+
+      if (response.success) {
+        // Actualizar el recurso en la lista local
+        setAllResources((prevResources: VisualResource[]) =>
+          prevResources.map((r: VisualResource) =>
+            r.id === selectedResource.id ? { ...r, ...updateData } : r
+          )
+        );
+
+        handleCloseEdit();
+        // Mostrar mensaje de éxito si tienes un sistema de notificaciones
+      } else {
+        throw new Error(response.message || "Error al actualizar el recurso");
+      }
+    } catch (error) {
+      console.error("Error updating resource:", error);
+      setError("Error al actualizar el recurso. Por favor, intenta de nuevo.");
+    } finally {
+      setIsEditing(false);
+    }
   };
 
   // Función para eliminar un recurso
@@ -210,7 +300,7 @@ export default function VisualResources() {
                 <div className="flex items-center gap-4 mb-2">
                   <Link
                     href="/templates"
-                    className="flex items-center gap-2 text-[#283618]/60 hover:text-[#283618] transition-colors"
+                    className="flex items-center gap-2 text-[#283618]/80 hover:text-[#283618] transition-colors"
                   >
                     <ArrowLeft className="h-5 w-5" />
                     <span>{t("backToTemplates")}</span>
@@ -231,7 +321,7 @@ export default function VisualResources() {
         {/* Content Section */}
         <div className={`${container} py-8`}>
           {/* Toolbar */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-8">
+          <div className="flex flex-col sm:flex-row gap-2 mb-8">
             {/* Search Bar */}
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#283618]/50" />
@@ -252,7 +342,7 @@ export default function VisualResources() {
                 onChange={(e) =>
                   setFilterType(e.target.value as "all" | "image" | "icon")
                 }
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ffaf68] focus:border-transparent"
+                className={inputField}
               >
                 <option value="all">{t("allFiles")}</option>
                 <option value="image">{t("images")}</option>
@@ -316,11 +406,11 @@ export default function VisualResources() {
                     {/* Overlay con acciones */}
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                       <button
-                        onClick={() => handleViewResource(resource)}
+                        onClick={() => handleEditResource(resource)}
                         className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
-                        title={t("viewFile")}
+                        title={t("editFile")}
                       >
-                        <Eye className="h-4 w-4 text-white cursor-pointer" />
+                        <Edit3 className="h-4 w-4 text-white cursor-pointer" />
                       </button>
                       <button
                         onClick={() => handleDownloadResource(resource)}
@@ -349,7 +439,7 @@ export default function VisualResources() {
                     <h3 className="font-medium text-sm text-[#283618] truncate mb-1">
                       {resource.file_name}
                     </h3>
-                    <p className="text-xs text-gray-500 mb-2">
+                    <p className="text-xs text-[#283618]/80 mb-2">
                       {formatFileSize(resource)}
                     </p>
 
@@ -367,7 +457,7 @@ export default function VisualResources() {
                             </span>
                           ))}
                         {getResourceTags(resource).length > 2 && (
-                          <span className="px-2 py-1 bg-gray-100 text-gray-500 text-xs rounded-full">
+                          <span className="px-2 py-1 bg-gray-100 text-[#283618]/80 text-xs rounded-full">
                             +{getResourceTags(resource).length - 2}
                           </span>
                         )}
@@ -382,11 +472,11 @@ export default function VisualResources() {
           {/* Empty State - Solo mostrar si no hay carga ni error */}
           {!loading && !error && filteredResources.length === 0 && (
             <div className="text-center py-12">
-              <ImageIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+              <ImageIcon className="h-16 w-16 text-[#283618]/80 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-[#283618] mb-2">
                 {searchTerm ? t("noResults") : t("noResources")}
               </h3>
-              <p className="text-gray-500 mb-6">
+              <p className="text-[#283618]/80 mb-6">
                 {searchTerm ? t("tryDifferentSearch") : t("uploadFirst")}
               </p>
               <Link
@@ -401,112 +491,198 @@ export default function VisualResources() {
         </div>
       </main>
 
-      {/* Modal de Vista Previa */}
-      {showPreviewModal && selectedResource && (
+      {/* Modal de Edición */}
+      {showEditModal && selectedResource && (
         <div
           className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
-          onClick={handleClosePreview}
+          onClick={handleCloseEdit}
         >
           <div
-            className="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-hidden"
+            className="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header del modal */}
             <div className="flex items-center justify-between p-4 border-b">
               <div>
                 <h3 className="text-lg font-medium text-[#283618]">
-                  {selectedResource.file_name}
+                  {t("editResource")}
                 </h3>
-                <p className="text-sm text-gray-500">
-                  {selectedResource.file_type} •{" "}
-                  {formatFileSize(selectedResource)}
+                <p className="text-sm text-[#283618]/80">
+                  {selectedResource.file_type} • ID: {selectedResource.id}
                 </p>
               </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleDownloadResource(selectedResource)}
-                  className="p-2 text-gray-600 hover:text-[#283618] transition-colors"
-                  title={t("downloadFile")}
-                  disabled={downloadingId === selectedResource.id}
-                >
-                  {downloadingId === selectedResource.id ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    <Download className="h-5 w-5" />
-                  )}
-                </button>
-                <button
-                  onClick={handleClosePreview}
-                  className="p-2 text-gray-600 hover:text-[#283618] transition-colors"
-                >
-                  ✕
-                </button>
-              </div>
+              <button
+                onClick={handleCloseEdit}
+                className="p-2 text-[#283618]/80 hover:text-[#283618] transition-colors cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
             </div>
 
             {/* Contenido del modal */}
-            <div className="p-4">
-              <div className="flex items-center justify-center bg-gray-50 rounded-lg min-h-[400px]">
-                <Image
-                  src={selectedResource.file_url}
-                  alt={selectedResource.file_name}
-                  width={800}
-                  height={600}
-                  className="max-w-full max-h-[60vh] object-contain"
-                  onError={(e) => {
-                    e.currentTarget.src = "/assets/img/imageNotFound.png";
-                  }}
-                />
-              </div>
+            <div className="p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Vista previa del recurso */}
+                <div>
+                  <h4 className="text-md font-medium text-[#283618] mb-3">
+                    {t("preview")}
+                  </h4>
+                  <div className="flex items-center justify-center bg-gray-50 rounded-lg min-h-[300px] p-4">
+                    <Image
+                      src={selectedResource.file_url}
+                      alt={selectedResource.file_name}
+                      width={400}
+                      height={300}
+                      className="w-auto h-auto max-w-full max-h-[280px] object-contain"
+                      onError={(e) => {
+                        e.currentTarget.src = "/assets/img/imageNotFound.png";
+                      }}
+                    />
+                  </div>
+                </div>
 
-              {/* Información adicional */}
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                {/* Formulario de edición */}
                 <div>
-                  <span className="font-medium text-[#283618]">Tipo:</span>
-                  <span className="ml-2 text-gray-600 capitalize">
-                    {selectedResource.file_type}
-                  </span>
-                </div>
-                <div>
-                  <span className="font-medium text-[#283618]">Estado:</span>
-                  <span className="ml-2 text-gray-600 capitalize">
-                    {selectedResource.status}
-                  </span>
-                </div>
-                <div>
-                  <span className="font-medium text-[#283618]">Acceso:</span>
-                  <span className="ml-2 text-gray-600 capitalize">
-                    {selectedResource.access_config.access_type}
-                  </span>
-                </div>
-                <div>
-                  <span className="font-medium text-[#283618]">Creado:</span>
-                  <span className="ml-2 text-gray-600">
-                    {new Date(
-                      selectedResource.log.created_at
-                    ).toLocaleDateString()}
-                  </span>
-                </div>
-              </div>
+                  <h4 className="text-md font-medium text-[#283618] mb-3">
+                    {t("resourceInfo")}
+                  </h4>
 
-              {/* Tags */}
-              {getResourceTags(selectedResource).length > 0 && (
-                <div className="mt-4">
-                  <span className="font-medium text-[#283618] text-sm">
-                    Etiquetas:
-                  </span>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {getResourceTags(selectedResource).map((tag) => (
-                      <span
-                        key={tag}
-                        className="px-3 py-1 bg-[#ffaf68]/20 text-[#283618] text-sm rounded-full"
+                  <div className="space-y-4">
+                    {/* Nombre del archivo */}
+                    <div>
+                      <label className="block text-sm font-medium text-[#283618] mb-2">
+                        {t("fileName")}
+                      </label>
+                      <input
+                        type="text"
+                        value={editForm.file_name}
+                        onChange={(e) =>
+                          setEditForm((prev) => ({
+                            ...prev,
+                            file_name: e.target.value,
+                          }))
+                        }
+                        className={inputField}
+                        placeholder={t("fileNamePlaceholder")}
+                      />
+                    </div>
+
+                    {/* Tipo de archivo */}
+                    <div>
+                      <label className="block text-sm font-medium text-[#283618] mb-2">
+                        {t("fileType")}
+                      </label>
+                      <select
+                        value={editForm.file_type}
+                        onChange={(e) =>
+                          setEditForm((prev) => ({
+                            ...prev,
+                            file_type: e.target.value as "image" | "icon",
+                          }))
+                        }
+                        className={inputField}
                       >
-                        {tag}
-                      </span>
-                    ))}
+                        <option value="image">{t("image")}</option>
+                        <option value="icon">{t("icon")}</option>
+                      </select>
+                    </div>
+
+                    {/* Tipo de acceso */}
+                    <div>
+                      <label className="block text-sm font-medium text-[#283618] mb-2">
+                        {t("accessTypeLabel")}
+                      </label>
+                      <select
+                        value={editForm.access_type}
+                        onChange={(e) =>
+                          setEditForm((prev) => ({
+                            ...prev,
+                            access_type: e.target.value as
+                              | "public"
+                              | "private"
+                              | "restricted",
+                          }))
+                        }
+                        className={inputField}
+                      >
+                        <option value="public">{t("publicAccess")}</option>
+                        <option value="private">{t("privateAccess")}</option>
+                        <option value="restricted">
+                          {t("restrictedAccess")}
+                        </option>
+                      </select>
+                    </div>
+
+                    {/* Selector de grupo (solo si es restringido) */}
+                    {editForm.access_type === "restricted" && (
+                      <div>
+                        <label className="block text-sm font-medium text-[#283618] mb-2">
+                          {t("allowedGroup")}
+                        </label>
+                        <select
+                          value={editForm.group_name}
+                          onChange={(e) =>
+                            setEditForm((prev) => ({
+                              ...prev,
+                              group_name: e.target.value,
+                            }))
+                          }
+                          className={inputField}
+                        >
+                          <option value="">{t("selectGroup")}</option>
+                          {availableGroups.map((group) => (
+                            <option key={group} value={group}>
+                              {group}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Mensajes de error */}
+              {error && (
+                <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="h-5 w-5" />
+                    <p>{error}</p>
                   </div>
                 </div>
               )}
+
+              {/* Botones de acción */}
+              <div className="flex gap-4 justify-end mt-6 pt-4 border-t border-gray-200">
+                <button
+                  onClick={handleCloseEdit}
+                  className={btnOutlineSecondary}
+                  disabled={isEditing}
+                >
+                  {t("cancelEdit")}
+                </button>
+                <button
+                  onClick={handleSaveChanges}
+                  disabled={isEditing || !editForm.file_name.trim()}
+                  className={`${btnPrimary} ${
+                    isEditing || !editForm.file_name.trim()
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}
+                >
+                  {isEditing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>{t("saving")}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4" />
+                      <span>{t("saveChanges")}</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
