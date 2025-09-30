@@ -32,6 +32,19 @@ export function TemplatePreview({
       (styleConfig?.text_align as "left" | "center" | "right") || "left",
   };
 
+  // Helper para construir URL completa de imagen
+  const getBackgroundImageUrl = (imageUrl: string) => {
+    // Si ya es una URL completa, devolverla tal como está
+    if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
+      return imageUrl;
+    }
+
+    // Si es una ruta relativa, construir URL completa
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+    const cleanUrl = imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`;
+    return `${baseUrl}${cleanUrl}`;
+  };
+
   // Helper function to format dates according to field configuration
   const formatDateValue = (date: Date | string, format: string): string => {
     let dateObj: Date;
@@ -113,6 +126,12 @@ export function TemplatePreview({
         (effectiveStyles.text_align as "left" | "center" | "right") ||
         globalStyles.textAlign,
       backgroundColor: effectiveStyles.background_color,
+      backgroundImage: effectiveStyles.background_image
+        ? `url("${getBackgroundImageUrl(effectiveStyles.background_image)}")`
+        : undefined,
+      backgroundSize: "contain",
+      backgroundPosition: "center",
+      backgroundRepeat: "no-repeat",
       padding: effectiveStyles.padding,
       margin: effectiveStyles.margin,
       ...(effectiveStyles.border_width && {
@@ -324,6 +343,12 @@ export function TemplatePreview({
             height: `${styleConfig?.bulletin_height || 638}px`,
             padding: 0,
             overflow: "auto",
+            backgroundImage: styleConfig?.background_image
+              ? `url("${getBackgroundImageUrl(styleConfig.background_image)}")`
+              : undefined,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
           }}
         >
           {/* Header Global */}
@@ -340,6 +365,14 @@ export function TemplatePreview({
                   backgroundColor:
                     headerConfig.style_config?.background_color ||
                     "transparent",
+                  backgroundImage: headerConfig.style_config?.background_image
+                    ? `url("${getBackgroundImageUrl(
+                        headerConfig.style_config.background_image
+                      )}")`
+                    : undefined,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  backgroundRepeat: "no-repeat",
                   color:
                     headerConfig.style_config?.primary_color ||
                     globalStyles.color,
@@ -486,6 +519,14 @@ export function TemplatePreview({
                   backgroundColor:
                     footerConfig.style_config?.background_color ||
                     "transparent",
+                  backgroundImage: footerConfig.style_config?.background_image
+                    ? `url("${getBackgroundImageUrl(
+                        footerConfig.style_config.background_image
+                      )}")`
+                    : undefined,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  backgroundRepeat: "no-repeat",
                   color:
                     footerConfig.style_config?.primary_color ||
                     globalStyles.color,

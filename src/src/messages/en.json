@@ -329,6 +329,7 @@
         "textDecoration": "Text Decoration",
         "textAlign": "Text Alignment",
         "borderColor": "Border Color",
+        "backgroundImage": "Background Image",
         "borderWidth": "Border Width",
         "borderRadius": "Border Radius",
         "padding": "Padding",

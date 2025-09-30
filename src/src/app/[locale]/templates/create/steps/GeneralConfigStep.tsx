@@ -157,6 +157,7 @@ export function GeneralConfigStep({
             primaryColor: true,
             secondaryColor: true,
             backgroundColor: true,
+            backgroundImage: true,
             fontSize: true,
             textAlign: true,
             bulletinWidth: true,

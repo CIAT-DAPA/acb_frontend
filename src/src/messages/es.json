@@ -329,6 +329,7 @@
         "textDecoration": "Decoración del Texto",
         "textAlign": "Alineación del Texto",
         "borderColor": "Color del Borde",
+        "backgroundImage": "Imagen de Fondo",
         "borderWidth": "Grosor del Borde",
         "borderRadius": "Redondeado",
         "padding": "Espaciado Interno",

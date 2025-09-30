@@ -1,8 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { StyleConfig } from "@/types/core";
+import { VisualResourcesService } from "@/services/visualResourcesService";
+import { VisualResource } from "@/types/visualResource";
+import { Loader2, X, Image as ImageIcon } from "lucide-react";
+import Image from "next/image";
 
 // Fuentes disponibles
 const AVAILABLE_FONTS = [
@@ -44,6 +48,7 @@ export interface StyleConfiguratorProps {
     primaryColor?: boolean;
     secondaryColor?: boolean;
     backgroundColor?: boolean;
+    backgroundImage?: boolean;
     borderColor?: boolean;
 
     // Configuración de texto
@@ -99,6 +104,49 @@ export function StyleConfigurator({
     } else {
       return tGlobal(key);
     }
+  };
+
+  // Estado para las visual resources
+  const [visualResources, setVisualResources] = useState<VisualResource[]>([]);
+  const [loadingResources, setLoadingResources] = useState(false);
+  const [showImageSelector, setShowImageSelector] = useState(false);
+
+  // Cargar visual resources cuando se habilita backgroundImage
+  useEffect(() => {
+    if (enabledFields.backgroundImage) {
+      loadVisualResources();
+    }
+  }, [enabledFields.backgroundImage]);
+
+  const loadVisualResources = async () => {
+    setLoadingResources(true);
+    try {
+      const response = await VisualResourcesService.getAllVisualResources();
+      if (response.success && response.data) {
+        // Filtrar solo imágenes para usar como fondo
+        const images = response.data.filter(
+          (resource) => resource.file_type === "image"
+        );
+        setVisualResources(images);
+      }
+    } catch (error) {
+      console.error("Error loading visual resources:", error);
+    } finally {
+      setLoadingResources(false);
+    }
+  };
+
+  // Helper para construir URL completa de imagen
+  const getBackgroundImageUrl = (imageUrl: string) => {
+    // Si ya es una URL completa, devolverla tal como está
+    if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
+      return imageUrl;
+    }
+
+    // Si es una ruta relativa, construir URL completa
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+    const cleanUrl = imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`;
+    return `${baseUrl}${cleanUrl}`;
   };
 
   const renderColorField = (
@@ -160,6 +208,141 @@ export function StyleConfigurator({
       {inheritedStyles?.[key] && (
         <p className="text-xs text-[#283618]/50 mt-1">
           Heredado: {inheritedStyles[key]}
+        </p>
+      )}
+    </div>
+  );
+
+  const renderBackgroundImageField = () => (
+    <div>
+      <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+        {getLabel("backgroundImage", "Imagen de Fondo")}
+      </label>
+
+      {/* Preview actual */}
+      <div className="mb-3">
+        {styleConfig.background_image ? (
+          <div className="relative w-full h-20 bg-gray-100 rounded-md overflow-hidden border">
+            <Image
+              src={styleConfig.background_image}
+              alt="Background preview"
+              fill
+              className="object-contain"
+              onError={(e) => {
+                e.currentTarget.src = "/assets/img/imageNotFound.png";
+              }}
+            />
+            <button
+              onClick={() => onStyleChange({ background_image: undefined })}
+              className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+              title="Quitar imagen"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+        ) : (
+          <div className="w-full h-20 bg-gray-100 rounded-md border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-500">
+            <ImageIcon className="h-6 w-6 mr-2" />
+            <span className="text-sm">Sin imagen de fondo</span>
+          </div>
+        )}
+      </div>
+
+      {/* Botón para abrir selector */}
+      <button
+        type="button"
+        onClick={() => setShowImageSelector(true)}
+        className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+      >
+        {loadingResources ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
+            Cargando imágenes...
+          </>
+        ) : (
+          <>
+            <ImageIcon className="h-4 w-4 inline mr-2" />
+            {styleConfig.background_image
+              ? "Cambiar imagen"
+              : "Seleccionar imagen"}
+          </>
+        )}
+      </button>
+
+      {/* Modal selector de imágenes */}
+      {showImageSelector && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg max-w-4xl max-h-[80vh] overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="text-lg font-medium">
+                Seleccionar Imagen de Fondo
+              </h3>
+              <button
+                onClick={() => setShowImageSelector(false)}
+                className="p-2 hover:bg-gray-100 rounded"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="p-4 max-h-96 overflow-y-auto">
+              {loadingResources ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                  <span className="ml-2">Cargando imágenes...</span>
+                </div>
+              ) : visualResources.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  {visualResources.map((resource) => (
+                    <div
+                      key={resource.id}
+                      className="cursor-pointer group"
+                      onClick={() => {
+                        console.log(
+                          "Selecting background image:",
+                          resource.file_url
+                        );
+                        console.log("Resource details:", resource);
+                        onStyleChange({ background_image: resource.file_url });
+                        setShowImageSelector(false);
+                      }}
+                    >
+                      <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 border-transparent group-hover:border-blue-500 transition-colors">
+                        <Image
+                          src={resource.file_url}
+                          alt={resource.file_name}
+                          width={150}
+                          height={150}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src =
+                              "/assets/img/imageNotFound.png";
+                          }}
+                        />
+                      </div>
+                      <p className="text-xs text-center mt-1 truncate">
+                        {resource.file_name}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <ImageIcon className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                  <p>No hay imágenes disponibles</p>
+                  <p className="text-sm">
+                    Sube imágenes en la sección de Recursos Visuales
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {inheritedStyles?.background_image && (
+        <p className="text-xs text-[#283618]/50 mt-1">
+          Heredado: {inheritedStyles.background_image}
         </p>
       )}
     </div>
@@ -280,6 +463,8 @@ export function StyleConfigurator({
             getLabel("backgroundColor", "Color de Fondo"),
             "#ffffff"
           )}
+
+        {enabledFields.backgroundImage && renderBackgroundImageField()}
 
         {enabledFields.borderColor &&
           renderColorField(
@@ -439,6 +624,14 @@ export function StyleConfigurator({
               fontFamily: styleConfig.font || "Arial",
               color: styleConfig.primary_color || "#000000",
               backgroundColor: styleConfig.background_color || "#ffffff",
+              backgroundImage: styleConfig.background_image
+                ? `url("${getBackgroundImageUrl(
+                    styleConfig.background_image
+                  )}")`
+                : undefined,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
               fontSize: styleConfig.font_size
                 ? `${styleConfig.font_size}px`
                 : "16px",

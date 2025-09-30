@@ -285,6 +285,7 @@ export function HeaderFooterStep({
             enabledFields={{
               primaryColor: true,
               backgroundColor: true,
+              backgroundImage: true,
               fontSize: true,
               textAlign: true,
               borderColor: true,
