@@ -16,6 +16,7 @@ export interface TextFieldConfig {
 export interface TextWithIconFieldConfig {
   subtype?: "short" | "long";
   icon_options: string[]; // URLs de los iconos que se pueden seleccionar
+  selected_icon?: string; // URL del icono seleccionado cuando form es false
 }
 
 export interface ClimateDataFieldConfig {

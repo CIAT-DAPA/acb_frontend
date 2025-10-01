@@ -122,14 +122,13 @@ export function FieldEditor({
 
     // Para text_with_icon, asegurar que tenga al menos field_config con icon_options
     if (currentField.type === "text_with_icon") {
+      const currentConfig = fieldToSave.field_config as TextWithIconFieldConfig;
       fieldToSave = {
         ...fieldToSave,
         field_config: {
-          subtype:
-            (fieldToSave.field_config as TextWithIconFieldConfig)?.subtype ||
-            "short",
-          icon_options: (fieldToSave.field_config as TextWithIconFieldConfig)
-            ?.icon_options || [""],
+          subtype: currentConfig?.subtype || "short",
+          icon_options: currentConfig?.icon_options || [""],
+          selected_icon: currentConfig?.selected_icon, // Preservar el icono seleccionado
         },
       } as Field;
     }
@@ -266,10 +265,11 @@ export function FieldEditor({
         )}
       </div>
 
-      {/* Value - Solo mostrar si form es false y bulletin es true, pero no para page_number */}
+      {/* Value - Solo mostrar si form es false y bulletin es true, pero no para page_number y text_with_icon */}
       {!currentField.form &&
         currentField.bulletin &&
-        currentField.type !== "page_number" && (
+        currentField.type !== "page_number" &&
+        currentField.type !== "text_with_icon" && (
           <div>
             <h3 className="text-lg font-medium text-[#283618] mb-4">
               {t("value.title")}
@@ -296,7 +296,78 @@ export function FieldEditor({
           </div>
         )}
 
-      {/* Estilos del campo */}
+      {/* Validación - Solo mostrar si form es true */}
+      {currentField.form && (
+        <div>
+          <h3 className="text-lg font-medium text-[#283618] mb-4">
+            {t("validation.title")}
+          </h3>
+          <div className="flex items-center ">
+            <input
+              type="checkbox"
+              id="required"
+              checked={currentField.validation?.required || false}
+              onChange={(e) => updateValidation({ required: e.target.checked })}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
+            />
+            <label
+              htmlFor="required"
+              className="ml-2 text-sm text-[#283618]/70 cursor-pointer"
+            >
+              {t("validation.required")}
+            </label>
+          </div>
+        </div>
+      )}
+
+      {/* Configuración específica del tipo - Mostrar siempre para page_number y text_with_icon cuando form es false, solo si form es true para otros tipos */}
+      {(currentField.form ||
+        currentField.type === "page_number" ||
+        (currentField.type === "text_with_icon" && !currentField.form)) && (
+        <div>
+          <h3 className="text-lg font-medium text-[#283618] mb-4">
+            {currentField.type === "text_with_icon" && !currentField.form
+              ? t("value.title")
+              : t("specificConfig.title")}
+          </h3>
+          <FieldTypeComponent
+            currentField={currentField}
+            updateField={updateField}
+            updateFieldConfig={updateFieldConfig}
+            updateValidation={updateValidation}
+            t={t}
+          />
+        </div>
+      )}
+
+      {/* Vista previa de paginación - Solo mostrar para page_number cuando form es false y bulletin es true */}
+      {!currentField.form &&
+        currentField.bulletin &&
+        currentField.type === "page_number" && (
+          <div>
+            <h3 className="text-lg font-medium text-[#283618] mb-4">
+              {t("pageNumberConfig.previewTitle")}
+            </h3>
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <div className="text-sm text-[#283618]/70 mb-2">
+                {t("pageNumberConfig.formatLabel")}
+              </div>
+              <div className="font-medium text-[#283618] text-lg">
+                {(
+                  (currentField.field_config as PageNumberFieldConfig)
+                    ?.format || "Página {page} de {total}"
+                )
+                  .replace("{page}", "1")
+                  .replace("{total}", "5")}
+              </div>
+              <div className="text-xs text-[#283618]/50 mt-2">
+                {t("pageNumberConfig.previewHelp")}
+              </div>
+            </div>
+          </div>
+        )}
+
+      {/* Estilos del campo - Siempre al final */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-medium text-[#283618]">
@@ -375,6 +446,7 @@ export function FieldEditor({
             borderRadius: true,
             padding: true,
             margin: true,
+            gap: true,
           }}
           showPreview={false}
           inheritedStyles={
@@ -383,73 +455,6 @@ export function FieldEditor({
           isFieldStyle={true}
         />
       </div>
-
-      {/* Validación - Solo mostrar si form es true */}
-      {currentField.form && (
-        <div>
-          <h3 className="text-lg font-medium text-[#283618] mb-4">
-            {t("validation.title")}
-          </h3>
-          <div className="flex items-center ">
-            <input
-              type="checkbox"
-              id="required"
-              checked={currentField.validation?.required || false}
-              onChange={(e) => updateValidation({ required: e.target.checked })}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
-            />
-            <label
-              htmlFor="required"
-              className="ml-2 text-sm text-[#283618]/70 cursor-pointer"
-            >
-              {t("validation.required")}
-            </label>
-          </div>
-        </div>
-      )}
-
-      {/* Configuración específica del tipo - Mostrar siempre para page_number, solo si form es true para otros tipos */}
-      {(currentField.form || currentField.type === "page_number") && (
-        <div>
-          <h3 className="text-lg font-medium text-[#283618] mb-4">
-            {t("specificConfig.title")}
-          </h3>
-          <FieldTypeComponent
-            currentField={currentField}
-            updateField={updateField}
-            updateFieldConfig={updateFieldConfig}
-            updateValidation={updateValidation}
-            t={t}
-          />
-        </div>
-      )}
-
-      {/* Vista previa de paginación - Solo mostrar para page_number cuando form es false y bulletin es true */}
-      {!currentField.form &&
-        currentField.bulletin &&
-        currentField.type === "page_number" && (
-          <div>
-            <h3 className="text-lg font-medium text-[#283618] mb-4">
-              {t("pageNumberConfig.previewTitle")}
-            </h3>
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <div className="text-sm text-[#283618]/70 mb-2">
-                {t("pageNumberConfig.formatLabel")}
-              </div>
-              <div className="font-medium text-[#283618] text-lg">
-                {(
-                  (currentField.field_config as PageNumberFieldConfig)
-                    ?.format || "Página {page} de {total}"
-                )
-                  .replace("{page}", "1")
-                  .replace("{total}", "5")}
-              </div>
-              <div className="text-xs text-[#283618]/50 mt-2">
-                {t("pageNumberConfig.previewHelp")}
-              </div>
-            </div>
-          </div>
-        )}
 
       {/* Botones */}
       <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">

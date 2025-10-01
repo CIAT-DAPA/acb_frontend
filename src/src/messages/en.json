@@ -563,7 +563,13 @@
         "title": "Field Value",
         "label": "Value",
         "placeholder": "Value to display in the bulletin",
-        "help": "Since this field doesn't appear in the form, you must define here the value that will be shown"
+        "help": "Since this field doesn't appear in the form, you must define here the value that will be shown",
+        "iconLabel": "Icon",
+        "loadingIcons": "Loading available icons...",
+        "noIconsAvailable": "No icons available. Please upload icons in the Visual Resources section.",
+        "selectIconPlaceholder": "Select an icon",
+        "selectedIcon": "Selected icon",
+        "iconHelp": "Select the icon that will accompany the text in the bulletin"
       },
       "styleConfig": {
         "title": "Field Styles",
@@ -578,6 +584,7 @@
         "borderRadius": "Border Radius (px)",
         "padding": "Padding (CSS)",
         "margin": "Margin (CSS)",
+        "gap": "Field Spacing (px)",
         "alignOptions": {
           "left": "Left",
           "center": "Center",

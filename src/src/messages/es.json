@@ -564,7 +564,13 @@
         "title": "Valor del Campo",
         "label": "Valor",
         "placeholder": "Valor que se mostrará en el boletín",
-        "help": "Como este campo no aparece en el formulario, debes definir aquí el valor que se mostrará"
+        "help": "Como este campo no aparece en el formulario, debes definir aquí el valor que se mostrará",
+        "iconLabel": "Icono",
+        "loadingIcons": "Cargando iconos disponibles...",
+        "noIconsAvailable": "No hay iconos disponibles. Por favor, suba iconos en la sección de Recursos Visuales.",
+        "selectIconPlaceholder": "Seleccione un icono",
+        "selectedIcon": "Icono seleccionado",
+        "iconHelp": "Seleccione el icono que acompañará al texto en el boletín"
       },
       "styleConfig": {
         "title": "Estilos del Campo",
@@ -579,6 +585,7 @@
         "borderRadius": "Redondeado (px)",
         "padding": "Padding (CSS)",
         "margin": "Margin (CSS)",
+        "gap": "Espaciado entre Campos (px)",
         "alignOptions": {
           "left": "Izquierda",
           "center": "Centro",

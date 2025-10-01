@@ -134,6 +134,7 @@ export function TemplatePreview({
       backgroundRepeat: "no-repeat",
       padding: effectiveStyles.padding,
       margin: effectiveStyles.margin,
+      gap: effectiveStyles.gap,
       ...(effectiveStyles.border_width && {
         border: `${effectiveStyles.border_width} solid ${
           effectiveStyles.border_color || "#000000"
@@ -143,17 +144,6 @@ export function TemplatePreview({
         borderRadius: effectiveStyles.border_radius,
       }),
     };
-
-    // Debug temporal para verificar estilos
-    if (effectiveStyles.border_width) {
-      console.log("Field with border:", field.display_name, {
-        border_width: effectiveStyles.border_width,
-        border_color: effectiveStyles.border_color,
-        finalBorder: `${effectiveStyles.border_width} solid ${
-          effectiveStyles.border_color || "#000000"
-        }`,
-      });
-    }
 
     switch (field.type) {
       case "text":
@@ -178,18 +168,37 @@ export function TemplatePreview({
             ? field.display_name || field.label || "Texto con icono"
             : field.display_name || field.label || "Texto con icono";
 
+        // Obtener el icono seleccionado o el primer icono disponible como fallback
+        const selectedIcon =
+          (field.field_config as any)?.selected_icon ||
+          (field.field_config?.icon_options &&
+          field.field_config.icon_options.length > 0
+            ? field.field_config.icon_options[0]
+            : null);
+
         return (
           <div
             key={key}
             style={fieldStyles}
-            className="flex items-center gap-2"
+            className="flex items-center"
           >
-            {field.field_config?.icon_options &&
-              field.field_config.icon_options.length > 0 && (
-                <span className="text-lg">
-                  {field.field_config.icon_options[0] || "📄"}
-                </span>
-              )}
+            {selectedIcon ? (
+              selectedIcon.startsWith("http") ||
+              selectedIcon.startsWith("/") ? (
+                <img
+                  src={selectedIcon}
+                  alt="Icon"
+                  className="w-6 h-6 object-contain"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
+                />
+              ) : (
+                <span className="text-lg">{selectedIcon}</span>
+              )
+            ) : (
+              <span className="text-lg">📄</span>
+            )}
             <span>{textWithIconValue}</span>
           </div>
         );

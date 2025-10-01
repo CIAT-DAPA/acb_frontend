@@ -47,6 +47,7 @@ export function combineStyles(
     // Las propiedades de layout/espaciado no se heredan, solo se toman del hijo
     if (childStyle.padding) combined.padding = childStyle.padding;
     if (childStyle.margin) combined.margin = childStyle.margin;
+    if (childStyle.gap) combined.gap = childStyle.gap;
     if (childStyle.border_color)
       combined.border_color = childStyle.border_color;
     if (childStyle.border_width)
