@@ -168,6 +168,7 @@
     "creating": "Creating...",
     "success": "Template created successfully!",
     "error": "Error creating template: {error}",
+    "backToTemplates": "Back to Templates",
     "steps": {
       "basicInfo": {
         "title": "Basic Info",

@@ -20,6 +20,8 @@ import { GeneralConfigStep } from "./steps/GeneralConfigStep";
 import { HeaderFooterStep } from "./steps/HeaderFooterStep";
 import { SectionsStep } from "./steps/SectionsStep";
 import { TemplatePreview } from "./TemplatePreview";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 interface CreateTemplatePageProps {
   // Podríamos recibir props como grupos disponibles, usuario actual, etc.
@@ -275,6 +277,15 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex items-center gap-4 mb-2">
+          <Link
+            href="/templates/visual-resources"
+            className="flex items-center gap-2 text-[#283618]/60 hover:text-[#283618] transition-colors"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            <span>{t("backToTemplates")}</span>
+          </Link>
+        </div>
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-[#283618]">{t("title")}</h1>
