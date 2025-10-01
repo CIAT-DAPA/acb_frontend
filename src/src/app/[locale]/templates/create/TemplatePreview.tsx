@@ -177,11 +177,7 @@ export function TemplatePreview({
             : null);
 
         return (
-          <div
-            key={key}
-            style={fieldStyles}
-            className="flex items-center"
-          >
+          <div key={key} style={fieldStyles} className="flex items-center">
             {selectedIcon ? (
               selectedIcon.startsWith("http") ||
               selectedIcon.startsWith("/") ? (
@@ -327,16 +323,16 @@ export function TemplatePreview({
   return (
     <div className="h-full">
       {/* Información de la plantilla */}
-      <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-        <h3 className="font-semibold text-blue-900">
+      <div className="mb-4 p-3 bg-[#bc6c25]/10 rounded-lg">
+        <h3 className="font-semibold text-[#bc6c25]">
           {data.master.template_name ||
             t("untitled", { default: "Plantilla Sin Título" })}
         </h3>
-        <p className="text-sm text-blue-700 mt-1">
+        <p className="text-sm text-[#bc6c25] mt-1">
           {data.master.description ||
             t("noDescription", { default: "Sin descripción" })}
         </p>
-        <div className="text-xs text-blue-600 mt-2">
+        <div className="text-xs text-[#bc6c25] mt-2">
           Estado: {data.master.status} | Acceso:{" "}
           {data.master.access_config.access_type}
         </div>
@@ -365,7 +361,7 @@ export function TemplatePreview({
             headerConfig.fields &&
             headerConfig.fields.length > 0 && (
               <div
-                className={`pb-4 mb-6 w-full px-4 pt-4 ${
+                className={`pb-4 w-full px-4 pt-4 ${
                   headerConfig.style_config?.fields_layout === "vertical"
                     ? "flex flex-col"
                     : "flex items-center"
@@ -421,105 +417,139 @@ export function TemplatePreview({
               </div>
             )}
 
-          {/* Secciones - Cada sección es una página independiente */}
-          <div className="flex-1 px-4 flex flex-col">
-            {sections.length === 0 ? (
-              <div className="text-center py-12 text-[#283618]/50 flex-1 flex items-center justify-center flex-col">
-                <div className="text-4xl mb-4">📄</div>
-                <p>
-                  {t("noSections", {
-                    default: "No hay secciones configuradas",
-                  })}
-                </p>
-              </div>
-            ) : (
-              <div className="flex-1 flex flex-col">
-                {/* Mostrar la sección seleccionada */}
-                {sections.length > 0 && sections[selectedSectionIndex] && (
-                  <div className="section-preview w-full flex-1">
-                    {(() => {
-                      const section = sections[selectedSectionIndex];
-                      const sectionIndex = selectedSectionIndex;
-                      return (
-                        <>
-                          {/* Header de sección */}
-                          {section.header_config &&
-                            section.header_config.fields &&
-                            section.header_config.fields.length > 0 && (
-                              <div
-                                className="mb-4 p-3 bg-gray-50 rounded w-full"
-                                style={{
-                                  textAlign:
-                                    (section.header_config.style_config
-                                      ?.text_align as
-                                      | "left"
-                                      | "center"
-                                      | "right") || "left",
-                                }}
-                              >
-                                <div className="text-xs text-[#283618]/50 mb-1">
-                                  HEADER DE SECCIÓN
-                                </div>
-                                {section.header_config.fields.map(
-                                  (field, index) =>
-                                    renderField(
-                                      field,
-                                      `sh-${sectionIndex}-${index}`,
-                                      section.header_config?.style_config
+          {sections.length === 0 ? (
+            <div className="text-center py-12 text-[#283618]/50 flex-1 flex items-center justify-center flex-col">
+              <div className="text-4xl mb-4">📄</div>
+              <p>
+                {t("noSections", {
+                  default: "No hay secciones configuradas",
+                })}
+              </p>
+            </div>
+          ) : (
+            sections.length > 0 &&
+            sections[selectedSectionIndex] && (
+              <>
+                {(() => {
+                  const section = sections[selectedSectionIndex];
+                  const sectionIndex = selectedSectionIndex;
+
+                  // Estilos aplicados a la sección completa
+                  const sectionStyles = {
+                    fontFamily:
+                      section.style_config?.font || globalStyles.fontFamily,
+                    color:
+                      section.style_config?.primary_color || globalStyles.color,
+                    fontSize: section.style_config?.font_size
+                      ? `${section.style_config.font_size}px`
+                      : globalStyles.fontSize,
+                    backgroundColor: section.style_config?.background_color,
+                    backgroundImage: section.style_config?.background_image
+                      ? `url("${getBackgroundImageUrl(
+                          section.style_config.background_image
+                        )}")`
+                      : undefined,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    backgroundRepeat: "no-repeat",
+                    fontWeight: section.style_config?.font_weight || "400",
+                    fontStyle: section.style_config?.font_style || "normal",
+                    textDecoration:
+                      section.style_config?.text_decoration || "none",
+                    textAlign:
+                      (section.style_config?.text_align as
+                        | "left"
+                        | "center"
+                        | "right") || "left",
+                    padding: section.style_config?.padding,
+                    margin: section.style_config?.margin,
+                    ...(section.style_config?.border_width && {
+                      border: `${section.style_config.border_width} solid ${
+                        section.style_config.border_color || "#000000"
+                      }`,
+                    }),
+                    ...(section.style_config?.border_radius && {
+                      borderRadius: section.style_config.border_radius,
+                    }),
+                  };
+
+                  return (
+                    <div style={sectionStyles} className="h-full">
+                      {/* Header de sección */}
+                      {section.header_config &&
+                        section.header_config.fields &&
+                        section.header_config.fields.length > 0 && (
+                          <div
+                            className="mb-4 p-3 bg-gray-50 rounded w-full"
+                            style={{
+                              textAlign:
+                                (section.header_config.style_config
+                                  ?.text_align as
+                                  | "left"
+                                  | "center"
+                                  | "right") || "left",
+                            }}
+                          >
+                            <div className="text-xs text-[#283618]/50 mb-1">
+                              HEADER DE SECCIÓN
+                            </div>
+                            {section.header_config.fields.map((field, index) =>
+                              renderField(
+                                field,
+                                `sh-${sectionIndex}-${index}`,
+                                section.header_config?.style_config
+                              )
+                            )}
+                          </div>
+                        )}
+
+                      {/* Bloques de la sección */}
+                      <div className="space-y-6 w-full">
+                        {section.blocks.length === 0 ? (
+                          <div className="text-sm text-[#283618]/50 italic pl-4">
+                            No hay bloques en esta sección
+                          </div>
+                        ) : (
+                          section.blocks.map((block, blockIndex) => (
+                            <div
+                              key={`preview-block-${sectionIndex}-${blockIndex}`}
+                              className="border border-gray-200 rounded-lg p-4 w-full"
+                            >
+                              {/* Campos del bloque */}
+                              <div className="space-y-2">
+                                {block.fields.length === 0 ? (
+                                  <div className="text-sm text-[#283618]/50 italic">
+                                    No hay campos en este bloque
+                                  </div>
+                                ) : (
+                                  block.fields
+                                    .filter((field) => field.bulletin) // Solo mostrar campos que van al boletín
+                                    .map((field, fieldIndex) =>
+                                      renderField(
+                                        field,
+                                        `preview-field-${sectionIndex}-${blockIndex}-${fieldIndex}`,
+                                        section.style_config // Los campos en bloques heredan del estilo de la sección
+                                      )
                                     )
                                 )}
                               </div>
-                            )}
-
-                          {/* Bloques de la sección */}
-                          <div className="space-y-6 w-full">
-                            {section.blocks.length === 0 ? (
-                              <div className="text-sm text-[#283618]/50 italic pl-4">
-                                No hay bloques en esta sección
-                              </div>
-                            ) : (
-                              section.blocks.map((block, blockIndex) => (
-                                <div
-                                  key={`preview-block-${sectionIndex}-${blockIndex}`}
-                                  className="border border-gray-200 rounded-lg p-4 w-full bg-gray-50/30"
-                                >
-                                  {/* Campos del bloque */}
-                                  <div className="space-y-2">
-                                    {block.fields.length === 0 ? (
-                                      <div className="text-sm text-[#283618]/50 italic">
-                                        No hay campos en este bloque
-                                      </div>
-                                    ) : (
-                                      block.fields
-                                        .filter((field) => field.bulletin) // Solo mostrar campos que van al boletín
-                                        .map((field, fieldIndex) =>
-                                          renderField(
-                                            field,
-                                            `preview-field-${sectionIndex}-${blockIndex}-${fieldIndex}`,
-                                            section.style_config // Los campos en bloques heredan del estilo de la sección
-                                          )
-                                        )
-                                    )}
-                                  </div>
-                                </div>
-                              ))
-                            )}
-                          </div>
-                        </>
-                      );
-                    })()}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
+              </>
+            )
+          )}
 
           {/* Footer Global */}
           {footerConfig &&
             footerConfig.fields &&
             footerConfig.fields.length > 0 && (
               <div
-                className={`pt-4 mt-8 w-full px-4 pb-4 ${
+                className={`pt-4 w-full px-4 pb-4 ${
                   footerConfig.style_config?.fields_layout === "vertical"
                     ? "flex flex-col"
                     : "flex items-center"

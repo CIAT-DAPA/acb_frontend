@@ -9,6 +9,8 @@ import {
 } from "../../../../../../types/template";
 import { BaseFieldTypeConfigProps } from "./BaseFieldTypeConfig";
 import { FieldEditor } from "../FieldEditor";
+import { btnOutlineSecondary } from "@/app/[locale]/components/ui";
+import { Plus, Settings, Trash2, GripVertical } from "lucide-react";
 
 // Componente para configurar cada campo del esquema usando el FieldEditor completo
 interface ItemSchemaFieldProps {
@@ -43,61 +45,64 @@ const ItemSchemaField: React.FC<ItemSchemaFieldProps> = ({
   };
 
   return (
-    <div className="border border-gray-300 rounded-lg p-3 bg-white">
+    <div className="border rounded-lg p-4 transition-all duration-200 border-gray-200 bg-gray-50 hover:shadow-md hover:border-gray-300">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center space-x-3">
-          <button
-            type="button"
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="text-gray-500 hover:text-gray-700"
+          {/* Icono de arrastre */}
+          <div
+            className="text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing p-1 rounded hover:bg-gray-200 transition-colors"
+            title="Arrastra para reordenar"
           >
-            {isExpanded ? "▼" : "▶"}
-          </button>
-          <div className="flex-1">
-            <span className="font-medium text-sm text-gray-800">
+            <GripVertical className="w-4 h-4" />
+          </div>
+          <div>
+            <h4 className="font-medium text-[#283618]">
               {fieldDef.label || fieldId}
-            </span>
-            <span className="ml-2 px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded">
-              {fieldDef.type || "text"}
-            </span>
+            </h4>
+            <p className="text-sm text-[#283618]/50">
+              Tipo: {fieldDef.type || "text"}
+            </p>
           </div>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex space-x-2">
           <button
             type="button"
             onClick={() => setShowFieldEditor(true)}
-            className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+            className="text-[#283618]/50 hover:text-[#283618] cursor-pointer"
           >
-            Configurar
+            <Settings className="w-4 h-4" />
           </button>
           <button
             type="button"
             onClick={onDelete}
-            className="text-red-500 hover:text-red-700 text-sm"
+            className="text-[#283618]/50 hover:text-red-600 cursor-pointer"
           >
-            ✕
+            <Trash2 className="w-4 h-4" />
           </button>
         </div>
       </div>
-
-      {isExpanded && (
-        <div className="space-y-2 mt-3 pl-6 border-l-2 border-gray-200 text-xs text-gray-600">
-          <div>
-            <strong>Tipo:</strong> {fieldDef.type || "text"}
-          </div>
-          <div>
-            <strong>Etiqueta:</strong> {fieldDef.label || "Sin etiqueta"}
-          </div>
-          <div>
-            <strong>Descripción:</strong>{" "}
-            {fieldDef.description || "Sin descripción"}
-          </div>
-          <div className="flex space-x-4">
-            <span>Formulario: {fieldDef.form ? "✓" : "✗"}</span>
-            <span>Boletín: {fieldDef.bulletin ? "✓" : "✗"}</span>
-          </div>
+      <div className="text-sm text-[#283618] grid grid-cols-2 gap-2">
+        <div>
+          Form:
+          <span
+            className={
+              fieldDef.form ? "text-green-600" : "text-[#283618]/50"
+            }
+          >
+            {fieldDef.form ? " Sí" : " No"}
+          </span>
         </div>
-      )}
+        <div>
+          Bulletin:
+          <span
+            className={
+              fieldDef.bulletin ? "text-green-600" : "text-[#283618]/50"
+            }
+          >
+            {fieldDef.bulletin ? " Sí" : " No"}
+          </span>
+        </div>
+      </div>
 
       {/* Modal del FieldEditor */}
       {showFieldEditor && (
@@ -223,7 +228,7 @@ export const ListFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
         </h4>
 
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 space-x-2">
             <p className="text-sm text-gray-700">
               Define los campos que tendrá cada elemento de la lista
             </p>
@@ -248,9 +253,9 @@ export const ListFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                   },
                 });
               }}
-              className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              className={`${btnOutlineSecondary} text-sm px-2 py-2`}
             >
-              + Agregar Campo
+              <Plus className="w-4 h-4" />Agregar Campo
             </button>
           </div>
 

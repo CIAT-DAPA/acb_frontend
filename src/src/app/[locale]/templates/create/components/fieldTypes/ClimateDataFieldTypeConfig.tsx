@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { useTranslations } from "next-intl";
 import { BaseFieldTypeConfigProps } from "./BaseFieldTypeConfig";
+import { Plus } from "lucide-react";
+import { btnCancel, btnOutlineSecondary, btnPrimary } from "@/app/[locale]/components/ui";
 
 interface ClimateParameter {
   label: string;
@@ -111,9 +113,9 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
           <button
             type="button"
             onClick={() => setIsAddingParameter(true)}
-            className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className={`${btnOutlineSecondary} text-sm`}
           >
-            + {t("actions.addParameter")}
+            <Plus className="w-4 h-4 mr-1" /> {t("actions.addParameter")}
           </button>
         </div>
 
@@ -334,7 +336,7 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                   <button
                     type="button"
                     onClick={addParameter}
-                    className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    className={`${btnPrimary} text-sm`}
                   >
                     {t("actions.add")}
                   </button>
@@ -350,7 +352,7 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                         col_name: "",
                       });
                     }}
-                    className="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                    className={`${btnCancel} text-sm`}
                   >
                     {t("actions.cancel")}
                   </button>
