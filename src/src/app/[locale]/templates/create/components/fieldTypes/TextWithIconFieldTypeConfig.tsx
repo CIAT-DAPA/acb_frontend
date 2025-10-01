@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useTranslations } from "next-intl";
 import { TextWithIconFieldConfig } from "../../../../../../types/template";
 import { BaseFieldTypeConfigProps } from "./BaseFieldTypeConfig";
-import { VisualResourcesService } from "../../../../../../services/visualResourcesService";
-import { VisualResource } from "../../../../../../types/visualResource";
+import { VisualResourceSelector } from "../VisualResourceSelector";
+import Image from "next/image";
 
 export const TextWithIconFieldTypeConfig: React.FC<
   BaseFieldTypeConfigProps
@@ -17,33 +17,7 @@ export const TextWithIconFieldTypeConfig: React.FC<
   t: fieldT,
 }) => {
   const t = useTranslations("CreateTemplate.fieldEditor");
-  const [availableIcons, setAvailableIcons] = useState<VisualResource[]>([]);
-  const [loadingIcons, setLoadingIcons] = useState(false);
-
-  // Cargar iconos disponibles cuando form es false
-  useEffect(() => {
-    const loadIcons = async () => {
-      if (!currentField.form) {
-        setLoadingIcons(true);
-        try {
-          const response = await VisualResourcesService.getAllVisualResources();
-          if (response.success && response.data) {
-            const icons = response.data.filter(
-              (resource) =>
-                resource.file_type === "icon" && resource.status === "active"
-            );
-            setAvailableIcons(icons);
-          }
-        } catch (error) {
-          console.error("Error loading icons:", error);
-        } finally {
-          setLoadingIcons(false);
-        }
-      }
-    };
-
-    loadIcons();
-  }, [currentField.form]);
+  const [showIconSelector, setShowIconSelector] = useState(false);
 
   return (
     <div className="space-y-4">
@@ -89,94 +63,62 @@ export const TextWithIconFieldTypeConfig: React.FC<
           <label className="block text-sm font-medium text-[#283618]/70 mb-2">
             {t("value.iconLabel")}
           </label>
-          {loadingIcons ? (
-            <div className="text-sm text-[#283618]/50">
-              {t("value.loadingIcons")}
-            </div>
-          ) : availableIcons.length === 0 ? (
-            <div className="text-sm text-amber-600">
-              {t("value.noIconsAvailable")}
-            </div>
-          ) : (
+
+          {(currentField.field_config as TextWithIconFieldConfig)
+            ?.selected_icon ? (
             <div className="space-y-2">
-              {/* Grid de iconos seleccionables */}
-              <div className="grid grid-cols-4 gap-3 max-h-64 overflow-y-auto p-2 border border-gray-300 rounded-md">
-                {availableIcons.map((icon) => {
-                  const isSelected =
+              <div className="flex items-center space-x-2 p-2 bg-green-50 rounded border border-green-200">
+                <Image
+                  src={
                     (currentField.field_config as TextWithIconFieldConfig)
-                      ?.selected_icon === icon.file_url;
-                  return (
-                    <button
-                      key={icon.id}
-                      type="button"
-                      onClick={() => {
-                        // Cuando form es false, actualizar selected_icon y también icon_options con solo este icono
-                        updateFieldConfig({
-                          selected_icon: icon.file_url,
-                          icon_options: [icon.file_url],
-                        });
-                      }}
-                      className={`
-                        flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all
-                        ${
-                          isSelected
-                            ? "border-blue-500 bg-blue-50"
-                            : "border-gray-200 hover:border-gray-400 hover:bg-gray-50"
-                        }
-                      `}
-                      title={icon.file_name}
-                    >
-                      <img
-                        src={icon.file_url}
-                        alt={icon.file_name}
-                        className="w-12 h-12 object-contain mb-1"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src =
-                            "/assets/img/imageNotFound.png";
-                        }}
-                      />
-                      <span className="text-xs text-[#283618]/70 text-center truncate w-full">
-                        {icon.file_name}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-              {(currentField.field_config as TextWithIconFieldConfig)
-                ?.selected_icon && (
-                <div className="flex items-center space-x-2 p-2 bg-green-50 rounded border border-green-200">
-                  <img
-                    src={
-                      (currentField.field_config as TextWithIconFieldConfig)
-                        ?.selected_icon
-                    }
-                    alt="Selected icon"
-                    className="w-8 h-8 object-contain"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = "none";
-                    }}
-                  />
-                  <div>
-                    <span className="text-xs font-medium text-green-800 block">
-                      {t("value.selectedIcon")}
-                    </span>
-                    <span className="text-xs text-green-700">
-                      {
-                        availableIcons.find(
-                          (icon) =>
-                            icon.file_url ===
-                            (
-                              currentField.field_config as TextWithIconFieldConfig
-                            )?.selected_icon
-                        )?.file_name
-                      }
-                    </span>
-                  </div>
+                      ?.selected_icon || ""
+                  }
+                  alt="Selected icon"
+                  width={32}
+                  height={32}
+                  className="object-contain"
+                />
+                <div className="flex-1">
+                  <span className="text-xs font-medium text-green-800 block">
+                    {t("value.selectedIcon")}
+                  </span>
                 </div>
-              )}
+                <button
+                  type="button"
+                  onClick={() => setShowIconSelector(true)}
+                  className="text-xs text-blue-600 hover:text-blue-800"
+                >
+                  Cambiar
+                </button>
+              </div>
               <p className="text-xs text-[#283618]/50">{t("value.iconHelp")}</p>
             </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowIconSelector(true)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+            >
+              {t("value.selectIcon") || "Seleccionar Icono"}
+            </button>
           )}
+
+          <VisualResourceSelector
+            isOpen={showIconSelector}
+            onClose={() => setShowIconSelector(false)}
+            onSelect={(url) => {
+              updateFieldConfig({
+                selected_icon: url,
+                icon_options: [url],
+              });
+            }}
+            title={t("value.iconLabel")}
+            resourceType="icon"
+            selectedUrl={
+              (currentField.field_config as TextWithIconFieldConfig)
+                ?.selected_icon
+            }
+          />
         </div>
       )}
 

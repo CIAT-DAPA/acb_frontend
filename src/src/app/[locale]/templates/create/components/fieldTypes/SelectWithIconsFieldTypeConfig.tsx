@@ -1,15 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useTranslations } from "next-intl";
 import { BaseFieldTypeConfigProps } from "./BaseFieldTypeConfig";
-import { Plus, X } from "lucide-react";
+import { Plus } from "lucide-react";
 import {
   btnOutlinePrimary,
   btnOutlineSecondary,
 } from "@/app/[locale]/components/ui";
-import { VisualResourcesService } from "../../../../../../services/visualResourcesService";
-import { VisualResource } from "../../../../../../types/visualResource";
+import { VisualResourceSelector } from "../VisualResourceSelector";
+import Image from "next/image";
 
 interface SelectWithIconsFieldConfig {
   options: string[];
@@ -33,35 +33,10 @@ export const SelectWithIconsFieldTypeConfig: React.FC<
   const options = config.options || [];
   const iconsUrl = config.icons_url || [];
 
-  // Estado para cargar iconos disponibles
-  const [availableIcons, setAvailableIcons] = useState<VisualResource[]>([]);
-  const [loadingIcons, setLoadingIcons] = useState(false);
+  // Estado para el selector de iconos
   const [showIconSelectorForIndex, setShowIconSelectorForIndex] = useState<
     number | null
   >(null);
-
-  // Cargar iconos disponibles al montar el componente
-  useEffect(() => {
-    const loadIcons = async () => {
-      setLoadingIcons(true);
-      try {
-        const response = await VisualResourcesService.getAllVisualResources();
-        if (response.success && response.data) {
-          const icons = response.data.filter(
-            (resource) =>
-              resource.file_type === "icon" && resource.status === "active"
-          );
-          setAvailableIcons(icons);
-        }
-      } catch (error) {
-        console.error("Error loading icons:", error);
-      } finally {
-        setLoadingIcons(false);
-      }
-    };
-
-    loadIcons();
-  }, []);
 
   const updateOptions = (newOptions: string[]) => {
     updateFieldConfig({
@@ -194,9 +169,7 @@ export const SelectWithIconsFieldTypeConfig: React.FC<
                       onClick={() => setShowIconSelectorForIndex(index)}
                       className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50 text-left text-gray-500"
                     >
-                      {loadingIcons
-                        ? "Cargando iconos..."
-                        : "Seleccionar icono"}
+                      Seleccionar icono
                     </button>
                   )}
                 </div>
@@ -287,86 +260,24 @@ export const SelectWithIconsFieldTypeConfig: React.FC<
       )}
 
       {/* Modal del selector de iconos */}
-      {showIconSelectorForIndex !== null && (
-        <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl border border-gray-200">
-            <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
-              <h3 className="text-lg font-medium text-[#283618]">
-                Seleccionar Icono para Opción {showIconSelectorForIndex + 1}
-              </h3>
-              <button
-                type="button"
-                onClick={() => setShowIconSelectorForIndex(null)}
-                className="text-[#283618]/50 hover:text-[#283618] p-1"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {loadingIcons ? (
-              <div className="text-center py-8 text-[#283618]/50">
-                Cargando iconos disponibles...
-              </div>
-            ) : availableIcons.length === 0 ? (
-              <div className="text-center py-8 text-amber-600">
-                No hay iconos disponibles. Por favor, sube iconos en la sección
-                de Recursos Visuales.
-              </div>
-            ) : (
-              <div className="overflow-y-auto max-h-[calc(90vh-180px)]">
-                <div className="grid grid-cols-4 gap-4 p-2">
-                  {availableIcons.map((icon) => {
-                    const isSelected =
-                      iconsUrl[showIconSelectorForIndex] === icon.file_url;
-                    return (
-                      <button
-                        key={icon.id}
-                        type="button"
-                        onClick={() => {
-                          updateIcon(showIconSelectorForIndex, icon.file_url);
-                          setShowIconSelectorForIndex(null);
-                        }}
-                        className={`
-                          flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all
-                          ${
-                            isSelected
-                              ? "border-[#bc6c25] bg-[#bc6c25]/10"
-                              : "border-gray-200 hover:border-[#bc6c25]/50 hover:bg-gray-50"
-                          }
-                        `}
-                        title={icon.file_name}
-                      >
-                        <img
-                          src={icon.file_url}
-                          alt={icon.file_name}
-                          className="w-16 h-16 object-contain mb-2"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src =
-                              "/assets/img/imageNotFound.png";
-                          }}
-                        />
-                        <span className="text-xs text-[#283618]/70 text-center truncate w-full">
-                          {icon.file_name}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            <div className="mt-4 pt-4 border-t border-gray-200 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setShowIconSelectorForIndex(null)}
-                className={btnOutlineSecondary}
-              >
-                Cerrar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <VisualResourceSelector
+        isOpen={showIconSelectorForIndex !== null}
+        onClose={() => setShowIconSelectorForIndex(null)}
+        onSelect={(url) => {
+          if (showIconSelectorForIndex !== null) {
+            updateIcon(showIconSelectorForIndex, url);
+          }
+        }}
+        title={`Seleccionar Icono para Opción ${
+          (showIconSelectorForIndex ?? 0) + 1
+        }`}
+        resourceType="icon"
+        selectedUrl={
+          showIconSelectorForIndex !== null
+            ? iconsUrl[showIconSelectorForIndex]
+            : undefined
+        }
+      />
     </div>
   );
 };
