@@ -328,23 +328,28 @@ export class VisualResourcesService extends BaseAPIService {
   }
 
   /**
-   * DELETE /visual-resources/{resource_id} - Delete Visual Resource
+   * DELETE /visual-resources/{resource_id} - Archive Visual Resource
+   * Cambia el estado del recurso visual a "archived" en lugar de eliminarlo físicamente
    */
   static async deleteVisualResource(resourceId: string): Promise<APIResponse> {
     try {
-      await this.delete<void>(`${this.BASE_ENDPOINT}/${resourceId}`);
+      const response = await this.put<any>(
+        `${this.BASE_ENDPOINT}/${resourceId}`,
+        { status: "archived" }
+      );
       return {
         success: true,
-        message: "Recurso visual eliminado correctamente",
+        data: response.resource || response.data || response,
+        message: "Recurso visual archivado correctamente",
       };
     } catch (error) {
-      console.error("Error deleting visual resource:", error);
+      console.error("Error archiving visual resource:", error);
       return {
         success: false,
         message:
           error instanceof Error
             ? error.message
-            : "Error al eliminar el recurso visual",
+            : "Error al archivar el recurso visual",
       };
     }
   }

@@ -91,7 +91,7 @@ export default function VisualResources() {
 
     try {
       const allResourcesResponse =
-        await VisualResourcesService.getAllVisualResources();
+        await VisualResourcesService.getVisualResourcesByStatus("active");
 
       setAllResources(allResourcesResponse.data || []); // Guardar todos los recursos originales
       console.log("Recursos visuales cargados:", allResourcesResponse.data);
