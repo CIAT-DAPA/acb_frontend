@@ -1331,14 +1331,109 @@ export function SectionsStep({
                       </div>
                     </div>
 
-                    <HeaderFooterConfigurator
-                      config={currentSection.header_config || { fields: [] }}
-                      configType="header"
-                      onConfigChange={(updates) =>
-                        updateSectionHeaderConfig(selectedSectionIndex, updates)
-                      }
-                      showTitle={false}
-                    />
+                    {/* Mostrar estado actual */}
+                    {!currentSection.header_config ? (
+                      <div className="space-y-4">
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className="text-sm font-medium text-[#283618]">
+                              🌍 Usando Header Global
+                            </h4>
+                            <button
+                              onClick={() => {
+                                // Copiar el header global a la sección
+                                if (data.version.content.header_config) {
+                                  updateSectionHeaderConfig(
+                                    selectedSectionIndex,
+                                    {
+                                      ...data.version.content.header_config,
+                                    }
+                                  );
+                                } else {
+                                  // Si no hay global, crear uno vacío
+                                  updateSectionHeaderConfig(
+                                    selectedSectionIndex,
+                                    { fields: [] }
+                                  );
+                                }
+                              }}
+                              className="px-4 py-2 bg-[#bc6c25] text-white rounded-md hover:bg-[#a55a1f] transition-colors text-sm font-medium"
+                            >
+                              ✏️ Personalizar para esta sección
+                            </button>
+                          </div>
+                          <p className="text-xs text-[#283618]/60">
+                            Esta sección está usando el header global. Haz clic
+                            en "Personalizar" para crear una versión específica
+                            que puedes modificar independientemente.
+                          </p>
+
+                          {/* Vista previa del header global */}
+                          {data.version.content.header_config?.fields &&
+                            data.version.content.header_config.fields.length >
+                              0 && (
+                              <div className="mt-4 pt-4 border-t border-gray-300">
+                                <p className="text-xs font-medium text-[#283618]/70 mb-2">
+                                  Vista previa del header global:
+                                </p>
+                                <div className="bg-white p-3 rounded border border-gray-200">
+                                  <div className="text-xs text-[#283618]/50 space-y-1">
+                                    {data.version.content.header_config.fields.map(
+                                      (field, idx) => (
+                                        <div
+                                          key={idx}
+                                          className="flex items-center gap-2"
+                                        >
+                                          <span className="w-2 h-2 bg-[#bc6c25] rounded-full"></span>
+                                          <span>{field.display_name}</span>
+                                          <span className="text-[#283618]/40">
+                                            ({field.type})
+                                          </span>
+                                        </div>
+                                      )
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Botón para restaurar al global */}
+                        <div className="flex justify-end">
+                          <button
+                            onClick={() => {
+                              if (
+                                confirm(
+                                  "¿Estás seguro de eliminar la personalización y volver al header global?"
+                                )
+                              ) {
+                                updateSection(selectedSectionIndex, {
+                                  header_config: undefined,
+                                });
+                              }
+                            }}
+                            className="px-3 py-1.5 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors"
+                          >
+                            🔄 Restaurar al global
+                          </button>
+                        </div>
+
+                        {/* Configurador normal */}
+                        <HeaderFooterConfigurator
+                          config={currentSection.header_config}
+                          configType="header"
+                          onConfigChange={(updates) =>
+                            updateSectionHeaderConfig(
+                              selectedSectionIndex,
+                              updates
+                            )
+                          }
+                          showTitle={false}
+                        />
+                      </>
+                    )}
                   </div>
                 )}
 
@@ -1381,14 +1476,109 @@ export function SectionsStep({
                       </div>
                     </div>
 
-                    <HeaderFooterConfigurator
-                      config={currentSection.footer_config || { fields: [] }}
-                      configType="footer"
-                      onConfigChange={(updates) =>
-                        updateSectionFooterConfig(selectedSectionIndex, updates)
-                      }
-                      showTitle={false}
-                    />
+                    {/* Mostrar estado actual */}
+                    {!currentSection.footer_config ? (
+                      <div className="space-y-4">
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className="text-sm font-medium text-[#283618]">
+                              🌍 Usando Footer Global
+                            </h4>
+                            <button
+                              onClick={() => {
+                                // Copiar el footer global a la sección
+                                if (data.version.content.footer_config) {
+                                  updateSectionFooterConfig(
+                                    selectedSectionIndex,
+                                    {
+                                      ...data.version.content.footer_config,
+                                    }
+                                  );
+                                } else {
+                                  // Si no hay global, crear uno vacío
+                                  updateSectionFooterConfig(
+                                    selectedSectionIndex,
+                                    { fields: [] }
+                                  );
+                                }
+                              }}
+                              className="px-4 py-2 bg-[#bc6c25] text-white rounded-md hover:bg-[#a55a1f] transition-colors text-sm font-medium"
+                            >
+                              ✏️ Personalizar para esta sección
+                            </button>
+                          </div>
+                          <p className="text-xs text-[#283618]/60">
+                            Esta sección está usando el footer global. Haz clic
+                            en "Personalizar" para crear una versión específica
+                            que puedes modificar independientemente.
+                          </p>
+
+                          {/* Vista previa del footer global */}
+                          {data.version.content.footer_config?.fields &&
+                            data.version.content.footer_config.fields.length >
+                              0 && (
+                              <div className="mt-4 pt-4 border-t border-gray-300">
+                                <p className="text-xs font-medium text-[#283618]/70 mb-2">
+                                  Vista previa del footer global:
+                                </p>
+                                <div className="bg-white p-3 rounded border border-gray-200">
+                                  <div className="text-xs text-[#283618]/50 space-y-1">
+                                    {data.version.content.footer_config.fields.map(
+                                      (field, idx) => (
+                                        <div
+                                          key={idx}
+                                          className="flex items-center gap-2"
+                                        >
+                                          <span className="w-2 h-2 bg-[#bc6c25] rounded-full"></span>
+                                          <span>{field.display_name}</span>
+                                          <span className="text-[#283618]/40">
+                                            ({field.type})
+                                          </span>
+                                        </div>
+                                      )
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Botón para restaurar al global */}
+                        <div className="flex justify-end">
+                          <button
+                            onClick={() => {
+                              if (
+                                confirm(
+                                  "¿Estás seguro de eliminar la personalización y volver al footer global?"
+                                )
+                              ) {
+                                updateSection(selectedSectionIndex, {
+                                  footer_config: undefined,
+                                });
+                              }
+                            }}
+                            className="px-3 py-1.5 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors"
+                          >
+                            🔄 Restaurar al global
+                          </button>
+                        </div>
+
+                        {/* Configurador normal */}
+                        <HeaderFooterConfigurator
+                          config={currentSection.footer_config}
+                          configType="footer"
+                          onConfigChange={(updates) =>
+                            updateSectionFooterConfig(
+                              selectedSectionIndex,
+                              updates
+                            )
+                          }
+                          showTitle={false}
+                        />
+                      </>
+                    )}
                   </div>
                 )}
               </div>
