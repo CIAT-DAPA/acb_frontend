@@ -438,8 +438,25 @@ export function TemplatePreview({
               paramEntries.map(([paramKey, paramConfig]: [string, any]) => {
                 // Por defecto showName es true si no está definido
                 const showName = paramConfig.showName !== false;
+
+                // Estilos individuales del parámetro
+                const paramStyles: React.CSSProperties = {
+                  color:
+                    paramConfig.style_config?.primary_color ||
+                    effectiveStyles.primary_color,
+                  fontSize: paramConfig.style_config?.font_size
+                    ? `${paramConfig.style_config.font_size}px`
+                    : effectiveStyles.font_size
+                    ? `${effectiveStyles.font_size}px`
+                    : undefined,
+                  fontWeight:
+                    paramConfig.style_config?.font_weight ||
+                    effectiveStyles.font_weight ||
+                    undefined,
+                };
+
                 return (
-                  <div key={paramKey} className="text-sm">
+                  <div key={paramKey} className="text-sm" style={paramStyles}>
                     {showName && `${paramConfig.label}: `}
                     {paramConfig.type === "number" ? "25" : "Valor"}{" "}
                     {paramConfig.unit}

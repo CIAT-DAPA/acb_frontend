@@ -3,8 +3,14 @@
 import React, { useState } from "react";
 import { useTranslations } from "next-intl";
 import { BaseFieldTypeConfigProps } from "./BaseFieldTypeConfig";
-import { Plus } from "lucide-react";
-import { btnCancel, btnOutlineSecondary, btnPrimary } from "@/app/[locale]/components/ui";
+import { Plus, Palette } from "lucide-react";
+import {
+  btnCancel,
+  btnOutlineSecondary,
+  btnPrimary,
+} from "@/app/[locale]/components/ui";
+import { StyleConfig } from "@/types/core";
+import { StyleConfigurator } from "../StyleConfigurator";
 
 interface ClimateParameter {
   label: string;
@@ -12,6 +18,7 @@ interface ClimateParameter {
   type: "number" | "text";
   col_name: string;
   showName?: boolean; // Si se muestra el nombre del parámetro en el preview
+  style_config?: StyleConfig; // Estilos individuales para este parámetro
 }
 
 interface ClimateDataConfig {
@@ -41,6 +48,9 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
   });
 
   const [isAddingParameter, setIsAddingParameter] = useState(false);
+  const [expandedStyleConfig, setExpandedStyleConfig] = useState<string | null>(
+    null
+  );
 
   const addParameter = () => {
     if (newParameter.key && newParameter.label) {
@@ -82,11 +92,12 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
   const updateParameter = (
     parameterKey: string,
     field: keyof ClimateParameter,
-    value: string | boolean
+    value: string | boolean | StyleConfig
   ) => {
     const updatedParameter = {
       ...availableParameters[parameterKey],
-      [field]: field === "showName" ? (value === "true" || value === true) : value,
+      [field]:
+        field === "showName" ? value === "true" || value === true : value,
     };
 
     // Si se cambia el tipo a "text", limpiar la unidad
@@ -157,7 +168,9 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                         updateParameter(paramKey, "label", e.target.value)
                       }
                       className="block w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                      placeholder={t("climateDataConfig.placeholders.labelExample")}
+                      placeholder={t(
+                        "climateDataConfig.placeholders.labelExample"
+                      )}
                     />
                   </div>
 
@@ -174,7 +187,9 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                           updateParameter(paramKey, "unit", e.target.value)
                         }
                         className="block w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                        placeholder={t("climateDataConfig.placeholders.unitExample")}
+                        placeholder={t(
+                          "climateDataConfig.placeholders.unitExample"
+                        )}
                       />
                     </div>
                   )}
@@ -195,8 +210,12 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                       }
                       className="block w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                     >
-                      <option value="number">{t("climateDataConfig.typeNumber")}</option>
-                      <option value="text">{t("climateDataConfig.typeText")}</option>
+                      <option value="number">
+                        {t("climateDataConfig.typeNumber")}
+                      </option>
+                      <option value="text">
+                        {t("climateDataConfig.typeText")}
+                      </option>
                     </select>
                   </div>
 
@@ -212,7 +231,9 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                         updateParameter(paramKey, "col_name", e.target.value)
                       }
                       className="block w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                      placeholder={t("climateDataConfig.placeholders.colNameExample")}
+                      placeholder={t(
+                        "climateDataConfig.placeholders.colNameExample"
+                      )}
                     />
                   </div>
 
@@ -223,7 +244,11 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                         type="checkbox"
                         checked={param.showName !== false}
                         onChange={(e) =>
-                          updateParameter(paramKey, "showName", e.target.checked)
+                          updateParameter(
+                            paramKey,
+                            "showName",
+                            e.target.checked
+                          )
                         }
                         className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                       />
@@ -243,6 +268,41 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                       {t("actions.remove")}
                     </button>
                   </div>
+                </div>
+
+                {/* Estilos del parámetro */}
+                <div className="mt-3 pt-3 border-t border-gray-200">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setExpandedStyleConfig(
+                        expandedStyleConfig === paramKey ? null : paramKey
+                      )
+                    }
+                    className="flex items-center space-x-2 text-sm text-[#283618] hover:text-[#283618]/70"
+                  >
+                    <Palette className="w-4 h-4" />
+                    <span>Estilos del parámetro</span>
+                  </button>
+
+                  {expandedStyleConfig === paramKey && (
+                    <div className="mt-3">
+                      <StyleConfigurator
+                        styleConfig={param.style_config || {}}
+                        onStyleChange={(newStyles) =>
+                          updateParameter(paramKey, "style_config", {
+                            ...param.style_config,
+                            ...newStyles,
+                          })
+                        }
+                        enabledFields={{
+                          primaryColor: true,
+                          fontSize: true,
+                          fontWeight: true,
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -287,7 +347,9 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                       })
                     }
                     className="block w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                    placeholder={t("climateDataConfig.placeholders.labelExample")}
+                    placeholder={t(
+                      "climateDataConfig.placeholders.labelExample"
+                    )}
                   />
                 </div>
 
@@ -307,7 +369,9 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                         })
                       }
                       className="block w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                      placeholder={t("climateDataConfig.placeholders.unitExample")}
+                      placeholder={t(
+                        "climateDataConfig.placeholders.unitExample"
+                      )}
                     />
                   </div>
                 )}
@@ -329,8 +393,12 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                     }}
                     className="block w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                   >
-                    <option value="number">{t("climateDataConfig.typeNumber")}</option>
-                    <option value="text">{t("climateDataConfig.typeText")}</option>
+                    <option value="number">
+                      {t("climateDataConfig.typeNumber")}
+                    </option>
+                    <option value="text">
+                      {t("climateDataConfig.typeText")}
+                    </option>
                   </select>
                 </div>
 
@@ -348,7 +416,9 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                       })
                     }
                     className="block w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                    placeholder={t("climateDataConfig.placeholders.colNameExample")}
+                    placeholder={t(
+                      "climateDataConfig.placeholders.colNameExample"
+                    )}
                   />
                 </div>
 
