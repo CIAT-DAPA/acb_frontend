@@ -333,9 +333,9 @@ export function TemplatePreview({
             case "horizontal":
               return "flex flex-wrap gap-4";
             case "grid-2":
-              return "grid grid-cols-2 gap-4 w-full";
+              return "grid grid-cols-2 gap-1 w-full";
             case "grid-3":
-              return "grid grid-cols-3 gap-4 w-full";
+              return "grid grid-cols-3 gap-1 w-full";
             case "vertical":
             default:
               return "space-y-1";
@@ -362,22 +362,22 @@ export function TemplatePreview({
           borderRadius: effectiveStyles.border_radius
             ? `${effectiveStyles.border_radius}px`
             : undefined,
-          padding: effectiveStyles.padding
-            ? `${effectiveStyles.padding}px`
+          padding: effectiveStyles.padding || undefined,
+          margin: effectiveStyles.margin || undefined,
+          fontSize: effectiveStyles.font_size
+            ? `${effectiveStyles.font_size}px`
             : undefined,
+          fontWeight: effectiveStyles.font_weight || undefined,
+          fontStyle: effectiveStyles.font_style || undefined,
+          textDecoration: effectiveStyles.text_decoration || undefined,
+          textAlign:
+            (effectiveStyles.text_align as "left" | "center" | "right") ||
+            undefined,
+          fontFamily: effectiveStyles.font || undefined,
         };
 
         return (
           <div key={key}>
-            {/* Título de la lista - sin estilos del field */}
-            <div
-              className="font-medium mb-2"
-              style={{
-                color: effectiveStyles.primary_color || fieldStyles.color,
-              }}
-            >
-              {field.label || field.display_name}
-            </div>
             <div className={showBullets ? "pl-4 space-y-2" : "space-y-2"}>
               {/* Renderizar elementos basados en item_schema */}
               {[1, 2].map((itemIndex) => (

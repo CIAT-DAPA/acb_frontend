@@ -132,18 +132,19 @@ export function StyleConfigurator({
       <label className="block text-sm font-medium text-[#283618]/70 mb-2">
         {label}
       </label>
-      <div className="flex space-x-2">
+      <div className="flex gap-2 items-center">
         <input
           type="color"
           value={(styleConfig[key] as string) || placeholder}
           onChange={(e) => onStyleChange({ [key]: e.target.value })}
-          className="block w-16 h-10 border border-gray-300 rounded-md cursor-pointer"
+          className="block w-12 h-12 min-w-[48px] border border-gray-300 rounded-md cursor-pointer flex-shrink-0"
+          title="Selector de color"
         />
         <input
           type="text"
           value={(styleConfig[key] as string) || placeholder}
           onChange={(e) => onStyleChange({ [key]: e.target.value })}
-          className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm 
+          className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm
                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           placeholder={placeholder}
         />
