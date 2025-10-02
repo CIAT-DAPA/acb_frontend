@@ -447,6 +447,9 @@ export function FieldEditor({
             padding: true,
             margin: true,
             gap: true,
+            listStyleType: currentField.type === "list",
+            listItemsLayout: currentField.type === "list",
+            backgroundImage: true,
           }}
           showPreview={false}
           inheritedStyles={

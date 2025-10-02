@@ -30,6 +30,10 @@ export function combineStyles(
     if (parentStyle.font) combined.font = parentStyle.font;
     if (parentStyle.secondary_color)
       combined.secondary_color = parentStyle.secondary_color;
+    if (parentStyle.list_style_type)
+      combined.list_style_type = parentStyle.list_style_type;
+    if (parentStyle.list_items_layout)
+      combined.list_items_layout = parentStyle.list_items_layout;
   }
 
   // Luego sobrescribir con estilos del hijo si existen
@@ -44,7 +48,9 @@ export function combineStyles(
     if (childStyle.text_decoration)
       combined.text_decoration = childStyle.text_decoration;
     if (childStyle.text_align) combined.text_align = childStyle.text_align;
-    // Las propiedades de layout/espaciado no se heredan, solo se toman del hijo
+    // Las propiedades de layout/espaciado y visuales no se heredan, solo se toman del hijo
+    if (childStyle.background_image)
+      combined.background_image = childStyle.background_image;
     if (childStyle.padding) combined.padding = childStyle.padding;
     if (childStyle.margin) combined.margin = childStyle.margin;
     if (childStyle.gap) combined.gap = childStyle.gap;
@@ -57,6 +63,10 @@ export function combineStyles(
     if (childStyle.font) combined.font = childStyle.font;
     if (childStyle.secondary_color)
       combined.secondary_color = childStyle.secondary_color;
+    if (childStyle.list_style_type)
+      combined.list_style_type = childStyle.list_style_type;
+    if (childStyle.list_items_layout)
+      combined.list_items_layout = childStyle.list_items_layout;
   }
 
   return combined;

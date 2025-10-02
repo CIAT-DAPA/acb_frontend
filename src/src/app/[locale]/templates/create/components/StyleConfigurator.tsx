@@ -71,6 +71,8 @@ export interface StyleConfiguratorProps {
 
     // Layout específico
     fieldsLayout?: boolean;
+    listStyleType?: boolean; // Estilo de bullet points para listas
+    listItemsLayout?: boolean; // Layout de items dentro de la lista
   };
   title?: string;
   description?: string;
@@ -507,6 +509,34 @@ export function StyleConfigurator({
             [
               { value: "horizontal", label: "Horizontal (lado a lado)" },
               { value: "vertical", label: "Vertical (uno debajo del otro)" },
+            ],
+            "vertical"
+          )}
+
+        {/* Estilo de lista */}
+        {enabledFields.listStyleType &&
+          renderSelectField(
+            "list_style_type",
+            "Estilo de Lista",
+            [
+              { value: "disc", label: "• Círculo relleno" },
+              { value: "circle", label: "○ Círculo vacío" },
+              { value: "square", label: "■ Cuadrado" },
+              { value: "none", label: "Sin viñetas" },
+            ],
+            "disc"
+          )}
+
+        {/* Layout de items de lista */}
+        {enabledFields.listItemsLayout &&
+          renderSelectField(
+            "list_items_layout",
+            "Layout de Items de Lista",
+            [
+              { value: "vertical", label: "Vertical" },
+              { value: "horizontal", label: "Horizontal" },
+              { value: "grid-2", label: "Grid 2 columnas" },
+              { value: "grid-3", label: "Grid 3 columnas" },
             ],
             "vertical"
           )}

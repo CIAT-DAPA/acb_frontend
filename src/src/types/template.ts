@@ -27,6 +27,7 @@ export interface ClimateDataFieldConfig {
       unit: string;
       type: "number" | "text";
       col_name: string;
+      showName?: boolean; // Si true, muestra el nombre del parámetro; si false, solo muestra valor y unidad
     }
   >;
 }
@@ -233,6 +234,7 @@ export interface Block {
   block_id: string;
   display_name: string;
   icon_url?: string;
+  style_config?: StyleConfig;
   fields: Field[];
 }
 

@@ -199,9 +199,64 @@ export function TemplatePreview({
           </div>
         );
 
+      case "select_with_icons":
+        // Si form es false, mostrar el icono seleccionado (si existe valor)
+        // Si form es true, mostrar un icono por defecto
+        let iconToShow = null;
+
+        if (!field.form && field.value) {
+          // Buscar el icono correspondiente al valor seleccionado
+          const options = (field.field_config as any)?.options || [];
+          const selectedOption = options.find(
+            (opt: any) => opt.value === field.value
+          );
+          if (selectedOption && selectedOption.icon_url) {
+            iconToShow = selectedOption.icon_url;
+          }
+        } else if (field.form) {
+          // Mostrar icono por defecto cuando es form
+          const options = (field.field_config as any)?.options || [];
+          if (options.length > 0 && options[0].icon_url) {
+            iconToShow = options[0].icon_url;
+          }
+        }
+
+        // Mapear text-align a justify-content
+        const textAlign = effectiveStyles.text_align || "center";
+        const justifyClass =
+          textAlign === "left"
+            ? "justify-start"
+            : textAlign === "right"
+            ? "justify-end"
+            : "justify-center";
+
+        return (
+          <div
+            key={key}
+            style={fieldStyles}
+            className={`flex items-center ${justifyClass}`}
+          >
+            {iconToShow ? (
+              <img
+                src={iconToShow}
+                alt="Selected icon"
+                className="w-8 h-8 object-contain"
+                style={{
+                  color: effectiveStyles.primary_color || fieldStyles.color,
+                }}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = "none";
+                }}
+              />
+            ) : (
+              <span className="text-2xl">❓</span>
+            )}
+          </div>
+        );
+
       case "date":
         const dateFormat =
-          (field.field_config as any)?.date_format || "YYYY-MM-DD";
+          (field.field_config as any)?.date_format || "DD/MM/YYYY";
 
         // Si no tiene valor, mostrar el patrón del formato
         const displayValue = field.value
@@ -210,29 +265,41 @@ export function TemplatePreview({
 
         return (
           <div key={key} style={fieldStyles}>
-            <span className="text-sm text-[#283618]/70">
-              {field.label || field.display_name}:
-            </span>
-            <span className="ml-2">{displayValue}</span>
+            {displayValue}
           </div>
         );
 
       case "date_range":
+        const dateRangeFormat =
+          (field.field_config as any)?.date_format || "DD/MM/YYYY";
+
+        // Formatear las fechas si existen, sino mostrar el formato
+        let startDateDisplay = dateRangeFormat;
+        let endDateDisplay = dateRangeFormat;
+
+        if (
+          field.value &&
+          typeof field.value === "object" &&
+          "start_date" in field.value &&
+          "end_date" in field.value
+        ) {
+          if (field.value.start_date) {
+            startDateDisplay = formatDateValue(
+              field.value.start_date as Date | string,
+              dateRangeFormat
+            );
+          }
+          if (field.value.end_date) {
+            endDateDisplay = formatDateValue(
+              field.value.end_date as Date | string,
+              dateRangeFormat
+            );
+          }
+        }
+
         return (
           <div key={key} style={fieldStyles}>
-            <span className="text-sm text-[#283618]/70">
-              {field.label || field.display_name}:
-            </span>
-            <span className="ml-2">
-              {field.value &&
-              typeof field.value === "object" &&
-              "start_date" in field.value &&
-              "end_date" in field.value
-                ? `${field.value.start_date || "DD/MM/AAAA"} - ${
-                    field.value.end_date || "DD/MM/AAAA"
-                  }`
-                : "DD/MM/AAAA - DD/MM/AAAA"}
-            </span>
+            {`${startDateDisplay} - ${endDateDisplay}`}
           </div>
         );
 
@@ -248,22 +315,94 @@ export function TemplatePreview({
         );
 
       case "list":
+        const listStyleType = effectiveStyles.list_style_type || "disc";
+        const showBullets = listStyleType !== "none";
+        const listItemsLayout = effectiveStyles.list_items_layout || "vertical";
+
+        // Mapeo de estilos CSS de lista
+        const bulletStyles: { [key: string]: string } = {
+          disc: "•",
+          circle: "○",
+          square: "■",
+          none: "",
+        };
+
+        // Determinar clases CSS para el layout de items
+        const getItemLayoutClasses = () => {
+          switch (listItemsLayout) {
+            case "horizontal":
+              return "flex flex-wrap gap-4";
+            case "grid-2":
+              return "grid grid-cols-2 gap-4 w-full";
+            case "grid-3":
+              return "grid grid-cols-3 gap-4 w-full";
+            case "vertical":
+            default:
+              return "space-y-1";
+          }
+        };
+
+        // Estilos para cada item de la lista (no para el contenedor general)
+        const listItemStyles: React.CSSProperties = {
+          backgroundColor: effectiveStyles.background_color || undefined,
+          backgroundImage: effectiveStyles.background_image
+            ? `url("${getBackgroundImageUrl(
+                effectiveStyles.background_image
+              )}")`
+            : undefined,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          color: effectiveStyles.primary_color || undefined,
+          borderColor: effectiveStyles.border_color || undefined,
+          borderWidth: effectiveStyles.border_width
+            ? `${effectiveStyles.border_width}px`
+            : undefined,
+          borderStyle: effectiveStyles.border_width ? "solid" : undefined,
+          borderRadius: effectiveStyles.border_radius
+            ? `${effectiveStyles.border_radius}px`
+            : undefined,
+          padding: effectiveStyles.padding
+            ? `${effectiveStyles.padding}px`
+            : undefined,
+        };
+
         return (
-          <div key={key} style={fieldStyles}>
-            <div className="font-medium mb-2">
+          <div key={key}>
+            {/* Título de la lista - sin estilos del field */}
+            <div
+              className="font-medium mb-2"
+              style={{
+                color: effectiveStyles.primary_color || fieldStyles.color,
+              }}
+            >
               {field.label || field.display_name}
             </div>
-            <div className="pl-4 space-y-2">
+            <div className={showBullets ? "pl-4 space-y-2" : "space-y-2"}>
               {/* Renderizar elementos basados en item_schema */}
               {[1, 2].map((itemIndex) => (
-                <div key={itemIndex} className="flex items-start gap-2">
-                  <span className="text-sm mt-1">•</span>
-                  <div className="flex-1 space-y-1">
+                <div
+                  key={itemIndex}
+                  className="flex items-start gap-2 w-full"
+                  style={listItemStyles}
+                >
+                  {showBullets && (
+                    <span
+                      className="text-sm mt-1 flex-shrink-0"
+                      style={{
+                        color:
+                          effectiveStyles.primary_color || fieldStyles.color,
+                      }}
+                    >
+                      {bulletStyles[listStyleType]}
+                    </span>
+                  )}
+                  <div className={`flex-1 min-w-0 ${getItemLayoutClasses()}`}>
                     {field.field_config?.item_schema &&
                     Object.keys(field.field_config.item_schema).length > 0 ? (
                       Object.entries(field.field_config.item_schema).map(
                         ([fieldKey, itemField], fieldIndex) => (
-                          <div key={fieldIndex}>
+                          <div key={fieldIndex} className="min-w-0">
                             {renderField(
                               {
                                 ...itemField,
@@ -289,19 +428,30 @@ export function TemplatePreview({
         );
 
       case "climate_data_puntual":
+        const availableParams =
+          (field.field_config as any)?.available_parameters || {};
+        const paramEntries = Object.entries(availableParams);
+
         return (
-          <div
-            key={key}
-            className={layout === "horizontal" ? "" : "mb-4"}
-            style={fieldStyles}
-          >
-            <div className="font-medium mb-2">
-              {field.label || field.display_name}
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div>Temp. Max: 25°C</div>
-              <div>Temp. Min: 15°C</div>
-            </div>
+          <div key={key} className="flex flex-col gap-4" style={fieldStyles}>
+            {paramEntries.length > 0 ? (
+              paramEntries.map(([paramKey, paramConfig]: [string, any]) => {
+                // Por defecto showName es true si no está definido
+                const showName = paramConfig.showName !== false;
+                return (
+                  <div key={paramKey} className="text-sm">
+                    {showName && `${paramConfig.label}: `}
+                    {paramConfig.type === "number" ? "25" : "Valor"}{" "}
+                    {paramConfig.unit}
+                  </div>
+                );
+              })
+            ) : (
+              <>
+                <div className="text-sm">Temp. Max: 25°C</div>
+                <div className="text-sm">Temp. Min: 15°C</div>
+              </>
+            )}
           </div>
         );
 
@@ -510,31 +660,78 @@ export function TemplatePreview({
                             No hay bloques en esta sección
                           </div>
                         ) : (
-                          section.blocks.map((block, blockIndex) => (
-                            <div
-                              key={`preview-block-${sectionIndex}-${blockIndex}`}
-                              className="border border-gray-200 rounded-lg p-4 w-full"
-                            >
-                              {/* Campos del bloque */}
-                              <div className="space-y-2">
-                                {block.fields.length === 0 ? (
-                                  <div className="text-sm text-[#283618]/50 italic">
-                                    No hay campos en este bloque
-                                  </div>
-                                ) : (
-                                  block.fields
-                                    .filter((field) => field.bulletin) // Solo mostrar campos que van al boletín
-                                    .map((field, fieldIndex) =>
-                                      renderField(
-                                        field,
-                                        `preview-field-${sectionIndex}-${blockIndex}-${fieldIndex}`,
-                                        section.style_config // Los campos en bloques heredan del estilo de la sección
+                          section.blocks.map((block, blockIndex) => {
+                            // Obtener estilos del bloque
+                            const blockStyles: React.CSSProperties = {
+                              backgroundColor:
+                                block.style_config?.background_color ||
+                                undefined,
+                              color:
+                                block.style_config?.primary_color || undefined,
+                              padding: block.style_config?.padding
+                                ? `${block.style_config.padding}px`
+                                : "16px",
+                              margin: block.style_config?.margin
+                                ? `${block.style_config.margin}px`
+                                : undefined,
+                              borderColor:
+                                block.style_config?.border_color || "#e5e7eb",
+                              borderWidth: block.style_config?.border_width
+                                ? `${block.style_config.border_width}px`
+                                : "1px",
+                              borderStyle: "solid",
+                              borderRadius: block.style_config?.border_radius
+                                ? `${block.style_config.border_radius}px`
+                                : "8px",
+                              gap: block.style_config?.gap
+                                ? `${block.style_config.gap}px`
+                                : "8px",
+                            };
+
+                            // Determinar layout de campos
+                            const fieldsLayout =
+                              block.style_config?.fields_layout || "vertical";
+                            const fieldsContainerClass =
+                              fieldsLayout === "horizontal"
+                                ? "flex flex-wrap"
+                                : "flex flex-col";
+
+                            return (
+                              <div
+                                key={`preview-block-${sectionIndex}-${blockIndex}`}
+                                className="w-full"
+                                style={blockStyles}
+                              >
+                                {/* Campos del bloque */}
+                                <div
+                                  className={fieldsContainerClass}
+                                  style={{
+                                    gap: block.style_config?.gap
+                                      ? `${block.style_config.gap}px`
+                                      : "8px",
+                                  }}
+                                >
+                                  {block.fields.length === 0 ? (
+                                    <div className="text-sm text-[#283618]/50 italic">
+                                      No hay campos en este bloque
+                                    </div>
+                                  ) : (
+                                    block.fields
+                                      .filter((field) => field.bulletin) // Solo mostrar campos que van al boletín
+                                      .map((field, fieldIndex) =>
+                                        renderField(
+                                          field,
+                                          `preview-field-${sectionIndex}-${blockIndex}-${fieldIndex}`,
+                                          block.style_config ||
+                                            section.style_config, // Los campos heredan del bloque o de la sección
+                                          fieldsLayout
+                                        )
                                       )
-                                    )
-                                )}
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          ))
+                            );
+                          })
                         )}
                       </div>
                     </div>

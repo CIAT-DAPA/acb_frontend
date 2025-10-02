@@ -11,6 +11,7 @@ interface ClimateParameter {
   unit: string;
   type: "number" | "text";
   col_name: string;
+  showName?: boolean; // Si se muestra el nombre del parámetro en el preview
 }
 
 interface ClimateDataConfig {
@@ -36,6 +37,7 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
     unit: "",
     type: "number" as "number" | "text",
     col_name: "",
+    showName: true,
   });
 
   const [isAddingParameter, setIsAddingParameter] = useState(false);
@@ -63,6 +65,7 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
         unit: "",
         type: "number",
         col_name: "",
+        showName: true,
       });
       setIsAddingParameter(false);
     }
@@ -79,11 +82,11 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
   const updateParameter = (
     parameterKey: string,
     field: keyof ClimateParameter,
-    value: string
+    value: string | boolean
   ) => {
     const updatedParameter = {
       ...availableParameters[parameterKey],
-      [field]: value,
+      [field]: field === "showName" ? (value === "true" || value === true) : value,
     };
 
     // Si se cambia el tipo a "text", limpiar la unidad
@@ -213,6 +216,23 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                     />
                   </div>
 
+                  {/* Mostrar nombre en preview */}
+                  <div className="flex items-end">
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={param.showName !== false}
+                        onChange={(e) =>
+                          updateParameter(paramKey, "showName", e.target.checked)
+                        }
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                      <span className="text-xs text-gray-700">
+                        Mostrar nombre en preview
+                      </span>
+                    </label>
+                  </div>
+
                   {/* Eliminar */}
                   <div className="flex items-end">
                     <button
@@ -332,6 +352,26 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                   />
                 </div>
 
+                {/* Mostrar nombre en preview */}
+                <div className="flex items-end">
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={newParameter.showName}
+                      onChange={(e) =>
+                        setNewParameter({
+                          ...newParameter,
+                          showName: e.target.checked,
+                        })
+                      }
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <span className="text-xs text-gray-700">
+                      Mostrar nombre en preview
+                    </span>
+                  </label>
+                </div>
+
                 <div className="flex items-end gap-2">
                   <button
                     type="button"
@@ -350,6 +390,7 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                         unit: "",
                         type: "number",
                         col_name: "",
+                        showName: true,
                       });
                     }}
                     className={`${btnCancel} text-sm`}
@@ -368,43 +409,6 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
           )}
         </div>
       </div>
-
-      {/* Vista previa */}
-      {parameterKeys.length > 0 && (
-        <div>
-          <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-            {t("preview.title")}
-          </label>
-          <div className="p-3 border border-gray-200 rounded-md bg-white">
-            <h4 className="text-sm font-medium mb-3">
-              {currentField.display_name || t("climateDataConfig.defaultTitle")}
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {parameterKeys.map((paramKey) => {
-                const param = availableParameters[paramKey];
-                return (
-                  <div
-                    key={paramKey}
-                    className="p-2 border border-gray-100 rounded bg-gray-50"
-                  >
-                    <div className="text-xs text-gray-600 mb-1">
-                      {param.label}
-                    </div>
-                    <div className="text-sm font-medium">
-                      {param.type === "number" ? "25.0" : t("climateDataConfig.previewExampleValue")}
-                      {param.type === "number" && param.unit && (
-                        <span className="text-xs text-gray-500 ml-1">
-                          {param.unit}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Información de ayuda */}
       <div className="bg-blue-50 border border-blue-200 rounded-md p-3">

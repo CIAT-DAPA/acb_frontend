@@ -356,6 +356,36 @@ function BlockConfiguration({
             Este nombre ayuda a identificar el bloque en la configuración
           </p>
         </div>
+
+        {/* Estilos del bloque */}
+        <div className="mb-4">
+          <h6 className="text-sm font-medium text-[#283618] mb-2 flex items-center gap-2">
+            <Palette className="w-4 h-4" />
+            Estilos del Bloque
+          </h6>
+          <StyleConfigurator
+            styleConfig={block.style_config || {}}
+            onStyleChange={(updates) => {
+              onUpdateBlock(sectionIndex, blockIndex, {
+                style_config: { ...block.style_config, ...updates },
+              });
+            }}
+            enabledFields={{
+              primaryColor: true,
+              backgroundColor: true,
+              borderColor: true,
+              borderWidth: true,
+              borderRadius: true,
+              padding: true,
+              margin: true,
+              gap: true,
+              fieldsLayout: true,
+            }}
+            title="Estilos del Bloque"
+            description="Los estilos del bloque se aplicarán al contenedor que agrupa los campos"
+            showPreview={false}
+          />
+        </div>
       </div>
 
       {/* Gestión de campos */}
@@ -1353,7 +1383,7 @@ export function SectionsStep({
           onClick={() => setEditingField(null)}
         >
           <div
-            className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200"
+            className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] shadow-2xl border border-gray-200"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-4">

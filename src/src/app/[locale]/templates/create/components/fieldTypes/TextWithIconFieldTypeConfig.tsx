@@ -6,6 +6,7 @@ import { TextWithIconFieldConfig } from "../../../../../../types/template";
 import { BaseFieldTypeConfigProps } from "./BaseFieldTypeConfig";
 import { VisualResourceSelector } from "../VisualResourceSelector";
 import Image from "next/image";
+import { btnOutlineSecondary } from "@/app/[locale]/components/ui";
 
 export const TextWithIconFieldTypeConfig: React.FC<
   BaseFieldTypeConfigProps
@@ -40,22 +41,25 @@ export const TextWithIconFieldTypeConfig: React.FC<
         </div>
       )}
 
-      <div>
-        <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-          {t("textConfig.subtype")}
-        </label>
-        <select
-          value={
-            (currentField.field_config as TextWithIconFieldConfig)?.subtype ||
-            "short"
-          }
-          onChange={(e) => updateFieldConfig({ subtype: e.target.value })}
-          className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-        >
-          <option value="short">{t("textConfig.short")}</option>
-          <option value="long">{t("textConfig.long")}</option>
-        </select>
-      </div>
+      {/* Input del tipo - Solo cuando form es true */}
+      {currentField.form && (
+        <div>
+          <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+            {t("textConfig.subtype")}
+          </label>
+          <select
+            value={
+              (currentField.field_config as TextWithIconFieldConfig)?.subtype ||
+              "short"
+            }
+            onChange={(e) => updateFieldConfig({ subtype: e.target.value })}
+            className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="short">{t("textConfig.short")}</option>
+            <option value="long">{t("textConfig.long")}</option>
+          </select>
+        </div>
+      )}
 
       {/* Selector de icono para boletín - Solo cuando form es false */}
       {!currentField.form && (
@@ -86,7 +90,7 @@ export const TextWithIconFieldTypeConfig: React.FC<
                 <button
                   type="button"
                   onClick={() => setShowIconSelector(true)}
-                  className="text-xs text-blue-600 hover:text-blue-800"
+                  className={`${btnOutlineSecondary} text-xs`}
                 >
                   Cambiar
                 </button>
