@@ -252,6 +252,7 @@ export interface Section {
   style_config?: StyleConfig;
   icon_url: string;
   header_config?: HeaderFooterConfig; // Header específico de la sección
+  footer_config?: HeaderFooterConfig; // Footer específico de la sección
   blocks: Block[];
 }
 

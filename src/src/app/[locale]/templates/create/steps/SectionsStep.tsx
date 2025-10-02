@@ -22,10 +22,12 @@ import {
   Section,
   Block,
   Field,
+  HeaderFooterConfig,
 } from "../../../../../types/template";
 import { StyleConfig } from "../../../../../types/core";
 import { FieldEditor } from "../components/FieldEditor";
 import { StyleConfigurator } from "../components/StyleConfigurator";
+import { HeaderFooterConfigurator } from "../components/HeaderFooterConfigurator";
 import { SmartIcon } from "../components/AdaptiveSvgIcon";
 import { btnOutlineSecondary } from "@/app/[locale]/components/ui";
 import { VisualResourcesService } from "@/services/visualResourcesService";
@@ -550,6 +552,60 @@ export function SectionsStep({
         updatedSections[sectionIndex] = {
           ...updatedSections[sectionIndex],
           ...updates,
+        };
+
+        return {
+          ...prevData,
+          version: {
+            ...prevData.version,
+            content: {
+              ...prevData.version.content,
+              sections: updatedSections,
+            },
+          },
+        };
+      });
+    },
+    [onDataChange]
+  );
+
+  const updateSectionHeaderConfig = useCallback(
+    (sectionIndex: number, updates: Partial<HeaderFooterConfig>) => {
+      onDataChange((prevData) => {
+        const updatedSections = [...prevData.version.content.sections];
+        updatedSections[sectionIndex] = {
+          ...updatedSections[sectionIndex],
+          header_config: {
+            ...(updatedSections[sectionIndex].header_config || { fields: [] }),
+            ...updates,
+          },
+        };
+
+        return {
+          ...prevData,
+          version: {
+            ...prevData.version,
+            content: {
+              ...prevData.version.content,
+              sections: updatedSections,
+            },
+          },
+        };
+      });
+    },
+    [onDataChange]
+  );
+
+  const updateSectionFooterConfig = useCallback(
+    (sectionIndex: number, updates: Partial<HeaderFooterConfig>) => {
+      onDataChange((prevData) => {
+        const updatedSections = [...prevData.version.content.sections];
+        updatedSections[sectionIndex] = {
+          ...updatedSections[sectionIndex],
+          footer_config: {
+            ...(updatedSections[sectionIndex].footer_config || { fields: [] }),
+            ...updates,
+          },
         };
 
         return {
@@ -1238,63 +1294,101 @@ export function SectionsStep({
 
                 {activeTab === "header" && (
                   <div className="space-y-6">
-                    <h3 className="text-lg font-medium text-[#283618]">
-                      Header de Sección
-                    </h3>
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <p className="text-blue-700 text-sm">
-                        <strong>Header específico de sección:</strong> Se
-                        muestra solo en esta página y reemplaza el header
-                        global. Si no se configura, se usará el header global
-                        definido en el paso anterior.
+                    <div>
+                      <h3 className="text-lg font-medium text-[#283618] mb-2">
+                        Header de Sección
+                      </h3>
+                      <p className="text-sm text-[#283618]/70 mb-4">
+                        Configura un header específico para esta sección. Este
+                        header reemplazará al header global únicamente en esta
+                        página.
                       </p>
                     </div>
-                    <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                      <div className="text-[#283618]/70">
-                        <Layout className="w-8 h-8 mx-auto mb-4" />
-                        <h4 className="text-md font-medium mb-2">
-                          Configuración de Header
-                        </h4>
-                        <p className="text-sm mb-4">
-                          Personaliza el header específico para esta sección
-                        </p>
-                        <div className="bg-yellow-50 border border-yellow-200 rounded p-3 text-yellow-700 text-sm">
-                          🚧 Esta funcionalidad será implementada en la próxima
-                          iteración
+
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <div className="flex items-start space-x-3">
+                        <div className="flex-shrink-0 mt-0.5">
+                          <svg
+                            className="w-5 h-5 text-blue-600"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-blue-700 text-sm">
+                            <strong>Prioridad:</strong> Si configuras un header
+                            aquí, tendrá prioridad sobre el header global del
+                            template. Si no configuras nada, se usará el header
+                            global automáticamente.
+                          </p>
                         </div>
                       </div>
                     </div>
+
+                    <HeaderFooterConfigurator
+                      config={currentSection.header_config || { fields: [] }}
+                      configType="header"
+                      onConfigChange={(updates) =>
+                        updateSectionHeaderConfig(selectedSectionIndex, updates)
+                      }
+                      showTitle={false}
+                    />
                   </div>
                 )}
 
                 {activeTab === "footer" && (
                   <div className="space-y-6">
-                    <h3 className="text-lg font-medium text-[#283618]">
-                      Footer de Sección
-                    </h3>
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <p className="text-blue-700 text-sm">
-                        <strong>Footer específico de sección:</strong> Se
-                        muestra solo en esta página y reemplaza el footer
-                        global. Si no se configura, se usará el footer global
-                        definido en el paso anterior.
+                    <div>
+                      <h3 className="text-lg font-medium text-[#283618] mb-2">
+                        Footer de Sección
+                      </h3>
+                      <p className="text-sm text-[#283618]/70 mb-4">
+                        Configura un footer específico para esta sección. Este
+                        footer reemplazará al footer global únicamente en esta
+                        página.
                       </p>
                     </div>
-                    <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                      <div className="text-[#283618]/70">
-                        <Layout className="w-8 h-8 mx-auto mb-4" />
-                        <h4 className="text-md font-medium mb-2">
-                          Configuración de Footer
-                        </h4>
-                        <p className="text-sm mb-4">
-                          Personaliza el footer específico para esta sección
-                        </p>
-                        <div className="bg-yellow-50 border border-yellow-200 rounded p-3 text-yellow-700 text-sm">
-                          🚧 Esta funcionalidad será implementada en la próxima
-                          iteración
+
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <div className="flex items-start space-x-3">
+                        <div className="flex-shrink-0 mt-0.5">
+                          <svg
+                            className="w-5 h-5 text-blue-600"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-blue-700 text-sm">
+                            <strong>Prioridad:</strong> Si configuras un footer
+                            aquí, tendrá prioridad sobre el footer global del
+                            template. Si no configuras nada, se usará el footer
+                            global automáticamente.
+                          </p>
                         </div>
                       </div>
                     </div>
+
+                    <HeaderFooterConfigurator
+                      config={currentSection.footer_config || { fields: [] }}
+                      configType="footer"
+                      onConfigChange={(updates) =>
+                        updateSectionFooterConfig(selectedSectionIndex, updates)
+                      }
+                      showTitle={false}
+                    />
                   </div>
                 )}
               </div>

@@ -523,66 +523,13 @@ export function TemplatePreview({
             backgroundRepeat: "no-repeat",
           }}
         >
-          {/* Header Global */}
-          {headerConfig &&
-            headerConfig.fields &&
-            headerConfig.fields.length > 0 && (
-              <div
-                className={`pb-4 w-full px-4 pt-4 ${
-                  headerConfig.style_config?.fields_layout === "vertical"
-                    ? "flex flex-col"
-                    : "flex items-center"
-                }`}
-                style={{
-                  backgroundColor:
-                    headerConfig.style_config?.background_color ||
-                    "transparent",
-                  backgroundImage: headerConfig.style_config?.background_image
-                    ? `url("${getBackgroundImageUrl(
-                        headerConfig.style_config.background_image
-                      )}")`
-                    : undefined,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  backgroundRepeat: "no-repeat",
-                  color:
-                    headerConfig.style_config?.primary_color ||
-                    globalStyles.color,
-                  fontSize: headerConfig.style_config?.font_size
-                    ? `${headerConfig.style_config.font_size}px`
-                    : globalStyles.fontSize,
-                  fontWeight: headerConfig.style_config?.font_weight || "400",
-                  fontStyle: headerConfig.style_config?.font_style || "normal",
-                  textDecoration:
-                    headerConfig.style_config?.text_decoration || "none",
-                  textAlign:
-                    (headerConfig.style_config?.text_align as
-                      | "left"
-                      | "center"
-                      | "right") || "center",
-                  padding: headerConfig.style_config?.padding || "16px",
-                  margin: headerConfig.style_config?.margin,
-                  gap: headerConfig.style_config?.gap || "16px",
-                  ...(headerConfig.style_config?.border_width && {
-                    border: `${headerConfig.style_config.border_width} solid ${
-                      headerConfig.style_config.border_color || "#000000"
-                    }`,
-                  }),
-                  ...(headerConfig.style_config?.border_radius && {
-                    borderRadius: headerConfig.style_config.border_radius,
-                  }),
-                }}
-              >
-                {headerConfig.fields.map((field, index) =>
-                  renderField(
-                    field,
-                    index,
-                    headerConfig.style_config,
-                    headerConfig.style_config?.fields_layout || "horizontal"
-                  )
-                )}
-              </div>
-            )}
+          {/* 
+            NOTA: El header global ya NO se renderiza aquí.
+            Ahora se renderiza dentro de cada sección con lógica de prioridad:
+            - Si la sección tiene header_config → se usa el header de sección
+            - Si NO tiene header_config → se usa el header global
+            Esto permite que cada sección pueda tener su propio header o usar el global.
+          */}
 
           {sections.length === 0 ? (
             <div className="text-center py-12 text-[#283618]/50 flex-1 flex items-center justify-center flex-col">
@@ -640,184 +587,291 @@ export function TemplatePreview({
                     }),
                   };
 
+                  // Determinar qué header usar: sección específica o global
+                  const hasSectionHeader =
+                    section.header_config?.fields &&
+                    section.header_config.fields.length > 0;
+
+                  const hasGlobalHeader =
+                    headerConfig?.fields && headerConfig.fields.length > 0;
+
+                  // Si hay header de sección, tiene prioridad
+                  const activeHeaderConfig = hasSectionHeader
+                    ? section.header_config
+                    : hasGlobalHeader
+                    ? headerConfig
+                    : null;
+
+                  // Determinar qué footer usar: sección específica o global
+                  const hasSectionFooter =
+                    section.footer_config?.fields &&
+                    section.footer_config.fields.length > 0;
+
+                  const hasGlobalFooter =
+                    footerConfig?.fields && footerConfig.fields.length > 0;
+
+                  // Si hay footer de sección, tiene prioridad
+                  const activeFooterConfig = hasSectionFooter
+                    ? section.footer_config
+                    : hasGlobalFooter
+                    ? footerConfig
+                    : null;
+
                   return (
-                    <div style={sectionStyles} className="h-full">
-                      {/* Header de sección */}
-                      {section.header_config &&
-                        section.header_config.fields &&
-                        section.header_config.fields.length > 0 && (
-                          <div
-                            className="mb-4 p-3 bg-gray-50 rounded w-full"
-                            style={{
-                              textAlign:
-                                (section.header_config.style_config
-                                  ?.text_align as
-                                  | "left"
-                                  | "center"
-                                  | "right") || "left",
-                            }}
-                          >
-                            <div className="text-xs text-[#283618]/50 mb-1">
-                              HEADER DE SECCIÓN
+                    <>
+                      {/* Header con lógica de prioridad */}
+                      {activeHeaderConfig && (
+                        <div
+                          className={`w-full ${
+                            activeHeaderConfig.style_config?.fields_layout ===
+                            "vertical"
+                              ? "flex flex-col"
+                              : "flex items-center"
+                          }`}
+                          style={{
+                            backgroundColor:
+                              activeHeaderConfig.style_config
+                                ?.background_color || "transparent",
+                            backgroundImage: activeHeaderConfig.style_config
+                              ?.background_image
+                              ? `url("${getBackgroundImageUrl(
+                                  activeHeaderConfig.style_config
+                                    .background_image
+                                )}")`
+                              : undefined,
+                            backgroundSize: "cover",
+                            backgroundPosition: "center",
+                            backgroundRepeat: "no-repeat",
+                            color:
+                              activeHeaderConfig.style_config?.primary_color ||
+                              globalStyles.color,
+                            fontSize: activeHeaderConfig.style_config?.font_size
+                              ? `${activeHeaderConfig.style_config.font_size}px`
+                              : globalStyles.fontSize,
+                            fontWeight:
+                              activeHeaderConfig.style_config?.font_weight ||
+                              "400",
+                            fontStyle:
+                              activeHeaderConfig.style_config?.font_style ||
+                              "normal",
+                            textDecoration:
+                              activeHeaderConfig.style_config
+                                ?.text_decoration || "none",
+                            textAlign:
+                              (activeHeaderConfig.style_config?.text_align as
+                                | "left"
+                                | "center"
+                                | "right") || "center",
+                            padding:
+                              activeHeaderConfig.style_config?.padding ||
+                              "16px",
+                            margin: activeHeaderConfig.style_config?.margin,
+                            gap: activeHeaderConfig.style_config?.gap || "16px",
+                            ...(activeHeaderConfig.style_config
+                              ?.border_width && {
+                              border: `${
+                                activeHeaderConfig.style_config.border_width
+                              } solid ${
+                                activeHeaderConfig.style_config.border_color ||
+                                "#000000"
+                              }`,
+                            }),
+                            ...(activeHeaderConfig.style_config
+                              ?.border_radius && {
+                              borderRadius:
+                                activeHeaderConfig.style_config.border_radius,
+                            }),
+                          }}
+                        >
+                          {activeHeaderConfig.fields.map((field, index) =>
+                            renderField(
+                              field,
+                              `header-${sectionIndex}-${index}`,
+                              activeHeaderConfig.style_config,
+                              activeHeaderConfig.style_config?.fields_layout ||
+                                "horizontal"
+                            )
+                          )}
+                        </div>
+                      )}
+
+                      {/* Sección con bloques - ocupa todo el espacio disponible */}
+                      <div
+                        style={sectionStyles}
+                        className="flex-1 overflow-auto"
+                      >
+                        {/* Bloques de la sección */}
+                        <div className="space-y-6 w-full h-full">
+                          {section.blocks.length === 0 ? (
+                            <div className="text-sm text-[#283618]/50 italic pl-4">
+                              No hay bloques en esta sección
                             </div>
-                            {section.header_config.fields.map((field, index) =>
-                              renderField(
-                                field,
-                                `sh-${sectionIndex}-${index}`,
-                                section.header_config?.style_config
-                              )
-                            )}
-                          </div>
-                        )}
+                          ) : (
+                            section.blocks.map((block, blockIndex) => {
+                              // Obtener estilos del bloque
+                              const blockStyles: React.CSSProperties = {
+                                backgroundColor:
+                                  block.style_config?.background_color ||
+                                  undefined,
+                                color:
+                                  block.style_config?.primary_color ||
+                                  undefined,
+                                padding: block.style_config?.padding
+                                  ? `${block.style_config.padding}px`
+                                  : "16px",
+                                margin: block.style_config?.margin
+                                  ? `${block.style_config.margin}px`
+                                  : undefined,
+                                borderColor:
+                                  block.style_config?.border_color || "#e5e7eb",
+                                borderWidth: block.style_config?.border_width
+                                  ? `${block.style_config.border_width}px`
+                                  : "1px",
+                                borderStyle: "solid",
+                                borderRadius: block.style_config?.border_radius
+                                  ? `${block.style_config.border_radius}px`
+                                  : "8px",
+                                gap: block.style_config?.gap
+                                  ? `${block.style_config.gap}px`
+                                  : "8px",
+                              };
 
-                      {/* Bloques de la sección */}
-                      <div className="space-y-6 w-full">
-                        {section.blocks.length === 0 ? (
-                          <div className="text-sm text-[#283618]/50 italic pl-4">
-                            No hay bloques en esta sección
-                          </div>
-                        ) : (
-                          section.blocks.map((block, blockIndex) => {
-                            // Obtener estilos del bloque
-                            const blockStyles: React.CSSProperties = {
-                              backgroundColor:
-                                block.style_config?.background_color ||
-                                undefined,
-                              color:
-                                block.style_config?.primary_color || undefined,
-                              padding: block.style_config?.padding
-                                ? `${block.style_config.padding}px`
-                                : "16px",
-                              margin: block.style_config?.margin
-                                ? `${block.style_config.margin}px`
-                                : undefined,
-                              borderColor:
-                                block.style_config?.border_color || "#e5e7eb",
-                              borderWidth: block.style_config?.border_width
-                                ? `${block.style_config.border_width}px`
-                                : "1px",
-                              borderStyle: "solid",
-                              borderRadius: block.style_config?.border_radius
-                                ? `${block.style_config.border_radius}px`
-                                : "8px",
-                              gap: block.style_config?.gap
-                                ? `${block.style_config.gap}px`
-                                : "8px",
-                            };
+                              // Determinar layout de campos
+                              const fieldsLayout =
+                                block.style_config?.fields_layout || "vertical";
+                              const fieldsContainerClass =
+                                fieldsLayout === "horizontal"
+                                  ? "flex flex-wrap"
+                                  : "flex flex-col";
 
-                            // Determinar layout de campos
-                            const fieldsLayout =
-                              block.style_config?.fields_layout || "vertical";
-                            const fieldsContainerClass =
-                              fieldsLayout === "horizontal"
-                                ? "flex flex-wrap"
-                                : "flex flex-col";
-
-                            return (
-                              <div
-                                key={`preview-block-${sectionIndex}-${blockIndex}`}
-                                className="w-full"
-                                style={blockStyles}
-                              >
-                                {/* Campos del bloque */}
+                              return (
                                 <div
-                                  className={fieldsContainerClass}
-                                  style={{
-                                    gap: block.style_config?.gap
-                                      ? `${block.style_config.gap}px`
-                                      : "8px",
-                                  }}
+                                  key={`preview-block-${sectionIndex}-${blockIndex}`}
+                                  className="w-full"
+                                  style={blockStyles}
                                 >
-                                  {block.fields.length === 0 ? (
-                                    <div className="text-sm text-[#283618]/50 italic">
-                                      No hay campos en este bloque
-                                    </div>
-                                  ) : (
-                                    block.fields
-                                      .filter((field) => field.bulletin) // Solo mostrar campos que van al boletín
-                                      .map((field, fieldIndex) =>
-                                        renderField(
-                                          field,
-                                          `preview-field-${sectionIndex}-${blockIndex}-${fieldIndex}`,
-                                          block.style_config ||
-                                            section.style_config, // Los campos heredan del bloque o de la sección
-                                          fieldsLayout
+                                  {/* Campos del bloque */}
+                                  <div
+                                    className={fieldsContainerClass}
+                                    style={{
+                                      gap: block.style_config?.gap
+                                        ? `${block.style_config.gap}px`
+                                        : "8px",
+                                    }}
+                                  >
+                                    {block.fields.length === 0 ? (
+                                      <div className="text-sm text-[#283618]/50 italic">
+                                        No hay campos en este bloque
+                                      </div>
+                                    ) : (
+                                      block.fields
+                                        .filter((field) => field.bulletin) // Solo mostrar campos que van al boletín
+                                        .map((field, fieldIndex) =>
+                                          renderField(
+                                            field,
+                                            `preview-field-${sectionIndex}-${blockIndex}-${fieldIndex}`,
+                                            block.style_config ||
+                                              section.style_config, // Los campos heredan del bloque o de la sección
+                                            fieldsLayout
+                                          )
                                         )
-                                      )
-                                  )}
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                            );
-                          })
-                        )}
+                              );
+                            })
+                          )}
+                        </div>
                       </div>
-                    </div>
+
+                      {/* Footer con lógica de prioridad */}
+                      {activeFooterConfig && (
+                        <div
+                          className={`w-full ${
+                            activeFooterConfig.style_config?.fields_layout ===
+                            "vertical"
+                              ? "flex flex-col"
+                              : "flex items-center"
+                          }`}
+                          style={{
+                            backgroundColor:
+                              activeFooterConfig.style_config
+                                ?.background_color || "transparent",
+                            backgroundImage: activeFooterConfig.style_config
+                              ?.background_image
+                              ? `url("${getBackgroundImageUrl(
+                                  activeFooterConfig.style_config
+                                    .background_image
+                                )}")`
+                              : undefined,
+                            backgroundSize: "cover",
+                            backgroundPosition: "center",
+                            backgroundRepeat: "no-repeat",
+                            color:
+                              activeFooterConfig.style_config?.primary_color ||
+                              globalStyles.color,
+                            fontSize: activeFooterConfig.style_config?.font_size
+                              ? `${activeFooterConfig.style_config.font_size}px`
+                              : globalStyles.fontSize,
+                            fontWeight:
+                              activeFooterConfig.style_config?.font_weight ||
+                              "400",
+                            fontStyle:
+                              activeFooterConfig.style_config?.font_style ||
+                              "normal",
+                            textDecoration:
+                              activeFooterConfig.style_config
+                                ?.text_decoration || "none",
+                            textAlign:
+                              (activeFooterConfig.style_config?.text_align as
+                                | "left"
+                                | "center"
+                                | "right") || "center",
+                            padding:
+                              activeFooterConfig.style_config?.padding ||
+                              "16px",
+                            margin: activeFooterConfig.style_config?.margin,
+                            gap: activeFooterConfig.style_config?.gap || "16px",
+                            ...(activeFooterConfig.style_config
+                              ?.border_width && {
+                              border: `${
+                                activeFooterConfig.style_config.border_width
+                              } solid ${
+                                activeFooterConfig.style_config.border_color ||
+                                "#000000"
+                              }`,
+                            }),
+                            ...(activeFooterConfig.style_config
+                              ?.border_radius && {
+                              borderRadius:
+                                activeFooterConfig.style_config.border_radius,
+                            }),
+                          }}
+                        >
+                          {activeFooterConfig.fields.map((field, index) =>
+                            renderField(
+                              field,
+                              `footer-${sectionIndex}-${index}`,
+                              activeFooterConfig.style_config,
+                              activeFooterConfig.style_config?.fields_layout ||
+                                "horizontal"
+                            )
+                          )}
+                        </div>
+                      )}
+                    </>
                   );
                 })()}
               </>
             )
           )}
 
-          {/* Footer Global */}
-          {footerConfig &&
-            footerConfig.fields &&
-            footerConfig.fields.length > 0 && (
-              <div
-                className={`pt-4 w-full px-4 pb-4 ${
-                  footerConfig.style_config?.fields_layout === "vertical"
-                    ? "flex flex-col"
-                    : "flex items-center"
-                }`}
-                style={{
-                  backgroundColor:
-                    footerConfig.style_config?.background_color ||
-                    "transparent",
-                  backgroundImage: footerConfig.style_config?.background_image
-                    ? `url("${getBackgroundImageUrl(
-                        footerConfig.style_config.background_image
-                      )}")`
-                    : undefined,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  backgroundRepeat: "no-repeat",
-                  color:
-                    footerConfig.style_config?.primary_color ||
-                    globalStyles.color,
-                  fontSize: footerConfig.style_config?.font_size
-                    ? `${footerConfig.style_config.font_size}px`
-                    : globalStyles.fontSize,
-                  fontWeight: footerConfig.style_config?.font_weight || "400",
-                  fontStyle: footerConfig.style_config?.font_style || "normal",
-                  textDecoration:
-                    footerConfig.style_config?.text_decoration || "none",
-                  textAlign:
-                    (footerConfig.style_config?.text_align as
-                      | "left"
-                      | "center"
-                      | "right") || "center",
-                  padding: footerConfig.style_config?.padding || "16px",
-                  margin: footerConfig.style_config?.margin,
-                  gap: footerConfig.style_config?.gap || "16px",
-                  ...(footerConfig.style_config?.border_width && {
-                    border: `${footerConfig.style_config.border_width} solid ${
-                      footerConfig.style_config.border_color || "#000000"
-                    }`,
-                  }),
-                  ...(footerConfig.style_config?.border_radius && {
-                    borderRadius: footerConfig.style_config.border_radius,
-                  }),
-                }}
-              >
-                {footerConfig.fields.map((field, index) =>
-                  renderField(
-                    field,
-                    `footer-${index}`,
-                    footerConfig.style_config,
-                    footerConfig.style_config?.fields_layout || "horizontal"
-                  )
-                )}
-              </div>
-            )}
+          {/* 
+            NOTA: El footer global ya NO se renderiza aquí.
+            Ahora se renderiza dentro de cada sección con lógica de prioridad:
+            - Si la sección tiene footer_config → se usa el footer de sección
+            - Si NO tiene footer_config → se usa el footer global
+          */}
         </div>
       </div>
 
