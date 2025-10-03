@@ -7,6 +7,46 @@ import { StyleConfig } from "../../../../types/core";
 import { getEffectiveFieldStyles } from "../../../../utils/styleInheritance";
 import { SmartIcon } from "./components/AdaptiveSvgIcon";
 
+/**
+ * Helper function para generar estilos de borde según los lados seleccionados
+ */
+function getBorderStyles(
+  styleConfig: StyleConfig | undefined
+): React.CSSProperties {
+  const styles: React.CSSProperties = {};
+
+  if (!styleConfig?.border_width) {
+    // Si hay border_radius sin border_width, aplicarlo igual
+    if (styleConfig?.border_radius) {
+      styles.borderRadius = styleConfig.border_radius;
+    }
+    return styles;
+  }
+
+  const borderValue = `${styleConfig.border_width} ${
+    styleConfig.border_style || "solid"
+  } ${styleConfig.border_color || "#000000"}`;
+  const borderSides = styleConfig.border_sides || "all";
+
+  if (borderSides === "all") {
+    styles.border = borderValue;
+  } else {
+    // Aplicar bordes individuales según los lados seleccionados
+    const sides = borderSides.split(",").map((s) => s.trim());
+
+    if (sides.includes("top")) styles.borderTop = borderValue;
+    if (sides.includes("bottom")) styles.borderBottom = borderValue;
+    if (sides.includes("left")) styles.borderLeft = borderValue;
+    if (sides.includes("right")) styles.borderRight = borderValue;
+  }
+
+  if (styleConfig.border_radius) {
+    styles.borderRadius = styleConfig.border_radius;
+  }
+
+  return styles;
+}
+
 interface TemplatePreviewProps {
   data: CreateTemplateData;
   selectedSectionIndex?: number;
@@ -136,14 +176,7 @@ export function TemplatePreview({
       padding: effectiveStyles.padding,
       margin: effectiveStyles.margin,
       gap: effectiveStyles.gap,
-      ...(effectiveStyles.border_width && {
-        border: `${effectiveStyles.border_width} solid ${
-          effectiveStyles.border_color || "#000000"
-        }`,
-      }),
-      ...(effectiveStyles.border_radius && {
-        borderRadius: effectiveStyles.border_radius,
-      }),
+      ...getBorderStyles(effectiveStyles),
     };
 
     switch (field.type) {
@@ -178,6 +211,8 @@ export function TemplatePreview({
             : null);
 
         const iconSize = effectiveStyles.icon_size || 24;
+        const useOriginalColor =
+          effectiveStyles.icon_use_original_color === true;
 
         return (
           <div
@@ -191,7 +226,8 @@ export function TemplatePreview({
                 <SmartIcon
                   src={selectedIcon}
                   style={{ width: `${iconSize}px`, height: `${iconSize}px` }}
-                  color={fieldStyles.color}
+                  color={useOriginalColor ? undefined : fieldStyles.color}
+                  preserveOriginalColors={useOriginalColor}
                   alt="Icon"
                 />
               ) : (
@@ -208,23 +244,27 @@ export function TemplatePreview({
 
       case "select_with_icons":
         // Si form es false, mostrar el icono seleccionado (si existe valor)
-        // Si form es true, mostrar un icono por defecto
+        // Si form es true o no hay valor, mostrar un icono y label por defecto
         let iconToShow = null;
+        let labelToShow = null;
+
+        const selectOptions = (field.field_config as any)?.options || [];
+        const selectIconsUrl = (field.field_config as any)?.icons_url || [];
 
         if (!field.form && field.value) {
           // Buscar el icono correspondiente al valor seleccionado
-          const options = (field.field_config as any)?.options || [];
-          const selectedOption = options.find(
-            (opt: any) => opt.value === field.value
+          const selectedIndex = selectOptions.findIndex(
+            (opt: string) => opt === field.value
           );
-          if (selectedOption && selectedOption.icon_url) {
-            iconToShow = selectedOption.icon_url;
+          if (selectedIndex !== -1) {
+            iconToShow = selectIconsUrl[selectedIndex] || null;
+            labelToShow = selectOptions[selectedIndex];
           }
-        } else if (field.form) {
-          // Mostrar icono por defecto cuando es form
-          const options = (field.field_config as any)?.options || [];
-          if (options.length > 0 && options[0].icon_url) {
-            iconToShow = options[0].icon_url;
+        } else {
+          // Mostrar primer icono y label por defecto (para preview o cuando es form)
+          if (selectOptions.length > 0) {
+            iconToShow = selectIconsUrl[0] || null;
+            labelToShow = selectOptions[0];
           }
         }
 
@@ -238,12 +278,15 @@ export function TemplatePreview({
             : "justify-center";
 
         const selectIconSize = effectiveStyles.icon_size || 32;
+        const showLabel = (field.field_config as any)?.show_label !== false;
+        const selectUseOriginalColor =
+          effectiveStyles.icon_use_original_color === true;
 
         return (
           <div
             key={key}
             style={fieldStyles}
-            className={`flex items-center ${justifyClass}`}
+            className={`flex items-center gap-2 ${justifyClass}`}
           >
             {iconToShow ? (
               <SmartIcon
@@ -252,12 +295,18 @@ export function TemplatePreview({
                   width: `${selectIconSize}px`,
                   height: `${selectIconSize}px`,
                 }}
-                color={effectiveStyles.primary_color || fieldStyles.color}
+                color={
+                  selectUseOriginalColor
+                    ? undefined
+                    : effectiveStyles.primary_color || fieldStyles.color
+                }
+                preserveOriginalColors={selectUseOriginalColor}
                 alt="Selected icon"
               />
             ) : (
               <span style={{ fontSize: `${selectIconSize}px` }}>❓</span>
             )}
+            {showLabel && labelToShow && <span>{labelToShow}</span>}
           </div>
         );
 
@@ -365,15 +414,25 @@ export function TemplatePreview({
         );
 
       case "list":
+        console.log(
+          "LIST - effectiveStyles.border_sides:",
+          effectiveStyles.border_sides
+        );
+        console.log(
+          "LIST - effectiveStyles.border_width:",
+          effectiveStyles.border_width
+        );
         const listStyleType = effectiveStyles.list_style_type || "disc";
         const showBullets = listStyleType !== "none";
         const listItemsLayout = effectiveStyles.list_items_layout || "vertical";
+        const isNumbered = listStyleType === "decimal";
 
         // Mapeo de estilos CSS de lista
         const bulletStyles: { [key: string]: string } = {
           disc: "•",
           circle: "○",
           square: "■",
+          decimal: "", // Los números se generan automáticamente
           none: "",
         };
 
@@ -381,7 +440,7 @@ export function TemplatePreview({
         const getItemLayoutClasses = () => {
           switch (listItemsLayout) {
             case "horizontal":
-              return "flex flex-wrap gap-4";
+              return "flex flex-wrap gap-4 items-center justify-between";
             case "grid-2":
               return "grid grid-cols-2 gap-1 w-full";
             case "grid-3":
@@ -392,7 +451,7 @@ export function TemplatePreview({
           }
         };
 
-        // Estilos para cada item de la lista (no para el contenedor general)
+        // Estilos para cada item de la lista
         const listItemStyles: React.CSSProperties = {
           backgroundColor: effectiveStyles.background_color || undefined,
           backgroundImage: effectiveStyles.background_image
@@ -404,14 +463,7 @@ export function TemplatePreview({
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
           color: effectiveStyles.primary_color || undefined,
-          borderColor: effectiveStyles.border_color || undefined,
-          borderWidth: effectiveStyles.border_width
-            ? `${effectiveStyles.border_width}px`
-            : undefined,
-          borderStyle: effectiveStyles.border_width ? "solid" : undefined,
-          borderRadius: effectiveStyles.border_radius
-            ? `${effectiveStyles.border_radius}px`
-            : undefined,
+          ...getBorderStyles(effectiveStyles),
           padding: effectiveStyles.padding || undefined,
           margin: effectiveStyles.margin || undefined,
           fontSize: effectiveStyles.font_size
@@ -428,23 +480,28 @@ export function TemplatePreview({
 
         return (
           <div key={key}>
-            <div className={showBullets ? "pl-4 space-y-2" : "space-y-2"}>
+            <div className={showBullets ? "space-y-2" : "space-y-2"}>
               {/* Renderizar elementos basados en item_schema */}
               {[1, 2].map((itemIndex) => (
                 <div
                   key={itemIndex}
-                  className="flex items-start gap-2 w-full"
+                  className="flex items-center gap-2 w-full"
                   style={listItemStyles}
                 >
                   {showBullets && (
                     <span
-                      className="text-sm mt-1 flex-shrink-0"
+                      className="flex-shrink-0"
                       style={{
                         color:
                           effectiveStyles.primary_color || fieldStyles.color,
+                        fontSize: effectiveStyles.font_size
+                          ? `${effectiveStyles.font_size}px`
+                          : undefined,
                       }}
                     >
-                      {bulletStyles[listStyleType]}
+                      {isNumbered
+                        ? `${itemIndex}.`
+                        : bulletStyles[listStyleType]}
                     </span>
                   )}
                   <div className={`flex-1 min-w-0 ${getItemLayoutClasses()}`}>
@@ -613,14 +670,7 @@ export function TemplatePreview({
                   padding: headerConfig.style_config?.padding || "16px",
                   margin: headerConfig.style_config?.margin,
                   gap: headerConfig.style_config?.gap || "16px",
-                  ...(headerConfig.style_config?.border_width && {
-                    border: `${headerConfig.style_config.border_width} solid ${
-                      headerConfig.style_config.border_color || "#000000"
-                    }`,
-                  }),
-                  ...(headerConfig.style_config?.border_radius && {
-                    borderRadius: headerConfig.style_config.border_radius,
-                  }),
+                  ...getBorderStyles(headerConfig.style_config),
                 }}
               >
                 {headerConfig.fields.map((field, index) =>
@@ -680,14 +730,7 @@ export function TemplatePreview({
                         | "right") || "left",
                     padding: section.style_config?.padding,
                     margin: section.style_config?.margin,
-                    ...(section.style_config?.border_width && {
-                      border: `${section.style_config.border_width} solid ${
-                        section.style_config.border_color || "#000000"
-                      }`,
-                    }),
-                    ...(section.style_config?.border_radius && {
-                      borderRadius: section.style_config.border_radius,
-                    }),
+                    ...getBorderStyles(section.style_config),
                   };
 
                   // Determinar qué header usar: sección específica o global
@@ -770,20 +813,7 @@ export function TemplatePreview({
                               "16px",
                             margin: activeHeaderConfig.style_config?.margin,
                             gap: activeHeaderConfig.style_config?.gap || "16px",
-                            ...(activeHeaderConfig.style_config
-                              ?.border_width && {
-                              border: `${
-                                activeHeaderConfig.style_config.border_width
-                              } solid ${
-                                activeHeaderConfig.style_config.border_color ||
-                                "#000000"
-                              }`,
-                            }),
-                            ...(activeHeaderConfig.style_config
-                              ?.border_radius && {
-                              borderRadius:
-                                activeHeaderConfig.style_config.border_radius,
-                            }),
+                            ...getBorderStyles(activeHeaderConfig.style_config),
                           }}
                         >
                           {activeHeaderConfig.fields.map((field, index) =>
@@ -834,18 +864,10 @@ export function TemplatePreview({
                                 margin: block.style_config?.margin
                                   ? `${block.style_config.margin}px`
                                   : undefined,
-                                borderColor:
-                                  block.style_config?.border_color || "#e5e7eb",
-                                borderWidth: block.style_config?.border_width
-                                  ? `${block.style_config.border_width}px`
-                                  : "0px",
-                                borderStyle: "solid",
-                                borderRadius: block.style_config?.border_radius
-                                  ? `${block.style_config.border_radius}px`
-                                  : "8px",
                                 gap: block.style_config?.gap
                                   ? `${block.style_config.gap}px`
                                   : "8px",
+                                ...getBorderStyles(block.style_config),
                               };
 
                               // Determinar layout de campos
@@ -944,20 +966,7 @@ export function TemplatePreview({
                               "16px",
                             margin: activeFooterConfig.style_config?.margin,
                             gap: activeFooterConfig.style_config?.gap || "16px",
-                            ...(activeFooterConfig.style_config
-                              ?.border_width && {
-                              border: `${
-                                activeFooterConfig.style_config.border_width
-                              } solid ${
-                                activeFooterConfig.style_config.border_color ||
-                                "#000000"
-                              }`,
-                            }),
-                            ...(activeFooterConfig.style_config
-                              ?.border_radius && {
-                              borderRadius:
-                                activeFooterConfig.style_config.border_radius,
-                            }),
+                            ...getBorderStyles(activeFooterConfig.style_config),
                           }}
                         >
                           {activeFooterConfig.fields.map((field, index) =>
@@ -1018,14 +1027,7 @@ export function TemplatePreview({
                   padding: footerConfig.style_config?.padding || "16px",
                   margin: footerConfig.style_config?.margin,
                   gap: footerConfig.style_config?.gap || "16px",
-                  ...(footerConfig.style_config?.border_width && {
-                    border: `${footerConfig.style_config.border_width} solid ${
-                      footerConfig.style_config.border_color || "#000000"
-                    }`,
-                  }),
-                  ...(footerConfig.style_config?.border_radius && {
-                    borderRadius: footerConfig.style_config.border_radius,
-                  }),
+                  ...getBorderStyles(footerConfig.style_config),
                 }}
               >
                 {footerConfig.fields.map((field, index) =>

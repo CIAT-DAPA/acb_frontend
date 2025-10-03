@@ -60,6 +60,7 @@ export interface StyleConfiguratorProps {
 
     // Configuración de iconos
     iconSize?: boolean;
+    iconUseOriginalColor?: boolean;
 
     // Configuración de espacios y bordes
     padding?: boolean;
@@ -67,6 +68,7 @@ export interface StyleConfiguratorProps {
     gap?: boolean;
     borderWidth?: boolean;
     borderRadius?: boolean;
+    borderSides?: boolean; // Control de qué lados del borde mostrar
 
     // Configuración de dimensiones (solo para estilos globales)
     bulletinWidth?: boolean;
@@ -398,6 +400,37 @@ export function StyleConfigurator({
             24
           )}
 
+        {enabledFields.iconUseOriginalColor && (
+          <div>
+            <label className="flex items-center text-sm">
+              <input
+                type="checkbox"
+                checked={styleConfig.icon_use_original_color || false}
+                onChange={(e) =>
+                  onStyleChange({ icon_use_original_color: e.target.checked })
+                }
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+              />
+              {getLabel(
+                "iconUseOriginalColor",
+                "Mantener color original del icono"
+              )}
+            </label>
+            <p className="text-xs text-[#283618]/50 mt-1">
+              {getLabel(
+                "iconUseOriginalColorHelp",
+                "Si está desactivado, el icono usará el color primario del contexto"
+              )}
+            </p>
+            {inheritedStyles?.icon_use_original_color !== undefined && (
+              <p className="text-xs text-[#283618]/50 mt-1">
+                Heredado:{" "}
+                {inheritedStyles.icon_use_original_color ? "Sí" : "No"}
+              </p>
+            )}
+          </div>
+        )}
+
         {enabledFields.fontWeight && (
           <div>
             <label className="block text-sm font-medium text-[#283618]/70 mb-2">
@@ -495,6 +528,242 @@ export function StyleConfigurator({
             "4px"
           )}
 
+        {/* Lados del borde */}
+        {enabledFields.borderSides && (
+          <div>
+            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+              {getLabel("borderSides", "Lados del Borde")}
+            </label>
+            <div className="space-y-2">
+              {/* Checkboxes para cada lado */}
+              <div className="grid grid-cols-2 gap-2">
+                <label className="flex items-center text-sm">
+                  <input
+                    type="checkbox"
+                    checked={
+                      !styleConfig.border_sides ||
+                      styleConfig.border_sides === "all" ||
+                      styleConfig.border_sides.includes("top")
+                    }
+                    onChange={(e) => {
+                      const currentSides = styleConfig.border_sides || "all";
+                      if (currentSides === "all") {
+                        // Si está en "all" y se desmarca uno, crear lista sin ese lado
+                        onStyleChange({
+                          border_sides: e.target.checked
+                            ? "all"
+                            : "bottom,left,right",
+                        });
+                      } else {
+                        // Agregar o quitar "top" de la lista
+                        const sides = currentSides
+                          .split(",")
+                          .map((s) => s.trim())
+                          .filter((s) => s);
+                        if (e.target.checked) {
+                          if (!sides.includes("top")) sides.push("top");
+                        } else {
+                          const index = sides.indexOf("top");
+                          if (index > -1) sides.splice(index, 1);
+                        }
+                        // Solo cambiar a "all" si explícitamente los 4 lados están presentes
+                        const hasAll =
+                          sides.includes("top") &&
+                          sides.includes("bottom") &&
+                          sides.includes("left") &&
+                          sides.includes("right");
+
+                        if (hasAll && sides.length === 4) {
+                          onStyleChange({ border_sides: "all" });
+                        } else if (sides.length > 0) {
+                          onStyleChange({ border_sides: sides.join(",") });
+                        } else {
+                          onStyleChange({ border_sides: undefined });
+                        }
+                      }
+                    }}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+                  />
+                  {getLabel("borderTop", "Superior")}
+                </label>
+
+                <label className="flex items-center text-sm">
+                  <input
+                    type="checkbox"
+                    checked={
+                      !styleConfig.border_sides ||
+                      styleConfig.border_sides === "all" ||
+                      styleConfig.border_sides.includes("bottom")
+                    }
+                    onChange={(e) => {
+                      const currentSides = styleConfig.border_sides || "all";
+                      console.log(
+                        "BOTTOM checkbox - Current sides:",
+                        currentSides,
+                        "Checked:",
+                        e.target.checked
+                      );
+                      if (currentSides === "all") {
+                        const newValue = e.target.checked
+                          ? "all"
+                          : "top,left,right";
+                        console.log(
+                          "BOTTOM - Setting border_sides to:",
+                          newValue
+                        );
+                        onStyleChange({
+                          border_sides: newValue,
+                        });
+                      } else {
+                        const sides = currentSides
+                          .split(",")
+                          .map((s) => s.trim())
+                          .filter((s) => s);
+                        if (e.target.checked) {
+                          if (!sides.includes("bottom")) sides.push("bottom");
+                        } else {
+                          const index = sides.indexOf("bottom");
+                          if (index > -1) sides.splice(index, 1);
+                        }
+                        const hasAll =
+                          sides.includes("top") &&
+                          sides.includes("bottom") &&
+                          sides.includes("left") &&
+                          sides.includes("right");
+
+                        console.log(
+                          "BOTTOM - Sides after change:",
+                          sides,
+                          "hasAll:",
+                          hasAll
+                        );
+
+                        if (hasAll && sides.length === 4) {
+                          console.log("BOTTOM - Setting to 'all'");
+                          onStyleChange({ border_sides: "all" });
+                        } else if (sides.length > 0) {
+                          console.log("BOTTOM - Setting to:", sides.join(","));
+                          onStyleChange({ border_sides: sides.join(",") });
+                        } else {
+                          console.log("BOTTOM - Setting to undefined");
+                          onStyleChange({ border_sides: undefined });
+                        }
+                      }
+                    }}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+                  />
+                  {getLabel("borderBottom", "Inferior")}
+                </label>
+
+                <label className="flex items-center text-sm">
+                  <input
+                    type="checkbox"
+                    checked={
+                      !styleConfig.border_sides ||
+                      styleConfig.border_sides === "all" ||
+                      styleConfig.border_sides.includes("left")
+                    }
+                    onChange={(e) => {
+                      const currentSides = styleConfig.border_sides || "all";
+                      if (currentSides === "all") {
+                        onStyleChange({
+                          border_sides: e.target.checked
+                            ? "all"
+                            : "top,bottom,right",
+                        });
+                      } else {
+                        const sides = currentSides
+                          .split(",")
+                          .map((s) => s.trim())
+                          .filter((s) => s);
+                        if (e.target.checked) {
+                          if (!sides.includes("left")) sides.push("left");
+                        } else {
+                          const index = sides.indexOf("left");
+                          if (index > -1) sides.splice(index, 1);
+                        }
+                        const hasAll =
+                          sides.includes("top") &&
+                          sides.includes("bottom") &&
+                          sides.includes("left") &&
+                          sides.includes("right");
+
+                        if (hasAll && sides.length === 4) {
+                          onStyleChange({ border_sides: "all" });
+                        } else if (sides.length > 0) {
+                          onStyleChange({ border_sides: sides.join(",") });
+                        } else {
+                          onStyleChange({ border_sides: undefined });
+                        }
+                      }
+                    }}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+                  />
+                  {getLabel("borderLeft", "Izquierda")}
+                </label>
+
+                <label className="flex items-center text-sm">
+                  <input
+                    type="checkbox"
+                    checked={
+                      !styleConfig.border_sides ||
+                      styleConfig.border_sides === "all" ||
+                      styleConfig.border_sides.includes("right")
+                    }
+                    onChange={(e) => {
+                      const currentSides = styleConfig.border_sides || "all";
+                      if (currentSides === "all") {
+                        onStyleChange({
+                          border_sides: e.target.checked
+                            ? "all"
+                            : "top,bottom,left",
+                        });
+                      } else {
+                        const sides = currentSides
+                          .split(",")
+                          .map((s) => s.trim())
+                          .filter((s) => s);
+                        if (e.target.checked) {
+                          if (!sides.includes("right")) sides.push("right");
+                        } else {
+                          const index = sides.indexOf("right");
+                          if (index > -1) sides.splice(index, 1);
+                        }
+                        const hasAll =
+                          sides.includes("top") &&
+                          sides.includes("bottom") &&
+                          sides.includes("left") &&
+                          sides.includes("right");
+
+                        if (hasAll && sides.length === 4) {
+                          onStyleChange({ border_sides: "all" });
+                        } else if (sides.length > 0) {
+                          onStyleChange({ border_sides: sides.join(",") });
+                        } else {
+                          onStyleChange({ border_sides: undefined });
+                        }
+                      }
+                    }}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+                  />
+                  {getLabel("borderRight", "Derecha")}
+                </label>
+              </div>
+            </div>
+            <p className="text-xs text-[#283618]/50 mt-1">
+              {getLabel(
+                "borderSidesHelp",
+                "Selecciona los lados donde quieres mostrar el borde"
+              )}
+            </p>
+            {inheritedStyles?.border_sides && (
+              <p className="text-xs text-[#283618]/50 mt-1">
+                Heredado: {inheritedStyles.border_sides}
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Dimensiones del boletín (solo para estilos globales) */}
         {enabledFields.bulletinWidth &&
           renderNumberField(
@@ -535,6 +804,7 @@ export function StyleConfigurator({
               { value: "disc", label: "• Círculo relleno" },
               { value: "circle", label: "○ Círculo vacío" },
               { value: "square", label: "■ Cuadrado" },
+              { value: "decimal", label: "1. Numerado" },
               { value: "none", label: "Sin viñetas" },
             ],
             "disc"

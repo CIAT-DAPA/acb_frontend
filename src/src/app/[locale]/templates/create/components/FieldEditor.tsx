@@ -97,15 +97,16 @@ export function FieldEditor({
 
   const updateStyleConfig = useCallback(
     (styleUpdates: Record<string, unknown>) => {
-      setCurrentField((prev) =>
-        markFieldStyleAsManuallyEdited({
+      setCurrentField((prev) => {
+        const updated = markFieldStyleAsManuallyEdited({
           ...prev,
           style_config: {
             ...prev.style_config,
             ...styleUpdates,
           },
-        } as Field)
-      );
+        } as Field);
+        return updated;
+      });
     },
     []
   );
@@ -442,11 +443,7 @@ export function FieldEditor({
         )}
 
         <StyleConfigurator
-          styleConfig={
-            currentField.style_manually_edited
-              ? currentField.style_config || {}
-              : effectiveStyles
-          }
+          styleConfig={currentField.style_config || {}}
           onStyleChange={(updates: Partial<StyleConfig>) =>
             updateStyleConfig(updates)
           }
@@ -456,6 +453,9 @@ export function FieldEditor({
             iconSize:
               currentField.type === "text_with_icon" ||
               currentField.type === "select_with_icons",
+            iconUseOriginalColor:
+              currentField.type === "text_with_icon" ||
+              currentField.type === "select_with_icons",
             fontWeight: true,
             fontStyle: true,
             textDecoration: true,
@@ -463,6 +463,7 @@ export function FieldEditor({
             borderColor: true,
             borderWidth: true,
             borderRadius: true,
+            borderSides: true,
             padding: true,
             margin: true,
             gap: true,

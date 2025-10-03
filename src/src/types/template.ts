@@ -47,6 +47,7 @@ export interface SelectFieldConfig {
 
 export interface SelectWithIconsFieldConfig extends SelectFieldConfig {
   icons_url: string[];
+  show_label?: boolean; // Si se muestra el label al lado del icono
 }
 
 export interface SelectBackgroundFieldConfig extends SelectFieldConfig {

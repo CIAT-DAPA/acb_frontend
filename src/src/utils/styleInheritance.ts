@@ -23,6 +23,8 @@ export function combineStyles(
       combined.background_color = parentStyle.background_color;
     if (parentStyle.font_size) combined.font_size = parentStyle.font_size;
     if (parentStyle.icon_size) combined.icon_size = parentStyle.icon_size;
+    if (parentStyle.icon_use_original_color !== undefined)
+      combined.icon_use_original_color = parentStyle.icon_use_original_color;
     if (parentStyle.font_weight) combined.font_weight = parentStyle.font_weight;
     if (parentStyle.font_style) combined.font_style = parentStyle.font_style;
     if (parentStyle.text_decoration)
@@ -45,6 +47,8 @@ export function combineStyles(
       combined.background_color = childStyle.background_color;
     if (childStyle.font_size) combined.font_size = childStyle.font_size;
     if (childStyle.icon_size) combined.icon_size = childStyle.icon_size;
+    if (childStyle.icon_use_original_color !== undefined)
+      combined.icon_use_original_color = childStyle.icon_use_original_color;
     if (childStyle.font_weight) combined.font_weight = childStyle.font_weight;
     if (childStyle.font_style) combined.font_style = childStyle.font_style;
     if (childStyle.text_decoration)
@@ -62,6 +66,8 @@ export function combineStyles(
       combined.border_width = childStyle.border_width;
     if (childStyle.border_radius)
       combined.border_radius = childStyle.border_radius;
+    if (childStyle.border_sides)
+      combined.border_sides = childStyle.border_sides;
     if (childStyle.font) combined.font = childStyle.font;
     if (childStyle.secondary_color)
       combined.secondary_color = childStyle.secondary_color;
@@ -125,6 +131,10 @@ export function inheritStylesFromContainer(
   }
   if (containerStyle.icon_size) {
     inheritedStyles.icon_size = containerStyle.icon_size;
+  }
+  if (containerStyle.icon_use_original_color !== undefined) {
+    inheritedStyles.icon_use_original_color =
+      containerStyle.icon_use_original_color;
   }
   if (containerStyle.font_weight) {
     inheritedStyles.font_weight = containerStyle.font_weight;
@@ -239,6 +249,10 @@ export function getInheritableStyles(
   }
   if (containerStyle.icon_size) {
     inheritable.icon_size = containerStyle.icon_size;
+  }
+  if (containerStyle.icon_use_original_color !== undefined) {
+    inheritable.icon_use_original_color =
+      containerStyle.icon_use_original_color;
   }
   if (containerStyle.font_weight) {
     inheritable.font_weight = containerStyle.font_weight;

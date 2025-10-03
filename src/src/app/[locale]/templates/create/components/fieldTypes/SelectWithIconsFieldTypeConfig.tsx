@@ -15,6 +15,7 @@ interface SelectWithIconsFieldConfig {
   options: string[];
   icons_url: string[];
   allow_multiple?: boolean;
+  show_label?: boolean; // Si se muestra el label al lado del icono
 }
 
 export const SelectWithIconsFieldTypeConfig: React.FC<
@@ -97,6 +98,24 @@ export const SelectWithIconsFieldTypeConfig: React.FC<
         </label>
         <p className="text-xs text-gray-500 mt-1">
           {t("selectWithIconsConfig.allowMultipleHelp")}
+        </p>
+      </div>
+
+      {/* Mostrar label junto al icono */}
+      <div>
+        <label className="flex items-center text-sm">
+          <input
+            type="checkbox"
+            checked={config.show_label !== false} // Por defecto true
+            onChange={(e) =>
+              updateFieldConfig({ show_label: e.target.checked })
+            }
+            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+          />
+          {t("selectWithIconsConfig.showLabel")}
+        </label>
+        <p className="text-xs text-gray-500 mt-1">
+          {t("selectWithIconsConfig.showLabelHelp")}
         </p>
       </div>
 
@@ -237,10 +256,12 @@ export const SelectWithIconsFieldTypeConfig: React.FC<
                       }}
                     />
                   )}
-                  <span className="text-sm">
-                    {option ||
-                      `${t("selectWithIconsConfig.optionLabel")} ${index + 1}`}
-                  </span>
+                  {(config.show_label !== false) && (
+                    <span className="text-sm">
+                      {option ||
+                        `${t("selectWithIconsConfig.optionLabel")} ${index + 1}`}
+                    </span>
+                  )}
                   {config.allow_multiple && (
                     <input type="checkbox" className="ml-auto" disabled />
                   )}

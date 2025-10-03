@@ -7,6 +7,7 @@ interface AdaptiveSvgIconProps {
   className?: string;
   style?: React.CSSProperties;
   color?: string;
+  preserveOriginalColors?: boolean; // Si es true, no modifica los colores del SVG
 }
 
 export function AdaptiveSvgIcon({
@@ -14,6 +15,7 @@ export function AdaptiveSvgIcon({
   className = "",
   style = {},
   color,
+  preserveOriginalColors = false,
 }: AdaptiveSvgIconProps) {
   const [svgContent, setSvgContent] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
@@ -44,52 +46,55 @@ export function AdaptiveSvgIcon({
             svgElement.setAttribute("viewBox", "0 0 24 24");
           }
 
-          // Hacer que todos los paths usen currentColor de manera inteligente
-          const paths = svgElement.querySelectorAll(
-            "path, circle, rect, polygon, polyline, line, ellipse"
-          );
+          // Solo modificar colores si NO queremos preservar los originales
+          if (!preserveOriginalColors) {
+            // Hacer que todos los paths usen currentColor de manera inteligente
+            const paths = svgElement.querySelectorAll(
+              "path, circle, rect, polygon, polyline, line, ellipse"
+            );
 
-          // Detectar si el SVG es principalmente stroke-based o fill-based
-          let hasStrokes = 0;
-          let hasFills = 0;
-          paths.forEach((path) => {
-            const stroke = path.getAttribute("stroke");
-            const fill = path.getAttribute("fill");
+            // Detectar si el SVG es principalmente stroke-based o fill-based
+            let hasStrokes = 0;
+            let hasFills = 0;
+            paths.forEach((path) => {
+              const stroke = path.getAttribute("stroke");
+              const fill = path.getAttribute("fill");
 
-            if (stroke && stroke !== "none") hasStrokes++;
-            if (fill && fill !== "none" && fill !== "") hasFills++;
-          });
+              if (stroke && stroke !== "none") hasStrokes++;
+              if (fill && fill !== "none" && fill !== "") hasFills++;
+            });
 
-          // Si tiene más strokes que fills, es un icono de contorno
-          const isStrokeBased = hasStrokes > hasFills;
+            // Si tiene más strokes que fills, es un icono de contorno
+            const isStrokeBased = hasStrokes > hasFills;
 
-          paths.forEach((path) => {
-            const stroke = path.getAttribute("stroke");
-            const fill = path.getAttribute("fill");
+            paths.forEach((path) => {
+              const stroke = path.getAttribute("stroke");
+              const fill = path.getAttribute("fill");
 
-            if (isStrokeBased) {
-              // Para iconos basados en stroke (contorno):
-              // - Aplicar currentColor solo al stroke
-              // - Dejar fills como transparentes o none
-              if (stroke && stroke !== "none") {
-                path.setAttribute("stroke", "currentColor");
+              if (isStrokeBased) {
+                // Para iconos basados en stroke (contorno):
+                // - Aplicar currentColor solo al stroke
+                // - Dejar fills como transparentes o none
+                if (stroke && stroke !== "none") {
+                  path.setAttribute("stroke", "currentColor");
+                }
+                // Si tiene fill que no es none, convertirlo a none para evitar bloques sólidos
+                if (fill && fill !== "none" && fill !== "") {
+                  path.setAttribute("fill", "none");
+                }
+              } else {
+                // Para iconos basados en fill (relleno):
+                // - Aplicar currentColor solo al fill
+                // - Mantener stroke si existe
+                if (fill && fill !== "none") {
+                  path.setAttribute("fill", "currentColor");
+                }
+                if (stroke && stroke !== "none") {
+                  path.setAttribute("stroke", "currentColor");
+                }
               }
-              // Si tiene fill que no es none, convertirlo a none para evitar bloques sólidos
-              if (fill && fill !== "none" && fill !== "") {
-                path.setAttribute("fill", "none");
-              }
-            } else {
-              // Para iconos basados en fill (relleno):
-              // - Aplicar currentColor solo al fill
-              // - Mantener stroke si existe
-              if (fill && fill !== "none") {
-                path.setAttribute("fill", "currentColor");
-              }
-              if (stroke && stroke !== "none") {
-                path.setAttribute("stroke", "currentColor");
-              }
-            }
-          });
+            });
+          }
 
           setSvgContent(svgElement.outerHTML);
         }
@@ -104,7 +109,7 @@ export function AdaptiveSvgIcon({
     if (src) {
       fetchSvg();
     }
-  }, [src]);
+  }, [src, preserveOriginalColors]);
 
   if (isLoading) {
     return <div className={className} style={style}></div>;
@@ -151,6 +156,7 @@ interface SmartIconProps {
   style?: React.CSSProperties;
   color?: string;
   alt?: string;
+  preserveOriginalColors?: boolean;
 }
 
 export function SmartIcon({
@@ -159,6 +165,7 @@ export function SmartIcon({
   style = {},
   color,
   alt = "",
+  preserveOriginalColors = false,
 }: SmartIconProps) {
   const isSvg = isSvgUrl(src);
 
@@ -169,6 +176,7 @@ export function SmartIcon({
         className={className}
         style={style}
         color={color}
+        preserveOriginalColors={preserveOriginalColors}
       />
     );
   }

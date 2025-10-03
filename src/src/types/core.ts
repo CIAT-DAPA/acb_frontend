@@ -31,12 +31,14 @@ export interface StyleConfig {
   border_color?: string;
   border_width?: string;
   border_radius?: string;
+  border_sides?: string; // Qué lados del borde mostrar: "all", "top", "bottom", "left", "right", o combinación como "top,bottom"
   bulletin_width?: number; // Ancho del boletín en píxeles
   bulletin_height?: number; // Alto del boletín en píxeles
   fields_layout?: "horizontal" | "vertical"; // Layout de los campos
-  list_style_type?: "disc" | "circle" | "square" | "none"; // Estilo de bullet points para listas
+  list_style_type?: "disc" | "circle" | "square" | "none" | "decimal"; // Estilo de bullet points para listas
   list_items_layout?: "vertical" | "horizontal" | "grid-2" | "grid-3"; // Layout de items dentro de la lista
   icon_size?: number; // Tamaño de los iconos en píxeles
+  icon_use_original_color?: boolean; // Si true, mantiene el color original del icono; si false, usa el color del contexto
   [key: string]: string | number | boolean | undefined; // Para propiedades adicionales
 }
 
