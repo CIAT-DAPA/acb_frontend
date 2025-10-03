@@ -1305,11 +1305,11 @@ export function SectionsStep({
                       </p>
                     </div>
 
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="bg-[#bc6c25]/20 border border-[#bc6c25]/60 rounded-lg p-4">
                       <div className="flex items-start space-x-3">
                         <div className="flex-shrink-0 mt-0.5">
                           <svg
-                            className="w-5 h-5 text-blue-600"
+                            className="w-5 h-5 text-[#bc6c25]"
                             fill="currentColor"
                             viewBox="0 0 20 20"
                           >
@@ -1321,7 +1321,7 @@ export function SectionsStep({
                           </svg>
                         </div>
                         <div className="flex-1">
-                          <p className="text-blue-700 text-sm">
+                          <p className="text-[#bc6c25] text-sm">
                             <strong>Prioridad:</strong> Si configuras un header
                             aquí, tendrá prioridad sobre el header global del
                             template. Si no configuras nada, se usará el header
@@ -1337,7 +1337,7 @@ export function SectionsStep({
                         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                           <div className="flex items-center justify-between mb-3">
                             <h4 className="text-sm font-medium text-[#283618]">
-                              🌍 Usando Header Global
+                              Usando Header Global
                             </h4>
                             <button
                               onClick={() => {
@@ -1357,9 +1357,9 @@ export function SectionsStep({
                                   );
                                 }
                               }}
-                              className="px-4 py-2 bg-[#bc6c25] text-white rounded-md hover:bg-[#a55a1f] transition-colors text-sm font-medium"
+                              className={`${btnOutlineSecondary} text-sm`}
                             >
-                              ✏️ Personalizar para esta sección
+                              Personalizar para esta sección
                             </button>
                           </div>
                           <p className="text-xs text-[#283618]/60">
@@ -1367,35 +1367,6 @@ export function SectionsStep({
                             en "Personalizar" para crear una versión específica
                             que puedes modificar independientemente.
                           </p>
-
-                          {/* Vista previa del header global */}
-                          {data.version.content.header_config?.fields &&
-                            data.version.content.header_config.fields.length >
-                              0 && (
-                              <div className="mt-4 pt-4 border-t border-gray-300">
-                                <p className="text-xs font-medium text-[#283618]/70 mb-2">
-                                  Vista previa del header global:
-                                </p>
-                                <div className="bg-white p-3 rounded border border-gray-200">
-                                  <div className="text-xs text-[#283618]/50 space-y-1">
-                                    {data.version.content.header_config.fields.map(
-                                      (field, idx) => (
-                                        <div
-                                          key={idx}
-                                          className="flex items-center gap-2"
-                                        >
-                                          <span className="w-2 h-2 bg-[#bc6c25] rounded-full"></span>
-                                          <span>{field.display_name}</span>
-                                          <span className="text-[#283618]/40">
-                                            ({field.type})
-                                          </span>
-                                        </div>
-                                      )
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            )}
                         </div>
                       </div>
                     ) : (
@@ -1416,7 +1387,7 @@ export function SectionsStep({
                             }}
                             className="px-3 py-1.5 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors"
                           >
-                            🔄 Restaurar al global
+                            Restaurar al global
                           </button>
                         </div>
 
@@ -1450,11 +1421,11 @@ export function SectionsStep({
                       </p>
                     </div>
 
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="bg-[#bc6c25]/20 border border-[#bc6c25]/60 rounded-lg p-4">
                       <div className="flex items-start space-x-3">
                         <div className="flex-shrink-0 mt-0.5">
                           <svg
-                            className="w-5 h-5 text-blue-600"
+                            className="w-5 h-5 text-[#bc6c25]"
                             fill="currentColor"
                             viewBox="0 0 20 20"
                           >
@@ -1466,7 +1437,7 @@ export function SectionsStep({
                           </svg>
                         </div>
                         <div className="flex-1">
-                          <p className="text-blue-700 text-sm">
+                          <p className="text-[#bc6c25] text-sm">
                             <strong>Prioridad:</strong> Si configuras un footer
                             aquí, tendrá prioridad sobre el footer global del
                             template. Si no configuras nada, se usará el footer
@@ -1482,7 +1453,7 @@ export function SectionsStep({
                         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                           <div className="flex items-center justify-between mb-3">
                             <h4 className="text-sm font-medium text-[#283618]">
-                              🌍 Usando Footer Global
+                              Usando Footer Global
                             </h4>
                             <button
                               onClick={() => {
@@ -1502,9 +1473,9 @@ export function SectionsStep({
                                   );
                                 }
                               }}
-                              className="px-4 py-2 bg-[#bc6c25] text-white rounded-md hover:bg-[#a55a1f] transition-colors text-sm font-medium"
+                              className={`${btnOutlineSecondary} text-sm`}
                             >
-                              ✏️ Personalizar para esta sección
+                              Personalizar para esta sección
                             </button>
                           </div>
                           <p className="text-xs text-[#283618]/60">
@@ -1512,35 +1483,6 @@ export function SectionsStep({
                             en "Personalizar" para crear una versión específica
                             que puedes modificar independientemente.
                           </p>
-
-                          {/* Vista previa del footer global */}
-                          {data.version.content.footer_config?.fields &&
-                            data.version.content.footer_config.fields.length >
-                              0 && (
-                              <div className="mt-4 pt-4 border-t border-gray-300">
-                                <p className="text-xs font-medium text-[#283618]/70 mb-2">
-                                  Vista previa del footer global:
-                                </p>
-                                <div className="bg-white p-3 rounded border border-gray-200">
-                                  <div className="text-xs text-[#283618]/50 space-y-1">
-                                    {data.version.content.footer_config.fields.map(
-                                      (field, idx) => (
-                                        <div
-                                          key={idx}
-                                          className="flex items-center gap-2"
-                                        >
-                                          <span className="w-2 h-2 bg-[#bc6c25] rounded-full"></span>
-                                          <span>{field.display_name}</span>
-                                          <span className="text-[#283618]/40">
-                                            ({field.type})
-                                          </span>
-                                        </div>
-                                      )
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            )}
                         </div>
                       </div>
                     ) : (
@@ -1561,7 +1503,7 @@ export function SectionsStep({
                             }}
                             className="px-3 py-1.5 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors"
                           >
-                            🔄 Restaurar al global
+                            Restaurar al global
                           </button>
                         </div>
 

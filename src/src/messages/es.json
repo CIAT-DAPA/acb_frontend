@@ -519,6 +519,19 @@
       "dateConfig": {
         "format": "Formato de Fecha"
       },
+      "dateRangeConfig": {
+        "format": "Formato de Fecha",
+        "startDateSection": "Fecha de Inicio",
+        "startDateLabel": "Etiqueta",
+        "startDateLabelPlaceholder": "Ej: Fecha Inicial, Desde, etc.",
+        "startDateDescription": "Descripción",
+        "startDateDescriptionPlaceholder": "Texto descriptivo para la fecha de inicio",
+        "endDateSection": "Fecha de Fin",
+        "endDateLabel": "Etiqueta",
+        "endDateLabelPlaceholder": "Ej: Fecha Final, Hasta, etc.",
+        "endDateDescription": "Descripción",
+        "endDateDescriptionPlaceholder": "Texto descriptivo para la fecha de fin"
+      },
       "pageNumberConfig": {
         "format": "Formato",
         "help": "Use '{page}' para página actual y '{total}' para total de páginas",

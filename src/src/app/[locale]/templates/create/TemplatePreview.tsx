@@ -273,7 +273,50 @@ export function TemplatePreview({
         const dateRangeFormat =
           (field.field_config as any)?.date_format || "DD/MM/YYYY";
 
-        // Formatear las fechas si existen, sino mostrar el formato
+        // Si el formato es DD-DD, MMMM YYYY, combinar en un solo formato
+        const isRangeFormat = dateRangeFormat === "DD-DD, MMMM YYYY";
+
+        if (isRangeFormat) {
+          // Para formato de rango combinado: "15-26, Abril 2025"
+          let rangeDisplay = "DD-DD, MMMM YYYY";
+
+          if (
+            field.value &&
+            typeof field.value === "object" &&
+            "start_date" in field.value &&
+            "end_date" in field.value &&
+            field.value.start_date &&
+            field.value.end_date
+          ) {
+            const startDateVal =
+              typeof field.value.start_date === "string"
+                ? new Date(field.value.start_date)
+                : (field.value.start_date as Date);
+            const endDateVal =
+              typeof field.value.end_date === "string"
+                ? new Date(field.value.end_date)
+                : (field.value.end_date as Date);
+
+            const startDay = startDateVal.getDate();
+            const endDay = endDateVal.getDate();
+            const month = endDateVal.toLocaleDateString("es", {
+              month: "long",
+            });
+            const year = endDateVal.getFullYear();
+
+            rangeDisplay = `${startDay}-${endDay}, ${
+              month.charAt(0).toUpperCase() + month.slice(1)
+            } ${year}`;
+          }
+
+          return (
+            <div key={key} style={fieldStyles}>
+              {rangeDisplay}
+            </div>
+          );
+        }
+
+        // Para formatos normales: mostrar dos fechas separadas
         let startDateDisplay = dateRangeFormat;
         let endDateDisplay = dateRangeFormat;
 
@@ -523,13 +566,66 @@ export function TemplatePreview({
             backgroundRepeat: "no-repeat",
           }}
         >
-          {/* 
-            NOTA: El header global ya NO se renderiza aquí.
-            Ahora se renderiza dentro de cada sección con lógica de prioridad:
-            - Si la sección tiene header_config → se usa el header de sección
-            - Si NO tiene header_config → se usa el header global
-            Esto permite que cada sección pueda tener su propio header o usar el global.
-          */}
+          {/* Header Global (solo cuando NO hay secciones) */}
+          {sections.length === 0 &&
+            headerConfig?.fields &&
+            headerConfig.fields.length > 0 && (
+              <div
+                className={`w-full ${
+                  headerConfig.style_config?.fields_layout === "vertical"
+                    ? "flex flex-col"
+                    : "flex items-center"
+                }`}
+                style={{
+                  backgroundColor:
+                    headerConfig.style_config?.background_color ||
+                    "transparent",
+                  backgroundImage: headerConfig.style_config?.background_image
+                    ? `url("${getBackgroundImageUrl(
+                        headerConfig.style_config.background_image
+                      )}")`
+                    : undefined,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  backgroundRepeat: "no-repeat",
+                  color:
+                    headerConfig.style_config?.primary_color ||
+                    globalStyles.color,
+                  fontSize: headerConfig.style_config?.font_size
+                    ? `${headerConfig.style_config.font_size}px`
+                    : globalStyles.fontSize,
+                  fontWeight: headerConfig.style_config?.font_weight || "400",
+                  fontStyle: headerConfig.style_config?.font_style || "normal",
+                  textDecoration:
+                    headerConfig.style_config?.text_decoration || "none",
+                  textAlign:
+                    (headerConfig.style_config?.text_align as
+                      | "left"
+                      | "center"
+                      | "right") || "center",
+                  padding: headerConfig.style_config?.padding || "16px",
+                  margin: headerConfig.style_config?.margin,
+                  gap: headerConfig.style_config?.gap || "16px",
+                  ...(headerConfig.style_config?.border_width && {
+                    border: `${headerConfig.style_config.border_width} solid ${
+                      headerConfig.style_config.border_color || "#000000"
+                    }`,
+                  }),
+                  ...(headerConfig.style_config?.border_radius && {
+                    borderRadius: headerConfig.style_config.border_radius,
+                  }),
+                }}
+              >
+                {headerConfig.fields.map((field, index) =>
+                  renderField(
+                    field,
+                    `header-global-${index}`,
+                    headerConfig.style_config,
+                    headerConfig.style_config?.fields_layout || "horizontal"
+                  )
+                )}
+              </div>
+            )}
 
           {sections.length === 0 ? (
             <div className="text-center py-12 text-[#283618]/50 flex-1 flex items-center justify-center flex-col">
@@ -866,12 +962,66 @@ export function TemplatePreview({
             )
           )}
 
-          {/* 
-            NOTA: El footer global ya NO se renderiza aquí.
-            Ahora se renderiza dentro de cada sección con lógica de prioridad:
-            - Si la sección tiene footer_config → se usa el footer de sección
-            - Si NO tiene footer_config → se usa el footer global
-          */}
+          {/* Footer Global (solo cuando NO hay secciones) */}
+          {sections.length === 0 &&
+            footerConfig?.fields &&
+            footerConfig.fields.length > 0 && (
+              <div
+                className={`w-full ${
+                  footerConfig.style_config?.fields_layout === "vertical"
+                    ? "flex flex-col"
+                    : "flex items-center"
+                }`}
+                style={{
+                  backgroundColor:
+                    footerConfig.style_config?.background_color ||
+                    "transparent",
+                  backgroundImage: footerConfig.style_config?.background_image
+                    ? `url("${getBackgroundImageUrl(
+                        footerConfig.style_config.background_image
+                      )}")`
+                    : undefined,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  backgroundRepeat: "no-repeat",
+                  color:
+                    footerConfig.style_config?.primary_color ||
+                    globalStyles.color,
+                  fontSize: footerConfig.style_config?.font_size
+                    ? `${footerConfig.style_config.font_size}px`
+                    : globalStyles.fontSize,
+                  fontWeight: footerConfig.style_config?.font_weight || "400",
+                  fontStyle: footerConfig.style_config?.font_style || "normal",
+                  textDecoration:
+                    footerConfig.style_config?.text_decoration || "none",
+                  textAlign:
+                    (footerConfig.style_config?.text_align as
+                      | "left"
+                      | "center"
+                      | "right") || "center",
+                  padding: footerConfig.style_config?.padding || "16px",
+                  margin: footerConfig.style_config?.margin,
+                  gap: footerConfig.style_config?.gap || "16px",
+                  ...(footerConfig.style_config?.border_width && {
+                    border: `${footerConfig.style_config.border_width} solid ${
+                      footerConfig.style_config.border_color || "#000000"
+                    }`,
+                  }),
+                  ...(footerConfig.style_config?.border_radius && {
+                    borderRadius: footerConfig.style_config.border_radius,
+                  }),
+                }}
+              >
+                {footerConfig.fields.map((field, index) =>
+                  renderField(
+                    field,
+                    `footer-global-${index}`,
+                    footerConfig.style_config,
+                    footerConfig.style_config?.fields_layout || "horizontal"
+                  )
+                )}
+              </div>
+            )}
         </div>
       </div>
 

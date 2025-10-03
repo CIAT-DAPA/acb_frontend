@@ -44,21 +44,50 @@ export function AdaptiveSvgIcon({
             svgElement.setAttribute("viewBox", "0 0 24 24");
           }
 
-          // Hacer que todos los paths usen currentColor
+          // Hacer que todos los paths usen currentColor de manera inteligente
           const paths = svgElement.querySelectorAll(
             "path, circle, rect, polygon, polyline, line, ellipse"
           );
+
+          // Detectar si el SVG es principalmente stroke-based o fill-based
+          let hasStrokes = 0;
+          let hasFills = 0;
           paths.forEach((path) => {
-            // Solo cambiar fill si no es 'none'
-            if (path.getAttribute("fill") !== "none") {
-              path.setAttribute("fill", "currentColor");
-            }
-            // Cambiar stroke también
-            if (
-              path.getAttribute("stroke") &&
-              path.getAttribute("stroke") !== "none"
-            ) {
-              path.setAttribute("stroke", "currentColor");
+            const stroke = path.getAttribute("stroke");
+            const fill = path.getAttribute("fill");
+
+            if (stroke && stroke !== "none") hasStrokes++;
+            if (fill && fill !== "none" && fill !== "") hasFills++;
+          });
+
+          // Si tiene más strokes que fills, es un icono de contorno
+          const isStrokeBased = hasStrokes > hasFills;
+
+          paths.forEach((path) => {
+            const stroke = path.getAttribute("stroke");
+            const fill = path.getAttribute("fill");
+
+            if (isStrokeBased) {
+              // Para iconos basados en stroke (contorno):
+              // - Aplicar currentColor solo al stroke
+              // - Dejar fills como transparentes o none
+              if (stroke && stroke !== "none") {
+                path.setAttribute("stroke", "currentColor");
+              }
+              // Si tiene fill que no es none, convertirlo a none para evitar bloques sólidos
+              if (fill && fill !== "none" && fill !== "") {
+                path.setAttribute("fill", "none");
+              }
+            } else {
+              // Para iconos basados en fill (relleno):
+              // - Aplicar currentColor solo al fill
+              // - Mantener stroke si existe
+              if (fill && fill !== "none") {
+                path.setAttribute("fill", "currentColor");
+              }
+              if (stroke && stroke !== "none") {
+                path.setAttribute("stroke", "currentColor");
+              }
             }
           });
 

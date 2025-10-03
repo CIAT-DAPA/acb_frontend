@@ -6,6 +6,7 @@ export * from "./TextFieldTypeConfig";
 export * from "./TextWithIconFieldTypeConfig";
 export * from "./NumberFieldTypeConfig";
 export * from "./DateFieldTypeConfig";
+export * from "./DateRangeFieldTypeConfig";
 export * from "./PageNumberFieldTypeConfig";
 export * from "./ListFieldTypeConfig";
 export * from "./SelectWithIconsFieldTypeConfig";

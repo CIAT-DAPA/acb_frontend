@@ -6,6 +6,7 @@ import { TextFieldTypeConfig } from "./TextFieldTypeConfig";
 import { TextWithIconFieldTypeConfig } from "./TextWithIconFieldTypeConfig";
 import { NumberFieldTypeConfig } from "./NumberFieldTypeConfig";
 import { DateFieldTypeConfig } from "./DateFieldTypeConfig";
+import { DateRangeFieldTypeConfig } from "./DateRangeFieldTypeConfig";
 import { PageNumberFieldTypeConfig } from "./PageNumberFieldTypeConfig";
 import { ListFieldTypeConfig } from "./ListFieldTypeConfig";
 import { SelectWithIconsFieldTypeConfig } from "./SelectWithIconsFieldTypeConfig";
@@ -18,6 +19,7 @@ const FIELD_TYPE_COMPONENTS: Record<string, FieldTypeComponent> = {
   text_with_icon: TextWithIconFieldTypeConfig,
   number: NumberFieldTypeConfig,
   date: DateFieldTypeConfig,
+  date_range: DateRangeFieldTypeConfig,
   page_number: PageNumberFieldTypeConfig,
   list: ListFieldTypeConfig,
   select_with_icons: SelectWithIconsFieldTypeConfig,

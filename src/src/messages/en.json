@@ -518,6 +518,19 @@
       "dateConfig": {
         "format": "Date Format"
       },
+      "dateRangeConfig": {
+        "format": "Date Format",
+        "startDateSection": "Start Date",
+        "startDateLabel": "Label",
+        "startDateLabelPlaceholder": "E.g: Start Date, From, etc.",
+        "startDateDescription": "Description",
+        "startDateDescriptionPlaceholder": "Descriptive text for start date",
+        "endDateSection": "End Date",
+        "endDateLabel": "Label",
+        "endDateLabelPlaceholder": "E.g: End Date, To, etc.",
+        "endDateDescription": "Description",
+        "endDateDescriptionPlaceholder": "Descriptive text for end date"
+      },
       "pageNumberConfig": {
         "format": "Format",
         "help": "Use '{page}' for current page and '{total}' for total pages",

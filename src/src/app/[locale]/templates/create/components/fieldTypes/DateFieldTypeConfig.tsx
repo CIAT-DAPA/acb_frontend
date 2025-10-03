@@ -31,7 +31,8 @@ export const DateFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
         <option value="DD/MM/YYYY">DD/MM/YYYY</option>
         <option value="MM/DD/YYYY">MM/DD/YYYY</option>
         <option value="DD-MM-YYYY">DD-MM-YYYY</option>
-        <option value="dddd, DD - MM">Nombre día, DD - MM</option>
+        <option value="dddd, DD - MM">dddd, DD - MM</option>
+        <option value="DD, MMMM YYYY">DD, MMMM YYYY</option>
       </select>
     </div>
   );

@@ -6,6 +6,7 @@ import {
   Field,
   FIELD_TYPES,
   TextWithIconFieldConfig,
+  DateRangeFieldConfig,
   PageNumberFieldConfig,
 } from "../../../../../types/template";
 import { ValidationRules, StyleConfig } from "../../../../../types/core";
@@ -129,6 +130,21 @@ export function FieldEditor({
           subtype: currentConfig?.subtype || "short",
           icon_options: currentConfig?.icon_options || [""],
           selected_icon: currentConfig?.selected_icon, // Preservar el icono seleccionado
+        },
+      } as Field;
+    }
+
+    // Para date_range, asegurar que tenga los campos requeridos
+    if (currentField.type === "date_range") {
+      const currentConfig = fieldToSave.field_config as DateRangeFieldConfig;
+      fieldToSave = {
+        ...fieldToSave,
+        field_config: {
+          date_format: currentConfig?.date_format || "YYYY-MM-DD",
+          start_date_label: currentConfig?.start_date_label || "Start Date",
+          start_date_description: currentConfig?.start_date_description || "",
+          end_date_label: currentConfig?.end_date_label || "End Date",
+          end_date_description: currentConfig?.end_date_description || "",
         },
       } as Field;
     }
