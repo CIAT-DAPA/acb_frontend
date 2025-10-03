@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { CreateTemplateData, Field } from "../../../../types/template";
 import { StyleConfig } from "../../../../types/core";
 import { getEffectiveFieldStyles } from "../../../../utils/styleInheritance";
+import { SmartIcon } from "./components/AdaptiveSvgIcon";
 
 interface TemplatePreviewProps {
   data: CreateTemplateData;
@@ -177,17 +178,19 @@ export function TemplatePreview({
             : null);
 
         return (
-          <div key={key} style={fieldStyles} className="flex items-center">
+          <div
+            key={key}
+            style={fieldStyles}
+            className="flex items-center gap-2"
+          >
             {selectedIcon ? (
               selectedIcon.startsWith("http") ||
               selectedIcon.startsWith("/") ? (
-                <img
+                <SmartIcon
                   src={selectedIcon}
+                  className="w-6 h-6"
+                  color={fieldStyles.color}
                   alt="Icon"
-                  className="w-6 h-6 object-contain"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
                 />
               ) : (
                 <span className="text-lg">{selectedIcon}</span>
@@ -237,16 +240,11 @@ export function TemplatePreview({
             className={`flex items-center ${justifyClass}`}
           >
             {iconToShow ? (
-              <img
+              <SmartIcon
                 src={iconToShow}
+                className="w-8 h-8"
+                color={effectiveStyles.primary_color || fieldStyles.color}
                 alt="Selected icon"
-                className="w-8 h-8 object-contain"
-                style={{
-                  color: effectiveStyles.primary_color || fieldStyles.color,
-                }}
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = "none";
-                }}
               />
             ) : (
               <span className="text-2xl">❓</span>

@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { useAuth } from "../../../../hooks/useAuth";
+import { useTemplateAutosave } from "../../../../hooks/useTemplateAutosave";
 import {
   Stepper,
   StepContent,
@@ -20,6 +21,7 @@ import { GeneralConfigStep } from "./steps/GeneralConfigStep";
 import { HeaderFooterStep } from "./steps/HeaderFooterStep";
 import { SectionsStep } from "./steps/SectionsStep";
 import { TemplatePreview } from "./TemplatePreview";
+import { AutosaveIndicator } from "./components/AutosaveIndicator";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
@@ -122,6 +124,25 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
   ]);
 
   const [isLoading, setIsLoading] = useState(false);
+
+  // Función para restaurar datos desde autoguardado
+  const handleRestore = useCallback(
+    (restoredData: CreateTemplateData, restoredStep: TemplateCreationStep) => {
+      setCreationState((prev) => ({
+        ...prev,
+        data: restoredData,
+        currentStep: restoredStep,
+      }));
+    },
+    []
+  );
+
+  // Hook de autoguardado
+  const { saveNow, clearAutosave, lastSaved } = useTemplateAutosave(
+    creationState.data,
+    creationState.currentStep,
+    handleRestore
+  );
 
   // Configuración de pasos
   const steps: StepConfig[] = useMemo(
@@ -258,11 +279,17 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
 
     setIsLoading(true);
     try {
+      // Guardar antes de enviar
+      saveNow();
+
       // Aquí iría la llamada a la API para crear la plantilla
       console.log("Creando plantilla:", creationState.data);
 
       // Simular API call
       await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Limpiar autoguardado después de éxito
+      clearAutosave();
 
       // Redirigir o mostrar mensaje de éxito
       alert(t("success.templateCreated"));
@@ -272,7 +299,7 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [creationState.data, isCurrentStepValid, t]);
+  }, [creationState.data, isCurrentStepValid, t, saveNow, clearAutosave]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -288,8 +315,15 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
         </div>
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-[#283618]">{t("title")}</h1>
-          <p className="mt-2 text-[#283618]/70">{t("subtitle")}</p>
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-[#283618]">
+                {t("title")}
+              </h1>
+              <p className="mt-2 text-[#283618]/70">{t("subtitle")}</p>
+            </div>
+            <AutosaveIndicator lastSaved={lastSaved} />
+          </div>
         </div>
 
         {/* Stepper */}
