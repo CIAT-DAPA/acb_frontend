@@ -22,6 +22,7 @@ export function combineStyles(
     if (parentStyle.background_color)
       combined.background_color = parentStyle.background_color;
     if (parentStyle.font_size) combined.font_size = parentStyle.font_size;
+    if (parentStyle.icon_size) combined.icon_size = parentStyle.icon_size;
     if (parentStyle.font_weight) combined.font_weight = parentStyle.font_weight;
     if (parentStyle.font_style) combined.font_style = parentStyle.font_style;
     if (parentStyle.text_decoration)
@@ -43,6 +44,7 @@ export function combineStyles(
     if (childStyle.background_color)
       combined.background_color = childStyle.background_color;
     if (childStyle.font_size) combined.font_size = childStyle.font_size;
+    if (childStyle.icon_size) combined.icon_size = childStyle.icon_size;
     if (childStyle.font_weight) combined.font_weight = childStyle.font_weight;
     if (childStyle.font_style) combined.font_style = childStyle.font_style;
     if (childStyle.text_decoration)
@@ -120,6 +122,9 @@ export function inheritStylesFromContainer(
   }
   if (containerStyle.font_size) {
     inheritedStyles.font_size = containerStyle.font_size;
+  }
+  if (containerStyle.icon_size) {
+    inheritedStyles.icon_size = containerStyle.icon_size;
   }
   if (containerStyle.font_weight) {
     inheritedStyles.font_weight = containerStyle.font_weight;
@@ -231,6 +236,9 @@ export function getInheritableStyles(
   }
   if (containerStyle.font_size) {
     inheritable.font_size = containerStyle.font_size;
+  }
+  if (containerStyle.icon_size) {
+    inheritable.icon_size = containerStyle.icon_size;
   }
   if (containerStyle.font_weight) {
     inheritable.font_weight = containerStyle.font_weight;

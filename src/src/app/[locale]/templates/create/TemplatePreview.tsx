@@ -130,7 +130,7 @@ export function TemplatePreview({
       backgroundImage: effectiveStyles.background_image
         ? `url("${getBackgroundImageUrl(effectiveStyles.background_image)}")`
         : undefined,
-      backgroundSize: "contain",
+      backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
       padding: effectiveStyles.padding,
@@ -177,6 +177,8 @@ export function TemplatePreview({
             ? field.field_config.icon_options[0]
             : null);
 
+        const iconSize = effectiveStyles.icon_size || 24;
+
         return (
           <div
             key={key}
@@ -188,15 +190,17 @@ export function TemplatePreview({
               selectedIcon.startsWith("/") ? (
                 <SmartIcon
                   src={selectedIcon}
-                  className="w-6 h-6"
+                  style={{ width: `${iconSize}px`, height: `${iconSize}px` }}
                   color={fieldStyles.color}
                   alt="Icon"
                 />
               ) : (
-                <span className="text-lg">{selectedIcon}</span>
+                <span style={{ fontSize: `${iconSize}px` }}>
+                  {selectedIcon}
+                </span>
               )
             ) : (
-              <span className="text-lg">📄</span>
+              <span style={{ fontSize: `${iconSize}px` }}>📄</span>
             )}
             <span>{textWithIconValue}</span>
           </div>
@@ -233,6 +237,8 @@ export function TemplatePreview({
             ? "justify-end"
             : "justify-center";
 
+        const selectIconSize = effectiveStyles.icon_size || 32;
+
         return (
           <div
             key={key}
@@ -242,12 +248,15 @@ export function TemplatePreview({
             {iconToShow ? (
               <SmartIcon
                 src={iconToShow}
-                className="w-8 h-8"
+                style={{
+                  width: `${selectIconSize}px`,
+                  height: `${selectIconSize}px`,
+                }}
                 color={effectiveStyles.primary_color || fieldStyles.color}
                 alt="Selected icon"
               />
             ) : (
-              <span className="text-2xl">❓</span>
+              <span style={{ fontSize: `${selectIconSize}px` }}>❓</span>
             )}
           </div>
         );
@@ -807,6 +816,15 @@ export function TemplatePreview({
                                 backgroundColor:
                                   block.style_config?.background_color ||
                                   undefined,
+                                backgroundImage: block.style_config
+                                  ?.background_image
+                                  ? `url("${getBackgroundImageUrl(
+                                      block.style_config.background_image
+                                    )}")`
+                                  : undefined,
+                                backgroundSize: "cover",
+                                backgroundPosition: "center",
+                                backgroundRepeat: "no-repeat",
                                 color:
                                   block.style_config?.primary_color ||
                                   undefined,
@@ -820,7 +838,7 @@ export function TemplatePreview({
                                   block.style_config?.border_color || "#e5e7eb",
                                 borderWidth: block.style_config?.border_width
                                   ? `${block.style_config.border_width}px`
-                                  : "1px",
+                                  : "0px",
                                 borderStyle: "solid",
                                 borderRadius: block.style_config?.border_radius
                                   ? `${block.style_config.border_radius}px`

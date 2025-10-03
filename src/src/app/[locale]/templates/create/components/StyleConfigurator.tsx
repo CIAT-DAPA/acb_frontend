@@ -58,6 +58,9 @@ export interface StyleConfiguratorProps {
     textDecoration?: boolean;
     textAlign?: boolean;
 
+    // Configuración de iconos
+    iconSize?: boolean;
+
     // Configuración de espacios y bordes
     padding?: boolean;
     margin?: boolean;
@@ -384,6 +387,15 @@ export function StyleConfigurator({
             8,
             72,
             16
+          )}
+
+        {enabledFields.iconSize &&
+          renderNumberField(
+            "icon_size",
+            getLabel("iconSize", "Tamaño de Iconos (px)"),
+            8,
+            128,
+            24
           )}
 
         {enabledFields.fontWeight && (

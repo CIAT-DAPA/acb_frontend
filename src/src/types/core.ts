@@ -36,6 +36,7 @@ export interface StyleConfig {
   fields_layout?: "horizontal" | "vertical"; // Layout de los campos
   list_style_type?: "disc" | "circle" | "square" | "none"; // Estilo de bullet points para listas
   list_items_layout?: "vertical" | "horizontal" | "grid-2" | "grid-3"; // Layout de items dentro de la lista
+  icon_size?: number; // Tamaño de los iconos en píxeles
   [key: string]: string | number | boolean | undefined; // Para propiedades adicionales
 }
 

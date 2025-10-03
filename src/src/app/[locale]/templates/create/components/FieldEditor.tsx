@@ -453,6 +453,9 @@ export function FieldEditor({
           enabledFields={{
             primaryColor: true,
             fontSize: true,
+            iconSize:
+              currentField.type === "text_with_icon" ||
+              currentField.type === "select_with_icons",
             fontWeight: true,
             fontStyle: true,
             textDecoration: true,

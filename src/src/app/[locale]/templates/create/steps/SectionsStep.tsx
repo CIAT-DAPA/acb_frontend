@@ -375,6 +375,7 @@ function BlockConfiguration({
             enabledFields={{
               primaryColor: true,
               backgroundColor: true,
+              backgroundImage: true,
               borderColor: true,
               borderWidth: true,
               borderRadius: true,
