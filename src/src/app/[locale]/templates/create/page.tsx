@@ -1,6 +1,6 @@
 "use client";
 
-import CreateTemplatePage from './CreateTemplatePage';
+import CreateTemplatePage from './FormTemplatePage';
 import { ProtectedRoute } from "../../../../components/ProtectedRoute";
 
 export default function CreateTemplate() {

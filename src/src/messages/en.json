@@ -170,12 +170,15 @@
   "CreateTemplate": {
     "title": "Create New Template",
     "subtitle": "Design a custom template for your agroclimatic bulletins",
+    "editTitle": "Edit Template",
+    "editSubtitle": "Update and improve your agroclimatic bulletin template",
     "back": "Back to Templates",
     "next": "Next",
     "previous": "Previous",
     "finish": "Create Template",
     "creating": "Creating...",
     "success": "Template created successfully!",
+    "updateSuccess": "Template updated successfully!",
     "error": "Error creating template: {error}",
     "backToTemplates": "Back to Templates",
     "steps": {
@@ -199,7 +202,8 @@
     "navigation": {
       "next": "Next",
       "previous": "Previous",
-      "finish": "Create Template"
+      "finish": "Create Template",
+      "update": "Update Template"
     },
     "basicInfo": {
       "title": "Basic Information",

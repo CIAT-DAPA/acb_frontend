@@ -7,14 +7,19 @@ interface AutosaveData {
   lastSaved: string;
 }
 
-const AUTOSAVE_KEY = "template_creation_autosave";
+const AUTOSAVE_KEY_PREFIX = "template_creation_autosave";
 const AUTOSAVE_INTERVAL = 3000; // Guardar cada 3 segundos
 
 export function useTemplateAutosave(
   data: CreateTemplateData,
   currentStep: TemplateCreationStep,
-  onRestore?: (data: CreateTemplateData, step: TemplateCreationStep) => void
+  onRestore?: (data: CreateTemplateData, step: TemplateCreationStep) => void,
+  templateId?: string // ID del template en modo edit
 ) {
+  // Generar key única: si es edit, incluir el templateId
+  const AUTOSAVE_KEY = templateId
+    ? `${AUTOSAVE_KEY_PREFIX}_edit_${templateId}`
+    : `${AUTOSAVE_KEY_PREFIX}_create`;
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasRestoredRef = useRef(false);
   const [lastSaved, setLastSaved] = useState<Date | undefined>(undefined);

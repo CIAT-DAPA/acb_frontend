@@ -29,20 +29,26 @@ import { TemplateAPIService } from "../../../../services/templateService";
 import { useToast } from "../../../../components/Toast";
 
 interface CreateTemplatePageProps {
-  // Podríamos recibir props como grupos disponibles, usuario actual, etc.
-  // Por ahora no necesitamos props específicos
+  mode?: "create" | "edit";
+  templateId?: string;
+  initialData?: CreateTemplateData;
 }
 
-export default function CreateTemplatePage({}: CreateTemplatePageProps) {
+export default function CreateTemplatePage({
+  mode = "create",
+  templateId,
+  initialData,
+}: CreateTemplatePageProps) {
   const t = useTranslations("CreateTemplate");
   const { userInfo } = useAuth();
   const router = useRouter();
   const { showToast } = useToast();
+  const isEditMode = mode === "edit";
 
   // Estado del wizard
   const [creationState, setCreationState] = useState<TemplateCreationState>({
     currentStep: "basic-info",
-    data: {
+    data: initialData || {
       master: {
         template_name: "",
         description: "",
@@ -58,7 +64,7 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
       },
       version: {
         version_num: "1",
-        commit_message: "Versión inicial",
+        commit_message: isEditMode ? "Versión actualizada" : "Versión inicial",
         log: {
           created_at: new Date().toISOString(),
           creator_user_id: "",
@@ -146,7 +152,8 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
   const { saveNow, clearAutosave, lastSaved } = useTemplateAutosave(
     creationState.data,
     creationState.currentStep,
-    handleRestore
+    handleRestore,
+    templateId // Pasar el templateId para generar key única en modo edit
   );
 
   // Configuración de pasos
@@ -278,7 +285,7 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
     [goToStep]
   );
 
-  // Finalizar creación
+  // Finalizar creación o edición
   const handleFinish = useCallback(async () => {
     if (!isCurrentStepValid) return;
 
@@ -287,57 +294,110 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
       // Guardar antes de enviar
       saveNow();
 
-      // Preparar el objeto master sin el log
-      const { log, ...masterDataWithoutLog } = creationState.data.master;
+      if (isEditMode && templateId) {
+        // MODO EDICIÓN: Actualizar template existente
+        const { log, ...masterDataWithoutLog } = creationState.data.master;
 
-      // 1. Crear el template master
-      const masterResponse = await TemplateAPIService.createTemplate(
-        masterDataWithoutLog
-      );
-
-      if (!masterResponse.success || !masterResponse.data) {
-        throw new Error(
-          masterResponse.message || "Error al crear el template master"
+        // 1. Actualizar el template master
+        const masterResponse = await TemplateAPIService.updateTemplate(
+          templateId,
+          masterDataWithoutLog
         );
-      }
 
-      const createdTemplate = masterResponse.data;
+        if (!masterResponse.success) {
+          throw new Error(
+            masterResponse.message || "Error al actualizar el template master"
+          );
+        }
 
-      // 2. Crear la versión del template usando el ID del template recién creado
-      // Preparar el objeto version sin el log
-      const { log: versionLog, ...versionDataWithoutLog } =
-        creationState.data.version;
+        // 2. Crear una nueva versión del template
+        const { log: versionLog, ...versionDataWithoutLog } =
+          creationState.data.version;
 
-      // El backend devuelve 'id' en lugar de '_id'
-      const templateId = (createdTemplate as any).id || createdTemplate._id;
-
-      const versionResponse = await TemplateAPIService.createTemplateVersion(
-        templateId,
-        versionDataWithoutLog
-      );
-
-      if (!versionResponse.success) {
-        throw new Error(
-          versionResponse.message || "Error al crear la versión del template"
+        const versionResponse = await TemplateAPIService.createTemplateVersion(
+          templateId,
+          versionDataWithoutLog
         );
+
+        if (!versionResponse.success) {
+          throw new Error(
+            versionResponse.message ||
+              "Error al crear la nueva versión del template"
+          );
+        }
+
+        // Limpiar autoguardado después de éxito
+        clearAutosave();
+
+        // Mostrar toast de éxito
+        showToast(
+          t("updateSuccess") || "Plantilla actualizada exitosamente",
+          "success",
+          3000
+        );
+
+        // Redirigir a la página de templates después de un breve delay
+        setTimeout(() => {
+          router.push("/templates");
+        }, 1000);
+      } else {
+        // MODO CREACIÓN: Crear nuevo template
+        const { log, ...masterDataWithoutLog } = creationState.data.master;
+
+        // 1. Crear el template master
+        const masterResponse = await TemplateAPIService.createTemplate(
+          masterDataWithoutLog
+        );
+
+        if (!masterResponse.success || !masterResponse.data) {
+          throw new Error(
+            masterResponse.message || "Error al crear el template master"
+          );
+        }
+
+        const createdTemplate = masterResponse.data;
+
+        // 2. Crear la versión del template usando el ID del template recién creado
+        const { log: versionLog, ...versionDataWithoutLog } =
+          creationState.data.version;
+
+        // El backend devuelve 'id' en lugar de '_id'
+        const newTemplateId =
+          (createdTemplate as any).id || createdTemplate._id;
+
+        const versionResponse = await TemplateAPIService.createTemplateVersion(
+          newTemplateId,
+          versionDataWithoutLog
+        );
+
+        if (!versionResponse.success) {
+          throw new Error(
+            versionResponse.message || "Error al crear la versión del template"
+          );
+        }
+
+        // Limpiar autoguardado después de éxito
+        clearAutosave();
+
+        // Mostrar toast de éxito
+        showToast(
+          t("success") || "Plantilla creada exitosamente",
+          "success",
+          3000
+        );
+
+        // Redirigir a la página de templates después de un breve delay
+        setTimeout(() => {
+          router.push("/templates");
+        }, 1000);
       }
-
-      // Limpiar autoguardado después de éxito
-      clearAutosave();
-
-      // Mostrar toast de éxito
-      showToast(
-        t("success") || "Plantilla creada exitosamente",
-        "success",
-        3000
-      );
-
-      // Redirigir a la página de templates después de un breve delay
-      setTimeout(() => {
-        router.push("/templates");
-      }, 1000);
     } catch (error) {
-      console.error("Error creando plantilla:", error);
+      console.error(
+        isEditMode
+          ? "Error actualizando plantilla:"
+          : "Error creando plantilla:",
+        error
+      );
 
       // Mostrar toast de error con el mensaje específico
       const errorMessage =
@@ -354,6 +414,8 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
   }, [
     creationState.data,
     isCurrentStepValid,
+    isEditMode,
+    templateId,
     t,
     saveNow,
     clearAutosave,
@@ -366,7 +428,7 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center gap-4 mb-2">
           <Link
-            href="/templates/visual-resources"
+            href="/templates"
             className="flex items-center gap-2 text-[#283618]/60 hover:text-[#283618] transition-colors"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -378,9 +440,11 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
           <div className="flex items-start justify-between">
             <div>
               <h1 className="text-3xl font-bold text-[#283618]">
-                {t("title")}
+                {isEditMode ? t("editTitle") : t("title")}
               </h1>
-              <p className="mt-2 text-[#283618]/70">{t("subtitle")}</p>
+              <p className="mt-2 text-[#283618]/70">
+                {isEditMode ? t("editSubtitle") : t("subtitle")}
+              </p>
             </div>
             <AutosaveIndicator lastSaved={lastSaved} />
           </div>
@@ -443,7 +507,9 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
                 isLoading={isLoading}
                 nextLabel={t("navigation.next")}
                 previousLabel={t("navigation.previous")}
-                finishLabel={t("navigation.finish")}
+                finishLabel={
+                  isEditMode ? t("navigation.update") : t("navigation.finish")
+                }
               />
             </div>
           </div>

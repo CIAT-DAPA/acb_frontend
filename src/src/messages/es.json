@@ -170,12 +170,15 @@
   "CreateTemplate": {
     "title": "Crear Nueva Plantilla",
     "subtitle": "Diseña una plantilla personalizada para tus boletines agroclimáticos",
+    "editTitle": "Editar Plantilla",
+    "editSubtitle": "Actualiza y mejora tu plantilla de boletín agroclimático",
     "back": "Volver a Plantillas",
     "next": "Siguiente",
     "previous": "Anterior",
     "finish": "Crear Plantilla",
     "creating": "Creando...",
     "success": "¡Plantilla creada exitosamente!",
+    "updateSuccess": "¡Plantilla actualizada exitosamente!",
     "error": "Error al crear la plantilla: {error}",
     "backToTemplates": "Volver a Plantillas",
     "steps": {
@@ -199,7 +202,8 @@
     "navigation": {
       "next": "Siguiente",
       "previous": "Anterior",
-      "finish": "Crear Plantilla"
+      "finish": "Crear Plantilla",
+      "update": "Actualizar Plantilla"
     },
     "basicInfo": {
       "title": "Información Básica",
