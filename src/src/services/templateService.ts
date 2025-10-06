@@ -21,7 +21,7 @@ export class TemplateAPIService extends BaseAPIService {
     try {
       const data = await this.get<any>("/templates/");
       const templates = data.templates || data.data || data;
-      
+
       // Map API response to match TemplateMaster interface
       const mappedTemplates = templates.map((template: any) => ({
         ...template,
@@ -57,7 +57,7 @@ export class TemplateAPIService extends BaseAPIService {
     try {
       const data = await this.get<any>(`/templates/${id}`);
       const template = data.template || data.data || data;
-      
+
       // Map API response to match TemplateMaster interface
       const mappedTemplate = {
         ...template,
@@ -221,8 +221,12 @@ export class TemplateAPIService extends BaseAPIService {
     versionData: any
   ): Promise<APIResponse> {
     try {
+      console.log("Creating template version for template ID:", {
+        template_master_id: templateId,
+        ...versionData,
+      });
       const data = await this.post<any>("/templates/versions", {
-        template_id: templateId,
+        template_master_id: templateId,
         ...versionData,
       });
 

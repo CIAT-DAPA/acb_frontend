@@ -6,6 +6,7 @@ import "./globals.css";
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
 import { AuthProviderWrapper } from "@/components/AuthProviderWrapper";
+import { ToastProvider } from "@/components/Toast";
 
 type Props = {
   children: React.ReactNode;
@@ -38,9 +39,11 @@ export default async function RootLayout({ children, params }: Props) {
       <body className={`${sintony.variable} ${poppins.variable} antialiased`}>
         <AuthProviderWrapper>
           <NextIntlClientProvider messages={messages}>
-            <Navbar />
-            {children}
-            <Footer />
+            <ToastProvider>
+              <Navbar />
+              {children}
+              <Footer />
+            </ToastProvider>
           </NextIntlClientProvider>
         </AuthProviderWrapper>
       </body>

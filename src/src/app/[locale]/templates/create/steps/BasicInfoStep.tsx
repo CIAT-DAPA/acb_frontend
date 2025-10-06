@@ -3,7 +3,7 @@
 import React, { useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { CreateTemplateData } from "../../../../../types/template";
-import { ACCESS_TYPES, TEMPLATE_STATUS } from "../../../../../types/core";
+import { ACCESS_TYPES } from "../../../../../types/core";
 
 interface BasicInfoStepProps {
   data: CreateTemplateData;
@@ -63,15 +63,6 @@ export function BasicInfoStep({
       }
     },
     [updateMaster, errors, onErrorsChange]
-  );
-
-  const handleStatusChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      updateMaster({
-        status: e.target.value as (typeof TEMPLATE_STATUS)[number],
-      });
-    },
-    [updateMaster]
   );
 
   const handleAccessTypeChange = useCallback(
@@ -169,33 +160,6 @@ export function BasicInfoStep({
               {error}
             </p>
           ))}
-        </div>
-
-        {/* Estado */}
-        <div>
-          <label
-            htmlFor="status"
-            className="block text-sm font-medium text-[#283618]/70 mb-2"
-          >
-            {t("fields.status.label", { default: "Estado" })}
-          </label>
-          <select
-            id="status"
-            value={data.master.status}
-            onChange={handleStatusChange}
-            className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
-                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="borrador">
-              {t("fields.status.options.draft", { default: "Borrador" })}
-            </option>
-            <option value="activa">
-              {t("fields.status.options.active", { default: "Activa" })}
-            </option>
-            <option value="archivada">
-              {t("fields.status.options.archived", { default: "Archivada" })}
-            </option>
-          </select>
         </div>
 
         {/* Tipo de Acceso */}

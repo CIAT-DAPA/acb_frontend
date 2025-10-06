@@ -267,7 +267,7 @@ export interface TemplateVersionContent {
 export interface TemplateVersion {
   _id?: string;
   template_master_id?: string;
-  version_num: number;
+  version_num: string;
   previous_version_id?: string | null;
   log: LogObject;
   commit_message: string;

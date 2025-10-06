@@ -53,7 +53,7 @@ export interface ValidationRules {
 }
 
 // Estados comunes
-export const TEMPLATE_STATUS = ["activa", "archivada", "borrador"] as const;
+export const TEMPLATE_STATUS = ["active", "archived"] as const;
 export const ACCESS_TYPES = ["public", "restricted", "private"] as const;
 export const TEXT_ALIGN_OPTIONS = ["left", "center", "right"] as const;
 export const FONT_WEIGHT_OPTIONS = [

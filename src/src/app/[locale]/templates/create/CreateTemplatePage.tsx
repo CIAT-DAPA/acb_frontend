@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { useAuth } from "../../../../hooks/useAuth";
 import { useTemplateAutosave } from "../../../../hooks/useTemplateAutosave";
 import {
@@ -24,6 +25,8 @@ import { TemplatePreview } from "./TemplatePreview";
 import { AutosaveIndicator } from "./components/AutosaveIndicator";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { TemplateAPIService } from "../../../../services/templateService";
+import { useToast } from "../../../../components/Toast";
 
 interface CreateTemplatePageProps {
   // Podríamos recibir props como grupos disponibles, usuario actual, etc.
@@ -33,6 +36,8 @@ interface CreateTemplatePageProps {
 export default function CreateTemplatePage({}: CreateTemplatePageProps) {
   const t = useTranslations("CreateTemplate");
   const { userInfo } = useAuth();
+  const router = useRouter();
+  const { showToast } = useToast();
 
   // Estado del wizard
   const [creationState, setCreationState] = useState<TemplateCreationState>({
@@ -41,7 +46,7 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
       master: {
         template_name: "",
         description: "",
-        status: "borrador",
+        status: "active",
         log: {
           created_at: new Date().toISOString(),
           creator_user_id: "",
@@ -52,7 +57,7 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
         },
       },
       version: {
-        version_num: 1,
+        version_num: "1",
         commit_message: "Versión inicial",
         log: {
           created_at: new Date().toISOString(),
@@ -282,24 +287,79 @@ export default function CreateTemplatePage({}: CreateTemplatePageProps) {
       // Guardar antes de enviar
       saveNow();
 
-      // Aquí iría la llamada a la API para crear la plantilla
-      console.log("Creando plantilla:", creationState.data);
+      // Preparar el objeto master sin el log
+      const { log, ...masterDataWithoutLog } = creationState.data.master;
 
-      // Simular API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // 1. Crear el template master
+      const masterResponse = await TemplateAPIService.createTemplate(
+        masterDataWithoutLog
+      );
+
+      if (!masterResponse.success || !masterResponse.data) {
+        throw new Error(
+          masterResponse.message || "Error al crear el template master"
+        );
+      }
+
+      const createdTemplate = masterResponse.data;
+
+      // 2. Crear la versión del template usando el ID del template recién creado
+      // Preparar el objeto version sin el log
+      const { log: versionLog, ...versionDataWithoutLog } =
+        creationState.data.version;
+
+      // El backend devuelve 'id' en lugar de '_id'
+      const templateId = (createdTemplate as any).id || createdTemplate._id;
+
+      const versionResponse = await TemplateAPIService.createTemplateVersion(
+        templateId,
+        versionDataWithoutLog
+      );
+
+      if (!versionResponse.success) {
+        throw new Error(
+          versionResponse.message || "Error al crear la versión del template"
+        );
+      }
 
       // Limpiar autoguardado después de éxito
       clearAutosave();
 
-      // Redirigir o mostrar mensaje de éxito
-      alert(t("success.templateCreated"));
+      // Mostrar toast de éxito
+      showToast(
+        t("success") || "Plantilla creada exitosamente",
+        "success",
+        3000
+      );
+
+      // Redirigir a la página de templates después de un breve delay
+      setTimeout(() => {
+        router.push("/templates");
+      }, 1000);
     } catch (error) {
       console.error("Error creando plantilla:", error);
-      alert(t("error.createFailed"));
+
+      // Mostrar toast de error con el mensaje específico
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Error desconocido al crear la plantilla";
+
+      showToast(`${t("error", { error: errorMessage })}`, "error", 6000);
+
+      // NO redirigir, quedarse en el creador para que el usuario pueda corregir
     } finally {
       setIsLoading(false);
     }
-  }, [creationState.data, isCurrentStepValid, t, saveNow, clearAutosave]);
+  }, [
+    creationState.data,
+    isCurrentStepValid,
+    t,
+    saveNow,
+    clearAutosave,
+    showToast,
+    router,
+  ]);
 
   return (
     <div className="min-h-screen bg-gray-50">
