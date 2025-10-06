@@ -597,20 +597,10 @@ export function StyleConfigurator({
                     }
                     onChange={(e) => {
                       const currentSides = styleConfig.border_sides || "all";
-                      console.log(
-                        "BOTTOM checkbox - Current sides:",
-                        currentSides,
-                        "Checked:",
-                        e.target.checked
-                      );
                       if (currentSides === "all") {
                         const newValue = e.target.checked
                           ? "all"
                           : "top,left,right";
-                        console.log(
-                          "BOTTOM - Setting border_sides to:",
-                          newValue
-                        );
                         onStyleChange({
                           border_sides: newValue,
                         });
@@ -631,21 +621,11 @@ export function StyleConfigurator({
                           sides.includes("left") &&
                           sides.includes("right");
 
-                        console.log(
-                          "BOTTOM - Sides after change:",
-                          sides,
-                          "hasAll:",
-                          hasAll
-                        );
-
                         if (hasAll && sides.length === 4) {
-                          console.log("BOTTOM - Setting to 'all'");
                           onStyleChange({ border_sides: "all" });
                         } else if (sides.length > 0) {
-                          console.log("BOTTOM - Setting to:", sides.join(","));
                           onStyleChange({ border_sides: sides.join(",") });
                         } else {
-                          console.log("BOTTOM - Setting to undefined");
                           onStyleChange({ border_sides: undefined });
                         }
                       }

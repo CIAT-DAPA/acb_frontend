@@ -414,14 +414,6 @@ export function TemplatePreview({
         );
 
       case "list":
-        console.log(
-          "LIST - effectiveStyles.border_sides:",
-          effectiveStyles.border_sides
-        );
-        console.log(
-          "LIST - effectiveStyles.border_width:",
-          effectiveStyles.border_width
-        );
         const listStyleType = effectiveStyles.list_style_type || "disc";
         const showBullets = listStyleType !== "none";
         const listItemsLayout = effectiveStyles.list_items_layout || "vertical";
@@ -834,7 +826,7 @@ export function TemplatePreview({
                         className="flex-1 overflow-auto"
                       >
                         {/* Bloques de la sección */}
-                        <div className="space-y-6 w-full h-full">
+                        <div className="space-y-1 w-full h-full">
                           {section.blocks.length === 0 ? (
                             <div className="text-sm text-[#283618]/50 italic pl-4">
                               No hay bloques en esta sección
@@ -858,15 +850,18 @@ export function TemplatePreview({
                                 color:
                                   block.style_config?.primary_color ||
                                   undefined,
-                                padding: block.style_config?.padding
-                                  ? `${block.style_config.padding}px`
-                                  : "16px",
-                                margin: block.style_config?.margin
-                                  ? `${block.style_config.margin}px`
-                                  : undefined,
-                                gap: block.style_config?.gap
-                                  ? `${block.style_config.gap}px`
-                                  : "8px",
+                                padding:
+                                  block.style_config?.padding !== undefined
+                                    ? block.style_config.padding
+                                    : "16px",
+                                margin:
+                                  block.style_config?.margin !== undefined
+                                    ? block.style_config.margin
+                                    : undefined,
+                                gap:
+                                  block.style_config?.gap !== undefined
+                                    ? block.style_config.gap
+                                    : "8px",
                                 ...getBorderStyles(block.style_config),
                               };
 
