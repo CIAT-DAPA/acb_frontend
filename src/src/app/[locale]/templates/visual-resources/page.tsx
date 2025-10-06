@@ -414,8 +414,11 @@ export default function VisualResources() {
                   fileType={resource.file_type}
                   fileSize={formatFileSize(resource)}
                   tags={getResourceTags(resource)}
+                  editBtn={true}
                   onEdit={() => handleEditResource(resource)}
+                  downloadBtn={true}
                   onDownload={() => handleDownloadResource(resource)}
+                  deleteBtn={true}
                   onDelete={() => handleDeleteResource(resource)}
                   isDownloading={downloadingId === resource.id}
                 />

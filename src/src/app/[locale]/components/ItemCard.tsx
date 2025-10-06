@@ -12,11 +12,24 @@ import {
   Tag,
 } from "lucide-react";
 
-// Tipos base
-export interface BaseItemCardProps {
+// Props base compartidas
+interface BaseItemCardProps {
   id: number | string;
   name: string;
   image?: string;
+  type: "template" | "visual-resource";
+
+  // Botones de acción (opcionales y compartidos)
+  editBtn?: boolean;
+  onEdit?: () => void;
+
+  downloadBtn?: boolean;
+  onDownload?: () => void;
+  isDownloading?: boolean;
+
+  deleteBtn?: boolean;
+  onDelete?: () => void;
+  isDeleting?: boolean;
 }
 
 // Props específicas para templates
@@ -32,10 +45,6 @@ export interface VisualResourceCardProps extends BaseItemCardProps {
   fileType: "image" | "icon";
   fileSize?: string;
   tags?: string[];
-  onEdit?: () => void;
-  onDownload?: () => void;
-  onDelete?: () => void;
-  isDownloading?: boolean;
 }
 
 // Union type para todas las props
@@ -48,6 +57,51 @@ export default function ItemCard(props: ItemCardProps) {
 
   // Imagen a mostrar (usar imagen por defecto si no se proporciona)
   const displayImage = props.image || "/assets/img/imageNotFound.png";
+
+  // Renderizar botones de acción compartidos
+  const renderActionButtons = () => (
+    <>
+      {props.editBtn && props.onEdit && (
+        <button
+          onClick={props.onEdit}
+          className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
+          title={t("edit")}
+        >
+          <Edit3 className="h-4 w-4 text-white" />
+        </button>
+      )}
+
+      {props.downloadBtn && props.onDownload && (
+        <button
+          onClick={props.onDownload}
+          className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
+          title={t("download")}
+          disabled={props.isDownloading}
+        >
+          {props.isDownloading ? (
+            <Loader2 className="h-4 w-4 text-white animate-spin" />
+          ) : (
+            <Download className="h-4 w-4 text-white" />
+          )}
+        </button>
+      )}
+
+      {props.deleteBtn && props.onDelete && (
+        <button
+          onClick={props.onDelete}
+          className="p-2 bg-white/20 rounded-full hover:bg-red-500/50 transition-colors"
+          title={t("delete")}
+          disabled={props.isDeleting}
+        >
+          {props.isDeleting ? (
+            <Loader2 className="h-4 w-4 text-white animate-spin" />
+          ) : (
+            <Trash2 className="h-4 w-4 text-white" />
+          )}
+        </button>
+      )}
+    </>
+  );
 
   // Renderizar card para templates
   if (props.type === "template") {
@@ -64,22 +118,9 @@ export default function ItemCard(props: ItemCardProps) {
               e.currentTarget.src = "/assets/img/imageNotFound.png";
             }}
           />
-          {/* Overlay con acciones para templates */}
+          {/* Overlay con acciones */}
           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-            <Link
-              href={`/templates/${props.id}`}
-              className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
-              title={t("view")}
-            >
-              <Eye className="h-4 w-4 text-white" />
-            </Link>
-            <Link
-              href={`/templates/${props.id}/edit`}
-              className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
-              title={t("edit")}
-            >
-              <Edit3 className="h-4 w-4 text-white" />
-            </Link>
+            {renderActionButtons()}
           </div>
         </div>
 
@@ -119,40 +160,9 @@ export default function ItemCard(props: ItemCardProps) {
             e.currentTarget.src = "/assets/img/imageNotFound.png";
           }}
         />
-        {/* Overlay con acciones para visual resources */}
+        {/* Overlay con acciones */}
         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-          {props.onEdit && (
-            <button
-              onClick={props.onEdit}
-              className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
-              title={t("editFile")}
-            >
-              <Edit3 className="h-4 w-4 text-white cursor-pointer" />
-            </button>
-          )}
-          {props.onDownload && (
-            <button
-              onClick={props.onDownload}
-              className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
-              title={t("downloadFile")}
-              disabled={props.isDownloading}
-            >
-              {props.isDownloading ? (
-                <Loader2 className="h-4 w-4 text-white animate-spin" />
-              ) : (
-                <Download className="h-4 w-4 text-white cursor-pointer" />
-              )}
-            </button>
-          )}
-          {props.onDelete && (
-            <button
-              onClick={props.onDelete}
-              className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
-              title={t("deleteFile")}
-            >
-              <Trash2 className="h-4 w-4 text-white cursor-pointer" />
-            </button>
-          )}
+          {renderActionButtons()}
         </div>
       </div>
 
