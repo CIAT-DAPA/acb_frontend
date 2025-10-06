@@ -16,6 +16,7 @@ import {
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ProtectedRoute } from "../../../../../components/ProtectedRoute";
+import { useToast } from "../../../../../components/Toast";
 import {
   container,
   btnPrimary,
@@ -44,6 +45,7 @@ interface FileWithPreview {
 export default function UploadVisualResource() {
   const t = useTranslations("VisualResources");
   const router = useRouter();
+  const { showToast } = useToast();
 
   // Estados del formulario
   const [selectedFiles, setSelectedFiles] = useState<FileWithPreview[]>([]);
@@ -64,7 +66,6 @@ export default function UploadVisualResource() {
     [key: string]: "success" | "error" | "pending";
   }>({});
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Ref para mantener referencia actual de los archivos
   const selectedFilesRef = useRef<FileWithPreview[]>(selectedFiles);
@@ -226,12 +227,12 @@ export default function UploadVisualResource() {
   // Subir archivos
   const handleUpload = async () => {
     if (selectedFiles.length === 0) {
-      setError("Selecciona al menos un archivo para subir");
+      showToast("Selecciona al menos un archivo para subir", "error", 4000);
       return;
     }
 
     if (accessType === "group" && !selectedGroup) {
-      setError("Selecciona un grupo para el acceso por grupo");
+      showToast("Selecciona un grupo para el acceso por grupo", "error", 4000);
       return;
     }
 
@@ -309,33 +310,41 @@ export default function UploadVisualResource() {
         }
       }
 
-      // Mostrar mensaje de resultado
+      // Mostrar mensaje de resultado con toast
       if (successCount > 0 && errorCount === 0) {
-        setSuccessMessage(
+        // Redirigir después de un momento
+
+        router.push("/templates/visual-resources");
+        // Todos los archivos subidos correctamente
+        showToast(
           `Se subieron correctamente ${successCount} archivo${
             successCount !== 1 ? "s" : ""
-          }`
+          }`,
+          "success",
+          3000
         );
-        // Redirigir después de un momento
-        setTimeout(() => {
-          router.push("/templates/visual-resources");
-        }, 2000);
       } else if (successCount > 0 && errorCount > 0) {
-        setSuccessMessage(
+        // Algunos archivos subidos correctamente, otros fallaron
+        showToast(
           `Se subieron ${successCount} archivo${
             successCount !== 1 ? "s" : ""
           } correctamente. ${errorCount} archivo${
             errorCount !== 1 ? "s fallaron" : " falló"
-          }.`
+          }.`,
+          "error",
+          5000
         );
       } else {
-        setError(
-          "No se pudo subir ningún archivo. Revisa los errores e intenta de nuevo."
+        // Ningún archivo subido
+        showToast(
+          "No se pudo subir ningún archivo. Revisa los errores e intenta de nuevo.",
+          "error",
+          5000
         );
       }
     } catch (error) {
       console.error("Upload error:", error);
-      setError("Error general durante la subida de archivos");
+      showToast("Error general durante la subida de archivos", "error", 5000);
     } finally {
       setIsUploading(false);
     }
@@ -599,30 +608,6 @@ export default function UploadVisualResource() {
                         )}
                       </div>
                     ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Mensajes de error */}
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="h-5 w-5" />
-                    <div>
-                      {error.split("\n").map((line, index) => (
-                        <p key={index}>{line}</p>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Mensajes de éxito */}
-              {successMessage && (
-                <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5" />
-                    <p>{successMessage}</p>
                   </div>
                 </div>
               )}
