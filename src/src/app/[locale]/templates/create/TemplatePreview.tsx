@@ -605,7 +605,10 @@ export function TemplatePreview({
       </div>
 
       {/* Preview del documento */}
-      <div className="border-2 border-gray-300 rounded-lg overflow-hidden inline-block">
+      <div 
+        id="template-preview-container"
+        className="border-2 border-gray-300 rounded-lg overflow-hidden inline-block"
+      >
         <div
           className="bg-white flex flex-col"
           style={{
@@ -822,6 +825,7 @@ export function TemplatePreview({
 
                       {/* Sección con bloques - ocupa todo el espacio disponible */}
                       <div
+                        data-section-preview={`section-${sectionIndex}`}
                         style={sectionStyles}
                         className="flex-1 overflow-auto"
                       >

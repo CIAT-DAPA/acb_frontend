@@ -37,6 +37,7 @@ export interface TemplateCardProps extends BaseItemCardProps {
   type: "template";
   author: string;
   lastModified: string;
+  thumbnailImages?: string[]; // Array de thumbnails de las secciones
 }
 
 // Props específicas para visual resources
@@ -55,8 +56,13 @@ export default function ItemCard(props: ItemCardProps) {
     props.type === "template" ? "Templates" : "VisualResources"
   );
 
-  // Imagen a mostrar (usar imagen por defecto si no se proporciona)
-  const displayImage = props.image || "/assets/img/imageNotFound.png";
+  // Imagen a mostrar
+  let displayImage = props.image || "/assets/img/imageNotFound.png";
+  
+  // Para templates, usar el primer thumbnail si existe
+  if (props.type === "template" && props.thumbnailImages && props.thumbnailImages.length > 0) {
+    displayImage = props.thumbnailImages[0];
+  }
 
   // Renderizar botones de acción compartidos
   const renderActionButtons = () => (

@@ -326,6 +326,27 @@ export default function CreateTemplatePage({
           );
         }
 
+        // 3. Capturar y guardar thumbnails
+        try {
+          const { generateAndUploadThumbnails } = await import(
+            "../../../../utils/thumbnailCapture"
+          );
+          const thumbnailPaths = await generateAndUploadThumbnails(
+            "template-preview-container",
+            templateId
+          );
+
+          // 4. Actualizar el template con los thumbnails
+          if (thumbnailPaths.length > 0) {
+            await TemplateAPIService.updateTemplate(templateId, {
+              thumbnail_images: thumbnailPaths,
+            } as any);
+          }
+        } catch (thumbnailError) {
+          console.error("Error capturando thumbnails:", thumbnailError);
+          // No fallar la operación completa si los thumbnails fallan
+        }
+
         // Limpiar autoguardado después de éxito
         clearAutosave();
 
@@ -357,13 +378,13 @@ export default function CreateTemplatePage({
 
         const createdTemplate = masterResponse.data;
 
-        // 2. Crear la versión del template usando el ID del template recién creado
-        const { log: versionLog, ...versionDataWithoutLog } =
-          creationState.data.version;
-
         // El backend devuelve 'id' en lugar de '_id'
         const newTemplateId =
           (createdTemplate as any).id || createdTemplate._id;
+
+        // 2. Crear la versión del template usando el ID del template recién creado
+        const { log: versionLog, ...versionDataWithoutLog } =
+          creationState.data.version;
 
         const versionResponse = await TemplateAPIService.createTemplateVersion(
           newTemplateId,
@@ -374,6 +395,27 @@ export default function CreateTemplatePage({
           throw new Error(
             versionResponse.message || "Error al crear la versión del template"
           );
+        }
+
+        // 3. Capturar y guardar thumbnails
+        try {
+          const { generateAndUploadThumbnails } = await import(
+            "../../../../utils/thumbnailCapture"
+          );
+          const thumbnailPaths = await generateAndUploadThumbnails(
+            "template-preview-container",
+            newTemplateId
+          );
+
+          // 4. Actualizar el template con los thumbnails
+          if (thumbnailPaths.length > 0) {
+            await TemplateAPIService.updateTemplate(newTemplateId, {
+              thumbnail_images: thumbnailPaths,
+            } as any);
+          }
+        } catch (thumbnailError) {
+          console.error("Error capturando thumbnails:", thumbnailError);
+          // No fallar la operación completa si los thumbnails fallan
         }
 
         // Limpiar autoguardado después de éxito

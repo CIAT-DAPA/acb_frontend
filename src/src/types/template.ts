@@ -282,6 +282,7 @@ export interface TemplateMaster {
   status: TemplateStatus;
   current_version_id?: string;
   access_config: AccessConfig;
+  thumbnail_images?: string[]; // Rutas a las imágenes de preview de las secciones
 }
 
 // Tipos para el formulario de creación

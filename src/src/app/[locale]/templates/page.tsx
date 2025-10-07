@@ -253,6 +253,7 @@ export default function Templates() {
                     lastModified={new Date(
                       template.log.updated_at!
                     ).toLocaleDateString()}
+                    thumbnailImages={template.thumbnail_images}
                     editBtn={true}
                     onEdit={() =>
                       (window.location.href = `/templates/${template._id}/edit`)
