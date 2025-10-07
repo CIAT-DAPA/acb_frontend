@@ -1,6 +1,7 @@
 {
   "Navbar": {
     "templates": "Templates",
+    "bulletins": "Bulletins",
     "login": "Login",
     "logout": "Logout"
   },
@@ -156,6 +157,13 @@
     }
   },
   "Bulletins": {
+    "title": "Manage and create agroclimatic bulletins",
+    "subtitle": "Create, review and distribute agroclimatic bulletins using customizable templates.",
+    "searchPlaceholder": "Search bulletins...",
+    "createNew": "Create New",
+    "noResults": "No bulletins found",
+    "loading": "Loading bulletins...",
+    "createFirst": "Create New Bulletin",
     "by": "by",
     "lastModified": "Last modified",
     "view": "View",

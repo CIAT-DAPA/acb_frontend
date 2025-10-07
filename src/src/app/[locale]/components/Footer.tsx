@@ -39,6 +39,11 @@ export function Footer() {
                   {tNavbar("templates")}
                 </Link>
               </li>
+              <li>
+                <Link href="/bulletins" className={linkAccent}>
+                  {tNavbar("bulletins")}
+                </Link>
+              </li>
             </ul>
           </div>
 

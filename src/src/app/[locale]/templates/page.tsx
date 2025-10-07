@@ -274,7 +274,7 @@ export default function Templates() {
               <p className="text-[#283618]/60 mb-4">{t("noResults")}</p>
               <Link
                 href="/templates/create"
-                className="text-[#ffaf68] hover:underline"
+                className={btnPrimary}
               >
                 {t("createFirst")}
               </Link>

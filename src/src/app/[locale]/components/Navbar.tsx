@@ -27,12 +27,13 @@ export function Navbar() {
 
   // Navegación condicional - solo mostrar rutas que requieren auth si está autenticado
   const ALL_NAV_ITEMS = [
-    { name: t("templates"), path: "/templates", requiresAuth: true }
+    { name: t("templates"), path: "/templates", requiresAuth: true },
+    { name: t("bulletins"), path: "/bulletins", requiresAuth: true },
   ];
 
   // Filtrar items según autenticación
-  const NAV_ITEMS = ALL_NAV_ITEMS.filter(item => 
-    !item.requiresAuth || authenticated
+  const NAV_ITEMS = ALL_NAV_ITEMS.filter(
+    (item) => !item.requiresAuth || authenticated
   );
 
   // Función para toggle del menú móvil
@@ -42,12 +43,12 @@ export function Navbar() {
     const initials = [];
     if (firstName) initials.push(firstName.charAt(0).toUpperCase());
     if (lastName) initials.push(lastName.charAt(0).toUpperCase());
-    
+
     // Si no hay iniciales, usar la primera letra del nombre de usuario
     if (initials.length === 0 && userInfo?.preferred_username) {
       initials.push(userInfo.preferred_username.charAt(0).toUpperCase());
     }
-    
+
     return initials.join("") || "U";
   };
 
@@ -115,9 +116,14 @@ export function Navbar() {
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   className="flex items-center justify-center w-10 h-10 bg-[#bc6c25] text-[#fefae0] font-semibold rounded-full hover:bg-[#bc6c25]/90 transition-colors cursor-pointer"
-                  title={userInfo?.preferred_username || userInfo?.name || 'User'}
+                  title={
+                    userInfo?.preferred_username || userInfo?.name || "User"
+                  }
                 >
-                  {getInitials(userInfo?.given_name || '', userInfo?.family_name || '')}
+                  {getInitials(
+                    userInfo?.given_name || "",
+                    userInfo?.family_name || ""
+                  )}
                 </button>
 
                 {showUserMenu && (
@@ -196,13 +202,18 @@ export function Navbar() {
               <div className="space-y-2">
                 <div className="flex items-center space-x-2 text-[#fefae0]/80 pb-2 border-b border-[#283618]/60">
                   <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#bc6c25] text-[#fefae0] font-semibold cursor-pointer">
-                    {getInitials(userInfo?.given_name || '', userInfo?.family_name || '')}
+                    {getInitials(
+                      userInfo?.given_name || "",
+                      userInfo?.family_name || ""
+                    )}
                   </div>
                   <div>
                     <p className="text-sm font-medium">
                       {userInfo?.name || userInfo?.preferred_username}
                     </p>
-                    <p className="text-xs text-[#fefae0]/60">{userInfo?.email}</p>
+                    <p className="text-xs text-[#fefae0]/60">
+                      {userInfo?.email}
+                    </p>
                   </div>
                 </div>
                 <button

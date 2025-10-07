@@ -1,6 +1,7 @@
 {
   "Navbar": {
     "templates": "Plantillas",
+    "bulletins": "Boletines",
     "login": "Iniciar sesión",
     "logout": "Cerrar sesión"
   },
@@ -156,6 +157,13 @@
     }
   },
   "Bulletins": {
+    "title": "Gestiona y crea boletines agroclimáticos fácilmente",
+    "subtitle": "Crea, revisa y distribuye boletines profesionales con un flujo de trabajo colaborativo.",
+    "searchPlaceholder": "Buscar boletines...",
+    "createNew": "Crear Nuevo",
+    "noResults": "No se encontraron boletines",
+    "loading": "Cargando boletines...",
+    "createFirst": "Crear Nuevo Boletín",
     "by": "por",
     "lastModified": "Última modificación",
     "view": "Ver",
