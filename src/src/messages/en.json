@@ -169,6 +169,60 @@
     "view": "View",
     "download": "Download"
   },
+  "CreateBulletin": {
+    "title": "Create Bulletin",
+    "subtitle": "Create a new agroclimatic bulletin using a template",
+    "backToBulletins": "Back to Bulletins",
+    "success": "Bulletin created successfully",
+    "error": "Error creating bulletin",
+    "errorLoadingTemplate": "Error loading template",
+    "selectTemplate": {
+      "title": "Select Template",
+      "description": "Choose the template you want to use for your bulletin",
+      "searchPlaceholder": "Search templates...",
+      "noTemplates": "No templates available"
+    },
+    "basicInfo": {
+      "title": "Basic Information",
+      "description": "Define the name and main data for your bulletin",
+      "fields": {
+        "name": {
+          "label": "Bulletin Name",
+          "placeholder": "e.g. Agroclimatic Bulletin - January 2025",
+          "helper": "Choose a descriptive name to easily identify this bulletin"
+        }
+      }
+    },
+    "headerFooter": {
+      "title": "Header and Footer",
+      "description": "Configure the global header and footer of your bulletin",
+      "headerSection": "Global Header",
+      "footerSection": "Global Footer",
+      "selectOption": "Select an option...",
+      "noFields": "This template has no configurable fields for header and footer"
+    },
+    "section": {
+      "title": "Section",
+      "description": "Fill in the information for this section",
+      "selectOption": "Select an option...",
+      "noFields": "This section has no configurable fields"
+    },
+    "fillData": {
+      "sectionProgress": "Section {current} of {total}",
+      "selectOption": "Select an option..."
+    },
+    "navigation": {
+      "next": "Next",
+      "previous": "Previous",
+      "finish": "Create Bulletin",
+      "creating": "Creating..."
+    },
+    "preview": {
+      "title": "Preview",
+      "subtitle": "Visualize how your bulletin will look",
+      "selectTemplate": "Select a template to see the preview"
+    }
+  },
   "Authentication": {
     "verification": "Verification in progress...",
     "accessRestrictedTitle": "Access restricted",

@@ -1,3 +1,12 @@
+"use client";
+
+import FormBulletinPage from './FormBulletinPage';
+import { ProtectedRoute } from "../../../../components/ProtectedRoute";
+
 export default function CreateBulletinPage() {
-  return <div>Create Bulletin Page</div>;
+  return (
+    <ProtectedRoute>
+      <FormBulletinPage />
+    </ProtectedRoute>
+  );
 }

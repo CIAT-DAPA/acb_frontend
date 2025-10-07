@@ -121,10 +121,14 @@ export interface CreateBulletinData {
 export type BulletinCreationStep =
   | "select-template"
   | "basic-info"
-  | "fill-data";
+  | "header-footer"
+  | `section-${number}`;
 
 export interface BulletinCreationState {
   currentStep: BulletinCreationStep;
+  currentSectionIndex: number; // Para trackear qué sección se está llenando
+  selectedTemplateId?: string;
+  selectedTemplateVersionId?: string;
   data: CreateBulletinData;
   errors: Record<string, string[]>;
   isValid: boolean;

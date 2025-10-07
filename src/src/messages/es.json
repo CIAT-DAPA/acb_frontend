@@ -169,6 +169,60 @@
     "view": "Ver",
     "download": "Descargar"
   },
+  "CreateBulletin": {
+    "title": "Crear Boletín",
+    "subtitle": "Crea un nuevo boletín agroclimático utilizando una plantilla",
+    "backToBulletins": "Volver a Boletines",
+    "success": "Boletín creado exitosamente",
+    "error": "Error al crear el boletín",
+    "errorLoadingTemplate": "Error al cargar la plantilla",
+    "selectTemplate": {
+      "title": "Seleccionar Plantilla",
+      "description": "Elige la plantilla que deseas utilizar para tu boletín",
+      "searchPlaceholder": "Buscar plantillas...",
+      "noTemplates": "No se encontraron plantillas disponibles"
+    },
+    "basicInfo": {
+      "title": "Información Básica",
+      "description": "Define el nombre y los datos principales de tu boletín",
+      "fields": {
+        "name": {
+          "label": "Nombre del Boletín",
+          "placeholder": "Ej: Boletín Agroclimático - Enero 2025",
+          "helper": "Elige un nombre descriptivo para identificar fácilmente este boletín"
+        }
+      }
+    },
+    "headerFooter": {
+      "title": "Encabezado y Pie de Página",
+      "description": "Configura el encabezado y pie de página global de tu boletín",
+      "headerSection": "Encabezado Global",
+      "footerSection": "Pie de Página Global",
+      "selectOption": "Selecciona una opción...",
+      "noFields": "Esta plantilla no tiene campos configurables para encabezado y pie de página"
+    },
+    "section": {
+      "title": "Sección",
+      "description": "Llena la información de esta sección",
+      "selectOption": "Selecciona una opción...",
+      "noFields": "Esta sección no tiene campos configurables"
+    },
+    "fillData": {
+      "sectionProgress": "Sección {current} de {total}",
+      "selectOption": "Selecciona una opción..."
+    },
+    "navigation": {
+      "next": "Siguiente",
+      "previous": "Anterior",
+      "finish": "Crear Boletín",
+      "creating": "Creando..."
+    },
+    "preview": {
+      "title": "Vista Previa",
+      "subtitle": "Visualiza cómo se verá tu boletín",
+      "selectTemplate": "Selecciona una plantilla para ver la vista previa"
+    }
+  },
   "Authentication": {
     "verification": "Verificación en curso...",
     "accessRestrictedTitle": "Acceso restringido",
