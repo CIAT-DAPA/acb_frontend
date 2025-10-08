@@ -34,17 +34,6 @@ export default function EditTemplatePage() {
       setLoading(true);
       setError(null);
 
-      // Cargar el template master
-      const response = await TemplateAPIService.getTemplateById(templateId);
-
-      if (!response.success || !response.data) {
-        throw new Error(
-          response.message || "Error al cargar los datos del template"
-        );
-      }
-
-      const template = response.data;
-
       // Obtener la versión actual del template con todo su contenido
       let versionContent = {
         style_config: {
@@ -58,7 +47,7 @@ export default function EditTemplatePage() {
         footer_config: undefined,
       };
 
-      let currentVersionNum = "1";
+      let template: any = null;
 
       // Obtener la versión actual del template
       try {
@@ -67,7 +56,9 @@ export default function EditTemplatePage() {
         );
 
         if (versionResponse.success && versionResponse.data) {
-          const currentVersion = versionResponse.data;
+          const currentVersion = versionResponse.data.current_version;
+          template = versionResponse.data.template_master;
+          console.log("Template cargado:", template);
           console.log("Versión actual cargada:", currentVersion);
 
           // Usar el contenido de la versión actual
@@ -81,14 +72,6 @@ export default function EditTemplatePage() {
               footer_config: currentVersion.content.footer_config,
             };
           }
-
-          // Incrementar el número de versión para la nueva versión
-          if (currentVersion.version_num) {
-            const versionNum = parseInt(currentVersion.version_num, 10);
-            currentVersionNum = isNaN(versionNum)
-              ? "2"
-              : String(versionNum + 1);
-          }
         } else {
           console.warn(
             "No se pudo cargar la versión actual, usando valores por defecto"
@@ -97,6 +80,11 @@ export default function EditTemplatePage() {
       } catch (versionError) {
         console.error("Error cargando versión del template:", versionError);
         // Continuar con los valores por defecto
+      }
+
+      if (!template) {
+        setError("No se pudo cargar la información del template");
+        return;
       }
 
       // Transformar los datos del template al formato CreateTemplateData
@@ -109,11 +97,12 @@ export default function EditTemplatePage() {
           access_config: template.access_config,
         },
         version: {
-          version_num: currentVersionNum, // Número de versión incrementado
           commit_message: "Versión actualizada",
           log: {
             created_at: new Date().toISOString(),
             creator_user_id: template.log.creator_user_id,
+            creator_first_name: template.log.creator_first_name || null,
+            creator_last_name: template.log.creator_last_name || null,
           },
           content: versionContent,
         },

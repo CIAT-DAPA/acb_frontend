@@ -2,6 +2,9 @@
   "Navbar": {
     "templates": "Plantillas",
     "bulletins": "Boletines",
+    "access": "Acceso",
+    "roles": "Roles",
+    "groups": "Grupos",
     "login": "Iniciar sesión",
     "logout": "Cerrar sesión"
   },

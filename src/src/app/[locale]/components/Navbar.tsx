@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, Cloud, User, LogOut } from "lucide-react";
+import { Menu, X, Cloud, User, LogOut, ChevronDown } from "lucide-react";
 import { container, brand, brandIcon, btnOutlinePrimary } from "./ui";
 import { LanguageSelector } from "./LanguageSelector";
 import { useAuth } from "../../../hooks/useAuth";
@@ -19,6 +19,7 @@ const NAV_INACTIVE =
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showAccessMenu, setShowAccessMenu] = useState(false);
   const pathname = usePathname();
   const t = useTranslations("Navbar");
 
@@ -98,6 +99,43 @@ export function Navbar() {
                 </li>
               );
             })}
+
+            {/* Dropdown de Acceso */}
+            {authenticated && (
+              <li className="relative">
+                <button
+                  onClick={() => setShowAccessMenu(!showAccessMenu)}
+                  className={`${NAV_BASE} ${NAV_INACTIVE} flex items-center gap-1`}
+                >
+                  {t("access")}
+                  <ChevronDown
+                    size={16}
+                    className={`transition-transform ${
+                      showAccessMenu ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {showAccessMenu && (
+                  <div className="absolute left-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                    <Link
+                      href="/roles"
+                      onClick={() => setShowAccessMenu(false)}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      {t("roles")}
+                    </Link>
+                    <Link
+                      href="/groups"
+                      onClick={() => setShowAccessMenu(false)}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      {t("groups")}
+                    </Link>
+                  </div>
+                )}
+              </li>
+            )}
           </ul>
 
           {/* Selector de idioma */}
@@ -174,6 +212,53 @@ export function Navbar() {
                 </li>
               );
             })}
+
+            {/* Dropdown de Acceso - Móvil */}
+            {authenticated && (
+              <li>
+                <button
+                  onClick={() => setShowAccessMenu(!showAccessMenu)}
+                  className="flex items-center gap-1 text-[#fefae0]/80 hover:text-[#ffaf68] transition-colors w-full"
+                >
+                  {t("access")}
+                  <ChevronDown
+                    size={16}
+                    className={`transition-transform ${
+                      showAccessMenu ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {showAccessMenu && (
+                  <ul className="pl-4 mt-2 space-y-2">
+                    <li>
+                      <Link
+                        href="/roles"
+                        onClick={() => {
+                          setShowAccessMenu(false);
+                          setIsOpen(false);
+                        }}
+                        className="block text-[#fefae0]/70 hover:text-[#ffaf68] transition-colors text-sm"
+                      >
+                        {t("roles")}
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="/groups"
+                        onClick={() => {
+                          setShowAccessMenu(false);
+                          setIsOpen(false);
+                        }}
+                        className="block text-[#fefae0]/70 hover:text-[#ffaf68] transition-colors text-sm"
+                      >
+                        {t("groups")}
+                      </Link>
+                    </li>
+                  </ul>
+                )}
+              </li>
+            )}
           </ul>
 
           {/* Selector de idioma móvil */}

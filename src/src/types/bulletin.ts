@@ -55,6 +55,7 @@ export interface BulletinVersion {
   _id?: string;
   bulletin_master_id?: string;
   version_num: number;
+  commit_message: string;
   previous_version_id?: string | null;
   log: LogObject;
   data: BulletinVersionData; // Note: En bulletins es "data", no "content"

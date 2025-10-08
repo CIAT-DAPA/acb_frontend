@@ -3,8 +3,12 @@
 export interface LogObject {
   created_at: string; // ISODate como string
   creator_user_id: string; // ObjectId como string
+  creator_first_name: string | null;
+  creator_last_name: string | null;
   updated_at?: string; // ISODate como string (opcional para creación)
   updater_user_id?: string; // ObjectId como string (opcional para creación)
+  updater_first_name?: string | null;
+  updater_last_name?: string | null;
 }
 
 export interface AccessConfig {

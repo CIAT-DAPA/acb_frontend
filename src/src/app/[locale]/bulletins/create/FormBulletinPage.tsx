@@ -46,15 +46,20 @@ export default function FormBulletinPage() {
         log: {
           created_at: new Date().toISOString(),
           creator_user_id: "",
+          creator_first_name: null,
+          creator_last_name: null,
         },
         base_template_master_id: "",
         base_template_version_id: "",
       },
       version: {
         version_num: 1,
+        commit_message: "",
         log: {
           created_at: new Date().toISOString(),
           creator_user_id: "",
+          creator_first_name: null,
+          creator_last_name: null,
         },
         data: {
           style_config: {},
@@ -363,7 +368,7 @@ export default function FormBulletinPage() {
         },
       },
       version: {
-        version_num: "1",
+        version_num: 1,
         commit_message: "",
         log: creationState.data.version.log,
         content: {

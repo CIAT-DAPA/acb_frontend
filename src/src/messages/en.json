@@ -2,6 +2,9 @@
   "Navbar": {
     "templates": "Templates",
     "bulletins": "Bulletins",
+    "access": "Access",
+    "roles": "Roles",
+    "groups": "Groups",
     "login": "Login",
     "logout": "Logout"
   },

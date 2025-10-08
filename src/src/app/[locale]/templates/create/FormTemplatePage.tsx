@@ -56,6 +56,8 @@ export default function CreateTemplatePage({
         log: {
           created_at: new Date().toISOString(),
           creator_user_id: "",
+          creator_first_name: null,
+          creator_last_name: null,
         },
         access_config: {
           access_type: "public",
@@ -63,11 +65,13 @@ export default function CreateTemplatePage({
         },
       },
       version: {
-        version_num: "1",
+        version_num: 1,
         commit_message: isEditMode ? "Versión actualizada" : "Versión inicial",
         log: {
           created_at: new Date().toISOString(),
           creator_user_id: "",
+          creator_first_name: null,
+          creator_last_name: null,
         },
         content: {
           style_config: {
