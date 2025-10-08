@@ -406,7 +406,7 @@ export default function UploadVisualResource() {
                       onChange={(e) =>
                         setFileType(e.target.value as VisualResourceFileType)
                       }
-                      className={inputField}
+                      className={`${inputField} cursor-pointer`}
                     >
                       <option value="image">{t("images")}</option>
                       <option value="icon">{t("icons")}</option>
@@ -430,7 +430,7 @@ export default function UploadVisualResource() {
                           e.target.value as "public" | "private" | "group"
                         )
                       }
-                      className={inputField}
+                      className={`${inputField} cursor-pointer`}
                     >
                       <option value="public">{t("public")}</option>
                       <option value="private">{t("private")}</option>

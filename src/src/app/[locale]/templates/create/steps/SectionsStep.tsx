@@ -28,7 +28,7 @@ import { StyleConfig } from "../../../../../types/core";
 import { FieldEditor } from "../components/FieldEditor";
 import { StyleConfigurator } from "../components/StyleConfigurator";
 import { HeaderFooterConfigurator } from "../components/HeaderFooterConfigurator";
-import { SmartIcon } from "../components/AdaptiveSvgIcon";
+import { SmartIcon } from "../../../components/AdaptiveSvgIcon";
 import { btnOutlineSecondary } from "@/app/[locale]/components/ui";
 import { VisualResourcesService } from "@/services/visualResourcesService";
 import { VisualResource } from "@/types/visualResource";

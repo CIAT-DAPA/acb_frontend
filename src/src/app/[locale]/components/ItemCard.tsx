@@ -18,6 +18,7 @@ interface BaseItemCardProps {
   name: string;
   image?: string;
   type: "template" | "visual-resource";
+  author: string;
 
   // Botones de acción (opcionales y compartidos)
   editBtn?: boolean;
@@ -35,7 +36,6 @@ interface BaseItemCardProps {
 // Props específicas para templates
 export interface TemplateCardProps extends BaseItemCardProps {
   type: "template";
-  author: string;
   lastModified: string;
   thumbnailImages?: string[]; // Array de thumbnails de las secciones
 }
@@ -44,7 +44,6 @@ export interface TemplateCardProps extends BaseItemCardProps {
 export interface VisualResourceCardProps extends BaseItemCardProps {
   type: "visual-resource";
   fileType: "image" | "icon";
-  fileSize?: string;
   tags?: string[];
 }
 
@@ -58,9 +57,13 @@ export default function ItemCard(props: ItemCardProps) {
 
   // Imagen a mostrar
   let displayImage = props.image || "/assets/img/imageNotFound.png";
-  
+
   // Para templates, usar el primer thumbnail si existe
-  if (props.type === "template" && props.thumbnailImages && props.thumbnailImages.length > 0) {
+  if (
+    props.type === "template" &&
+    props.thumbnailImages &&
+    props.thumbnailImages.length > 0
+  ) {
     displayImage = props.thumbnailImages[0];
   }
 
@@ -70,7 +73,7 @@ export default function ItemCard(props: ItemCardProps) {
       {props.editBtn && props.onEdit && (
         <button
           onClick={props.onEdit}
-          className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
+          className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors cursor-pointer"
           title={t("edit")}
         >
           <Edit3 className="h-4 w-4 text-white" />
@@ -80,7 +83,7 @@ export default function ItemCard(props: ItemCardProps) {
       {props.downloadBtn && props.onDownload && (
         <button
           onClick={props.onDownload}
-          className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
+          className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors cursor-pointer"
           title={t("download")}
           disabled={props.isDownloading}
         >
@@ -95,7 +98,7 @@ export default function ItemCard(props: ItemCardProps) {
       {props.deleteBtn && props.onDelete && (
         <button
           onClick={props.onDelete}
-          className="p-2 bg-white/20 rounded-full hover:bg-red-500/50 transition-colors"
+          className="p-2 bg-white/20 rounded-full hover:bg-red-500/50 transition-colors cursor-pointer"
           title={t("delete")}
           disabled={props.isDeleting}
         >
@@ -151,7 +154,6 @@ export default function ItemCard(props: ItemCardProps) {
       </div>
     );
   }
-
   // Renderizar card para visual resources
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow group">
@@ -177,8 +179,10 @@ export default function ItemCard(props: ItemCardProps) {
         <h3 className="font-medium text-sm text-[#283618] truncate mb-1">
           {props.name}
         </h3>
-        {props.fileSize && (
-          <p className="text-xs text-[#283618]/80 mb-2">{props.fileSize}</p>
+        {props.author && (
+          <p className="text-xs text-[#283618]/80 mb-2">
+            {t("updatedBy")} {props.author}
+          </p>
         )}
 
         {/* Tags */}

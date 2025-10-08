@@ -22,7 +22,7 @@ import { GeneralConfigStep } from "./steps/GeneralConfigStep";
 import { HeaderFooterStep } from "./steps/HeaderFooterStep";
 import { SectionsStep } from "./steps/SectionsStep";
 import { TemplatePreview } from "./TemplatePreview";
-import { AutosaveIndicator } from "./components/AutosaveIndicator";
+import { AutosaveIndicator } from "../../components/AutosaveIndicator";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { TemplateAPIService } from "../../../../services/templateService";

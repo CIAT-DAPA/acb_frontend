@@ -28,9 +28,11 @@ import {
 } from "../../components/ui";
 import { VisualResource } from "@/types/visualResource";
 import { VisualResourcesService } from "@/services/visualResourcesService";
+import { useToast } from "../../../../components/Toast";
 
 export default function VisualResources() {
   const t = useTranslations("VisualResources");
+  const { showToast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<"all" | "image" | "icon">("all");
   const [allResources, setAllResources] = useState<VisualResource[]>([]); // Todos los recursos originales
@@ -117,13 +119,6 @@ export default function VisualResources() {
 
     return matchesType && matchesSearch;
   });
-
-  // Función para formatear el tamaño del archivo (si está disponible en los logs)
-  const formatFileSize = (resource: VisualResource) => {
-    // Por ahora retornamos un tamaño estimado o "N/A" si no está disponible
-    // En el futuro se puede obtener del sistema de archivos o de los logs
-    return "N/A";
-  };
 
   // Función para obtener las etiquetas/categorías del recurso
   const getResourceTags = (resource: VisualResource) => {
@@ -214,13 +209,16 @@ export default function VisualResources() {
         );
 
         handleCloseEdit();
-        // Mostrar mensaje de éxito si tienes un sistema de notificaciones
+        showToast(t("editSuccess"), "success");
       } else {
         throw new Error(response.message || "Error al actualizar el recurso");
       }
     } catch (error) {
       console.error("Error updating resource:", error);
-      setError("Error al actualizar el recurso. Por favor, intenta de nuevo.");
+      const errorMessage =
+        error instanceof Error ? error.message : t("editError");
+      setError(errorMessage);
+      showToast(errorMessage, "error");
     } finally {
       setIsEditing(false);
     }
@@ -254,11 +252,14 @@ export default function VisualResources() {
         )
       );
 
-      console.log(`Recurso eliminado: ${resourceToDelete.file_name}`);
       handleCloseDeleteModal();
+      showToast(t("deleteSuccess"), "success");
     } catch (error) {
       console.error("Error al eliminar el recurso:", error);
-      setError("Error al eliminar el recurso. Por favor, intenta de nuevo.");
+      const errorMessage =
+        error instanceof Error ? error.message : t("deleteError");
+      setError(errorMessage);
+      showToast(errorMessage, "error");
       setIsDeleting(false);
     }
   };
@@ -295,8 +296,6 @@ export default function VisualResources() {
 
       // Limpiar la URL del blob
       window.URL.revokeObjectURL(url);
-
-      console.log(`Descargado: ${resource.file_name}`);
     } catch (error) {
       console.error("Error al descargar el recurso:", error);
       alert(
@@ -359,7 +358,7 @@ export default function VisualResources() {
                 onChange={(e) =>
                   setFilterType(e.target.value as "all" | "image" | "icon")
                 }
-                className={inputField}
+                className={`${inputField} cursor-pointer`}
               >
                 <option value="all">{t("allFiles")}</option>
                 <option value="image">{t("images")}</option>
@@ -412,7 +411,14 @@ export default function VisualResources() {
                   name={resource.file_name}
                   image={resource.file_url}
                   fileType={resource.file_type}
-                  fileSize={formatFileSize(resource)}
+                  author={
+                    resource.log.updater_first_name +
+                      " " +
+                      resource.log.updater_last_name ||
+                    resource.log.creator_first_name +
+                      " " +
+                      resource.log.creator_last_name
+                  }
                   tags={getResourceTags(resource)}
                   editBtn={true}
                   onEdit={() => handleEditResource(resource)}
@@ -537,7 +543,7 @@ export default function VisualResources() {
                             file_type: e.target.value as "image" | "icon",
                           }))
                         }
-                        className={inputField}
+                        className={`${inputField} cursor-pointer`}
                       >
                         <option value="image">{t("image")}</option>
                         <option value="icon">{t("icon")}</option>
@@ -560,7 +566,7 @@ export default function VisualResources() {
                               | "restricted",
                           }))
                         }
-                        className={inputField}
+                        className={`${inputField} cursor-pointer`}
                       >
                         <option value="public">{t("publicAccess")}</option>
                         <option value="private">{t("privateAccess")}</option>

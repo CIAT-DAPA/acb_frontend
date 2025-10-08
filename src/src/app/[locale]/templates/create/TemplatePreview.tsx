@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { CreateTemplateData, Field } from "../../../../types/template";
 import { StyleConfig } from "../../../../types/core";
 import { getEffectiveFieldStyles } from "../../../../utils/styleInheritance";
-import { SmartIcon } from "./components/AdaptiveSvgIcon";
+import { SmartIcon } from "../../components/AdaptiveSvgIcon";
 
 /**
  * Helper function para generar estilos de borde según los lados seleccionados
