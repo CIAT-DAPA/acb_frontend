@@ -249,7 +249,14 @@ export default function Templates() {
                     type="template"
                     id={template._id!}
                     name={template.template_name}
-                    author={template.log.creator_user_id}
+                    author={
+                      template.log.updater_first_name +
+                        " " +
+                        template.log.updater_last_name ||
+                      template.log.creator_first_name +
+                        " " +
+                        template.log.creator_last_name
+                    }
                     lastModified={new Date(
                       template.log.updated_at!
                     ).toLocaleDateString()}
@@ -272,10 +279,7 @@ export default function Templates() {
           {!loading && !error && templates.length === 0 && (
             <div className="text-center py-12">
               <p className="text-[#283618]/60 mb-4">{t("noResults")}</p>
-              <Link
-                href="/templates/create"
-                className={btnPrimary}
-              >
+              <Link href="/templates/create" className={btnPrimary}>
                 {t("createFirst")}
               </Link>
             </div>
@@ -333,7 +337,13 @@ export default function Templates() {
                     <div className="flex items-center gap-2">
                       <User className="h-3 w-3" />
                       <span>
-                        {t("by")} {templateToDelete.log.creator_user_id}
+                        {t("by")}{" "}
+                        {templateToDelete.log.updater_first_name +
+                          " " +
+                          templateToDelete.log.updater_last_name ||
+                          templateToDelete.log.creator_first_name +
+                            " " +
+                            templateToDelete.log.creator_last_name}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -373,7 +383,9 @@ export default function Templates() {
                 onClick={handleConfirmDelete}
                 disabled={isDeleting}
                 className={`bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium transition-colors ${
-                  isDeleting ? "opacity-50 cursor-not-allowed" : ""
+                  isDeleting
+                    ? "opacity-50 cursor-not-allowed"
+                    : "cursor-pointer"
                 }`}
               >
                 {isDeleting ? (

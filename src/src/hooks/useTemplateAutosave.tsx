@@ -22,10 +22,17 @@ export function useTemplateAutosave(
     : `${AUTOSAVE_KEY_PREFIX}_create`;
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasRestoredRef = useRef(false);
+  const isAutosaveEnabled = useRef(true); // Flag para controlar si el autosave está habilitado
   const [lastSaved, setLastSaved] = useState<Date | undefined>(undefined);
 
   // Guardar en localStorage
   const saveToLocalStorage = useCallback(() => {
+    // No guardar si el autosave está deshabilitado
+    if (!isAutosaveEnabled.current) {
+      console.log("⏸️ Autosave is disabled, skipping save");
+      return;
+    }
+
     try {
       const now = new Date();
       const autosaveData: AutosaveData = {
@@ -39,7 +46,7 @@ export function useTemplateAutosave(
     } catch (error) {
       console.error("❌ Error saving template to localStorage:", error);
     }
-  }, [data, currentStep]);
+  }, [data, currentStep, AUTOSAVE_KEY]);
 
   // Restaurar desde localStorage
   const restoreFromLocalStorage = useCallback((): AutosaveData | null => {
@@ -57,17 +64,18 @@ export function useTemplateAutosave(
       console.error("❌ Error restoring template from localStorage:", error);
       return null;
     }
-  }, []);
+  }, [AUTOSAVE_KEY]);
 
   // Limpiar autoguardado
   const clearAutosave = useCallback(() => {
     try {
+      isAutosaveEnabled.current = false; // Deshabilitar el autosave
       localStorage.removeItem(AUTOSAVE_KEY);
-      console.log("🗑️ Autosave cleared");
+      console.log("🗑️ Autosave cleared and disabled");
     } catch (error) {
       console.error("❌ Error clearing autosave:", error);
     }
-  }, []);
+  }, [AUTOSAVE_KEY]);
 
   // Verificar si hay contenido significativo en el formulario
   const hasSignificantContent = useCallback(
@@ -115,6 +123,11 @@ export function useTemplateAutosave(
 
   // Autoguardar cuando cambian los datos (con debounce)
   useEffect(() => {
+    // No autoguardar si está deshabilitado
+    if (!isAutosaveEnabled.current) {
+      return;
+    }
+
     // Solo autoguardar si hay contenido significativo
     if (!hasSignificantContent(data)) {
       return;
@@ -141,6 +154,11 @@ export function useTemplateAutosave(
   // Guardar antes de cerrar/recargar la página
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // No guardar ni advertir si el autosave está deshabilitado
+      if (!isAutosaveEnabled.current) {
+        return;
+      }
+
       if (hasSignificantContent(data)) {
         saveToLocalStorage();
 

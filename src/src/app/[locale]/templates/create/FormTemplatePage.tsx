@@ -295,9 +295,6 @@ export default function CreateTemplatePage({
 
     setIsLoading(true);
     try {
-      // Guardar antes de enviar
-      saveNow();
-
       if (isEditMode && templateId) {
         // MODO EDICIÓN: Actualizar template existente
         const { log, ...masterDataWithoutLog } = creationState.data.master;
@@ -318,9 +315,15 @@ export default function CreateTemplatePage({
         const { log: versionLog, ...versionDataWithoutLog } =
           creationState.data.version;
 
+        // Agregar version_num temporal (el backend lo recalcula automáticamente)
+        const versionDataToSend = {
+          ...versionDataWithoutLog,
+          version_num: 1, // Valor temporal, el backend asigna el correcto
+        };
+
         const versionResponse = await TemplateAPIService.createTemplateVersion(
           templateId,
-          versionDataWithoutLog
+          versionDataToSend
         );
 
         if (!versionResponse.success) {
@@ -354,17 +357,15 @@ export default function CreateTemplatePage({
         // Limpiar autoguardado después de éxito
         clearAutosave();
 
+        // Redirigir a la página de templates
+        router.push("/templates");
+
         // Mostrar toast de éxito
         showToast(
           t("updateSuccess") || "Plantilla actualizada exitosamente",
           "success",
           3000
         );
-
-        // Redirigir a la página de templates después de un breve delay
-        setTimeout(() => {
-          router.push("/templates");
-        }, 1000);
       } else {
         // MODO CREACIÓN: Crear nuevo template
         const { log, ...masterDataWithoutLog } = creationState.data.master;
@@ -390,9 +391,15 @@ export default function CreateTemplatePage({
         const { log: versionLog, ...versionDataWithoutLog } =
           creationState.data.version;
 
+        // Agregar version_num temporal (el backend lo recalcula automáticamente)
+        const versionDataToSend = {
+          ...versionDataWithoutLog,
+          version_num: 1, // Valor temporal, el backend asigna el correcto
+        };
+
         const versionResponse = await TemplateAPIService.createTemplateVersion(
           newTemplateId,
-          versionDataWithoutLog
+          versionDataToSend
         );
 
         if (!versionResponse.success) {
@@ -425,17 +432,15 @@ export default function CreateTemplatePage({
         // Limpiar autoguardado después de éxito
         clearAutosave();
 
+        // Redirigir a la página de templates
+        router.push("/templates");
+
         // Mostrar toast de éxito
         showToast(
           t("success") || "Plantilla creada exitosamente",
           "success",
           3000
         );
-
-        // Redirigir a la página de templates después de un breve delay
-        setTimeout(() => {
-          router.push("/templates");
-        }, 1000);
       }
     } catch (error) {
       console.error(
@@ -463,7 +468,6 @@ export default function CreateTemplatePage({
     isEditMode,
     templateId,
     t,
-    saveNow,
     clearAutosave,
     showToast,
     router,
