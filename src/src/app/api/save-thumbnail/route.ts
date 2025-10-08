@@ -24,7 +24,6 @@ export async function POST(request: NextRequest) {
 
     const uploadDir = path.join(
       process.cwd(),
-      "src",
       "public",
       "assets",
       "thumbnails",

@@ -335,30 +335,50 @@ export default function CreateTemplatePage({
 
         // 3. Capturar y guardar thumbnails
         try {
+          console.log("🚀 Importing thumbnail capture module...");
           const { generateAndUploadThumbnails } = await import(
             "../../../../utils/thumbnailCapture"
           );
-          const thumbnailPaths = await generateAndUploadThumbnails(
-            "template-preview-container",
-            templateId
+          console.log(
+            "✅ Module imported, calling generateAndUploadThumbnails..."
           );
 
+          const sectionCount = creationState.data.version.content.sections.length || 1;
+          console.log(`📋 Template has ${sectionCount} section(s)`);
+
+          const thumbnailPaths = await generateAndUploadThumbnails(
+            "template-preview-container",
+            templateId,
+            sectionCount,
+            (index: number) => {
+              console.log(`🔄 Switching to section ${index + 1}/${sectionCount}`);
+              setSelectedSectionIndex(index);
+            }
+          );
+
+          console.log("✅ Thumbnails generated, updating template...");
           // 4. Actualizar el template con los thumbnails
           if (thumbnailPaths.length > 0) {
             await TemplateAPIService.updateTemplate(templateId, {
               thumbnail_images: thumbnailPaths,
             } as any);
+            console.log("✅ Template updated with thumbnails");
+          } else {
+            console.warn("⚠️ No thumbnails were generated");
           }
         } catch (thumbnailError) {
-          console.error("Error capturando thumbnails:", thumbnailError);
+          console.error("❌ ERROR capturando thumbnails:", thumbnailError);
+          console.error(
+            "❌ Error stack:",
+            thumbnailError instanceof Error
+              ? thumbnailError.stack
+              : "No stack trace"
+          );
           // No fallar la operación completa si los thumbnails fallan
         }
 
         // Limpiar autoguardado después de éxito
         clearAutosave();
-
-        // Redirigir a la página de templates
-        router.push("/templates");
 
         // Mostrar toast de éxito
         showToast(
@@ -366,6 +386,11 @@ export default function CreateTemplatePage({
           "success",
           3000
         );
+
+        // Redirigir a la página de templates después de un breve delay
+        setTimeout(() => {
+          router.push("/templates");
+        }, 1000);
       } else {
         // MODO CREACIÓN: Crear nuevo template
         const { log, ...masterDataWithoutLog } = creationState.data.master;
@@ -410,30 +435,50 @@ export default function CreateTemplatePage({
 
         // 3. Capturar y guardar thumbnails
         try {
+          console.log("🚀 Importing thumbnail capture module...");
           const { generateAndUploadThumbnails } = await import(
             "../../../../utils/thumbnailCapture"
           );
-          const thumbnailPaths = await generateAndUploadThumbnails(
-            "template-preview-container",
-            newTemplateId
+          console.log(
+            "✅ Module imported, calling generateAndUploadThumbnails..."
           );
 
+          const sectionCount = creationState.data.version.content.sections.length || 1;
+          console.log(`📋 Template has ${sectionCount} section(s)`);
+
+          const thumbnailPaths = await generateAndUploadThumbnails(
+            "template-preview-container",
+            newTemplateId,
+            sectionCount,
+            (index: number) => {
+              console.log(`🔄 Switching to section ${index + 1}/${sectionCount}`);
+              setSelectedSectionIndex(index);
+            }
+          );
+
+          console.log("✅ Thumbnails generated, updating template...");
           // 4. Actualizar el template con los thumbnails
           if (thumbnailPaths.length > 0) {
             await TemplateAPIService.updateTemplate(newTemplateId, {
               thumbnail_images: thumbnailPaths,
             } as any);
+            console.log("✅ Template updated with thumbnails");
+          } else {
+            console.warn("⚠️ No thumbnails were generated");
           }
         } catch (thumbnailError) {
-          console.error("Error capturando thumbnails:", thumbnailError);
+          console.error("❌ ERROR capturando thumbnails:", thumbnailError);
+          console.error(
+            "❌ Error stack:",
+            thumbnailError instanceof Error
+              ? thumbnailError.stack
+              : "No stack trace"
+          );
           // No fallar la operación completa si los thumbnails fallan
         }
 
         // Limpiar autoguardado después de éxito
         clearAutosave();
-
-        // Redirigir a la página de templates
-        router.push("/templates");
 
         // Mostrar toast de éxito
         showToast(
@@ -441,6 +486,11 @@ export default function CreateTemplatePage({
           "success",
           3000
         );
+
+        // Redirigir a la página de templates después de un breve delay
+        setTimeout(() => {
+          router.push("/templates");
+        }, 1000);
       }
     } catch (error) {
       console.error(

@@ -114,19 +114,56 @@ export default function ItemCard(props: ItemCardProps) {
 
   // Renderizar card para templates
   if (props.type === "template") {
+    const hasMutipleThumbnails =
+      props.thumbnailImages && props.thumbnailImages.length > 1;
+
     return (
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow group">
-        {/* Thumbnail más pequeño para templates */}
-        <div className="h-32 bg-gray-100 relative overflow-hidden">
-          <Image
-            src={displayImage}
-            alt={props.name}
-            fill
-            className="object-contain group-hover:scale-105 transition-transform"
-            onError={(e) => {
-              e.currentTarget.src = "/assets/img/imageNotFound.png";
-            }}
-          />
+        {/* Thumbnails para templates */}
+        <div className="h-64 bg-gray-100 relative overflow-hidden">
+          {hasMutipleThumbnails ? (
+            // Mostrar grilla de thumbnails cuando hay múltiples secciones
+            <div
+              className="grid gap-0.5 h-full"
+              style={{
+                gridTemplateColumns: `repeat(${Math.min(
+                  props.thumbnailImages!.length,
+                  3
+                )}, 1fr)`,
+              }}
+            >
+              {props.thumbnailImages!.slice(0, 3).map((thumbnail, index) => (
+                <div key={index} className="relative bg-gray-50">
+                  <Image
+                    src={thumbnail}
+                    alt={`${props.name} - Sección ${index + 1}`}
+                    fill
+                    className="object-contain"
+                    onError={(e) => {
+                      e.currentTarget.src = "/assets/img/imageNotFound.png";
+                    }}
+                  />
+                </div>
+              ))}
+              {props.thumbnailImages!.length > 3 && (
+                <div className="absolute bottom-1 right-1 bg-black/70 text-white text-xs px-2 py-0.5 rounded-full">
+                  +{props.thumbnailImages!.length - 3}
+                </div>
+              )}
+            </div>
+          ) : (
+            // Mostrar una sola imagen cuando hay una sección
+            <Image
+              src={displayImage}
+              alt={props.name}
+              fill
+              className="object-contain group-hover:scale-105 transition-transform"
+              onError={(e) => {
+                e.currentTarget.src = "/assets/img/imageNotFound.png";
+              }}
+            />
+          )}
+
           {/* Overlay con acciones */}
           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
             {renderActionButtons()}
@@ -135,9 +172,17 @@ export default function ItemCard(props: ItemCardProps) {
 
         {/* Info para templates más compacta */}
         <div className="p-3">
-          <h3 className="font-medium text-sm text-[#283618] truncate mb-2">
-            {props.name}
-          </h3>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-medium text-sm text-[#283618] truncate flex-1">
+              {props.name}
+            </h3>
+            {hasMutipleThumbnails && (
+              <span className="text-xs text-[#283618]/60 ml-2 whitespace-nowrap">
+                {props.thumbnailImages!.length}{" "}
+                {props.thumbnailImages!.length === 1 ? "página" : "páginas"}
+              </span>
+            )}
+          </div>
           <div className="flex items-center gap-1 text-xs text-[#283618]/80 mb-1">
             <User className="h-3 w-3" />
             <span>
