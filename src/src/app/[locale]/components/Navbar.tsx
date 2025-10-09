@@ -105,7 +105,7 @@ export function Navbar() {
               <li className="relative">
                 <button
                   onClick={() => setShowAccessMenu(!showAccessMenu)}
-                  className={`${NAV_BASE} ${NAV_INACTIVE} flex items-center gap-1`}
+                  className={`${NAV_BASE} ${NAV_INACTIVE} flex items-center gap-1 cursor-pointer`}
                 >
                   {t("access")}
                   <ChevronDown

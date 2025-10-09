@@ -759,5 +759,137 @@
         ]
       }
     }
+  },
+  "Roles": {
+    "title": "Role Management",
+    "subtitle": "Roles define user permissions and access levels in the platform. Each role has specific permissions for different system modules using a CRUD model (Create, Read, Update, Delete).",
+    "searchPlaceholder": "Search roles by name or description...",
+    "createNew": "Create Role",
+    "loading": "Loading roles...",
+    "errorTitle": "Error loading roles",
+    "showing": "Showing {filtered} of {total} roles",
+    "totalRoles": "Total roles: {count}",
+    "table": {
+      "role": "Role",
+      "description": "Description",
+      "activePermissions": "Active Permissions",
+      "enabledModules": "Enabled Modules",
+      "actions": "Actions",
+      "viewDetails": "View details",
+      "modulesCount": "{count} / 7 modules",
+      "edit": "Edit",
+      "hide": "Hide",
+      "activePermissionsLabel": "Active permissions:",
+      "enabledModulesLabel": "of 7 modules enabled",
+      "enabledModulesCount": "{count} of 7 modules enabled",
+      "modulesAndPermissions": "Modules and CRUD Permissions:",
+      "noModulesEnabled": "This role has no enabled modules"
+    },
+    "modules": {
+      "bulletinscomposer": "Bulletins",
+      "templatemanagement": "Templates",
+      "dashboardbulletins": "Dashboard",
+      "review": "Review",
+      "cardmanagement": "Cards",
+      "accesscontrol": "Access",
+      "externalintegrations": "Integrations"
+    },
+    "crud": {
+      "create": "Create",
+      "read": "Read",
+      "update": "Update",
+      "delete": "Delete"
+    },
+    "noResults": "No roles found",
+    "noResultsSearch": "Try different search terms",
+    "noRolesSystem": "No roles configured in the system",
+    "permissionsInfo": {
+      "title": "System Permission Modules",
+      "bulletinsComposer": "Create and edit bulletins",
+      "templateManagement": "Manage templates",
+      "dashboardBulletins": "View bulletin list",
+      "review": "Manage review process",
+      "cardManagement": "Manage reusable cards",
+      "accessControl": "Manage users and roles",
+      "externalIntegrations": "Manage integrations",
+      "crudNote": "Each module can have {create}, {read}, {update}, and {delete} permissions (CRUD).",
+      "create": "Create",
+      "read": "Read",
+      "update": "Update",
+      "delete": "Delete"
+    }
+  },
+  "CreateRole": {
+    "backToRoles": "Back to Roles",
+    "title": "Create New Role",
+    "subtitle": "Define permissions and access for a new role in the system",
+    "titleEdit": "Edit Role",
+    "subtitleEdit": "Modify permissions and access for the existing role",
+    "loadingRole": "Loading role...",
+    "basicInfo": "Basic Information",
+    "roleName": "Role Name",
+    "roleNamePlaceholder": "e.g. Bulletin Editor",
+    "roleNameRequired": "Role name is required",
+    "roleNameMinLength": "Name must be at least 3 characters",
+    "description": "Description",
+    "descriptionPlaceholder": "Describe the responsibilities and scope of this role...",
+    "descriptionRequired": "Description is required",
+    "descriptionMinLength": "Description must be at least 10 characters",
+    "permissions": "Role Permissions",
+    "permissionsEnabled": "Permissions enabled",
+    "permissionsRequired": "At least one permission must be enabled for the role",
+    "module": "Module",
+    "all": "All",
+    "checkAll": "Check All",
+    "uncheckAll": "Uncheck All",
+    "complete": "Complete",
+    "permissionsNote": "Note: CRUD permissions allow: Create new resources, Read and view information, Update existing resources, and Delete resources. Make sure to grant only the necessary permissions for each role.",
+    "cancel": "Cancel",
+    "createRole": "Create Role",
+    "creating": "Creating Role...",
+    "createSuccess": "Role created successfully",
+    "createError": "Error creating role",
+    "updateRole": "Update Role",
+    "updating": "Updating...",
+    "updateSuccess": "Role updated successfully",
+    "updateError": "Error updating role",
+    "validationError": "Please correct the form errors",
+    "connectionError": "Connection error while creating role",
+    "modules": {
+      "bulletinscomposer": {
+        "name": "Bulletin Composer",
+        "description": "Create and edit agroclimatic bulletins"
+      },
+      "templatemanagement": {
+        "name": "Template Management",
+        "description": "Manage bulletin templates"
+      },
+      "dashboardbulletins": {
+        "name": "Bulletin Dashboard",
+        "description": "View bulletin list and status"
+      },
+      "review": {
+        "name": "Review",
+        "description": "Manage bulletin review process"
+      },
+      "cardmanagement": {
+        "name": "Card Management",
+        "description": "Manage reusable cards"
+      },
+      "accesscontrol": {
+        "name": "Access Control",
+        "description": "Manage users, roles and groups"
+      },
+      "externalintegrations": {
+        "name": "External Integrations",
+        "description": "Configure integrations with external systems"
+      }
+    },
+    "crud": {
+      "create": "Create",
+      "read": "Read",
+      "update": "Update",
+      "delete": "Delete"
+    }
   }
 }

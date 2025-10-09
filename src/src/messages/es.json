@@ -760,5 +760,137 @@
         ]
       }
     }
+  },
+  "Roles": {
+    "title": "Gestión de Roles",
+    "subtitle": "Los roles definen los permisos y nivel de acceso de los usuarios en la plataforma. Cada rol tiene permisos específicos para diferentes módulos del sistema usando un modelo CRUD (Crear, Leer, Actualizar, Eliminar).",
+    "searchPlaceholder": "Buscar roles por nombre o descripción...",
+    "createNew": "Crear Rol",
+    "loading": "Cargando roles...",
+    "errorTitle": "Error al cargar roles",
+    "showing": "Mostrando {filtered} de {total} roles",
+    "totalRoles": "Total de roles: {count}",
+    "table": {
+      "role": "Rol",
+      "description": "Descripción",
+      "activePermissions": "Permisos Activos",
+      "enabledModules": "Módulos Habilitados",
+      "actions": "Acciones",
+      "viewDetails": "Ver detalles",
+      "modulesCount": "{count} / 7 módulos",
+      "edit": "Editar",
+      "hide": "Ocultar",
+      "activePermissionsLabel": "Permisos activos:",
+      "enabledModulesLabel": "de 7 módulos habilitados",
+      "enabledModulesCount": "{count} de 7 módulos habilitados",
+      "modulesAndPermissions": "Módulos y Permisos CRUD:",
+      "noModulesEnabled": "Este rol no tiene módulos habilitados"
+    },
+    "modules": {
+      "bulletinscomposer": "Boletines",
+      "templatemanagement": "Plantillas",
+      "dashboardbulletins": "Dashboard",
+      "review": "Revisión",
+      "cardmanagement": "Cards",
+      "accesscontrol": "Acceso",
+      "externalintegrations": "Integraciones"
+    },
+    "crud": {
+      "create": "Crear",
+      "read": "Leer",
+      "update": "Actualizar",
+      "delete": "Eliminar"
+    },
+    "noResults": "No se encontraron roles",
+    "noResultsSearch": "Intenta con otros términos de búsqueda",
+    "noRolesSystem": "No hay roles configurados en el sistema",
+    "permissionsInfo": {
+      "title": "Módulos de Permisos del Sistema",
+      "bulletinsComposer": "Crear y editar boletines",
+      "templateManagement": "Gestionar plantillas",
+      "dashboardBulletins": "Ver listado de boletines",
+      "review": "Gestionar proceso de revisión",
+      "cardManagement": "Gestionar cards reutilizables",
+      "accessControl": "Gestionar usuarios y roles",
+      "externalIntegrations": "Gestionar integraciones",
+      "crudNote": "Cada módulo puede tener permisos de {create}, {read}, {update} y {delete} (CRUD).",
+      "create": "Crear",
+      "read": "Leer",
+      "update": "Actualizar",
+      "delete": "Eliminar"
+    }
+  },
+  "CreateRole": {
+    "backToRoles": "Volver a Roles",
+    "title": "Crear Nuevo Rol",
+    "subtitle": "Define permisos y accesos para un nuevo rol en el sistema",
+    "titleEdit": "Editar Rol",
+    "subtitleEdit": "Modifica permisos y accesos del rol existente",
+    "loadingRole": "Cargando rol...",
+    "basicInfo": "Información Básica",
+    "roleName": "Nombre del Rol",
+    "roleNamePlaceholder": "ej. Editor de Boletines",
+    "roleNameRequired": "El nombre del rol es requerido",
+    "roleNameMinLength": "El nombre debe tener al menos 3 caracteres",
+    "description": "Descripción",
+    "descriptionPlaceholder": "Describe las responsabilidades y alcance de este rol...",
+    "descriptionRequired": "La descripción es requerida",
+    "descriptionMinLength": "La descripción debe tener al menos 10 caracteres",
+    "permissions": "Permisos del Rol",
+    "permissionsEnabled": "Permisos habilitados",
+    "permissionsRequired": "Debe habilitar al menos un permiso para el rol",
+    "module": "Módulo",
+    "all": "Todo",
+    "checkAll": "Marcar",
+    "uncheckAll": "Desmarcar",
+    "complete": "Completar",
+    "permissionsNote": "Nota: Los permisos CRUD permiten: Crear nuevos recursos, Leer y visualizar información, Actualizar recursos existentes y Eliminar recursos. Asegúrate de otorgar solo los permisos necesarios para cada rol.",
+    "cancel": "Cancelar",
+    "createRole": "Crear Rol",
+    "creating": "Creando Rol...",
+    "createSuccess": "Rol creado exitosamente",
+    "createError": "Error al crear el rol",
+    "updateRole": "Actualizar Rol",
+    "updating": "Actualizando...",
+    "updateSuccess": "Rol actualizado exitosamente",
+    "updateError": "Error al actualizar el rol",
+    "validationError": "Por favor corrige los errores del formulario",
+    "connectionError": "Error de conexión al crear el rol",
+    "modules": {
+      "bulletinscomposer": {
+        "name": "Compositor de Boletines",
+        "description": "Crear y editar boletines agroclimáticos"
+      },
+      "templatemanagement": {
+        "name": "Gestión de Plantillas",
+        "description": "Administrar plantillas de boletines"
+      },
+      "dashboardbulletins": {
+        "name": "Dashboard de Boletines",
+        "description": "Ver listado y estado de boletines"
+      },
+      "review": {
+        "name": "Revisión",
+        "description": "Gestionar proceso de revisión de boletines"
+      },
+      "cardmanagement": {
+        "name": "Gestión de Cards",
+        "description": "Administrar cards reutilizables"
+      },
+      "accesscontrol": {
+        "name": "Control de Acceso",
+        "description": "Gestionar usuarios, roles y grupos"
+      },
+      "externalintegrations": {
+        "name": "Integraciones Externas",
+        "description": "Configurar integraciones con sistemas externos"
+      }
+    },
+    "crud": {
+      "create": "Crear",
+      "read": "Leer",
+      "update": "Actualizar",
+      "delete": "Eliminar"
+    }
   }
 }
