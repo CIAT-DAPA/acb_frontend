@@ -2,6 +2,7 @@
   "Navbar": {
     "templates": "Plantillas",
     "bulletins": "Boletines",
+    "cards": "Tarjetas",
     "access": "Acceso",
     "roles": "Roles",
     "groups": "Grupos",
@@ -978,6 +979,133 @@
       "title": "Códigos de País (ISO 3166-1 alpha-2)",
       "description": "Usa códigos de 2 letras en mayúsculas:",
       "examples": "Ejemplos: CO (Colombia), VN (Vietnam), BR (Brasil), US (Estados Unidos), MX (México)"
+    }
+  },
+  "Cards": {
+    "title": "Gestiona cards reutilizables para tus boletines",
+    "subtitle": "Las cards son contenido predefinido que puedes insertar en tus boletines: plagas, enfermedades, información de cultivos y recomendaciones.",
+    "createNew": "Crear Card",
+    "searchPlaceholder": "Buscar cards por nombre o tipo...",
+    "by": "por",
+    "lastModified": "Última modificación",
+    "view": "Ver",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "deleteConfirmTitle": "Eliminar Card",
+    "deleteConfirmMessage": "¿Estás seguro de que deseas eliminar \"{name}\"? Esta acción no se puede deshacer.",
+    "cancelDelete": "Cancelar",
+    "confirmDeleteBtn": "Eliminar",
+    "deleting": "Eliminando...",
+    "deleteSuccess": "Card \"{name}\" eliminada exitosamente",
+    "deleteError": "Error al eliminar la card \"{name}\": {error}",
+    "noResults": "No se encontraron cards",
+    "loading": "Cargando cards...",
+    "retry": "Reintentar",
+    "createFirst": "Crear tu primera card",
+    "cardTypes": {
+      "pest_or_disease": "Plaga o Enfermedad",
+      "crop_info": "Información de Cultivo",
+      "recommendation": "Recomendación",
+      "weather_alert": "Alerta Climática",
+      "general": "General"
+    },
+    "filterByType": "Filtrar por tipo",
+    "allTypes": "Todos los tipos",
+    "blocks": "bloques",
+    "fields": "campos",
+    "templates": "plantillas"
+  },
+  "CreateCard": {
+    "title": "Crear Card",
+    "titleEdit": "Editar Card",
+    "subtitle": "Define el contenido predefinido que podrá ser usado en los boletines",
+    "steps": {
+      "basicInfo": "Información Básica",
+      "basicInfoDesc": "Define los datos principales de la card",
+      "content": "Contenido",
+      "contentDesc": "Configura los bloques y campos de la card"
+    },
+    "actions": {
+      "next": "Siguiente",
+      "back": "Atrás",
+      "create": "Crear Card",
+      "update": "Actualizar Card"
+    },
+    "messages": {
+      "createSuccess": "Card creada exitosamente",
+      "updateSuccess": "Card actualizada exitosamente",
+      "saveError": "Error al guardar la card: {error}"
+    },
+    "basicInfo": {
+      "title": "Información Básica",
+      "description": "Define los datos principales de tu card",
+      "name": "Nombre de la Card",
+      "namePlaceholder": "Ej: Alerta de Plagas en Café",
+      "type": "Tipo de Card",
+      "typeHelp": "Selecciona el tipo de card según su propósito",
+      "accessType": "Tipo de Acceso",
+      "accessTypeHelp": "Define quién puede usar esta card",
+      "accessTypes": {
+        "public": "Público",
+        "private": "Privado"
+      },
+      "allowedGroups": "Grupos Permitidos",
+      "allowedGroupsHelp": "Mantén presionado Ctrl/Cmd para seleccionar múltiples grupos",
+      "loadingGroups": "Cargando grupos...",
+      "errors": {
+        "nameRequired": "El nombre de la card es requerido",
+        "typeRequired": "El tipo de card es requerido",
+        "groupsRequired": "Debes seleccionar al menos un grupo para cards privadas"
+      }
+    },
+    "content": {
+      "title": "Contenido de la Card",
+      "description": "Configura los bloques y campos que formarán el contenido de la card",
+      "images": "Imágenes",
+      "backgroundUrl": "URL de Fondo",
+      "backgroundUrlPlaceholder": "https://ejemplo.com/fondo.jpg",
+      "backgroundUrlHelp": "URL de la imagen de fondo para la card",
+      "iconUrl": "URL del Ícono",
+      "iconUrlPlaceholder": "https://ejemplo.com/icono.svg",
+      "iconUrlHelp": "URL del ícono que representa la card",
+      "blocks": "Bloques",
+      "addBlock": "Agregar Bloque",
+      "removeBlock": "Eliminar Bloque",
+      "blockNamePlaceholder": "Nombre del bloque",
+      "blockType": "Tipo de Bloque",
+      "blockTypes": {
+        "text": "Texto",
+        "image": "Imagen",
+        "mixed": "Mixto"
+      },
+      "fields": "Campos",
+      "addField": "Agregar Campo",
+      "editField": "Editar Campo",
+      "removeField": "Eliminar Campo",
+      "edit": "Editar",
+      "noBlocks": "No hay bloques aún. Agrega el primer bloque para comenzar.",
+      "noFields": "Este bloque no tiene campos aún",
+      "errors": {
+        "blocksRequired": "Debes agregar al menos un bloque"
+      }
+    },
+    "preview": {
+      "title": "Vista Previa",
+      "cardName": "Nombre",
+      "untitled": "Sin título",
+      "cardType": "Tipo",
+      "accessType": "Acceso",
+      "public": "Público",
+      "private": "Privado",
+      "images": "Imágenes",
+      "background": "Fondo",
+      "icon": "Ícono",
+      "statistics": "Estadísticas",
+      "blocks": "Bloques",
+      "fields": "Campos",
+      "content": "Contenido",
+      "noFields": "Sin campos",
+      "noContent": "No hay contenido aún"
     }
   }
 }

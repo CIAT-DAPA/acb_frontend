@@ -29,6 +29,7 @@ export function Navbar() {
   // Navegación condicional - solo mostrar rutas que requieren auth si está autenticado
   const ALL_NAV_ITEMS = [
     { name: t("templates"), path: "/templates", requiresAuth: true },
+    { name: t("cards"), path: "/cards", requiresAuth: true },
     { name: t("bulletins"), path: "/bulletins", requiresAuth: true },
   ];
 

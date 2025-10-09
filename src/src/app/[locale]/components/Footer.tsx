@@ -40,8 +40,23 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/cards" className={linkAccent}>
+                  {tNavbar("cards")}
+                </Link>
+              </li>
+              <li>
                 <Link href="/bulletins" className={linkAccent}>
                   {tNavbar("bulletins")}
+                </Link>
+              </li>
+              <li>
+                <Link href="/roles" className={linkAccent}>
+                  {tNavbar("roles")}
+                </Link>
+              </li>
+              <li>
+                <Link href="/groups" className={linkAccent}>
+                  {tNavbar("groups")}
                 </Link>
               </li>
             </ul>

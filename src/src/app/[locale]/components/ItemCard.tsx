@@ -17,7 +17,7 @@ interface BaseItemCardProps {
   id: number | string;
   name: string;
   image?: string;
-  type: "template" | "visual-resource";
+  type: "template" | "visual-resource" | "card";
   author: string;
 
   // Botones de acción (opcionales y compartidos)
@@ -47,12 +47,28 @@ export interface VisualResourceCardProps extends BaseItemCardProps {
   tags?: string[];
 }
 
+// Props específicas para cards
+export interface CardItemCardProps extends BaseItemCardProps {
+  type: "card";
+  lastModified: string;
+  thumbnailImages?: string[]; // Background URL de la card
+  badge?: React.ReactNode; // Para mostrar el tipo de card
+  metadata?: React.ReactNode; // Para mostrar blocks, fields, templates count
+}
+
 // Union type para todas las props
-export type ItemCardProps = TemplateCardProps | VisualResourceCardProps;
+export type ItemCardProps =
+  | TemplateCardProps
+  | VisualResourceCardProps
+  | CardItemCardProps;
 
 export default function ItemCard(props: ItemCardProps) {
   const t = useTranslations(
-    props.type === "template" ? "Templates" : "VisualResources"
+    props.type === "template"
+      ? "Templates"
+      : props.type === "card"
+      ? "Cards"
+      : "VisualResources"
   );
 
   // Imagen a mostrar
@@ -61,6 +77,15 @@ export default function ItemCard(props: ItemCardProps) {
   // Para templates, usar el primer thumbnail si existe
   if (
     props.type === "template" &&
+    props.thumbnailImages &&
+    props.thumbnailImages.length > 0
+  ) {
+    displayImage = props.thumbnailImages[0];
+  }
+
+  // Para cards, usar el primer thumbnail si existe (background_url)
+  if (
+    props.type === "card" &&
     props.thumbnailImages &&
     props.thumbnailImages.length > 0
   ) {
@@ -230,23 +255,37 @@ export default function ItemCard(props: ItemCardProps) {
           </p>
         )}
 
-        {/* Tags */}
-        {props.tags && props.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {props.tags.slice(0, 2).map((tag) => (
-              <span
-                key={tag}
-                className="px-2 py-1 bg-[#ffaf68]/20 text-[#283618] text-xs rounded-full flex items-center gap-1"
-              >
-                <Tag className="h-2 w-2" />
-                {tag}
-              </span>
-            ))}
-            {props.tags.length > 2 && (
-              <span className="px-2 py-1 bg-gray-100 text-[#283618]/80 text-xs rounded-full">
-                +{props.tags.length - 2}
-              </span>
-            )}
+        {/* Tags (solo para visual-resource) */}
+        {props.type === "visual-resource" &&
+          props.tags &&
+          props.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {props.tags.slice(0, 2).map((tag: string) => (
+                <span
+                  key={tag}
+                  className="px-2 py-1 bg-[#ffaf68]/20 text-[#283618] text-xs rounded-full flex items-center gap-1"
+                >
+                  <Tag className="h-2 w-2" />
+                  {tag}
+                </span>
+              ))}
+              {props.tags.length > 2 && (
+                <span className="px-2 py-1 bg-gray-100 text-[#283618]/80 text-xs rounded-full">
+                  +{props.tags.length - 2}
+                </span>
+              )}
+            </div>
+          )}
+
+        {/* Badge (solo para cards) */}
+        {props.type === "card" && props.badge && (
+          <div className="mb-2">{props.badge}</div>
+        )}
+
+        {/* Metadata (solo para cards) */}
+        {props.type === "card" && props.metadata && (
+          <div className="mt-2 pt-2 border-t border-gray-200">
+            {props.metadata}
           </div>
         )}
       </div>

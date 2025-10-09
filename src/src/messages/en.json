@@ -2,6 +2,7 @@
   "Navbar": {
     "templates": "Templates",
     "bulletins": "Bulletins",
+    "cards": "Cards",
     "access": "Access",
     "roles": "Roles",
     "groups": "Groups",
@@ -977,6 +978,133 @@
       "title": "Country Codes (ISO 3166-1 alpha-2)",
       "description": "Use 2-letter uppercase codes:",
       "examples": "Examples: CO (Colombia), VN (Vietnam), BR (Brazil), US (United States), MX (Mexico)"
+    }
+  },
+  "Cards": {
+    "title": "Manage reusable cards for your bulletins",
+    "subtitle": "Cards are predefined content you can insert into your bulletins: pests, diseases, crop information and recommendations.",
+    "createNew": "Create Card",
+    "searchPlaceholder": "Search cards by name or type...",
+    "by": "by",
+    "lastModified": "Last modified",
+    "view": "View",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteConfirmTitle": "Delete Card",
+    "deleteConfirmMessage": "Are you sure you want to delete \"{name}\"? This action cannot be undone.",
+    "cancelDelete": "Cancel",
+    "confirmDeleteBtn": "Delete",
+    "deleting": "Deleting...",
+    "deleteSuccess": "Card \"{name}\" deleted successfully",
+    "deleteError": "Error deleting card \"{name}\": {error}",
+    "noResults": "No cards found",
+    "loading": "Loading cards...",
+    "retry": "Retry",
+    "createFirst": "Create your first card",
+    "cardTypes": {
+      "pest_or_disease": "Pest or Disease",
+      "crop_info": "Crop Information",
+      "recommendation": "Recommendation",
+      "weather_alert": "Weather Alert",
+      "general": "General"
+    },
+    "filterByType": "Filter by type",
+    "allTypes": "All types",
+    "blocks": "blocks",
+    "fields": "fields",
+    "templates": "templates"
+  },
+  "CreateCard": {
+    "title": "Create Card",
+    "titleEdit": "Edit Card",
+    "subtitle": "Define predefined content that can be used in bulletins",
+    "steps": {
+      "basicInfo": "Basic Information",
+      "basicInfoDesc": "Define the main card data",
+      "content": "Content",
+      "contentDesc": "Configure card blocks and fields"
+    },
+    "actions": {
+      "next": "Next",
+      "back": "Back",
+      "create": "Create Card",
+      "update": "Update Card"
+    },
+    "messages": {
+      "createSuccess": "Card created successfully",
+      "updateSuccess": "Card updated successfully",
+      "saveError": "Error saving card: {error}"
+    },
+    "basicInfo": {
+      "title": "Basic Information",
+      "description": "Define your card's main data",
+      "name": "Card Name",
+      "namePlaceholder": "Ex: Coffee Pest Alert",
+      "type": "Card Type",
+      "typeHelp": "Select card type based on its purpose",
+      "accessType": "Access Type",
+      "accessTypeHelp": "Define who can use this card",
+      "accessTypes": {
+        "public": "Public",
+        "private": "Private"
+      },
+      "allowedGroups": "Allowed Groups",
+      "allowedGroupsHelp": "Hold Ctrl/Cmd to select multiple groups",
+      "loadingGroups": "Loading groups...",
+      "errors": {
+        "nameRequired": "Card name is required",
+        "typeRequired": "Card type is required",
+        "groupsRequired": "You must select at least one group for private cards"
+      }
+    },
+    "content": {
+      "title": "Card Content",
+      "description": "Configure blocks and fields that will form the card content",
+      "images": "Images",
+      "backgroundUrl": "Background URL",
+      "backgroundUrlPlaceholder": "https://example.com/background.jpg",
+      "backgroundUrlHelp": "Background image URL for the card",
+      "iconUrl": "Icon URL",
+      "iconUrlPlaceholder": "https://example.com/icon.svg",
+      "iconUrlHelp": "Icon URL representing the card",
+      "blocks": "Blocks",
+      "addBlock": "Add Block",
+      "removeBlock": "Remove Block",
+      "blockNamePlaceholder": "Block name",
+      "blockType": "Block Type",
+      "blockTypes": {
+        "text": "Text",
+        "image": "Image",
+        "mixed": "Mixed"
+      },
+      "fields": "Fields",
+      "addField": "Add Field",
+      "editField": "Edit Field",
+      "removeField": "Remove Field",
+      "edit": "Edit",
+      "noBlocks": "No blocks yet. Add the first block to get started.",
+      "noFields": "This block has no fields yet",
+      "errors": {
+        "blocksRequired": "You must add at least one block"
+      }
+    },
+    "preview": {
+      "title": "Preview",
+      "cardName": "Name",
+      "untitled": "Untitled",
+      "cardType": "Type",
+      "accessType": "Access",
+      "public": "Public",
+      "private": "Private",
+      "images": "Images",
+      "background": "Background",
+      "icon": "Icon",
+      "statistics": "Statistics",
+      "blocks": "Blocks",
+      "fields": "Fields",
+      "content": "Content",
+      "noFields": "No fields",
+      "noContent": "No content yet"
     }
   }
 }
