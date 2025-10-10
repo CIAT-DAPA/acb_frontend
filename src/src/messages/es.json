@@ -681,6 +681,7 @@
         "loadingIcons": "Cargando iconos disponibles...",
         "noIconsAvailable": "No hay iconos disponibles. Por favor, suba iconos en la sección de Recursos Visuales.",
         "selectIconPlaceholder": "Seleccione un icono",
+        "selectIcon": "Seleccionar Icono",
         "selectedIcon": "Icono seleccionado",
         "iconHelp": "Seleccione el icono que acompañará al texto en el boletín"
       },
@@ -707,6 +708,7 @@
         "padding": "Padding (CSS)",
         "margin": "Margin (CSS)",
         "gap": "Espaciado entre Campos (px)",
+        "backgroundImage": "Imagen de Fondo",
         "alignOptions": {
           "left": "Izquierda",
           "center": "Centro",
@@ -1019,6 +1021,7 @@
     "title": "Crear Card",
     "titleEdit": "Editar Card",
     "subtitle": "Define el contenido predefinido que podrá ser usado en los boletines",
+    "backToCards": "Volver a Cards",
     "steps": {
       "basicInfo": "Información Básica",
       "basicInfoDesc": "Define los datos principales de la card",
@@ -1047,7 +1050,8 @@
       "accessTypeHelp": "Define quién puede usar esta card",
       "accessTypes": {
         "public": "Público",
-        "private": "Privado"
+        "private": "Privado",
+        "restricted": "Restringido"
       },
       "allowedGroups": "Grupos Permitidos",
       "allowedGroupsHelp": "Mantén presionado Ctrl/Cmd para seleccionar múltiples grupos",
@@ -1061,6 +1065,11 @@
     "content": {
       "title": "Contenido de la Card",
       "description": "Configura los bloques y campos que formarán el contenido de la card",
+      "tabs": {
+        "blocks": "Bloques",
+        "header": "Encabezado",
+        "footer": "Pie de Página"
+      },
       "images": "Imágenes",
       "backgroundUrl": "URL de Fondo",
       "backgroundUrlPlaceholder": "https://ejemplo.com/fondo.jpg",

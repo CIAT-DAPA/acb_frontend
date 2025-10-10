@@ -502,7 +502,8 @@
       "visibility": {
         "title": "Visibility",
         "form": "Show in form for bulletin creation",
-        "bulletin": "Show in final bulletin"
+        "bulletin": "Show in final bulletin",
+        "formHelp": "If not shown in the form, the label and description will be automatically assigned from the display name"
       },
       "validation": {
         "title": "Validation",
@@ -680,6 +681,7 @@
         "loadingIcons": "Loading available icons...",
         "noIconsAvailable": "No icons available. Please upload icons in the Visual Resources section.",
         "selectIconPlaceholder": "Select an icon",
+        "selectIcon": "Select Icon",
         "selectedIcon": "Selected icon",
         "iconHelp": "Select the icon that will accompany the text in the bulletin"
       },
@@ -706,6 +708,7 @@
         "padding": "Padding (CSS)",
         "margin": "Margin (CSS)",
         "gap": "Field Spacing (px)",
+        "backgroundImage": "Background Image",
         "alignOptions": {
           "left": "Left",
           "center": "Center",
@@ -1018,6 +1021,7 @@
     "title": "Create Card",
     "titleEdit": "Edit Card",
     "subtitle": "Define predefined content that can be used in bulletins",
+    "backToCards": "Back to Cards",
     "steps": {
       "basicInfo": "Basic Information",
       "basicInfoDesc": "Define the main card data",
@@ -1046,7 +1050,8 @@
       "accessTypeHelp": "Define who can use this card",
       "accessTypes": {
         "public": "Public",
-        "private": "Private"
+        "private": "Private",
+        "restricted": "Restricted"
       },
       "allowedGroups": "Allowed Groups",
       "allowedGroupsHelp": "Hold Ctrl/Cmd to select multiple groups",
@@ -1060,6 +1065,11 @@
     "content": {
       "title": "Card Content",
       "description": "Configure blocks and fields that will form the card content",
+      "tabs": {
+        "blocks": "Blocks",
+        "header": "Header",
+        "footer": "Footer"
+      },
       "images": "Images",
       "backgroundUrl": "Background URL",
       "backgroundUrlPlaceholder": "https://example.com/background.jpg",

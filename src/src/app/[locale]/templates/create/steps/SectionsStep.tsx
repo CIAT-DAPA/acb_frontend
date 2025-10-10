@@ -953,7 +953,7 @@ export function SectionsStep({
                   <nav className="-mb-px flex space-x-8">
                     <button
                       onClick={() => setActiveTab("overview")}
-                      className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+                      className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors cursor-pointer ${
                         activeTab === "overview"
                           ? "border-[#bc6c25] text-[#bc6c25]"
                           : "border-transparent text-[#283618]/70 hover:text-[#283618] hover:border-gray-300"
@@ -966,7 +966,7 @@ export function SectionsStep({
                     </button>
                     <button
                       onClick={() => setActiveTab("blocks")}
-                      className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+                      className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors cursor-pointer ${
                         activeTab === "blocks"
                           ? "border-[#bc6c25] text-[#bc6c25]"
                           : "border-transparent text-[#283618]/70 hover:text-[#283618] hover:border-gray-300"
@@ -979,7 +979,7 @@ export function SectionsStep({
                     </button>
                     <button
                       onClick={() => setActiveTab("header")}
-                      className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+                      className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors cursor-pointer ${
                         activeTab === "header"
                           ? "border-[#bc6c25] text-[#bc6c25]"
                           : "border-transparent text-[#283618]/70 hover:text-[#283618] hover:border-gray-300"

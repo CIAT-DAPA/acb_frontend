@@ -54,40 +54,15 @@ export default function FormCardPage({
       },
       content: {
         background_url: "",
-        icon_url: "",
         blocks: [],
       },
       status: "active",
-      log: {
-        created_at: new Date().toISOString(),
-        creator_user_id: "",
-        creator_first_name: null,
-        creator_last_name: null,
-      },
     },
     errors: {},
     isValid: false,
   });
 
   const [isLoading, setIsLoading] = useState(false);
-
-  // Actualizar creator_user_id cuando userInfo esté disponible
-  useEffect(() => {
-    if (userInfo?.sub && !creationState.data.log?.creator_user_id) {
-      setCreationState((prev) => ({
-        ...prev,
-        data: {
-          ...prev.data,
-          log: {
-            created_at: new Date().toISOString(),
-            creator_user_id: userInfo.sub!,
-            creator_first_name: userInfo.given_name || null,
-            creator_last_name: userInfo.family_name || null,
-          },
-        },
-      }));
-    }
-  }, [userInfo, creationState.data.log?.creator_user_id]);
 
   // Función para actualizar datos
   const handleDataChange = useCallback(
@@ -246,64 +221,59 @@ export default function FormCardPage({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link
-                href="/cards"
-                className="p-2 text-[#283618] hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Link>
-              <div>
-                <h1 className="text-2xl font-bold text-[#283618]">
-                  {isEditMode ? t("titleEdit") : t("title")}
-                </h1>
-                <p className="text-sm text-[#283618]/60">{t("subtitle")}</p>
-              </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex items-center gap-4 mb-2">
+          <Link
+            href="/cards"
+            className="flex items-center gap-2 text-[#283618]/60 hover:text-[#283618] transition-colors"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            <span>{t("backToCards")}</span>
+          </Link>
+        </div>
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-[#283618]">
+                {isEditMode ? t("editTitle") : t("title")}
+              </h1>
+              <p className="mt-2 text-[#283618]/70">{t("subtitle")}</p>
             </div>
           </div>
         </div>
-      </div>
+        {/* Stepper */}
+        <div className="mb-8">
+          <Stepper
+            steps={steps}
+            currentStepIndex={getCurrentStepIndex()}
+            onStepClick={handleStepChange}
+          />
+        </div>
+        {/* Main Content */}
+        <div className="flex gap-8">
+          {/* Left Panel - Form */}
+          <div className="flex-1 max-w-2xl">
+            <div className="bg-white rounded-lg shadow-lg p-6">
+              <StepContent currentStep={getCurrentStepIndex()}>
+                {creationState.currentStep === "basic-info" && (
+                  <BasicInfoStep
+                    data={creationState.data}
+                    errors={creationState.errors}
+                    onDataChange={handleDataChange}
+                    onErrorsChange={handleErrorsChange}
+                  />
+                )}
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Form Section */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="p-6">
-              {/* Stepper */}
-              <Stepper
-                steps={steps}
-                currentStepIndex={getCurrentStepIndex()}
-                onStepClick={handleStepChange}
-              />
-
-              {/* Step Content */}
-              <div className="mt-8">
-                <StepContent currentStep={getCurrentStepIndex()}>
-                  {creationState.currentStep === "basic-info" && (
-                    <BasicInfoStep
-                      data={creationState.data}
-                      errors={creationState.errors}
-                      onDataChange={handleDataChange}
-                      onErrorsChange={handleErrorsChange}
-                    />
-                  )}
-
-                  {creationState.currentStep === "content" && (
-                    <ContentStep
-                      data={creationState.data}
-                      errors={creationState.errors}
-                      onDataChange={handleDataChange}
-                      onErrorsChange={handleErrorsChange}
-                    />
-                  )}
-                </StepContent>
-              </div>
-
+                {creationState.currentStep === "content" && (
+                  <ContentStep
+                    data={creationState.data}
+                    errors={creationState.errors}
+                    onDataChange={handleDataChange}
+                    onErrorsChange={handleErrorsChange}
+                  />
+                )}
+              </StepContent>
               {/* Navigation */}
               <StepNavigation
                 currentStep={getCurrentStepIndex()}
@@ -321,7 +291,7 @@ export default function FormCardPage({
             </div>
           </div>
 
-          {/* Preview Section */}
+          {/* Right Panel - Preview Section */}
           <div className="lg:sticky lg:top-24 h-fit">
             <CardPreview data={creationState.data} />
           </div>

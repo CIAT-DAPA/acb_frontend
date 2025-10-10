@@ -23,8 +23,14 @@ export function CardPreview({ data }: CardPreviewProps) {
         ? [data.content.background_url]
         : [],
       order: 0,
-      icon_url: data.content.icon_url || "",
+      icon_url: "",
       blocks: data.content.blocks,
+      style_config: {
+        background_color: data.content.background_color,
+        background_image: data.content.background_url,
+      },
+      header_config: data.content.header_config,
+      footer_config: data.content.footer_config,
     };
 
     return {

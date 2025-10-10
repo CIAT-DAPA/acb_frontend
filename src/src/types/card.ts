@@ -23,8 +23,10 @@ export type CardType =
  */
 export interface CardContent {
   background_url?: string; // URL de imagen de fondo para la card
-  icon_url?: string; // URL de icono para la card
+  background_color?: string; // Color de fondo para la card (hex, rgb, etc.)
   blocks: Block[]; // Array de bloques, misma estructura que en templates
+  header_config?: import("./template").HeaderFooterConfig; // Configuración opcional del encabezado
+  footer_config?: import("./template").HeaderFooterConfig; // Configuración opcional del pie de página
 }
 
 /**
