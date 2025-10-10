@@ -1,4 +1,5 @@
 import { Group, GroupUserRole } from "@/types/groups";
+import { LogObject } from "@/types/core";
 import { BaseAPIService } from "./apiConfig";
 
 // Interfaz para respuestas de la API
@@ -108,7 +109,7 @@ export class GroupAPIService extends BaseAPIService {
    * POST /groups/
    */
   static async createGroup(
-    groupData: Omit<Group, "_id" | "log">
+    groupData: Omit<Group, "_id" | "log"> & { log?: LogObject }
   ): Promise<APIResponse<Group>> {
     try {
       const data = await this.post<any>("/groups/", groupData);

@@ -29,8 +29,10 @@ import {
 } from "../../components/ui";
 import { GroupAPIService } from "@/services/groupService";
 import { RoleAPIService } from "@/services/roleService";
+import { UserService } from "@/services/userService";
 import { GroupUserRole } from "@/types/groups";
 import { Role } from "@/types/roles";
+import { User } from "@/types/user";
 
 export default function CreateGroupPage() {
   const t = useTranslations("CreateGroup");
@@ -45,7 +47,9 @@ export default function CreateGroupPage() {
 
   // Estados para datos de la API
   const [roles, setRoles] = useState<Role[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loadingRoles, setLoadingRoles] = useState(true);
+  const [loadingUsers, setLoadingUsers] = useState(true);
 
   // Estados de UI
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,9 +60,10 @@ export default function CreateGroupPage() {
     usersAccess?: string;
   }>({});
 
-  // Cargar roles al montar el componente
+  // Cargar roles y usuarios al montar el componente
   useEffect(() => {
     loadRoles();
+    loadUsers();
   }, []);
 
   // Función para cargar roles desde la API
@@ -76,6 +81,24 @@ export default function CreateGroupPage() {
       showToast("Error de conexión al cargar los roles", "error", 4000);
     } finally {
       setLoadingRoles(false);
+    }
+  };
+
+  // Función para cargar usuarios desde la API
+  const loadUsers = async () => {
+    setLoadingUsers(true);
+    try {
+      const response = await UserService.getActiveUsers();
+      if (response.success && response.data) {
+        setUsers(response.data);
+      } else {
+        showToast("Error al cargar los usuarios", "error", 4000);
+      }
+    } catch (error) {
+      console.error("Error loading users:", error);
+      showToast("Error de conexión al cargar los usuarios", "error", 4000);
+    } finally {
+      setLoadingUsers(false);
     }
   };
 
@@ -163,6 +186,12 @@ export default function CreateGroupPage() {
         country: country.trim().toUpperCase(),
         description: description.trim(),
         users_access: validUsers,
+        log: {
+          created_at: new Date().toISOString(),
+          creator_user_id: "000000000000000000000000", // Placeholder, backend will replace with actual ObjectId
+          creator_first_name: null,
+          creator_last_name: null,
+        },
       });
 
       if (response.success) {
@@ -337,23 +366,35 @@ export default function CreateGroupPage() {
                         key={index}
                         className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200"
                       >
-                        {/* User ID */}
+                        {/* User Select */}
                         <div className="flex-1">
                           <label className="block text-xs font-medium text-[#283618] mb-1">
                             {t("userId")}
                           </label>
                           <div className="flex items-center gap-2">
                             <UserCheck className="h-4 w-4 text-[#606c38] flex-shrink-0" />
-                            <input
-                              type="text"
-                              value={user.user_id}
-                              onChange={(e) =>
-                                updateUser(index, "user_id", e.target.value)
-                              }
-                              placeholder={t("userIdPlaceholder")}
-                              className={`${inputField} text-sm`}
-                              disabled={isSubmitting}
-                            />
+                            {loadingUsers ? (
+                              <div className="flex items-center gap-2 text-sm text-[#283618]/60">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <span>Cargando usuarios...</span>
+                              </div>
+                            ) : (
+                              <select
+                                value={user.user_id}
+                                onChange={(e) =>
+                                  updateUser(index, "user_id", e.target.value)
+                                }
+                                className={`${inputField} text-sm`}
+                                disabled={isSubmitting}
+                              >
+                                <option value="">{t("selectUser")}</option>
+                                {users.map((u) => (
+                                  <option key={u.id} value={u.id}>
+                                    {u.first_name} {u.last_name}
+                                  </option>
+                                ))}
+                              </select>
+                            )}
                           </div>
                         </div>
 
