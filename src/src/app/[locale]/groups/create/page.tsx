@@ -185,13 +185,7 @@ export default function CreateGroupPage() {
         group_name: groupName.trim(),
         country: country.trim().toUpperCase(),
         description: description.trim(),
-        users_access: validUsers,
-        log: {
-          created_at: new Date().toISOString(),
-          creator_user_id: "000000000000000000000000", // Placeholder, backend will replace with actual ObjectId
-          creator_first_name: null,
-          creator_last_name: null,
-        },
+        users_access: validUsers
       });
 
       if (response.success) {
