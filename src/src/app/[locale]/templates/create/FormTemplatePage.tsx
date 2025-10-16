@@ -223,7 +223,13 @@ export default function CreateTemplatePage({
     switch (currentStep) {
       case "basic-info":
         return !!(
-          data.master.template_name.trim() && data.master.description.trim()
+          data.master.template_name.trim() &&
+          data.master.description.trim() &&
+          (
+            data.master.access_config?.access_type !== "restricted" ||
+            (Array.isArray(data.master.access_config?.allowed_groups) &&
+              data.master.access_config.allowed_groups.length > 0)
+          )
         );
 
       case "general-config":
