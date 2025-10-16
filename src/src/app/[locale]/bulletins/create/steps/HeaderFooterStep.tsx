@@ -4,6 +4,7 @@ import React from "react";
 import { useTranslations } from "next-intl";
 import { CreateBulletinData } from "../../../../../types/bulletin";
 import { Field } from "../../../../../types/template";
+import { ListFieldEditor } from "../components/fields";
 
 interface HeaderFooterStepProps {
   bulletinData: CreateBulletinData;
@@ -60,6 +61,17 @@ export function HeaderFooterStep({
     const fieldValue = field.value || "";
 
     switch (field.type) {
+      case "list":
+        // Para campos de tipo lista, usar el editor especializado
+        const listValue = Array.isArray(fieldValue) ? fieldValue : [];
+        return (
+          <ListFieldEditor
+            field={field}
+            value={listValue}
+            onChange={(value) => handleChange(index, value)}
+          />
+        );
+
       case "text":
         const isLongText =
           "field_config" in field &&
@@ -144,6 +156,14 @@ export function HeaderFooterStep({
   const headerFields = bulletinData.version.data.header_config?.fields || [];
   const footerFields = bulletinData.version.data.footer_config?.fields || [];
 
+  // Filtrar solo los campos que tienen form: true (campos editables en el formulario)
+  const editableHeaderFields = headerFields.filter(
+    (field) => field.form === true
+  );
+  const editableFooterFields = footerFields.filter(
+    (field) => field.form === true
+  );
+
   return (
     <div className="space-y-6">
       <div>
@@ -154,58 +174,69 @@ export function HeaderFooterStep({
       </div>
 
       {/* Header Configuration */}
-      {headerFields.length > 0 && (
+      {editableHeaderFields.length > 0 && (
         <div className="border-t pt-4">
           <h4 className="text-md font-semibold text-[#283618] mb-4">
             {t("headerSection")}
           </h4>
           <div className="space-y-4">
-            {headerFields.map((field, index) => (
-              <div key={field.field_id}>
-                <label className="block text-sm font-medium text-[#283618] mb-1">
-                  {field.display_name}
-                </label>
-                {renderField(field, index, true)}
-                {field.description && (
-                  <p className="text-xs text-[#606c38] mt-1">
-                    {field.description}
-                  </p>
-                )}
-              </div>
-            ))}
+            {editableHeaderFields.map((field) => {
+              // Encontrar el índice original del campo en el array completo
+              const originalIndex = headerFields.findIndex(
+                (f) => f.field_id === field.field_id
+              );
+              return (
+                <div key={field.field_id}>
+                  <label className="block text-sm font-medium text-[#283618] mb-1">
+                    {field.display_name}
+                  </label>
+                  {renderField(field, originalIndex, true)}
+                  {field.description && (
+                    <p className="text-xs text-[#606c38] mt-1">
+                      {field.description}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
 
       {/* Footer Configuration */}
-      {footerFields.length > 0 && (
+      {editableFooterFields.length > 0 && (
         <div className="border-t pt-4">
           <h4 className="text-md font-semibold text-[#283618] mb-4">
             {t("footerSection")}
           </h4>
           <div className="space-y-4">
-            {footerFields.map((field, index) => (
-              <div key={field.field_id}>
-                <label className="block text-sm font-medium text-[#283618] mb-1">
-                  {field.display_name}
-                </label>
-                {renderField(field, index, false)}
-                {field.description && (
-                  <p className="text-xs text-[#606c38] mt-1">
-                    {field.description}
-                  </p>
-                )}
-              </div>
-            ))}
+            {editableFooterFields.map((field) => {
+              // Encontrar el índice original del campo en el array completo
+              const originalIndex = footerFields.findIndex(
+                (f) => f.field_id === field.field_id
+              );
+              return (
+                <div key={field.field_id}>
+                  <label className="block text-sm font-medium text-[#283618] mb-1">
+                    {field.display_name}
+                  </label>
+                  {renderField(field, originalIndex, false)}
+                  {field.description && (
+                    <p className="text-xs text-[#606c38] mt-1">
+                      {field.description}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
 
-      {headerFields.length === 0 && footerFields.length === 0 && (
-        <div className="text-center py-8 text-[#606c38]">
-          {t("noFields")}
-        </div>
-      )}
+      {editableHeaderFields.length === 0 &&
+        editableFooterFields.length === 0 && (
+          <div className="text-center py-8 text-[#606c38]">{t("noFields")}</div>
+        )}
     </div>
   );
 }

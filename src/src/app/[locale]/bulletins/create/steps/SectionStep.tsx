@@ -4,6 +4,7 @@ import React from "react";
 import { useTranslations } from "next-intl";
 import { CreateBulletinData } from "../../../../../types/bulletin";
 import { Field } from "../../../../../types/template";
+import { ListFieldEditor } from "../components/fields";
 
 interface SectionStepProps {
   bulletinData: CreateBulletinData;
@@ -22,9 +23,7 @@ export function SectionStep({
 
   if (!section) {
     return (
-      <div className="text-center py-8 text-red-500">
-        Sección no encontrada
-      </div>
+      <div className="text-center py-8 text-red-500">Sección no encontrada</div>
     );
   }
 
@@ -78,6 +77,17 @@ export function SectionStep({
     };
 
     switch (field.type) {
+      case "list":
+        // Para campos de tipo lista, usar el editor especializado
+        const listValue = Array.isArray(fieldValue) ? fieldValue : [];
+        return (
+          <ListFieldEditor
+            field={field}
+            value={listValue}
+            onChange={handleChange}
+          />
+        );
+
       case "text":
         const isLongText =
           "field_config" in field &&

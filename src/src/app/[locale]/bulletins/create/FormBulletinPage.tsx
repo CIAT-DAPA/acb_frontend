@@ -125,6 +125,15 @@ export default function FormBulletinPage() {
           const versionId = response.data.id || response.data._id;
           const content = response.data.content;
 
+          // Helper para inicializar el valor de un campo según su tipo
+          const initializeFieldValue = (field: Field) => {
+            if (field.type === "list") {
+              // Para campos de tipo list, inicializar como array vacío
+              return field.value || [];
+            }
+            return field.value || null;
+          };
+
           // Inicializar datos del boletín con la estructura del template
           setCreationState((prev) => ({
             ...prev,
@@ -147,7 +156,7 @@ export default function FormBulletinPage() {
                         fields: content.header_config.fields.map(
                           (field: Field) => ({
                             ...field,
-                            value: field.value || null,
+                            value: initializeFieldValue(field),
                           })
                         ),
                       }
@@ -158,7 +167,7 @@ export default function FormBulletinPage() {
                         fields: content.footer_config.fields.map(
                           (field: Field) => ({
                             ...field,
-                            value: field.value || null,
+                            value: initializeFieldValue(field),
                           })
                         ),
                       }
@@ -171,7 +180,7 @@ export default function FormBulletinPage() {
                           fields: section.header_config.fields.map(
                             (field: Field) => ({
                               ...field,
-                              value: field.value || null,
+                              value: initializeFieldValue(field),
                             })
                           ),
                         }
@@ -182,7 +191,7 @@ export default function FormBulletinPage() {
                           fields: section.footer_config.fields.map(
                             (field: Field) => ({
                               ...field,
-                              value: field.value || null,
+                              value: initializeFieldValue(field),
                             })
                           ),
                         }
@@ -191,7 +200,7 @@ export default function FormBulletinPage() {
                       ...block,
                       fields: block.fields.map((field: Field) => ({
                         ...field,
-                        value: field.value || null,
+                        value: initializeFieldValue(field),
                       })),
                     })),
                   })),
@@ -223,10 +232,22 @@ export default function FormBulletinPage() {
 
   // Navegar a un paso específico
   const goToStep = useCallback((step: BulletinCreationStep) => {
-    setCreationState((prev) => ({
-      ...prev,
-      currentStep: step,
-    }));
+    setCreationState((prev) => {
+      // Extraer el índice de la sección si el paso es "section-N"
+      let sectionIndex = prev.currentSectionIndex;
+      if (step.startsWith("section-")) {
+        const match = step.match(/section-(\d+)/);
+        if (match) {
+          sectionIndex = parseInt(match[1], 10);
+        }
+      }
+
+      return {
+        ...prev,
+        currentStep: step,
+        currentSectionIndex: sectionIndex,
+      };
+    });
   }, []);
 
   // Configuración de los pasos del stepper
@@ -367,6 +388,20 @@ export default function FormBulletinPage() {
       return null;
     }
 
+    // Determinar qué secciones mostrar según el paso actual
+    let sectionsToShow = creationState.data.version.data.sections;
+
+    // Si estamos en un paso de sección específica, mostrar solo esa sección
+    if (creationState.currentStep.startsWith("section-")) {
+      const currentSection =
+        creationState.data.version.data.sections[
+          creationState.currentSectionIndex
+        ];
+      if (currentSection) {
+        sectionsToShow = [currentSection];
+      }
+    }
+
     return {
       master: {
         template_name:
@@ -387,7 +422,7 @@ export default function FormBulletinPage() {
           style_config: creationState.data.version.data.style_config || {},
           header_config: creationState.data.version.data.header_config,
           footer_config: creationState.data.version.data.footer_config,
-          sections: creationState.data.version.data.sections,
+          sections: sectionsToShow,
         },
       },
     };
@@ -526,7 +561,7 @@ export default function FormBulletinPage() {
             {previewData ? (
               <div
                 id="bulletin-preview-container"
-                className="border rounded-lg overflow-hidden"
+                className="rounded-lg overflow-hidden"
               >
                 <TemplatePreview data={previewData} />
               </div>

@@ -91,7 +91,14 @@ export function TemplatePreview({
     let dateObj: Date;
 
     if (typeof date === "string") {
-      dateObj = new Date(date);
+      // Si la fecha viene en formato YYYY-MM-DD (del input date),
+      // parsearlo como fecha local para evitar problemas de zona horaria
+      if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        const [year, month, day] = date.split("-").map(Number);
+        dateObj = new Date(year, month - 1, day);
+      } else {
+        dateObj = new Date(date);
+      }
     } else {
       dateObj = date;
     }
@@ -181,11 +188,10 @@ export function TemplatePreview({
 
     switch (field.type) {
       case "text":
-        // Para text, si form es false y tiene valor, mostrarlo. Si form es true, mostrar placeholder
-        const textValue =
-          !field.form && field.value
-            ? renderFieldValue(field.value)
-            : field.display_name || field.label || "Campo de texto";
+        // Mostrar el valor si existe, sino mostrar placeholder
+        const textValue = field.value
+          ? renderFieldValue(field.value)
+          : field.display_name || field.label || "Campo de texto";
 
         return (
           <div key={key} style={fieldStyles}>
@@ -243,15 +249,14 @@ export function TemplatePreview({
         );
 
       case "select_with_icons":
-        // Si form es false, mostrar el icono seleccionado (si existe valor)
-        // Si form es true o no hay valor, mostrar un icono y label por defecto
+        // Mostrar el icono seleccionado si existe valor, sino mostrar placeholder
         let iconToShow = null;
         let labelToShow = null;
 
         const selectOptions = (field.field_config as any)?.options || [];
         const selectIconsUrl = (field.field_config as any)?.icons_url || [];
 
-        if (!field.form && field.value) {
+        if (field.value) {
           // Buscar el icono correspondiente al valor seleccionado
           const selectedIndex = selectOptions.findIndex(
             (opt: string) => opt === field.value
@@ -261,7 +266,7 @@ export function TemplatePreview({
             labelToShow = selectOptions[selectedIndex];
           }
         } else {
-          // Mostrar primer icono y label por defecto (para preview o cuando es form)
+          // Si no hay valor seleccionado, mostrar placeholder (primer icono)
           if (selectOptions.length > 0) {
             iconToShow = selectIconsUrl[0] || null;
             labelToShow = selectOptions[0];
@@ -470,11 +475,17 @@ export function TemplatePreview({
           fontFamily: effectiveStyles.font || undefined,
         };
 
+        // Obtener el array de items del valor del campo
+        const listItems = Array.isArray(field.value) ? field.value : [];
+
+        // Si no hay items, mostrar un item de ejemplo basado en el schema
+        const itemsToRender = listItems.length > 0 ? listItems : [{}];
+
         return (
           <div key={key}>
             <div className={showBullets ? "space-y-2" : "space-y-2"}>
-              {/* Renderizar elementos basados en item_schema */}
-              {[1, 2].map((itemIndex) => (
+              {/* Renderizar elementos basados en el valor del campo */}
+              {itemsToRender.map((item: any, itemIndex: number) => (
                 <div
                   key={itemIndex}
                   className="flex items-center gap-2 w-full"
@@ -492,7 +503,7 @@ export function TemplatePreview({
                       }}
                     >
                       {isNumbered
-                        ? `${itemIndex}.`
+                        ? `${itemIndex + 1}.`
                         : bulletStyles[listStyleType]}
                     </span>
                   )}
@@ -500,24 +511,27 @@ export function TemplatePreview({
                     {field.field_config?.item_schema &&
                     Object.keys(field.field_config.item_schema).length > 0 ? (
                       Object.entries(field.field_config.item_schema).map(
-                        ([fieldKey, itemField], fieldIndex) => (
-                          <div key={fieldIndex} className="min-w-0">
-                            {renderField(
-                              {
-                                ...itemField,
-                                value: itemField.value || undefined,
-                              } as Field,
-                              `${itemIndex}-${fieldIndex}`,
-                              containerStyle,
-                              "horizontal"
-                            )}
-                          </div>
-                        )
+                        ([fieldKey, itemFieldSchema], fieldIndex) => {
+                          // Obtener el valor del sub-field del item actual
+                          const itemFieldValue = item[fieldKey];
+
+                          return (
+                            <div key={fieldIndex} className="min-w-0">
+                              {renderField(
+                                {
+                                  ...(itemFieldSchema as Field),
+                                  value: itemFieldValue,
+                                } as Field,
+                                `${itemIndex}-${fieldIndex}`,
+                                containerStyle,
+                                "horizontal"
+                              )}
+                            </div>
+                          );
+                        }
                       )
                     ) : (
-                      <div className="text-sm">
-                        Elemento de lista {itemIndex}
-                      </div>
+                      <div className="text-sm">{JSON.stringify(item)}</div>
                     )}
                   </div>
                 </div>
@@ -530,6 +544,12 @@ export function TemplatePreview({
         const availableParams =
           (field.field_config as any)?.available_parameters || {};
         const paramEntries = Object.entries(availableParams);
+        const climateValue: { [key: string]: any } =
+          typeof field.value === "object" &&
+          field.value !== null &&
+          !Array.isArray(field.value)
+            ? (field.value as { [key: string]: any })
+            : {};
 
         return (
           <div key={key} className="flex flex-col gap-4" style={fieldStyles}>
@@ -537,6 +557,17 @@ export function TemplatePreview({
               paramEntries.map(([paramKey, paramConfig]: [string, any]) => {
                 // Por defecto showName es true si no está definido
                 const showName = paramConfig.showName !== false;
+
+                // Obtener el valor del parámetro o mostrar placeholder
+                const paramValue = climateValue[paramKey];
+                const displayValue =
+                  paramValue !== undefined &&
+                  paramValue !== null &&
+                  paramValue !== ""
+                    ? paramValue
+                    : paramConfig.type === "number"
+                    ? "-"
+                    : "-";
 
                 // Estilos individuales del parámetro
                 const paramStyles: React.CSSProperties = {
@@ -557,8 +588,7 @@ export function TemplatePreview({
                 return (
                   <div key={paramKey} className="text-sm" style={paramStyles}>
                     {showName && `${paramConfig.label}: `}
-                    {paramConfig.type === "number" ? "25" : "Valor"}{" "}
-                    {paramConfig.unit}
+                    {displayValue} {paramConfig.unit}
                   </div>
                 );
               })
@@ -605,7 +635,7 @@ export function TemplatePreview({
       </div>
 
       {/* Preview del documento */}
-      <div 
+      <div
         id="template-preview-container"
         className="border-2 border-gray-300 rounded-lg overflow-hidden inline-block"
       >
