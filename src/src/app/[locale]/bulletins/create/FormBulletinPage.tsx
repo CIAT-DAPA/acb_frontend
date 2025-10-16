@@ -24,10 +24,11 @@ import { SectionStep } from "./steps/SectionStep";
 import { TemplatePreview } from "../../templates/create/TemplatePreview";
 import { CreateTemplateData } from "../../../../types/template";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { TemplateAPIService } from "../../../../services/templateService";
 import { BulletinAPIService } from "../../../../services/bulletinService";
 import { useToast } from "../../../../components/Toast";
+import { btnOutlineSecondary, btnPrimary } from "../../components/ui";
 
 export default function FormBulletinPage() {
   const t = useTranslations("CreateBulletin");
@@ -109,7 +110,20 @@ export default function FormBulletinPage() {
         const response = await TemplateAPIService.getCurrentVersion(templateId);
 
         if (response.success && response.data) {
-          const versionId = response.data._id!;
+          // Verificar que existe el content
+          if (!response.data.content) {
+            console.error(
+              "Response does not have content property:",
+              response.data
+            );
+            throw new Error(
+              "La respuesta del template no tiene la estructura esperada"
+            );
+          }
+
+          // El servicio ya normaliza la respuesta, response.data contiene current_version
+          const versionId = response.data.id || response.data._id;
+          const content = response.data.content;
 
           // Inicializar datos del boletín con la estructura del template
           setCreationState((prev) => ({
@@ -126,11 +140,11 @@ export default function FormBulletinPage() {
               version: {
                 ...prev.data.version,
                 data: {
-                  style_config: response.data.content.style_config,
-                  header_config: response.data.content.header_config
+                  style_config: content.style_config,
+                  header_config: content.header_config
                     ? {
-                        ...response.data.content.header_config,
-                        fields: response.data.content.header_config.fields.map(
+                        ...content.header_config,
+                        fields: content.header_config.fields.map(
                           (field: Field) => ({
                             ...field,
                             value: field.value || null,
@@ -138,10 +152,10 @@ export default function FormBulletinPage() {
                         ),
                       }
                     : { fields: [] },
-                  footer_config: response.data.content.footer_config
+                  footer_config: content.footer_config
                     ? {
-                        ...response.data.content.footer_config,
-                        fields: response.data.content.footer_config.fields.map(
+                        ...content.footer_config,
+                        fields: content.footer_config.fields.map(
                           (field: Field) => ({
                             ...field,
                             value: field.value || null,
@@ -149,40 +163,38 @@ export default function FormBulletinPage() {
                         ),
                       }
                     : { fields: [] },
-                  sections: response.data.content.sections.map(
-                    (section: Section) => ({
-                      ...section,
-                      header_config: section.header_config
-                        ? {
-                            ...section.header_config,
-                            fields: section.header_config.fields.map(
-                              (field: Field) => ({
-                                ...field,
-                                value: field.value || null,
-                              })
-                            ),
-                          }
-                        : undefined,
-                      footer_config: section.footer_config
-                        ? {
-                            ...section.footer_config,
-                            fields: section.footer_config.fields.map(
-                              (field: Field) => ({
-                                ...field,
-                                value: field.value || null,
-                              })
-                            ),
-                          }
-                        : undefined,
-                      blocks: section.blocks.map((block: Block) => ({
-                        ...block,
-                        fields: block.fields.map((field: Field) => ({
-                          ...field,
-                          value: field.value || null,
-                        })),
+                  sections: content.sections.map((section: Section) => ({
+                    ...section,
+                    header_config: section.header_config
+                      ? {
+                          ...section.header_config,
+                          fields: section.header_config.fields.map(
+                            (field: Field) => ({
+                              ...field,
+                              value: field.value || null,
+                            })
+                          ),
+                        }
+                      : undefined,
+                    footer_config: section.footer_config
+                      ? {
+                          ...section.footer_config,
+                          fields: section.footer_config.fields.map(
+                            (field: Field) => ({
+                              ...field,
+                              value: field.value || null,
+                            })
+                          ),
+                        }
+                      : undefined,
+                    blocks: section.blocks.map((block: Block) => ({
+                      ...block,
+                      fields: block.fields.map((field: Field) => ({
+                        ...field,
+                        value: field.value || null,
                       })),
-                    })
-                  ),
+                    })),
+                  })),
                 },
               },
             },
@@ -478,8 +490,9 @@ export default function FormBulletinPage() {
               <button
                 onClick={handlePrevious}
                 disabled={currentStepIndex === 0}
-                className="px-6 py-2 border border-[#283618] text-[#283618] rounded-md hover:bg-[#283618] hover:text-[#fefae0] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className={`${btnOutlineSecondary} disabled:opacity-50 disabled:cursor-not-allowed`}
               >
+                <ArrowLeft className="w-4 h-4 mr-1" />{" "}
                 {t("navigation.previous")}
               </button>
 
@@ -487,7 +500,7 @@ export default function FormBulletinPage() {
                 <button
                   onClick={handleFinish}
                   disabled={!isCurrentStepValid || isLoading}
-                  className="px-6 py-2 bg-[#283618] text-[#fefae0] rounded-md hover:bg-[#283618]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                   {isLoading
                     ? t("navigation.creating")
@@ -497,9 +510,9 @@ export default function FormBulletinPage() {
                 <button
                   onClick={handleNext}
                   disabled={!isCurrentStepValid}
-                  className="px-6 py-2 bg-[#283618] text-[#fefae0] rounded-md hover:bg-[#283618]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
-                  {t("navigation.next")}
+                  {t("navigation.next")} <ArrowRight className="w-4 h-4 ml-1" />
                 </button>
               )}
             </div>

@@ -1,7 +1,8 @@
 "use client";
 
 import React, { ReactNode } from "react";
-import { CheckCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
+import { btnPrimary, btnOutlineSecondary } from "./ui";
 
 export interface StepConfig {
   id: string;
@@ -26,17 +27,16 @@ export function Stepper({
 }: StepperProps) {
   return (
     <div className={`w-full ${className}`}>
-      {/* Container for circles and lines */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-start justify-between">
         {steps.map((step, index) => (
           <React.Fragment key={step.id}>
-            {/* Step Circle */}
-            <div className="flex flex-col items-center">
+            {/* Step Container - Circle and Label vertically aligned */}
+            <div className="flex flex-col items-center gap-2">
               <button
                 onClick={() => onStepClick?.(index)}
                 disabled={!onStepClick}
                 className={`
-                  flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all
+                  flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all flex-shrink-0
                   ${
                     index < currentStepIndex
                       ? "bg-[#283618]/70 border-[#283618]/70 text-[#fefae0]"
@@ -57,30 +57,10 @@ export function Stepper({
                   <span className="text-sm font-semibold">{index + 1}</span>
                 )}
               </button>
-            </div>
 
-            {/* Connector Line - positioned to align with circle centers */}
-            {index < steps.length - 1 && (
-              <div className="flex-1 flex items-center px-4">
-                <div
-                  className={`
-                    w-full h-0.5 transition-colors
-                    ${index < currentStepIndex ? "bg-[#283618]" : "bg-gray-300"}
-                  `}
-                />
-              </div>
-            )}
-          </React.Fragment>
-        ))}
-      </div>
-
-      {/* Step Titles - separated from circles for better alignment */}
-      <div className="flex items-start justify-between">
-        {steps.map((step, index) => (
-          <React.Fragment key={`title-${step.id}`}>
-            <div className="flex flex-col items-center max-w-24">
+              {/* Step Label */}
               <p
-                className={`text-xs font-medium text-center leading-tight ${
+                className={`text-xs font-medium text-center leading-tight max-w-24 ${
                   index <= currentStepIndex
                     ? "text-[#283618]"
                     : "text-[#283618]/50"
@@ -89,10 +69,16 @@ export function Stepper({
                 {step.title}
               </p>
             </div>
-            {/* Invisible spacer to match the connector lines */}
+
+            {/* Connector Line */}
             {index < steps.length - 1 && (
-              <div className="flex-1 px-4">
-                <div className="w-full h-0 opacity-0" />
+              <div className="flex-1 flex items-start pt-5 px-4">
+                <div
+                  className={`
+                    w-full h-0.5 transition-colors
+                    ${index < currentStepIndex ? "bg-[#283618]" : "bg-gray-300"}
+                  `}
+                />
               </div>
             )}
           </React.Fragment>
@@ -154,15 +140,15 @@ export function StepNavigation({
         onClick={onPrevious}
         disabled={isPreviousDisabled || currentStep === 0}
         className={`
-          px-4 py-2 text-sm font-medium rounded-md transition-colors
+          ${btnOutlineSecondary}
           ${
             currentStep === 0 || isPreviousDisabled
-              ? "text-[#283618]/50 cursor-not-allowed"
-              : "border-2 border-[#bc6c25] text-[#283618] hover:border-[#bc6c25]/50 cursor-pointer"
+              ? "opacity-50 cursor-not-allowed pointer-events-none"
+              : ""
           }
         `}
       >
-        ← {previousLabel}
+        <ArrowLeft className="w-4 h-4 mr-1" /> {previousLabel}
       </button>
 
       <div className="flex space-x-3">
@@ -172,11 +158,11 @@ export function StepNavigation({
             onClick={onFinish}
             disabled={isNextDisabled || isLoading}
             className={`
-              px-6 py-2 text-sm font-medium rounded-md transition-colors
+              ${btnPrimary}
               ${
                 isNextDisabled || isLoading
-                  ? "bg-gray-300 text-[#283618]/50 cursor-not-allowed"
-                  : "bg-[#bc6c25] text-[#fefae0] hover:bg-[#bc6c25]/90 cursor-pointer"
+                  ? "opacity-50 cursor-not-allowed"
+                  : ""
               }
             `}
           >
@@ -188,15 +174,15 @@ export function StepNavigation({
             onClick={onNext}
             disabled={isNextDisabled || isLoading}
             className={`
-              px-6 py-2 text-sm font-medium rounded-md transition-colors
+              ${btnPrimary}
               ${
                 isNextDisabled || isLoading
-                  ? "bg-gray-300 text-[#283618]/50 cursor-not-allowed"
-                  : "bg-[#bc6c25] text-[#fefae0] hover:bg-[#bc6c25]/90 cursor-pointer"
+                  ? "opacity-50 cursor-not-allowed"
+                  : ""
               }
             `}
           >
-            {nextLabel} →
+            {nextLabel} <ArrowRight className="w-4 h-4 ml-1" />
           </button>
         )}
       </div>

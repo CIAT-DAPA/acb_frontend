@@ -49,6 +49,25 @@ export default function EditTemplatePage() {
 
       let template: any = null;
 
+      // Primero, obtener la información del template master
+      try {
+        const templateResponse = await TemplateAPIService.getTemplateById(
+          templateId
+        );
+
+        if (templateResponse.success && templateResponse.data) {
+          template = templateResponse.data;
+          console.log("Template master cargado:", template);
+        } else {
+          setError("No se pudo cargar la información del template");
+          return;
+        }
+      } catch (templateError) {
+        console.error("Error cargando template master:", templateError);
+        setError("No se pudo cargar la información del template");
+        return;
+      }
+
       // Obtener la versión actual del template
       try {
         const versionResponse = await TemplateAPIService.getCurrentVersion(
@@ -56,13 +75,12 @@ export default function EditTemplatePage() {
         );
 
         if (versionResponse.success && versionResponse.data) {
-          const currentVersion = versionResponse.data.current_version;
-          template = versionResponse.data.template_master;
-          console.log("Template cargado:", template);
+          // El servicio ya normaliza la respuesta, response.data contiene directamente current_version
+          const currentVersion = versionResponse.data;
           console.log("Versión actual cargada:", currentVersion);
 
-          // Usar el contenido de la versión actual
-          if (currentVersion.content) {
+          // Verificar que existe el content
+          if (currentVersion && currentVersion.content) {
             versionContent = {
               style_config:
                 currentVersion.content.style_config ||
@@ -71,6 +89,10 @@ export default function EditTemplatePage() {
               header_config: currentVersion.content.header_config,
               footer_config: currentVersion.content.footer_config,
             };
+          } else {
+            console.warn(
+              "La versión actual no tiene content, usando valores por defecto"
+            );
           }
         } else {
           console.warn(
@@ -80,11 +102,6 @@ export default function EditTemplatePage() {
       } catch (versionError) {
         console.error("Error cargando versión del template:", versionError);
         // Continuar con los valores por defecto
-      }
-
-      if (!template) {
-        setError("No se pudo cargar la información del template");
-        return;
       }
 
       // Transformar los datos del template al formato CreateTemplateData

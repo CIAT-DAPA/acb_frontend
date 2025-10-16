@@ -190,6 +190,7 @@ export class TemplateAPIService extends BaseAPIService {
 
   /**
    * Obtiene la versión actual de un template
+   * La respuesta del API tiene la estructura: { template_master: {...}, current_version: {...} }
    */
   static async getCurrentVersion(templateId: string): Promise<APIResponse> {
     try {
@@ -197,9 +198,13 @@ export class TemplateAPIService extends BaseAPIService {
         `/templates/${templateId}/current-version`
       );
 
+      // Normalizar la respuesta - el API devuelve { template_master, current_version }
+      // Pero el código espera directamente los datos de current_version
+      const normalizedData = data.current_version || data.version || data.data || data;
+
       return {
         success: true,
-        data: data.version || data.data || data,
+        data: normalizedData,
       };
     } catch (error) {
       console.error("Error fetching current version:", error);
