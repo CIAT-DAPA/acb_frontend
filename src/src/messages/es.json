@@ -1060,7 +1060,7 @@
       "errors": {
         "nameRequired": "El nombre de la card es requerido",
         "typeRequired": "El tipo de card es requerido",
-        "groupsRequired": "Debes seleccionar al menos un grupo para cards privadas"
+        "groupsRequired": "Debes seleccionar al menos un grupo para cards restringidas"
       }
     },
     "content": {
