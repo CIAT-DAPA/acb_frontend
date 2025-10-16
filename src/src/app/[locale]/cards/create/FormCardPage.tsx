@@ -114,9 +114,9 @@ export default function FormCardPage({
         newErrors.card_type = [t("basicInfo.errors.typeRequired")];
       }
 
-      // Validar grupos si es privado
+      // Validar grupos si es restringido
       if (
-        data.access_config.access_type === "private" &&
+        data.access_config.access_type === "restricted" &&
         (!data.access_config.allowed_groups ||
           data.access_config.allowed_groups.length === 0)
       ) {
@@ -236,7 +236,7 @@ export default function FormCardPage({
           <div className="flex items-start justify-between">
             <div>
               <h1 className="text-3xl font-bold text-[#283618]">
-                {isEditMode ? t("editTitle") : t("title")}
+                {isEditMode ? t("titleEdit") : t("title")}
               </h1>
               <p className="mt-2 text-[#283618]/70">{t("subtitle")}</p>
             </div>

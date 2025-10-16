@@ -4,6 +4,7 @@ import React, { useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { CreateTemplateData } from "../../../../../types/template";
 import { ACCESS_TYPES } from "../../../../../types/core";
+import GroupSelector from "../../../components/GroupSelector";
 
 interface BasicInfoStepProps {
   data: CreateTemplateData;
@@ -21,6 +22,8 @@ export function BasicInfoStep({
   onErrorsChange,
 }: BasicInfoStepProps) {
   const t = useTranslations("CreateTemplate.basicInfo");
+  const allowedGroups: string[] =
+    data?.master?.access_config?.allowed_groups ?? [];
 
   const updateMaster = useCallback(
     (updates: Partial<typeof data.master>) => {
@@ -200,19 +203,18 @@ export function BasicInfoStep({
         {/* Grupos permitidos (solo si es restringido) */}
         {data.master.access_config.access_type === "restricted" && (
           <div>
-            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-              {t("fields.allowedGroups.label", {
-                default: "Grupos Permitidos",
-              })}
-            </label>
-            <div className="border border-gray-300 rounded-md p-3 bg-gray-50">
-              <p className="text-sm text-[#283618]/50">
-                {t("fields.allowedGroups.placeholder", {
-                  default:
-                    "Funcionalidad de selección de grupos estará disponible próximamente",
-                })}
-              </p>
-            </div>
+            <GroupSelector
+              selectedIds={allowedGroups}
+              onChange={(newIds) =>
+                updateMaster({ access_config: { ...data.master.access_config, allowed_groups: newIds } })
+              }
+              id="allowed_groups"
+              label={t("fields.allowedGroups.label", {
+                      default: "Grupos Permitidos",
+                    })}
+              placeholder={t("fields.allowedGroups.placeholder", { default: "Selecciona un grupo..." })}
+              loadingText={t("fields.allowedGroups.loading", { default: "Cargando grupos..." })}
+            />
           </div>
         )}
       </div>

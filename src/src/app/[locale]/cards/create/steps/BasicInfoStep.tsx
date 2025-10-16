@@ -11,6 +11,7 @@ import { ACCESS_TYPES } from "../../../../../types/core";
 import { GroupAPIService } from "../../../../../services/groupService";
 import { Group } from "../../../../../types/groups";
 import { Loader2 } from "lucide-react";
+import GroupSelector from "../../../components/GroupSelector";
 
 interface BasicInfoStepProps {
   data: CreateCardData;
@@ -28,25 +29,6 @@ export function BasicInfoStep({
   const t = useTranslations("CreateCard.basicInfo");
   const [groups, setGroups] = useState<Group[]>([]);
   const [loadingGroups, setLoadingGroups] = useState(false);
-
-  // Cargar grupos disponibles
-  useEffect(() => {
-    const loadGroups = async () => {
-      setLoadingGroups(true);
-      try {
-        const response = await GroupAPIService.getGroups();
-        if (response.success) {
-          setGroups(response.data);
-        }
-      } catch (error) {
-        console.error("Error loading groups:", error);
-      } finally {
-        setLoadingGroups(false);
-      }
-    };
-
-    loadGroups();
-  }, []);
 
   const handleNameChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,16 +85,12 @@ export function BasicInfoStep({
   );
 
   const handleGroupsChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const selectedOptions = Array.from(e.target.selectedOptions).map(
-        (option) => option.value
-      );
-
+    (newIds: string[]) => {
       onDataChange((prevData) => ({
         ...prevData,
         access_config: {
           ...prevData.access_config,
-          allowed_groups: selectedOptions,
+          allowed_groups: newIds,
         },
       }));
 
@@ -217,8 +195,8 @@ export function BasicInfoStep({
           </p>
         </div>
 
-        {/* Grupos permitidos (solo si es privado) */}
-        {data.access_config.access_type === "private" && (
+        {/* Grupos permitidos (solo si es restringido) */}
+        {data.access_config.access_type === "restricted" && (
           <div>
             <label
               htmlFor="allowed_groups"
@@ -235,31 +213,16 @@ export function BasicInfoStep({
               </div>
             ) : (
               <>
-                <select
-                  id="allowed_groups"
-                  multiple
-                  value={data.access_config.allowed_groups || []}
+                <GroupSelector
+                  selectedIds={data.access_config.allowed_groups || []}
                   onChange={handleGroupsChange}
-                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#606c38] focus:border-transparent min-h-[120px] ${
-                    errors.allowed_groups && errors.allowed_groups.length > 0
-                      ? "border-red-500"
-                      : "border-gray-300"
-                  }`}
-                >
-                  {groups.map((group) => (
-                    <option key={group._id} value={group._id}>
-                      {group.group_name}
-                    </option>
-                  ))}
-                </select>
+                  id="allowed_groups"
+                />
                 {errors.allowed_groups && errors.allowed_groups.length > 0 && (
                   <p className="text-red-500 text-sm mt-1">
                     {errors.allowed_groups[0]}
                   </p>
                 )}
-                <p className="text-sm text-[#283618]/60 mt-1">
-                  {t("allowedGroupsHelp")}
-                </p>
               </>
             )}
           </div>
