@@ -263,11 +263,6 @@ export default function FormBulletinPage() {
         title: t("basicInfo.title"),
         description: t("basicInfo.description"),
       },
-      {
-        id: "header-footer",
-        title: t("headerFooter.title"),
-        description: t("headerFooter.description"),
-      },
     ];
 
     // Agregar un paso por cada sección
@@ -295,8 +290,6 @@ export default function FormBulletinPage() {
         return !!creationState.selectedTemplateId;
       case "basic-info":
         return creationState.data.master.bulletin_name.trim().length > 0;
-      case "header-footer":
-        return true; // Header y footer son opcionales
       default:
         // Para pasos de sección
         if (creationState.currentStep.startsWith("section-")) {
@@ -444,14 +437,6 @@ export default function FormBulletinPage() {
       case "basic-info":
         return (
           <BasicInfoStep
-            bulletinData={creationState.data}
-            onUpdate={updateBulletinData}
-          />
-        );
-
-      case "header-footer":
-        return (
-          <HeaderFooterStep
             bulletinData={creationState.data}
             onUpdate={updateBulletinData}
           />

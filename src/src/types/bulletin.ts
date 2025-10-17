@@ -1,9 +1,6 @@
 // Tipos para la creación y manejo de boletines basados en la documentación MongoDB
 
-import {
-  LogObject,
-  StyleConfig,
-} from "./core";
+import { LogObject, StyleConfig } from "./core";
 
 // Importar los tipos de Field de template (que incluyen el atributo value)
 import type { Field } from "./template";
@@ -122,7 +119,6 @@ export interface CreateBulletinData {
 export type BulletinCreationStep =
   | "select-template"
   | "basic-info"
-  | "header-footer"
   | `section-${number}`;
 
 export interface BulletinCreationState {

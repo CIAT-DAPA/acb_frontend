@@ -177,7 +177,7 @@ export function TemplatePreview({
       backgroundImage: effectiveStyles.background_image
         ? `url("${getBackgroundImageUrl(effectiveStyles.background_image)}")`
         : undefined,
-      backgroundSize: "cover",
+      backgroundSize: "contain",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
       padding: effectiveStyles.padding,
@@ -439,12 +439,24 @@ export function TemplatePreview({
             case "horizontal":
               return "flex flex-wrap gap-4 items-center justify-between";
             case "grid-2":
-              return "grid grid-cols-2 gap-1 w-full";
+              return "grid gap-1 w-full";
             case "grid-3":
-              return "grid grid-cols-3 gap-1 w-full";
+              return "grid gap-1 w-full";
             case "vertical":
             default:
               return "space-y-1";
+          }
+        };
+        
+        // Determinar el estilo de grid columns según el layout
+        const getGridColumnsStyle = (): React.CSSProperties | undefined => {
+          switch (listItemsLayout) {
+            case "grid-2":
+              return { gridTemplateColumns: "auto auto" };
+            case "grid-3":
+              return { gridTemplateColumns: "auto auto auto" };
+            default:
+              return undefined;
           }
         };
 
@@ -456,7 +468,7 @@ export function TemplatePreview({
                 effectiveStyles.background_image
               )}")`
             : undefined,
-          backgroundSize: "cover",
+          backgroundSize: "contain",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
           color: effectiveStyles.primary_color || undefined,
@@ -507,19 +519,52 @@ export function TemplatePreview({
                         : bulletStyles[listStyleType]}
                     </span>
                   )}
-                  <div className={`flex-1 min-w-0 ${getItemLayoutClasses()}`}>
+                  <div 
+                    className={`flex-1 min-w-0 ${getItemLayoutClasses()}`}
+                    style={getGridColumnsStyle()}
+                  >
                     {field.field_config?.item_schema &&
                     Object.keys(field.field_config.item_schema).length > 0 ? (
                       Object.entries(field.field_config.item_schema).map(
                         ([fieldKey, itemFieldSchema], fieldIndex) => {
                           // Obtener el valor del sub-field del item actual
                           const itemFieldValue = item[fieldKey];
-
+                          const fieldSchema = itemFieldSchema as Field;
+                          
+                          // Determinar si el campo debe expandirse (texto) o usar ancho natural (iconos, números, etc.)
+                          const shouldExpand = fieldSchema.type === "text" || fieldSchema.type === "text_with_icon";
+                          
+                          // Para grid layouts: cada celda del grid contiene un flex interno
+                          const isGridLayout = listItemsLayout === "grid-2" || listItemsLayout === "grid-3";
+                          
+                          // Determinar la alineación según la posición en el grid
+                          let justifyClass = "";
+                          if (isGridLayout) {
+                            // En grid-2: índices impares (1, 3, 5...) van a la derecha
+                            // En grid-3: índices 2, 5, 8... van a la derecha
+                            const colsCount = listItemsLayout === "grid-2" ? 2 : 3;
+                            const colPosition = fieldIndex % colsCount;
+                            
+                            if (colPosition === colsCount - 1) {
+                              // Última columna: alinear a la derecha
+                              justifyClass = "justify-end";
+                            } else if (colPosition === 0) {
+                              // Primera columna: alinear a la izquierda
+                              justifyClass = "justify-start";
+                            } else {
+                              // Columnas del medio: centrar
+                              justifyClass = "justify-center";
+                            }
+                          }
+                          
                           return (
-                            <div key={fieldIndex} className="min-w-0">
+                            <div 
+                              key={fieldIndex} 
+                              className={isGridLayout ? `flex gap-1 items-center ${justifyClass} min-w-0` : (shouldExpand ? "flex-1 min-w-[120px]" : "flex-shrink-0")}
+                            >
                               {renderField(
                                 {
-                                  ...(itemFieldSchema as Field),
+                                  ...fieldSchema,
                                   value: itemFieldValue,
                                 } as Field,
                                 `${itemIndex}-${fieldIndex}`,
@@ -650,7 +695,7 @@ export function TemplatePreview({
             backgroundImage: styleConfig?.background_image
               ? `url("${getBackgroundImageUrl(styleConfig.background_image)}")`
               : undefined,
-            backgroundSize: "cover",
+            backgroundSize: "contain",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
           }}
@@ -674,7 +719,7 @@ export function TemplatePreview({
                         headerConfig.style_config.background_image
                       )}")`
                     : undefined,
-                  backgroundSize: "cover",
+                  backgroundSize: "contain",
                   backgroundPosition: "center",
                   backgroundRepeat: "no-repeat",
                   color:
@@ -741,7 +786,7 @@ export function TemplatePreview({
                           section.style_config.background_image
                         )}")`
                       : undefined,
-                    backgroundSize: "cover",
+                    backgroundSize: "contain",
                     backgroundPosition: "center",
                     backgroundRepeat: "no-repeat",
                     fontWeight: section.style_config?.font_weight || "400",
@@ -810,7 +855,7 @@ export function TemplatePreview({
                                     .background_image
                                 )}")`
                               : undefined,
-                            backgroundSize: "cover",
+                            backgroundSize: "contain",
                             backgroundPosition: "center",
                             backgroundRepeat: "no-repeat",
                             color:
@@ -878,7 +923,7 @@ export function TemplatePreview({
                                       block.style_config.background_image
                                     )}")`
                                   : undefined,
-                                backgroundSize: "cover",
+                                backgroundSize: "contain",
                                 backgroundPosition: "center",
                                 backgroundRepeat: "no-repeat",
                                 color:
@@ -967,7 +1012,7 @@ export function TemplatePreview({
                                     .background_image
                                 )}")`
                               : undefined,
-                            backgroundSize: "cover",
+                            backgroundSize: "contain",
                             backgroundPosition: "center",
                             backgroundRepeat: "no-repeat",
                             color:
@@ -1035,7 +1080,7 @@ export function TemplatePreview({
                         footerConfig.style_config.background_image
                       )}")`
                     : undefined,
-                  backgroundSize: "cover",
+                  backgroundSize: "contain",
                   backgroundPosition: "center",
                   backgroundRepeat: "no-repeat",
                   color:
