@@ -19,6 +19,8 @@ export const TextWithIconFieldTypeConfig: React.FC<
 }) => {
   const t = useTranslations("CreateTemplate.fieldEditor");
   const [showIconSelector, setShowIconSelector] = useState(false);
+  const [showIconOptionsSelector, setShowIconOptionsSelector] = useState(false);
+  const [editingIconIndex, setEditingIconIndex] = useState<number | null>(null);
 
   return (
     <div className="space-y-4">
@@ -142,20 +144,36 @@ export const TextWithIconFieldTypeConfig: React.FC<
                 ?.icon_options || []
             ).map((iconUrl, index) => (
               <div key={index} className="flex items-center space-x-2">
-                <input
-                  type="url"
-                  value={iconUrl}
-                  onChange={(e) => {
-                    const newIcons = [
-                      ...((currentField.field_config as TextWithIconFieldConfig)
-                        ?.icon_options || []),
-                    ];
-                    newIcons[index] = e.target.value;
-                    updateFieldConfig({ icon_options: newIcons });
+                <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded border border-gray-200 flex-1">
+                  {iconUrl && (
+                    <Image
+                      src={iconUrl}
+                      alt={`Icon ${index + 1}`}
+                      width={24}
+                      height={24}
+                      className="object-contain"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = "/assets/img/imageNotFound.png";
+                      }}
+                    />
+                  )}
+                  <span className="text-sm text-[#283618]/70 truncate flex-1">
+                    {iconUrl ||
+                      t("textWithIconConfig.noIconSelected") ||
+                      "No icon selected"}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingIconIndex(index);
+                    setShowIconOptionsSelector(true);
                   }}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  placeholder={t("textWithIconConfig.iconUrlPlaceholder")}
-                />
+                  className={`${btnOutlineSecondary} text-xs`}
+                >
+                  {iconUrl ? "Cambiar" : "Seleccionar"}
+                </button>
                 <button
                   type="button"
                   onClick={() => {
@@ -184,6 +202,55 @@ export const TextWithIconFieldTypeConfig: React.FC<
               {t("textWithIconConfig.addIcon")}
             </button>
           </div>
+
+          {/* Selector para las opciones de iconos */}
+          <VisualResourceSelector
+            isOpen={showIconOptionsSelector}
+            onClose={() => {
+              setShowIconOptionsSelector(false);
+              setEditingIconIndex(null);
+            }}
+            onSelect={(url) => {
+              if (editingIconIndex !== null) {
+                const newIcons = [
+                  ...((currentField.field_config as TextWithIconFieldConfig)
+                    ?.icon_options || []),
+                ];
+                newIcons[editingIconIndex] = url;
+                updateFieldConfig({ icon_options: newIcons });
+              }
+            }}
+            title="Seleccionar Icono para Opción"
+            resourceType="icon"
+            selectedUrl={
+              editingIconIndex !== null
+                ? (currentField.field_config as TextWithIconFieldConfig)
+                    ?.icon_options?.[editingIconIndex]
+                : undefined
+            }
+          />
+        </div>
+      )}
+
+      {/* Configuración de visualización del label - Solo mostrar cuando form es false */}
+      {!currentField.form && (
+        <div className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            id="showLabel"
+            checked={
+              (currentField.field_config as TextWithIconFieldConfig)
+                ?.showLabel ?? true
+            }
+            onChange={(e) => updateFieldConfig({ showLabel: e.target.checked })}
+            className="w-4 h-4 text-[#bc6c25] border-gray-300 rounded focus:ring-[#bc6c25]"
+          />
+          <label
+            htmlFor="showLabel"
+            className="text-sm font-medium text-[#283618]/70"
+          >
+            Mostrar label en el preview
+          </label>
         </div>
       )}
 

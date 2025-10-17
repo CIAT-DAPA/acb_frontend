@@ -200,13 +200,10 @@ export function TemplatePreview({
         );
 
       case "text_with_icon":
-        // Para text_with_icon, si form es false, mostrar el value. Si form es true, mostrar placeholder
-        const textWithIconValue =
-          !field.form && field.value
-            ? renderFieldValue(field.value)
-            : field.form
-            ? field.display_name || field.label || "Texto con icono"
-            : field.display_name || field.label || "Texto con icono";
+        // Para text_with_icon, mostrar el value si existe, sino mostrar placeholder
+        const textWithIconValue = field.value
+          ? renderFieldValue(field.value)
+          : field.display_name || field.label || "Texto con icono";
 
         // Obtener el icono seleccionado o el primer icono disponible como fallback
         const selectedIcon =
@@ -219,6 +216,9 @@ export function TemplatePreview({
         const iconSize = effectiveStyles.icon_size || 24;
         const useOriginalColor =
           effectiveStyles.icon_use_original_color === true;
+
+        // Verificar si se debe mostrar el label
+        const showTextLabel = (field.field_config as any)?.showLabel ?? true;
 
         return (
           <div
@@ -244,6 +244,7 @@ export function TemplatePreview({
             ) : (
               <span style={{ fontSize: `${iconSize}px` }}>📄</span>
             )}
+            {showTextLabel && <span>{field.label || field.display_name}:</span>}
             <span>{textWithIconValue}</span>
           </div>
         );
@@ -447,7 +448,7 @@ export function TemplatePreview({
               return "space-y-1";
           }
         };
-        
+
         // Determinar el estilo de grid columns según el layout
         const getGridColumnsStyle = (): React.CSSProperties | undefined => {
           switch (listItemsLayout) {
@@ -519,7 +520,7 @@ export function TemplatePreview({
                         : bulletStyles[listStyleType]}
                     </span>
                   )}
-                  <div 
+                  <div
                     className={`flex-1 min-w-0 ${getItemLayoutClasses()}`}
                     style={getGridColumnsStyle()}
                   >
@@ -530,21 +531,26 @@ export function TemplatePreview({
                           // Obtener el valor del sub-field del item actual
                           const itemFieldValue = item[fieldKey];
                           const fieldSchema = itemFieldSchema as Field;
-                          
+
                           // Determinar si el campo debe expandirse (texto) o usar ancho natural (iconos, números, etc.)
-                          const shouldExpand = fieldSchema.type === "text" || fieldSchema.type === "text_with_icon";
-                          
+                          const shouldExpand =
+                            fieldSchema.type === "text" ||
+                            fieldSchema.type === "text_with_icon";
+
                           // Para grid layouts: cada celda del grid contiene un flex interno
-                          const isGridLayout = listItemsLayout === "grid-2" || listItemsLayout === "grid-3";
-                          
+                          const isGridLayout =
+                            listItemsLayout === "grid-2" ||
+                            listItemsLayout === "grid-3";
+
                           // Determinar la alineación según la posición en el grid
                           let justifyClass = "";
                           if (isGridLayout) {
                             // En grid-2: índices impares (1, 3, 5...) van a la derecha
                             // En grid-3: índices 2, 5, 8... van a la derecha
-                            const colsCount = listItemsLayout === "grid-2" ? 2 : 3;
+                            const colsCount =
+                              listItemsLayout === "grid-2" ? 2 : 3;
                             const colPosition = fieldIndex % colsCount;
-                            
+
                             if (colPosition === colsCount - 1) {
                               // Última columna: alinear a la derecha
                               justifyClass = "justify-end";
@@ -556,11 +562,17 @@ export function TemplatePreview({
                               justifyClass = "justify-center";
                             }
                           }
-                          
+
                           return (
-                            <div 
-                              key={fieldIndex} 
-                              className={isGridLayout ? `flex gap-1 items-center ${justifyClass} min-w-0` : (shouldExpand ? "flex-1 min-w-[120px]" : "flex-shrink-0")}
+                            <div
+                              key={fieldIndex}
+                              className={
+                                isGridLayout
+                                  ? `flex gap-1 items-center ${justifyClass} min-w-0`
+                                  : shouldExpand
+                                  ? "flex-1 min-w-[120px]"
+                                  : "flex-shrink-0"
+                              }
                             >
                               {renderField(
                                 {

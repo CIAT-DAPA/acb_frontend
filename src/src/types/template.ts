@@ -17,6 +17,7 @@ export interface TextWithIconFieldConfig {
   subtype?: "short" | "long";
   icon_options: string[]; // URLs de los iconos que se pueden seleccionar
   selected_icon?: string; // URL del icono seleccionado cuando form es false
+  showLabel?: boolean; // Si true, muestra el label al lado del valor en el preview; si false, solo muestra el valor
 }
 
 export interface ClimateDataFieldConfig {
@@ -290,7 +291,7 @@ export interface CreateTemplateData {
   master: Omit<TemplateMaster, "_id" | "current_version_id">;
   version: Omit<
     TemplateVersion,
-    "_id" | "template_master_id" | "previous_version_id" 
+    "_id" | "template_master_id" | "previous_version_id"
   >;
 }
 
