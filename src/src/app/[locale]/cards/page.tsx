@@ -31,10 +31,12 @@ import {
   pageSubtitle,
 } from "../components/ui";
 import { Card, CardType, CARD_TYPES } from "@/types/card";
+import usePermissions from "@/hooks/usePermissions";
 
 export default function CardsPage() {
   const t = useTranslations("Cards");
   const { showToast } = useToast();
+  const { can } = usePermissions();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState<CardType | "all">("all");
   const [cards, setCards] = useState<Card[]>([]);
@@ -184,7 +186,7 @@ export default function CardsPage() {
   };
 
   return (
-    <ProtectedRoute>
+    <ProtectedRoute requiredPermission={{ action: "r", module: "card_management" }}>
       <main>
         <section className="desk-texture desk-texture-strong bg-[#fefae0] py-10">
           <div className={container}>
@@ -223,14 +225,18 @@ export default function CardsPage() {
                 />
               </div>
 
-              {/* Botón Crear */}
-              <Link
-                href="/cards/create"
-                className={`${btnPrimary} whitespace-nowrap`}
-              >
-                <Plus className="h-5 w-5" />
-                <span>{t("createNew")}</span>
-              </Link>
+              {/* Botón Crear (condicionado) */}
+              {can("c", "card_management") ? (
+                <Link href="/cards/create" className={`${btnPrimary} whitespace-nowrap`}>
+                  <Plus className="h-5 w-5" />
+                  <span>{t("createNew")}</span>
+                </Link>
+              ) : (
+                <button className={`${btnPrimary} opacity-60 cursor-not-allowed whitespace-nowrap`} disabled>
+                  <Plus className="h-5 w-5" />
+                  <span>{t("createNew")}</span>
+                </button>
+              )}
             </div>
 
             {/* Filtro por tipo */}
@@ -288,6 +294,10 @@ export default function CardsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredCards.map((card, index) => {
                 const stats = CardAPIService.getCardStats(card);
+                const allowedGroups = card.access_config?.allowed_groups || [];
+                const canEdit = can("u", "card_management", allowedGroups);
+                const canDelete = can("d", "card_management", allowedGroups);
+
                 return (
                   <ItemCard
                     key={card._id || `card-${index}`}
@@ -329,12 +339,10 @@ export default function CardsPage() {
                         </div>
                       </div>
                     }
-                    editBtn={true}
-                    onEdit={() =>
-                      (window.location.href = `/cards/${card._id}/edit`)
-                    }
-                    deleteBtn={true}
-                    onDelete={() => handleDeleteCard(card)}
+                    editBtn={canEdit}
+                    onEdit={canEdit ? () => (window.location.href = `/cards/${card._id}/edit`) : undefined}
+                    deleteBtn={canDelete}
+                    onDelete={canDelete ? () => handleDeleteCard(card) : undefined}
                     isDeleting={isDeleting && cardToDelete?._id === card._id}
                   />
                 );

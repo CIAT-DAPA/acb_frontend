@@ -60,7 +60,7 @@ export default function Bulletins() {
   }, [searchTerm]);
 
   return (
-    <ProtectedRoute>
+    <ProtectedRoute requiredPermission={{ action: "r", module: "bulletin_management" }}>
       <main>
         <section className="desk-texture desk-texture-strong bg-[#fefae0] py-10">
           <div className={container}>

@@ -95,8 +95,10 @@ export default function EditCardPage() {
     );
   }
 
+  const allowedGroups = initialData.access_config?.allowed_groups || [];
+
   return (
-    <ProtectedRoute>
+    <ProtectedRoute requiredPermission={{ action: "u", module: "card_management", resourceGroupIds: allowedGroups }}>
       <FormCardPage mode="edit" cardId={cardId} initialData={initialData} />
     </ProtectedRoute>
   );

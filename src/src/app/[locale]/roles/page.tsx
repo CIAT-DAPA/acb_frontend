@@ -113,7 +113,7 @@ export default function RolesPage() {
   };
 
   return (
-    <ProtectedRoute>
+    <ProtectedRoute requireSuperadmin={true}>
       <main>
         <section className="desk-texture desk-texture-strong bg-[#fefae0] py-10">
           <div className={container}>

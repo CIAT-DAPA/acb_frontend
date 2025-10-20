@@ -220,7 +220,7 @@ export default function EditRolePage() {
   // Mostrar loading mientras carga los datos
   if (isLoading) {
     return (
-      <ProtectedRoute>
+      <ProtectedRoute requireSuperadmin={true}>
         <main>
           <section className="bg-white py-10">
             <div className={container}>
@@ -238,7 +238,7 @@ export default function EditRolePage() {
   }
 
   return (
-    <ProtectedRoute>
+    <ProtectedRoute requireSuperadmin={true}>
       <main>
         <section className="bg-white py-10">
           <div className={container}>

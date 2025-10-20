@@ -8,6 +8,7 @@ import { Menu, X, Cloud, User, LogOut, ChevronDown } from "lucide-react";
 import { container, brand, brandIcon, btnOutlinePrimary } from "./ui";
 import { LanguageSelector } from "./LanguageSelector";
 import { useAuth } from "../../../hooks/useAuth";
+import usePermissions from "../../../hooks/usePermissions";
 
 // Clases simples con colores corregidos
 const NAV_BASE = "py-2 px-3 transition-colors duration-200 relative";
@@ -22,20 +23,21 @@ export function Navbar() {
   const [showAccessMenu, setShowAccessMenu] = useState(false);
   const pathname = usePathname();
   const t = useTranslations("Navbar");
+  const { can, isAdminAnywhere, isSuperadmin } = usePermissions();
 
   // Hook de autenticación
   const { authenticated, loading, userInfo, token, login, logout } = useAuth();
 
   // Navegación condicional - solo mostrar rutas que requieren auth si está autenticado
   const ALL_NAV_ITEMS = [
-    { name: t("templates"), path: "/templates", requiresAuth: true },
-    { name: t("cards"), path: "/cards", requiresAuth: true },
-    { name: t("bulletins"), path: "/bulletins", requiresAuth: true },
+    { name: t("templates"), path: "/templates", requiresAuth: true, module: "template_management" },
+    { name: t("cards"), path: "/cards", requiresAuth: true, module: "card_management" },
+    { name: t("bulletins"), path: "/bulletins", requiresAuth: true, module: "bulletins_composer" },
   ];
 
   // Filtrar items según autenticación
   const NAV_ITEMS = ALL_NAV_ITEMS.filter(
-    (item) => !item.requiresAuth || authenticated
+    (item) => !item.requiresAuth || (authenticated && can("r", item.module))
   );
 
   // Función para toggle del menú móvil
@@ -102,7 +104,7 @@ export function Navbar() {
             })}
 
             {/* Dropdown de Acceso */}
-            {authenticated && (
+            {authenticated && isAdminAnywhere && (
               <li className="relative">
                 <button
                   onClick={() => setShowAccessMenu(!showAccessMenu)}
@@ -119,13 +121,14 @@ export function Navbar() {
 
                 {showAccessMenu && (
                   <div className="absolute left-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-                    <Link
-                      href="/roles"
-                      onClick={() => setShowAccessMenu(false)}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                      {t("roles")}
-                    </Link>
+                    { isSuperadmin && (
+                      <Link
+                        href="/roles"
+                        onClick={() => setShowAccessMenu(false)}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        {t("roles")}
+                    </Link>)}
                     <Link
                       href="/groups"
                       onClick={() => setShowAccessMenu(false)}
@@ -215,7 +218,7 @@ export function Navbar() {
             })}
 
             {/* Dropdown de Acceso - Móvil */}
-            {authenticated && (
+            {authenticated && isAdminAnywhere && (
               <li>
                 <button
                   onClick={() => setShowAccessMenu(!showAccessMenu)}
@@ -233,7 +236,8 @@ export function Navbar() {
                 {showAccessMenu && (
                   <ul className="pl-4 mt-2 space-y-2">
                     <li>
-                      <Link
+                      { isAdminAnywhere && (
+                        <Link
                         href="/roles"
                         onClick={() => {
                           setShowAccessMenu(false);
@@ -242,7 +246,7 @@ export function Navbar() {
                         className="block text-[#fefae0]/70 hover:text-[#ffaf68] transition-colors text-sm"
                       >
                         {t("roles")}
-                      </Link>
+                      </Link>)}
                     </li>
                     <li>
                       <Link

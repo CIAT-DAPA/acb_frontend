@@ -203,7 +203,7 @@ export default function CreateGroupPage() {
   };
 
   return (
-    <ProtectedRoute>
+    <ProtectedRoute requiredPermission={{ action: "c", module: "access_control" }}>
       <main>
         <section className="bg-white py-10">
           <div className={container}>

@@ -5,7 +5,7 @@ import { ProtectedRoute } from "../../../../components/ProtectedRoute";
 
 export default function CreateCard() {
   return (
-    <ProtectedRoute>
+    <ProtectedRoute requiredPermission={{ action: "c", module: "card_management" }}>
       <FormCardPage />
     </ProtectedRoute>
   );

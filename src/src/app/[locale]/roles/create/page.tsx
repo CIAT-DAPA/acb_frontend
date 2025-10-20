@@ -189,7 +189,7 @@ export default function CreateRolePage() {
   };
 
   return (
-    <ProtectedRoute>
+    <ProtectedRoute requireSuperadmin={true}>
       <main>
         <section className="bg-white py-10">
           <div className={container}>

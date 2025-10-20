@@ -239,7 +239,9 @@
     "verification": "Verificación en curso...",
     "accessRestrictedTitle": "Acceso restringido",
     "accessRestrictedMessage": "Debes iniciar sesión para acceder a esta página.",
-    "redirecting": "Redirigiendo a inicio de sesión..."
+    "redirecting": "Redirigiendo a inicio de sesión...",
+    "accessDeniedTitle": "Acceso denegado",
+    "accessDeniedMessage": "No tienes permisos para acceder a esta sección."
   },
   "CreateTemplate": {
     "title": "Crear Nueva Plantilla",

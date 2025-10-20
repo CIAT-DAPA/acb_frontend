@@ -3,18 +3,30 @@
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslations } from "next-intl";
+import usePermissions from "@/hooks/usePermissions";
+
+export type PermissionRequirement = {
+  action: "c" | "r" | "u" | "d";
+  module: string;
+  resourceGroupIds?: string[];
+};
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   fallback?: React.ReactNode;
+  requiredPermission?: PermissionRequirement;
+  requireSuperadmin?: boolean;
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   fallback,
+  requiredPermission,
+  requireSuperadmin,
 }) => {
   const { authenticated, loading, login } = useAuth();
   const t = useTranslations("Authentication");
+  const { can, isSuperadmin } = usePermissions();
 
   useEffect(() => {
     // Si no está cargando y no está autenticado, redirigir a login
@@ -53,6 +65,31 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       </div>
     );
   }
+
+  // Si se requiere permiso adicional, verificarlo
+  if (requiredPermission || requireSuperadmin) {
+    const lacksPermission = requiredPermission
+      ? !can(
+          requiredPermission.action,
+          requiredPermission.module,
+          requiredPermission.resourceGroupIds
+        )
+      : false;
+
+    const lacksSuperadmin = !!requireSuperadmin && !isSuperadmin;
+
+    if (lacksPermission || lacksSuperadmin) {
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center p-6">
+            <h2 className="text-xl font-semibold text-red-700">{t("accessDeniedTitle")}</h2>
+            <p className="text-sm text-gray-600">{t("accessDeniedMessage")}</p>
+          </div>
+        </div>
+      );
+    }
+  }
+  
 
   // Si está autenticado, mostrar el contenido
   return <>{children}</>;

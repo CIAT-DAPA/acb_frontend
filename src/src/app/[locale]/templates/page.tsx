@@ -19,6 +19,7 @@ import Image from "next/image";
 import ItemCard from "../components/ItemCard";
 import { TemplateAPIService } from "../../../services/templateService";
 import { ProtectedRoute } from "../../../components/ProtectedRoute";
+import usePermissions from "@/hooks/usePermissions";
 import { useToast } from "../../../components/Toast";
 import {
   container,
@@ -33,6 +34,7 @@ import { TemplateMaster } from "@/types/template";
 export default function Templates() {
   const t = useTranslations("Templates");
   const { showToast } = useToast();
+  const { can } = usePermissions();
   const [searchTerm, setSearchTerm] = useState("");
   const [templates, setTemplates] = useState<TemplateMaster[]>([]);
   const [loading, setLoading] = useState(true);
@@ -154,7 +156,7 @@ export default function Templates() {
   };
 
   return (
-    <ProtectedRoute>
+    <ProtectedRoute requiredPermission={{ action: "r", module: "template_management" }}>
       <main>
         <section className="desk-texture desk-texture-strong bg-[#fefae0] py-10">
           <div className={container}>
@@ -201,14 +203,18 @@ export default function Templates() {
               <span>{t("visualResources")}</span>
             </Link>
 
-            {/* Botón Crear */}
-            <Link
-              href="/templates/create"
-              className={`${btnPrimary} whitespace-nowrap`}
-            >
-              <Plus className="h-5 w-5" />
-              <span>{t("createNew")}</span>
-            </Link>
+            {/* Botón Crear (condicionado por permiso) */}
+            {can("c", "template_management") ? (
+              <Link href="/templates/create" className={`${btnPrimary} whitespace-nowrap`}>
+                <Plus className="h-5 w-5" />
+                <span>{t("createNew")}</span>
+              </Link>
+            ) : (
+              <button className={`${btnPrimary} opacity-60 cursor-not-allowed whitespace-nowrap`} disabled>
+                <Plus className="h-5 w-5" />
+                <span>{t("createNew")}</span>
+              </button>
+            )}
           </div>
 
           {/* Loading State */}
@@ -243,35 +249,43 @@ export default function Templates() {
                     array.findIndex((t) => t._id === template._id) === index
                   );
                 })
-                .map((template, index) => (
-                  <ItemCard
-                    key={template._id || `template-${index}`}
-                    type="template"
-                    id={template._id!}
-                    name={template.template_name}
-                    author={
-                      template.log.updater_first_name +
-                        " " +
-                        template.log.updater_last_name ||
-                      template.log.creator_first_name +
-                        " " +
-                        template.log.creator_last_name
-                    }
-                    lastModified={new Date(
-                      template.log.updated_at!
-                    ).toLocaleDateString()}
-                    thumbnailImages={template.thumbnail_images}
-                    editBtn={true}
-                    onEdit={() =>
-                      (window.location.href = `/templates/${template._id}/edit`)
-                    }
-                    deleteBtn={true}
-                    onDelete={() => handleDeleteTemplate(template)}
-                    isDeleting={
-                      isDeleting && templateToDelete?._id === template._id
-                    }
-                  />
-                ))}
+                .map((template, index) => {
+                  const allowedGroups = template.access_config?.allowed_groups || [];
+                  const canEdit = can("u", "template_management", allowedGroups);
+                  const canDelete = can("d", "template_management", allowedGroups);
+
+                  return (
+                    <ItemCard
+                      key={template._id || `template-${index}`}
+                      type="template"
+                      id={template._id!}
+                      name={template.template_name}
+                      author={
+                        template.log.updater_first_name +
+                          " " +
+                          template.log.updater_last_name ||
+                        template.log.creator_first_name +
+                          " " +
+                          template.log.creator_last_name
+                      }
+                      lastModified={new Date(
+                        template.log.updated_at!
+                      ).toLocaleDateString()}
+                      thumbnailImages={template.thumbnail_images}
+                      editBtn={canEdit}
+                      onEdit={
+                        canEdit
+                          ? () => (window.location.href = `/templates/${template._id}/edit`)
+                          : undefined
+                      }
+                      deleteBtn={canDelete}
+                      onDelete={
+                        canDelete ? () => handleDeleteTemplate(template) : undefined
+                      }
+                      isDeleting={isDeleting && templateToDelete?._id === template._id}
+                    />
+                  );
+                })}
             </div>
           )}
 

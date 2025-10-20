@@ -239,7 +239,9 @@
     "verification": "Verification in progress...",
     "accessRestrictedTitle": "Access restricted",
     "accessRestrictedMessage": "You must be logged in to access this page.",
-    "redirecting": "Redirecting to login..."
+    "redirecting": "Redirecting to login...",
+    "accessDeniedTitle": "Access Denied",
+    "accessDeniedMessage": "You do not have permission to access this section."
   },
   "CreateTemplate": {
     "title": "Create New Template",

@@ -196,7 +196,7 @@ export default function EditGroupPage() {
 
   if (isLoading) {
     return (
-      <ProtectedRoute>
+      <ProtectedRoute requiredPermission={{ action: "u", module: "access_control", resourceGroupIds: [groupId] }}>
         <main>
           <section className="bg-white py-10">
             <div className={container}>
@@ -212,7 +212,7 @@ export default function EditGroupPage() {
   }
 
   return (
-    <ProtectedRoute>
+    <ProtectedRoute requiredPermission={{ action: "u", module: "access_control", resourceGroupIds: [groupId] }}>
       <main>
         <section className="bg-white py-10">
           <div className={container}>

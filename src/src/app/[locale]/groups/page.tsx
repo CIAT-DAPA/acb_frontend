@@ -18,6 +18,7 @@ import {
 import { GroupAPIService } from "../../../services/groupService";
 import { ProtectedRoute } from "../../../components/ProtectedRoute";
 import { Group } from "@/types/groups";
+import usePermissions from "@/hooks/usePermissions";
 import {
   container,
   searchField,
@@ -30,6 +31,7 @@ import Link from "next/link";
 
 export default function GroupsPage() {
   const t = useTranslations("Groups");
+  const { can, isSuperadmin } = usePermissions();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [groups, setGroups] = useState<Group[]>([]);
@@ -115,7 +117,7 @@ export default function GroupsPage() {
   };
 
   return (
-    <ProtectedRoute>
+    <ProtectedRoute requiredPermission={{ action: "r", module: "access_control" }}>
       <main>
         <section className="desk-texture desk-texture-strong bg-[#fefae0] py-10">
           <div className={container}>
@@ -151,14 +153,18 @@ export default function GroupsPage() {
               />
             </div>
 
-            {/* Botón Crear */}
-            <Link
-              href="/groups/create"
-              className={`${btnPrimary} whitespace-nowrap`}
-            >
-              <Plus className="h-5 w-5" />
-              <span>{t("createNew")}</span>
-            </Link>
+            {/* Botón Crear (condicionado) */}
+            {isSuperadmin && can("c", "access_control") ? (
+              <Link href="/groups/create" className={`${btnPrimary} whitespace-nowrap`}>
+                <Plus className="h-5 w-5" />
+                <span>{t("createNew")}</span>
+              </Link>
+            ) : (
+              <button className={`${btnPrimary} opacity-60 cursor-not-allowed whitespace-nowrap`} disabled>
+                <Plus className="h-5 w-5" />
+                <span>{t("createNew")}</span>
+              </button>
+            )}
           </div>
 
           {/* Loading State */}
@@ -265,14 +271,16 @@ export default function GroupsPage() {
 
                             {/* Botones de acciones */}
                             <div className="flex-shrink-0 flex items-center gap-2">
-                              <Link
-                                href={`/groups/${groupId}/edit`}
-                                className={btnOutlineSecondary}
-                                title={t("table.edit")}
-                              >
-                                <Edit3 className="h-4 w-4" />
-                                {t("table.edit")}
-                              </Link>
+                              {can("u", "access_control", [groupId]) && (
+                                <Link
+                                  href={`/groups/${groupId}/edit`}
+                                  className={btnOutlineSecondary}
+                                  title={t("table.edit")}
+                                >
+                                  <Edit3 className="h-4 w-4" />
+                                  {t("table.edit")}
+                                </Link>
+                              )}
                               <button
                                 onClick={() => toggleGroupExpansion(groupId)}
                                 className={btnOutlineSecondary}

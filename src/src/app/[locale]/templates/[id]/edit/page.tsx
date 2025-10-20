@@ -176,13 +176,12 @@ export default function EditTemplatePage() {
     );
   }
 
+  // Verificar permisos de edición en los grupos permitidos del recurso
+  const allowedGroups = initialData.master?.access_config?.allowed_groups || [];
+
   return (
-    <ProtectedRoute>
-      <CreateTemplatePage
-        mode="edit"
-        templateId={templateId}
-        initialData={initialData}
-      />
+    <ProtectedRoute requiredPermission={{ action: "u", module: "template_management", resourceGroupIds: allowedGroups }}>
+      <CreateTemplatePage mode="edit" templateId={templateId} initialData={initialData} />
     </ProtectedRoute>
   );
 }
