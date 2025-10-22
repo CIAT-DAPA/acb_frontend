@@ -71,9 +71,9 @@ export class GroupAPIService extends BaseAPIService {
    * Obtiene la lista de todos los grupos
    * GET /groups/
    */
-  static async getGroups(): Promise<GetGroupsResponse> {
+  static async getGroups(params?: { include_users?: boolean }): Promise<GetGroupsResponse> {
     try {
-      const data = await this.get<any>("/groups/");
+      const data = await this.get<any>("/groups/", params);
       const groups = data.groups || data.data || data;
 
       // Map API response to match Group interface
@@ -209,9 +209,9 @@ export class GroupAPIService extends BaseAPIService {
    * Obtiene un grupo específico por ID
    * GET /groups/{group_id}
    */
-  static async getGroupById(id: string): Promise<APIResponse<Group>> {
+  static async getGroupById(id: string, params?: { include_users?: boolean }): Promise<APIResponse<Group>> {
     try {
-      const data = await this.get<any>(`/groups/${id}`);
+      const data = await this.get<any>(`/groups/${id}`, params);
       const group = data.group || data.data || data;
 
       // Map API response to match Group interface

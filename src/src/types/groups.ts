@@ -12,6 +12,9 @@ import { LogObject } from "./core";
 export interface GroupUserRole {
   user_id: string; // Referencia al ID del usuario
   role_id: string; // Referencia al ID del rol
+  role_name?: string; // Nombre del rol (opcional, para conveniencia)
+  user_first_name?: string; // Nombre del usuario (opcional, para conveniencia)
+  user_last_name?: string; // Apellido del usuario (opcional, para conveniencia)
 }
 
 /**

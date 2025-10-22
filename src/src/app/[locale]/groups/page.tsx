@@ -64,7 +64,7 @@ export default function GroupsPage() {
     setError(null);
 
     try {
-      const response = await GroupAPIService.getGroups();
+      const response = await GroupAPIService.getGroups({ include_users: true });
 
       if (response.success) {
         console.log("Fetched groups:", response);
@@ -339,7 +339,7 @@ export default function GroupsPage() {
                                                 <UserCheck className="h-4 w-4 text-[#606c38]" />
                                               </div>
                                               <span className="font-mono text-xs text-[#283618]/70">
-                                                {userAccess.user_id}
+                                                {userAccess.user_first_name ? `${userAccess.user_first_name} ${userAccess.user_last_name}` : userAccess.user_id}
                                               </span>
                                             </div>
                                           </td>
@@ -347,7 +347,7 @@ export default function GroupsPage() {
                                             <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-[#606c38]/10 text-[#283618]">
                                               <Shield className="h-3 w-3 mr-1" />
                                               <span className="font-mono">
-                                                {userAccess.role_id}
+                                                {userAccess.role_name || userAccess.role_id}
                                               </span>
                                             </span>
                                           </td>
