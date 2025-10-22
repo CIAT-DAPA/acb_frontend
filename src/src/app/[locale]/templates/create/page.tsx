@@ -2,11 +2,11 @@
 
 import CreateTemplatePage from './FormTemplatePage';
 import { ProtectedRoute } from "../../../../components/ProtectedRoute";
-import usePermissions from "@/hooks/usePermissions";
+import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
 
 export default function CreateTemplate() {
   return (
-    <ProtectedRoute requiredPermission={{ action: "c", module: "template_management" }}>
+    <ProtectedRoute requiredPermission={{ action: PERMISSION_ACTIONS.Create, module: MODULES.TEMPLATE_MANAGEMENT }}>
       <CreateTemplatePage />
     </ProtectedRoute>
   );

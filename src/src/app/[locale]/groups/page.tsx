@@ -28,6 +28,7 @@ import {
   btnOutlineSecondary,
 } from "../components/ui";
 import Link from "next/link";
+import { PERMISSION_ACTIONS, MODULES } from "@/types/core";
 
 export default function GroupsPage() {
   const t = useTranslations("Groups");
@@ -117,7 +118,7 @@ export default function GroupsPage() {
   };
 
   return (
-    <ProtectedRoute requiredPermission={{ action: "r", module: "access_control" }}>
+    <ProtectedRoute requiredPermission={{ action: PERMISSION_ACTIONS.Read, module: MODULES.ACCESS_CONTROL }}>
       <main>
         <section className="desk-texture desk-texture-strong bg-[#fefae0] py-10">
           <div className={container}>
@@ -154,16 +155,11 @@ export default function GroupsPage() {
             </div>
 
             {/* Botón Crear (condicionado) */}
-            {isSuperadmin && can("c", "access_control") ? (
+            {isSuperadmin && can(PERMISSION_ACTIONS.Create, MODULES.ACCESS_CONTROL ) && (
               <Link href="/groups/create" className={`${btnPrimary} whitespace-nowrap`}>
                 <Plus className="h-5 w-5" />
                 <span>{t("createNew")}</span>
               </Link>
-            ) : (
-              <button className={`${btnPrimary} opacity-60 cursor-not-allowed whitespace-nowrap`} disabled>
-                <Plus className="h-5 w-5" />
-                <span>{t("createNew")}</span>
-              </button>
             )}
           </div>
 
@@ -271,7 +267,7 @@ export default function GroupsPage() {
 
                             {/* Botones de acciones */}
                             <div className="flex-shrink-0 flex items-center gap-2">
-                              {can("u", "access_control", [groupId]) && (
+                              {can(PERMISSION_ACTIONS.Update, MODULES.ACCESS_CONTROL, [groupId]) && (
                                 <Link
                                   href={`/groups/${groupId}/edit`}
                                   className={btnOutlineSecondary}

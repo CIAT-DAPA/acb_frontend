@@ -16,6 +16,8 @@ import { useEffect, useState } from "react";
 import { BulletinMaster } from "@/types/bulletin";
 import BulletinAPIService from "@/services/bulletinService";
 import ItemCard from "../components/ItemCard";
+import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
+import { usePermissions } from "@/hooks/usePermissions";  
 
 export default function Bulletins() {
   const t = useTranslations("Bulletins");
@@ -23,6 +25,7 @@ export default function Bulletins() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [bulletins, setBulletins] = useState<BulletinMaster[]>([]);
+  const { can } = usePermissions();
 
   // Cargar bulletins al montar el componente
   useEffect(() => {
@@ -60,7 +63,7 @@ export default function Bulletins() {
   }, [searchTerm]);
 
   return (
-    <ProtectedRoute requiredPermission={{ action: "r", module: "bulletin_management" }}>
+    <ProtectedRoute requiredPermission={{ action: PERMISSION_ACTIONS.Read, module: MODULES.BULLETINS_COMPOSER }}>
       <main>
         <section className="desk-texture desk-texture-strong bg-[#fefae0] py-10">
           <div className={container}>
@@ -98,13 +101,15 @@ export default function Bulletins() {
               />
             </div>
             {/* Botón Crear */}
-            <Link
-              href="/bulletins/create"
-              className={`${btnPrimary} whitespace-nowrap`}
-            >
-              <Plus className="h-5 w-5" />
-              <span>{t("createNew")}</span>
-            </Link>
+            { can(PERMISSION_ACTIONS.Create, MODULES.BULLETINS_COMPOSER) && (
+              <Link
+                href="/bulletins/create"
+                className={`${btnPrimary} whitespace-nowrap`}
+              >
+                <Plus className="h-5 w-5" />
+                <span>{t("createNew")}</span>
+              </Link>
+            )}
           </div>
 
           {/* Loading State */}
@@ -139,22 +144,28 @@ export default function Bulletins() {
                     array.findIndex((b) => b._id === bulletin._id) === index
                   );
                 })
-                .map((bulletin, index) => (
-                  <ItemCard
-                    key={bulletin._id || `bulletin-${index}`}
-                    type="template"
+                .map((bulletin, index) => {
+
+                  const allowedGroups = bulletin.access_config?.allowed_groups || [];
+                  const canEdit = can(PERMISSION_ACTIONS.Update, MODULES.TEMPLATE_MANAGEMENT, allowedGroups);
+                  const canDelete = can(PERMISSION_ACTIONS.Delete, MODULES.TEMPLATE_MANAGEMENT, allowedGroups);
+                  return (
+                    <ItemCard
+                      key={bulletin._id || `bulletin-${index}`}
+                      type="template"
                     id={bulletin._id!}
                     name={bulletin.bulletin_name}
                     author={bulletin.log.creator_user_id}
                     lastModified={new Date(
                       bulletin.log.updated_at!
                     ).toLocaleDateString()}
-                    editBtn={true}
+                    editBtn={canEdit}
                     onEdit={() =>
                       (window.location.href = `/bulletins/${bulletin._id}/edit`)
                     }
-                  />
-                ))}
+                  />)
+                })
+              }
             </div>
           )}
 

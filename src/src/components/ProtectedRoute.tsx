@@ -4,10 +4,11 @@ import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslations } from "next-intl";
 import usePermissions from "@/hooks/usePermissions";
+import { PermissionModule, CRUDOperation } from "@/types/core";
 
 export type PermissionRequirement = {
-  action: "c" | "r" | "u" | "d";
-  module: string;
+  action: CRUDOperation | string;
+  module: PermissionModule | string;
   resourceGroupIds?: string[];
 };
 

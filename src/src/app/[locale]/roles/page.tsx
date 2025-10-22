@@ -21,7 +21,8 @@ import {
 } from "lucide-react";
 import { RoleAPIService } from "../../../services/roleService";
 import { ProtectedRoute } from "../../../components/ProtectedRoute";
-import { Role, PermissionModule } from "@/types/roles";
+import { Role } from "@/types/roles";
+import { PermissionModule } from "@/types/core";
 import {
   container,
   searchField,

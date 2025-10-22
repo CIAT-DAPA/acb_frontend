@@ -1,6 +1,6 @@
 // Tipos para la creación y manejo de boletines basados en la documentación MongoDB
 
-import { LogObject, StyleConfig } from "./core";
+import { LogObject, StyleConfig, AccessConfig } from "./core";
 
 // Importar los tipos de Field de template (que incluyen el atributo value)
 import type { Field } from "./template";
@@ -69,6 +69,7 @@ export interface BulletinMaster {
   base_template_master_id: string; // Referencia al template master usado
   base_template_version_id: string; // Versión específica del template usada
   current_version_id?: string; // ID de la versión actual del boletín
+  access_config: AccessConfig;
   status: BulletinStatus;
 }
 

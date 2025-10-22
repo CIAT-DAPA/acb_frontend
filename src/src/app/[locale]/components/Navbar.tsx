@@ -9,6 +9,7 @@ import { container, brand, brandIcon, btnOutlinePrimary } from "./ui";
 import { LanguageSelector } from "./LanguageSelector";
 import { useAuth } from "../../../hooks/useAuth";
 import usePermissions from "../../../hooks/usePermissions";
+import { MODULES } from "../../../types/core";
 
 // Clases simples con colores corregidos
 const NAV_BASE = "py-2 px-3 transition-colors duration-200 relative";
@@ -30,9 +31,9 @@ export function Navbar() {
 
   // Navegación condicional - solo mostrar rutas que requieren auth si está autenticado
   const ALL_NAV_ITEMS = [
-    { name: t("templates"), path: "/templates", requiresAuth: true, module: "template_management" },
-    { name: t("cards"), path: "/cards", requiresAuth: true, module: "card_management" },
-    { name: t("bulletins"), path: "/bulletins", requiresAuth: true, module: "bulletins_composer" },
+    { name: t("templates"), path: "/templates", requiresAuth: true, module: MODULES.TEMPLATE_MANAGEMENT },
+    { name: t("cards"), path: "/cards", requiresAuth: true, module: MODULES.CARD_MANAGEMENT },
+    { name: t("bulletins"), path: "/bulletins", requiresAuth: true, module: MODULES.BULLETINS_COMPOSER },
   ];
 
   // Filtrar items según autenticación

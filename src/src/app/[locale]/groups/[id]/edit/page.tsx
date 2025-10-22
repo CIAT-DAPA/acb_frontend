@@ -32,6 +32,7 @@ import { UserService } from "@/services/userService";
 import { GroupUserRole } from "@/types/groups";
 import { Role } from "@/types/roles";
 import { User } from "@/types/user";
+import { PERMISSION_ACTIONS, MODULES } from "@/types/core";
 
 export default function EditGroupPage() {
   const t = useTranslations("CreateGroup");
@@ -196,7 +197,7 @@ export default function EditGroupPage() {
 
   if (isLoading) {
     return (
-      <ProtectedRoute requiredPermission={{ action: "u", module: "access_control", resourceGroupIds: [groupId] }}>
+      <ProtectedRoute >
         <main>
           <section className="bg-white py-10">
             <div className={container}>
@@ -212,7 +213,7 @@ export default function EditGroupPage() {
   }
 
   return (
-    <ProtectedRoute requiredPermission={{ action: "u", module: "access_control", resourceGroupIds: [groupId] }}>
+    <ProtectedRoute requiredPermission={{ action: PERMISSION_ACTIONS.Update, module: MODULES.ACCESS_CONTROL, resourceGroupIds: [groupId] }}>
       <main>
         <section className="bg-white py-10">
           <div className={container}>

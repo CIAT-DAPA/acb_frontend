@@ -27,11 +27,8 @@ import {
   inputField,
 } from "../../components/ui";
 import { RoleAPIService } from "@/services/roleService";
-import {
-  RolePermissions,
-  PermissionModule,
-  CRUDOperation,
-} from "@/types/roles";
+import { RolePermissions } from "@/types/roles";
+import { PermissionModule, CRUDOperation } from "@/types/core";
 
 // Información sobre operaciones CRUD (solo iconos, los nombres vienen de traducciones)
 const crudInfo: Record<CRUDOperation, { icon: JSX.Element }> = {

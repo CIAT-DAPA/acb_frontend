@@ -7,6 +7,7 @@ import FormCardPage from "../../create/FormCardPage";
 import { CardAPIService } from "../../../../../services/cardService";
 import { CreateCardData } from "../../../../../types/card";
 import { ProtectedRoute } from "../../../../../components/ProtectedRoute";
+import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
 
 export default function EditCardPage() {
   const params = useParams();
@@ -98,7 +99,7 @@ export default function EditCardPage() {
   const allowedGroups = initialData.access_config?.allowed_groups || [];
 
   return (
-    <ProtectedRoute requiredPermission={{ action: "u", module: "card_management", resourceGroupIds: allowedGroups }}>
+    <ProtectedRoute requiredPermission={{ action: PERMISSION_ACTIONS.Update, module: MODULES.CARD_MANAGEMENT, resourceGroupIds: allowedGroups }}>
       <FormCardPage mode="edit" cardId={cardId} initialData={initialData} />
     </ProtectedRoute>
   );

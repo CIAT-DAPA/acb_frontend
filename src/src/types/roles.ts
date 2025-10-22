@@ -1,6 +1,6 @@
 // Tipos para la gestión de roles basados en la documentación MongoDB
 
-import { LogObject } from "./core";
+import { LogObject, PermissionModule, CRUDOperation } from "./core";
 
 // ============================================
 // CRUD OPERATIONS
@@ -113,12 +113,12 @@ export interface RoleValidationState {
 /**
  * Tipo para los nombres de módulos de permisos
  */
-export type PermissionModule = keyof RolePermissions;
 
 /**
  * Tipo para las operaciones CRUD
  */
-export type CRUDOperation = keyof CRUDPermissions;
+// PermissionModule and CRUDOperation se importan desde `core.ts` para
+// mantener una única fuente de verdad para los nombres de módulos/acciones.
 
 /**
  * Helper para verificar si un rol tiene un permiso específico

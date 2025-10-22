@@ -33,6 +33,7 @@ import { UserService } from "@/services/userService";
 import { GroupUserRole } from "@/types/groups";
 import { Role } from "@/types/roles";
 import { User } from "@/types/user";
+import { PERMISSION_ACTIONS, MODULES } from "@/types/core";
 
 export default function CreateGroupPage() {
   const t = useTranslations("CreateGroup");
@@ -203,7 +204,7 @@ export default function CreateGroupPage() {
   };
 
   return (
-    <ProtectedRoute requiredPermission={{ action: "c", module: "access_control" }}>
+    <ProtectedRoute requiredPermission={{ action: PERMISSION_ACTIONS.Create, module: MODULES.ACCESS_CONTROL }}>
       <main>
         <section className="bg-white py-10">
           <div className={container}>

@@ -7,6 +7,7 @@ import CreateTemplatePage from "../../create/FormTemplatePage";
 import { TemplateAPIService } from "../../../../../services/templateService";
 import { CreateTemplateData } from "../../../../../types/template";
 import { ProtectedRoute } from "../../../../../components/ProtectedRoute";
+import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
 
 export default function EditTemplatePage() {
   const params = useParams();
@@ -180,7 +181,7 @@ export default function EditTemplatePage() {
   const allowedGroups = initialData.master?.access_config?.allowed_groups || [];
 
   return (
-    <ProtectedRoute requiredPermission={{ action: "u", module: "template_management", resourceGroupIds: allowedGroups }}>
+    <ProtectedRoute requiredPermission={{ action: PERMISSION_ACTIONS.Update, module: MODULES.TEMPLATE_MANAGEMENT, resourceGroupIds: allowedGroups }}>
       <CreateTemplatePage mode="edit" templateId={templateId} initialData={initialData} />
     </ProtectedRoute>
   );

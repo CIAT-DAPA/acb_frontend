@@ -80,4 +80,29 @@ export const TEXT_DECORATION_OPTIONS = [
 
 export type TemplateStatus = (typeof TEMPLATE_STATUS)[number];
 export type AccessType = (typeof ACCESS_TYPES)[number];
+
+// ============================================
+// PERMISSION MODULES & ACTIONS (migrated)
+// Nota: estas constantes sirven como fuente de verdad en el frontend
+// para los nombres de módulos y acciones usados por el sistema de permisos.
+export const MODULES = {
+  BULLETINS_COMPOSER: "bulletins_composer",
+  TEMPLATE_MANAGEMENT: "template_management",
+  DASHBOARD_BULLETINS: "dashboard_bulletins",
+  REVIEW: "review",
+  CARD_MANAGEMENT: "card_management",
+  ACCESS_CONTROL: "access_control",
+  EXTERNAL_INTEGRATIONS: "external_integrations",
+} as const;
+
+// Acciones de permisos: nombre explícito para dejar claro el propósito
+export const PERMISSION_ACTIONS = {
+  Create: "c",
+  Read: "r",
+  Update: "u",
+  Delete: "d",
+} as const;
+
+export type PermissionModule = typeof MODULES[keyof typeof MODULES];
+export type CRUDOperation = typeof PERMISSION_ACTIONS[keyof typeof PERMISSION_ACTIONS];
 export type TextAlign = (typeof TEXT_ALIGN_OPTIONS)[number];

@@ -1,8 +1,10 @@
 import { useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { MODULES, PermissionModule, CRUDOperation } from "@/types/core";
 
-type Action = "c" | "r" | "u" | "d";
-type ModuleKey = string;
+// allow both strict union types and plain strings for compatibility
+type Action = CRUDOperation | string;
+type ModuleKey = PermissionModule | string;
 
 export function usePermissions() {
   const { validatedPayload } = useAuth();
@@ -34,7 +36,8 @@ export function usePermissions() {
       const role = g.role || {};
       const roleName = (role.role_name || "").toString().toLowerCase();
       const perms = role.permissions || {};
-      const acc = perms.access_control;
+      // use canonical module key to avoid magic strings
+      const acc = perms[MODULES.ACCESS_CONTROL];
       const hasFullAccessControl = !!(acc && acc.c && acc.r && acc.u && acc.d);
       if (gid && (roleName === "admin" || hasFullAccessControl)) {
         res.push(gid);

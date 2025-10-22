@@ -32,6 +32,7 @@ import {
 } from "../components/ui";
 import { Card, CardType, CARD_TYPES } from "@/types/card";
 import usePermissions from "@/hooks/usePermissions";
+import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
 
 export default function CardsPage() {
   const t = useTranslations("Cards");
@@ -186,7 +187,7 @@ export default function CardsPage() {
   };
 
   return (
-    <ProtectedRoute requiredPermission={{ action: "r", module: "card_management" }}>
+    <ProtectedRoute requiredPermission={{ action: PERMISSION_ACTIONS.Read, module: MODULES.CARD_MANAGEMENT }}>
       <main>
         <section className="desk-texture desk-texture-strong bg-[#fefae0] py-10">
           <div className={container}>
@@ -226,16 +227,11 @@ export default function CardsPage() {
               </div>
 
               {/* Botón Crear (condicionado) */}
-              {can("c", "card_management") ? (
+              {can(PERMISSION_ACTIONS.Create, MODULES.CARD_MANAGEMENT) && (
                 <Link href="/cards/create" className={`${btnPrimary} whitespace-nowrap`}>
                   <Plus className="h-5 w-5" />
                   <span>{t("createNew")}</span>
                 </Link>
-              ) : (
-                <button className={`${btnPrimary} opacity-60 cursor-not-allowed whitespace-nowrap`} disabled>
-                  <Plus className="h-5 w-5" />
-                  <span>{t("createNew")}</span>
-                </button>
               )}
             </div>
 
@@ -295,8 +291,8 @@ export default function CardsPage() {
               {filteredCards.map((card, index) => {
                 const stats = CardAPIService.getCardStats(card);
                 const allowedGroups = card.access_config?.allowed_groups || [];
-                const canEdit = can("u", "card_management", allowedGroups);
-                const canDelete = can("d", "card_management", allowedGroups);
+                const canEdit = can(PERMISSION_ACTIONS.Update, MODULES.CARD_MANAGEMENT, allowedGroups);
+                const canDelete = can(PERMISSION_ACTIONS.Delete, MODULES.CARD_MANAGEMENT, allowedGroups);
 
                 return (
                   <ItemCard
@@ -358,9 +354,11 @@ export default function CardsPage() {
                   ? t("noResults")
                   : t("noResults")}
               </p>
-              <Link href="/cards/create" className={btnPrimary}>
-                {t("createFirst")}
-              </Link>
+              { can(PERMISSION_ACTIONS.Create, MODULES.CARD_MANAGEMENT) && (
+                <Link href="/cards/create" className={btnPrimary}>
+                  {t("createFirst")}
+                </Link>
+              )}
             </div>
           )}
         </div>
