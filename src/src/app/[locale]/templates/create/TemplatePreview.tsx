@@ -50,11 +50,15 @@ function getBorderStyles(
 interface TemplatePreviewProps {
   data: CreateTemplateData;
   selectedSectionIndex?: number;
+  moreInfo?: boolean;
+  description?: boolean;
 }
 
 export function TemplatePreview({
   data,
   selectedSectionIndex = 0,
+  moreInfo = false,
+  description = false,
 }: TemplatePreviewProps) {
   const t = useTranslations("CreateTemplate.preview");
 
@@ -676,25 +680,27 @@ export function TemplatePreview({
   return (
     <div className="h-full">
       {/* Información de la plantilla */}
-      <div className="mb-4 p-3 bg-[#bc6c25]/10 rounded-lg">
-        <h3 className="font-semibold text-[#bc6c25]">
-          {data.master.template_name ||
-            t("untitled", { default: "Plantilla Sin Título" })}
-        </h3>
-        <p className="text-sm text-[#bc6c25] mt-1">
-          {data.master.description ||
-            t("noDescription", { default: "Sin descripción" })}
-        </p>
-        <div className="text-xs text-[#bc6c25] mt-2">
-          Estado: {data.master.status} | Acceso:{" "}
-          {data.master.access_config.access_type}
+      { description &&
+        <div className="mb-4 p-3 bg-[#bc6c25]/10 rounded-lg">
+          <h3 className="font-semibold text-[#bc6c25]">
+            {data.master.template_name ||
+              t("untitled", { default: "Plantilla Sin Título" })}
+          </h3>
+          <p className="text-sm text-[#bc6c25] mt-1">
+            {data.master.description ||
+              t("noDescription", { default: "Sin descripción" })}
+          </p>
+          <div className="text-xs text-[#bc6c25] mt-2">
+            Estado: {data.master.status} | Acceso:{" "}
+            {data.master.access_config.access_type}
+          </div>
         </div>
-      </div>
+      }
 
       {/* Preview del documento */}
       <div
         id="template-preview-container"
-        className="border-2 border-gray-300 rounded-lg overflow-hidden inline-block"
+        className="border-2 border-gray-300 rounded-lg overflow-hidden flex justify-center"
       >
         <div
           className="bg-white flex flex-col"
@@ -1130,25 +1136,27 @@ export function TemplatePreview({
       </div>
 
       {/* Información adicional */}
-      <div className="mt-4 text-xs text-[#283618]/50 space-y-1">
-        <div>Versión: {data.version.version_num}</div>
-        <div>Mensaje: {data.version.commit_message}</div>
-        <div>Secciones: {sections.length}</div>
-        <div>
-          Campos totales:{" "}
-          {sections.reduce(
-            (total, section) =>
-              total +
-              section.blocks.reduce(
-                (blockTotal, block) => blockTotal + block.fields.length,
-                0
-              ),
-            0
-          ) +
-            (headerConfig?.fields?.length || 0) +
-            (footerConfig?.fields?.length || 0)}
+      {moreInfo &&
+        <div className="mt-4 text-xs text-[#283618]/50 space-y-1">
+          <div>Versión: {data.version.version_num}</div>
+          <div>Mensaje: {data.version.commit_message}</div>
+          <div>Secciones: {sections.length}</div>
+          <div>
+            Campos totales:{" "}
+            {sections.reduce(
+              (total, section) =>
+                total +
+                section.blocks.reduce(
+                  (blockTotal, block) => blockTotal + block.fields.length,
+                  0
+                ),
+              0
+            ) +
+              (headerConfig?.fields?.length || 0) +
+              (footerConfig?.fields?.length || 0)}
+          </div>
         </div>
-      </div>
+      }
     </div>
   );
 }
