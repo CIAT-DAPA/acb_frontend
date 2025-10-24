@@ -1120,4 +1120,24 @@
       "noContent": "No content yet"
     }
   }
+  ,
+  "Dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Quick overview of templates, bulletins and cards available",
+    "templates": "Templates",
+    "bulletins": "Bulletins",
+    "cards": "Cards",
+    "searchPlaceholder": "Search the dashboard...",
+    "loading": "Loading items...",
+    "noResults": "No items found",
+    "noAccessTitle": "No access",
+    "noAccessMessage": "You don't have access to any dashboard sections.",
+    "deleteConfirmTitle": "Confirm action",
+    "deleteConfirmMessage": "Are you sure you want to archive \"{name}\"? This will mark it as archived.",
+    "cancelDelete": "Cancel",
+    "confirmDeleteBtn": "Archive",
+    "deleting": "Archiving...",
+    "deleteSuccess": "{name} archived successfully",
+    "deleteError": "Error archiving {name}: {error}"
+  }
 }

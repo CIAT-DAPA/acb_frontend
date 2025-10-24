@@ -1120,4 +1120,24 @@
       "noContent": "No hay contenido aún"
     }
   }
+  ,
+  "Dashboard": {
+    "title": "Panel",
+    "subtitle": "Resumen rápido de plantillas, boletines y cards disponibles",
+    "templates": "Plantillas",
+    "bulletins": "Boletines",
+    "cards": "Tarjetas",
+    "searchPlaceholder": "Buscar en el dashboard...",
+    "loading": "Cargando elementos...",
+    "noResults": "No se encontraron elementos",
+    "noAccessTitle": "Sin acceso",
+    "noAccessMessage": "No tienes acceso a ninguna sección del panel.",
+    "deleteConfirmTitle": "Confirmar acción",
+    "deleteConfirmMessage": "¿Estás seguro de que deseas archivar \"{name}\"? Esta acción cambiará su estado a archivado.",
+    "cancelDelete": "Cancelar",
+    "confirmDeleteBtn": "Archivar",
+    "deleting": "Archivando...",
+    "deleteSuccess": "{name} archivado exitosamente",
+    "deleteError": "Error al archivar {name}: {error}"
+  }
 }
