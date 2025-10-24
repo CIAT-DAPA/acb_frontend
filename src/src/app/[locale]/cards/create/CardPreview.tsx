@@ -28,6 +28,9 @@ export function CardPreview({ data }: CardPreviewProps) {
       style_config: {
         background_color: data.content.background_color,
         background_image: data.content.background_url,
+        // Aplicar padding y gap del content style_config
+        padding: data.content.style_config?.padding,
+        gap: data.content.style_config?.gap,
       },
       header_config: data.content.header_config,
       footer_config: data.content.footer_config,

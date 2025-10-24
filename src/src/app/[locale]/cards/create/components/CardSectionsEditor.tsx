@@ -241,7 +241,7 @@ function BlockConfiguration({
               fieldsLayout: true,
             }}
             title="Estilos del Bloque"
-            description="Los estilos del bloque se aplicarán al contenedor que agrupa los campos"
+            description="Los estilos del bloque se aplicarán al contenedor que agrupa los campos. Usa 'Padding' para el espacio interno del bloque y 'Gap' para el espacio entre los campos dentro del bloque."
             showPreview={false}
           />
         </div>
@@ -753,6 +753,70 @@ export function CardSectionsEditor({
                 </div>
                 <p className="text-xs text-[#283618]/60 mt-1">
                   El color se aplicará si no hay imagen de fondo seleccionada
+                </p>
+              </div>
+
+              {/* Padding */}
+              <div>
+                <label
+                  htmlFor="content_padding"
+                  className="block text-sm font-medium text-[#283618] mb-2"
+                >
+                  Padding (Espacio Interno)
+                </label>
+                <input
+                  type="text"
+                  id="content_padding"
+                  value={data.content.style_config?.padding || ""}
+                  onChange={(e) =>
+                    onDataChange((prevData) => ({
+                      ...prevData,
+                      content: {
+                        ...prevData.content,
+                        style_config: {
+                          ...prevData.content.style_config,
+                          padding: e.target.value,
+                        },
+                      },
+                    }))
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#606c38] focus:border-transparent"
+                  placeholder="Ej: 16px, 1rem, 10px 20px"
+                />
+                <p className="text-xs text-[#283618]/60 mt-1">
+                  Espacio interno entre el borde del card y su contenido
+                </p>
+              </div>
+
+              {/* Gap */}
+              <div>
+                <label
+                  htmlFor="content_gap"
+                  className="block text-sm font-medium text-[#283618] mb-2"
+                >
+                  Gap (Espacio entre Bloques)
+                </label>
+                <input
+                  type="text"
+                  id="content_gap"
+                  value={data.content.style_config?.gap || ""}
+                  onChange={(e) =>
+                    onDataChange((prevData) => ({
+                      ...prevData,
+                      content: {
+                        ...prevData.content,
+                        style_config: {
+                          ...prevData.content.style_config,
+                          gap: e.target.value,
+                        },
+                      },
+                    }))
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#606c38] focus:border-transparent"
+                  placeholder="Ej: 16px, 1rem, 20px"
+                />
+                <p className="text-xs text-[#283618]/60 mt-1">
+                  Espacio entre los bloques del card
                 </p>
               </div>
             </div>

@@ -27,6 +27,7 @@ export interface CardContent {
   blocks: Block[]; // Array de bloques, misma estructura que en templates
   header_config?: import("./template").HeaderFooterConfig; // Configuración opcional del encabezado
   footer_config?: import("./template").HeaderFooterConfig; // Configuración opcional del pie de página
+  style_config?: import("./core").StyleConfig; // Configuración de estilos del contenido (padding, gap, etc.)
 }
 
 /**
