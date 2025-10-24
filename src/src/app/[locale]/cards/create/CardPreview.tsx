@@ -74,5 +74,5 @@ export function CardPreview({ data }: CardPreviewProps) {
   }, [data, t]);
 
   // Reutilizar el TemplatePreview con los datos convertidos
-  return <TemplatePreview data={templateData} selectedSectionIndex={0} />;
+  return <TemplatePreview data={templateData} selectedSectionIndex={0} moreInfo={true} description={true} />;
 }

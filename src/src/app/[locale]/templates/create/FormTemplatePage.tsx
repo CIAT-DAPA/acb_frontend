@@ -635,6 +635,8 @@ export default function CreateTemplatePage({
               <TemplatePreview
                 data={creationState.data}
                 selectedSectionIndex={selectedSectionIndex}
+                moreInfo={true}
+                description={true}
               />
             </div>
           </div>

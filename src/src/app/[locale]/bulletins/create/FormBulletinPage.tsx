@@ -548,7 +548,7 @@ export default function FormBulletinPage() {
                 id="bulletin-preview-container"
                 className="rounded-lg overflow-hidden"
               >
-                <TemplatePreview data={previewData} />
+                <TemplatePreview data={previewData} moreInfo={true} description={true} />
               </div>
             ) : (
               <div className="flex items-center justify-center h-64 text-[#606c38]">
