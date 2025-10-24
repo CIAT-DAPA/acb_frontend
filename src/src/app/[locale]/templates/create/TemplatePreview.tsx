@@ -177,7 +177,7 @@ export function TemplatePreview({
       backgroundImage: effectiveStyles.background_image
         ? `url("${getBackgroundImageUrl(effectiveStyles.background_image)}")`
         : undefined,
-      backgroundSize: "contain",
+      backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
       padding: effectiveStyles.padding,
@@ -203,7 +203,7 @@ export function TemplatePreview({
         // Para text_with_icon, mostrar el value si existe, sino mostrar placeholder
         const textWithIconValue = field.value
           ? renderFieldValue(field.value)
-          : field.display_name || field.label || "Texto con icono";
+          : field.label || "Texto con icono";
 
         // Obtener el icono seleccionado o el primer icono disponible como fallback
         const selectedIcon =
@@ -469,7 +469,7 @@ export function TemplatePreview({
                 effectiveStyles.background_image
               )}")`
             : undefined,
-          backgroundSize: "contain",
+          backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
           color: effectiveStyles.primary_color || undefined,
@@ -707,7 +707,7 @@ export function TemplatePreview({
             backgroundImage: styleConfig?.background_image
               ? `url("${getBackgroundImageUrl(styleConfig.background_image)}")`
               : undefined,
-            backgroundSize: "contain",
+            backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
           }}
@@ -731,7 +731,7 @@ export function TemplatePreview({
                         headerConfig.style_config.background_image
                       )}")`
                     : undefined,
-                  backgroundSize: "contain",
+                  backgroundSize: "cover",
                   backgroundPosition: "center",
                   backgroundRepeat: "no-repeat",
                   color:
@@ -798,7 +798,7 @@ export function TemplatePreview({
                           section.style_config.background_image
                         )}")`
                       : undefined,
-                    backgroundSize: "contain",
+                    backgroundSize: "cover",
                     backgroundPosition: "center",
                     backgroundRepeat: "no-repeat",
                     fontWeight: section.style_config?.font_weight || "400",
@@ -867,7 +867,7 @@ export function TemplatePreview({
                                     .background_image
                                 )}")`
                               : undefined,
-                            backgroundSize: "contain",
+                            backgroundSize: "cover",
                             backgroundPosition: "center",
                             backgroundRepeat: "no-repeat",
                             color:
@@ -935,7 +935,7 @@ export function TemplatePreview({
                                       block.style_config.background_image
                                     )}")`
                                   : undefined,
-                                backgroundSize: "contain",
+                                backgroundSize: "cover",
                                 backgroundPosition: "center",
                                 backgroundRepeat: "no-repeat",
                                 color:
@@ -1024,7 +1024,7 @@ export function TemplatePreview({
                                     .background_image
                                 )}")`
                               : undefined,
-                            backgroundSize: "contain",
+                            backgroundSize: "cover",
                             backgroundPosition: "center",
                             backgroundRepeat: "no-repeat",
                             color:
@@ -1092,7 +1092,7 @@ export function TemplatePreview({
                         footerConfig.style_config.background_image
                       )}")`
                     : undefined,
-                  backgroundSize: "contain",
+                  backgroundSize: "cover",
                   backgroundPosition: "center",
                   backgroundRepeat: "no-repeat",
                   color:

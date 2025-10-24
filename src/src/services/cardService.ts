@@ -100,8 +100,10 @@ export class CardAPIService extends BaseAPIService {
     id: string,
     cardData: Partial<Card>
   ): Promise<APIResponse<Card>> {
+    const { log, ...cardDataWithoutLog } = cardData;
+
     try {
-      const data = await this.put<any>(`/cards/${id}`, cardData);
+      const data = await this.put<any>(`/cards/${id}`, cardDataWithoutLog);
 
       return {
         success: true,
@@ -408,7 +410,6 @@ export class CardAPIService extends BaseAPIService {
       fieldsCount: this.getFieldsCount(card),
       templatesCount: this.getTemplatesCount(card),
       hasBackgroundImage: !!card.content.background_url,
-      hasIcon: !!card.content.icon_url,
       accessType: card.access_config.access_type,
       isPublic: card.access_config.access_type === "public",
       createdBy: `${card.log.creator_first_name || ""} ${

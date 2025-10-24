@@ -131,6 +131,7 @@ export function FieldEditor({
           subtype: currentConfig?.subtype || "short",
           icon_options: currentConfig?.icon_options || [""],
           selected_icon: currentConfig?.selected_icon, // Preservar el icono seleccionado
+          showLabel: currentConfig?.showLabel, // Preservar la configuración de showLabel
         },
       } as Field;
     }

@@ -881,7 +881,7 @@ export function SectionsStep({
                 <button
                   key={`tab-${section.section_id}-${index}`}
                   onClick={() => onSectionSelect?.(index)}
-                  className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+                  className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors cursor-pointer ${
                     selectedSectionIndex === index
                       ? "border-[#bc6c25] text-[#bc6c25]"
                       : "border-transparent text-[#283618]/70 hover:text-[#283618] hover:border-gray-300"
