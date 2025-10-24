@@ -173,9 +173,11 @@ export default function Bulletins() {
           {!loading && !error && bulletins.length === 0 && (
             <div className="text-center py-12">
               <p className="text-[#283618]/60 mb-4">{t("noResults")}</p>
-              <Link href="/bulletins/create" className={btnPrimary}>
-                {t("createFirst")}
-              </Link>
+              {can(PERMISSION_ACTIONS.Create, MODULES.BULLETINS_COMPOSER) && (
+                <Link href="/bulletins/create" className={btnPrimary}>
+                  {t("createFirst")}
+                </Link>
+              )}
             </div>
           )}
         </div>

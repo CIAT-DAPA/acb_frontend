@@ -313,9 +313,11 @@ export default function Templates() {
           {!loading && !error && templates.length === 0 && (
             <div className='text-center py-12'>
               <p className='text-[#283618]/60 mb-4'>{t('noResults')}</p>
-              <Link href='/templates/create' className={btnPrimary}>
-                {t('createFirst')}
-              </Link>
+              {can(PERMISSION_ACTIONS.Create, MODULES.TEMPLATE_MANAGEMENT) &&
+                <Link href='/templates/create' className={btnPrimary}>
+                  {t('createFirst')}
+                </Link>
+              }
             </div>
           )}
         </div>
