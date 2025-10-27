@@ -41,23 +41,14 @@ export default function TemplatePreviewPage() {
         setLoading(true);
         setError(null);
 
-        // Obtener el template master por ID
-        const masterResponse = await TemplateAPIService.getTemplateById(templateId);
+        // Obtener el template master y su versión actual en una sola llamada
+        const response = await TemplateAPIService.getCurrentVersion(templateId);
         
-        if (!masterResponse.success || !masterResponse.data) {
+        if (!response.success || !response.data) {
           throw new Error("Template no encontrado");
         }
 
-        const templateMaster = masterResponse.data;
-
-        // Obtener la versión actual del template (con el contenido completo)
-        const versionResponse = await TemplateAPIService.getCurrentVersion(templateId);
-        
-        if (!versionResponse.success || !versionResponse.data) {
-          throw new Error("No se pudo cargar el contenido del template");
-        }
-
-        const currentVersion = versionResponse.data;
+        const { master: templateMaster, current_version: currentVersion } = response.data;
 
         // Validar que la versión tenga contenido
         if (!currentVersion.content || !currentVersion.content.sections) {

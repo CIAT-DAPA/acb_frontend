@@ -1,6 +1,6 @@
 "use client";
 
-import React, { ReactNode } from "react";
+import React, { ReactNode, useEffect } from "react";
 import { X } from "lucide-react";
 
 interface TemplateModalProps {
@@ -49,44 +49,67 @@ export function TemplateModal({
   const isFirstItem = currentIndex === 0;
   const isLastItem = currentIndex === (totalItems ?? 1) - 1;
 
+  // Prevenir scroll del body cuando el modal está abierto
+  useEffect(() => {
+    if (isOpen) {
+      // Guardar el scroll actual
+      const scrollY = window.scrollY;
+      
+      // Prevenir scroll
+      document.body.style.overflow = "hidden";
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = "100%";
+
+      return () => {
+        // Restaurar scroll
+        document.body.style.overflow = "";
+        document.body.style.position = "";
+        document.body.style.top = "";
+        document.body.style.width = "";
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [isOpen]);
+
   return (
     <div
       className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
       <div
-        className={`bg-white rounded-xl w-auto ${maxWidthMap[maxWidth]} max-w-[95vw] max-h-[90vh] overflow-auto relative shadow-2xl`}
+        className={`bg-white rounded-xl w-auto ${maxWidthMap[maxWidth]} max-w-[95vw] max-h-[97vh] relative shadow-2xl flex flex-col`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Botón cerrar */}
+        {/* Botón cerrar - Fixed en la esquina superior derecha */}
         <button
           onClick={onClose}
-          className="sticky top-4 right-4 float-right bg-white p-2 rounded-full shadow-lg hover:bg-gray-100 transition-colors z-10 border border-[#283618]/10"
+          className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-lg hover:bg-gray-100 transition-colors z-10 border border-[#283618]/10"
           aria-label="Cerrar modal"
         >
           <X className="w-5 h-5 text-[#283618]" />
         </button>
 
-        {/* Header con título */}
-        <div className="p-6 pb-4">
-          <h2 className="text-2xl font-bold text-[#283618]">{title}</h2>
+        {/* Header con título - Fixed (no hace scroll) */}
+        <div className="p-6 py-4 flex-shrink-0">
+          <h2 className="text-2xl font-bold text-[#283618] pr-12">{title}</h2>
           {subtitle && (
             <p className="text-sm text-[#283618]/60 mt-1">{subtitle}</p>
           )}
         </div>
 
-        {/* Contenido del modal - Con scroll horizontal en móvil */}
-        <div className="px-6 pb-6">
-          <div className="overflow-x-auto">
-            <div className="min-w-min">
+        {/* Contenido del modal - SOLO ESTA PARTE HACE SCROLL */}
+        <div className="px-6 py-4 flex-1 overflow-y-auto overflow-x-hidden">
+          <div className="overflow-x-auto flex justify-center">
+            <div className="w-fit h-fit">
               {children}
             </div>
           </div>
         </div>
 
-        {/* Footer con navegación (opcional) */}
+        {/* Footer con navegación (opcional) - Fixed (no hace scroll) */}
         {showNavigation && (
-          <div className="p-6 pt-4 border-t border-gray-200 flex items-center justify-between bg-gray-50 rounded-b-xl">
+          <div className="p-6 py-4 border-t border-gray-200 flex items-center justify-between bg-gray-50 rounded-b-xl flex-shrink-0">
             <button
               onClick={onPrevious}
               disabled={isFirstItem}

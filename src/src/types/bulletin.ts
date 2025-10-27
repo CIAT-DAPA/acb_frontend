@@ -65,12 +65,14 @@ export interface BulletinVersion {
 export interface BulletinMaster {
   _id?: string;
   bulletin_name: string;
+  description?: string; // Opcional - descripción del boletín
   log: LogObject;
   base_template_master_id: string; // Referencia al template master usado
   base_template_version_id: string; // Versión específica del template usada
   current_version_id?: string; // ID de la versión actual del boletín
   access_config: AccessConfig;
   status: BulletinStatus;
+  thumbnail_images?: string[]; // Opcional - imágenes de preview del boletín
 }
 
 // ============================================
@@ -148,3 +150,9 @@ export interface TemplateToBlankBulletinTransform {
 export const BULLETIN_STATUSES = ["draft", "published"] as const;
 
 export type BulletinStatusType = (typeof BULLETIN_STATUSES)[number];
+
+// Tipo para la respuesta de la API del endpoint /bulletins/{id}/current-version
+export interface BulletinWithCurrentVersion {
+  master: BulletinMaster;
+  current_version: BulletinVersion;
+}

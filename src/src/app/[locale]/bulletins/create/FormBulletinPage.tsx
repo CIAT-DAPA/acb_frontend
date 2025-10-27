@@ -52,6 +52,10 @@ export default function FormBulletinPage() {
         },
         base_template_master_id: "",
         base_template_version_id: "",
+        access_config: {
+          access_type: "public",
+          allowed_groups: [],
+        },
       },
       version: {
         version_num: 1,
@@ -76,32 +80,6 @@ export default function FormBulletinPage() {
 
   const [isLoading, setIsLoading] = useState(false);
 
-  // Actualizar creator_user_id cuando userInfo esté disponible
-  useEffect(() => {
-    if (userInfo?.sub && !creationState.data.master.log.creator_user_id) {
-      setCreationState((prev) => ({
-        ...prev,
-        data: {
-          ...prev.data,
-          master: {
-            ...prev.data.master,
-            log: {
-              ...prev.data.master.log,
-              creator_user_id: userInfo.sub!,
-            },
-          },
-          version: {
-            ...prev.data.version,
-            log: {
-              ...prev.data.version.log,
-              creator_user_id: userInfo.sub!,
-            },
-          },
-        },
-      }));
-    }
-  }, [userInfo?.sub, creationState.data.master.log.creator_user_id]);
-
   // Cargar template seleccionado y llenar estructura inicial
   const loadTemplateVersion = useCallback(
     async (templateId: string) => {
@@ -110,20 +88,30 @@ export default function FormBulletinPage() {
         const response = await TemplateAPIService.getCurrentVersion(templateId);
 
         if (response.success && response.data) {
+          const { current_version, master } = response.data;
+          
           // Verificar que existe el content
-          if (!response.data.content) {
+          if (!current_version.content) {
             console.error(
               "Response does not have content property:",
-              response.data
+              current_version
             );
             throw new Error(
               "La respuesta del template no tiene la estructura esperada"
             );
           }
 
-          // El servicio ya normaliza la respuesta, response.data contiene current_version
-          const versionId = response.data.id || response.data._id;
-          const content = response.data.content;
+          // Extraer información de la versión actual
+          const versionId = current_version._id;
+          const content = current_version.content;
+
+          // Validar que versionId existe (es obligatorio)
+          if (!versionId) {
+            console.error("Template version ID is missing");
+            throw new Error(
+              "No se pudo obtener el ID de la versión del template"
+            );
+          }
 
           // Helper para inicializar el valor de un campo según su tipo
           const initializeFieldValue = (field: Field) => {
@@ -145,6 +133,7 @@ export default function FormBulletinPage() {
                 ...prev.data.master,
                 base_template_master_id: templateId,
                 base_template_version_id: versionId,
+                access_config: master.access_config || { access_type: "public", allowed_groups: [] },
               },
               version: {
                 ...prev.data.version,
@@ -339,22 +328,24 @@ export default function FormBulletinPage() {
     setIsLoading(true);
     try {
       // 1. Crear bulletin master
-      const { log, ...masterDataWithoutLog } = creationState.data.master;
+      const { log: masterLog, ...masterDataWithoutLog } = creationState.data.master;
 
       const masterResponse = await BulletinAPIService.createBulletin(
         masterDataWithoutLog
       );
 
-      if (!masterResponse.success || !masterResponse.data?._id) {
+      if (!masterResponse.success || !masterResponse.data) {
         throw new Error(masterResponse.message || "Error al crear el boletín");
       }
 
-      const bulletinId = masterResponse.data._id;
+      const bulletinId = (masterResponse.data as any).id || masterResponse.data._id;
+
+      const { log: versionLog, ...versionDataWithoutLog } = creationState.data.version;
 
       // 2. Crear primera versión del boletín
       const versionResponse = await BulletinAPIService.createBulletinVersion(
         bulletinId,
-        creationState.data.version
+        versionDataWithoutLog
       );
 
       if (!versionResponse.success) {

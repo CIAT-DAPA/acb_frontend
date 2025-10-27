@@ -1,4 +1,4 @@
-import { BulletinMaster, BulletinVersion, BulletinStatus } from "@/types/bulletin";
+import { BulletinMaster, BulletinVersion, BulletinStatus, BulletinWithCurrentVersion } from "@/types/bulletin";
 import { BaseAPIService } from "./apiConfig";
 
 // Interfaz para respuestas de la API
@@ -202,18 +202,37 @@ export class BulletinAPIService extends BaseAPIService {
   }
 
   /**
-   * Obtiene la versión actual de un bulletin
+   * Obtiene la versión actual de un bulletin junto con la información del master
+   * La respuesta del API tiene la estructura: { master: {...}, current_version: {...} }
    * GET /bulletins/{bulletin_id}/current-version
    */
-  static async getCurrentVersion(bulletinId: string): Promise<APIResponse<BulletinVersion>> {
+  static async getCurrentVersion(
+    bulletinId: string
+  ): Promise<APIResponse<BulletinWithCurrentVersion>> {
     try {
       const data = await this.get<any>(
         `/bulletins/${bulletinId}/current-version`
       );
 
+      // La API devuelve { master, current_version }
+      // Normalizar el master para tener _id en lugar de id
+      const normalizedMaster: BulletinMaster = {
+        ...data.master,
+        _id: data.master.id || data.master._id,
+      };
+
+      const normalizedVersion: BulletinVersion = {
+        ...data.current_version,
+        _id: data.current_version.id || data.current_version._id,
+      };
+
+
       return {
         success: true,
-        data: data.version || data.data || data,
+        data: {
+          master: normalizedMaster,
+          current_version: normalizedVersion,
+        },
       };
     } catch (error) {
       console.error("Error fetching current version:", error);
@@ -233,7 +252,7 @@ export class BulletinAPIService extends BaseAPIService {
    */
   static async createBulletinVersion(
     bulletinId: string,
-    versionData: Omit<BulletinVersion, "_id" | "bulletin_master_id" | "previous_version_id">
+    versionData: Omit<BulletinVersion, "_id" | "bulletin_master_id" | "previous_version_id" | "log">
   ): Promise<APIResponse<BulletinVersion>> {
     try {
       console.log("Creating bulletin version for bulletin ID:", {

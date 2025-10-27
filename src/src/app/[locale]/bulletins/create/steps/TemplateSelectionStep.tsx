@@ -4,8 +4,9 @@ import React, { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { TemplateMaster } from "../../../../../types/template";
 import { TemplateAPIService } from "../../../../../services/templateService";
-import { Loader2, FileText, Search } from "lucide-react";
+import { Loader2, FileText, Search, Eye } from "lucide-react";
 import Image from "next/image";
+import { PreviewModal } from "../../../components/PreviewModal";
 
 interface TemplateSelectionStepProps {
   selectedTemplateId?: string;
@@ -20,6 +21,8 @@ export function TemplateSelectionStep({
   const [templates, setTemplates] = useState<TemplateMaster[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [previewTemplateId, setPreviewTemplateId] = useState<string | null>(null);
 
   useEffect(() => {
     loadTemplates();
@@ -46,6 +49,16 @@ export function TemplateSelectionStep({
   const filteredTemplates = templates.filter((template) =>
     template.template_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handlePreview = (templateId: string) => {
+    setPreviewTemplateId(templateId);
+    setShowPreviewModal(true);
+  };
+
+  const handleClosePreview = () => {
+    setShowPreviewModal(false);
+    setPreviewTemplateId(null);
+  };
 
   return (
     <div className="space-y-6">
@@ -84,7 +97,7 @@ export function TemplateSelectionStep({
             <button
               key={template._id}
               onClick={() => onSelectTemplate(template._id!)}
-              className={`p-4 rounded-lg border-2 transition-all text-left ${
+              className={`relative group p-4 rounded-lg border-2 transition-all text-left ${
                 selectedTemplateId === template._id
                   ? "border-[#283618] bg-[#283618]/10"
                   : "border-[#283618]/20 hover:border-[#283618]/50"
@@ -92,7 +105,7 @@ export function TemplateSelectionStep({
             >
               <div className="flex items-start gap-4">
                 {/* Thumbnail */}
-                <div className="w-20 h-28 bg-gray-100 rounded flex-shrink-0 relative overflow-hidden">
+                <div className="w-20 h-28 bg-gray-100 rounded flex-shrink-0 relative overflow-hidden group/thumb">
                   {template.thumbnail_images && template.thumbnail_images[0] ? (
                     <Image
                       src={template.thumbnail_images[0]}
@@ -105,6 +118,18 @@ export function TemplateSelectionStep({
                       <FileText className="h-8 w-8 text-[#283618]/30" />
                     </div>
                   )}
+                  
+                  {/* Botón Preview - Centro del thumbnail */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handlePreview(template._id!);
+                    }}
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-2 bg-white/90 backdrop-blur-sm rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-200 shadow-md hover:shadow-lg hover:scale-110 hover:bg-[#283618] z-10 border border-[#283618]/10 hover:border-[#283618] cursor-pointer group/preview"
+                    title="Vista previa"
+                  >
+                    <Eye className="w-4 h-4 text-[#283618] group-hover/preview:text-white transition-colors" />
+                  </button>
                 </div>
 
                 {/* Info */}
@@ -124,39 +149,50 @@ export function TemplateSelectionStep({
                     </span>
                   </div>
                 </div>
-
-                {/* Selected indicator */}
-                {selectedTemplateId === template._id && (
-                  <div className="flex-shrink-0">
-                    <div className="w-6 h-6 rounded-full bg-[#283618] flex items-center justify-center">
-                      <svg
-                        className="w-4 h-4 text-white"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                )}
               </div>
+              
+              {/* Selected indicator - Esquina inferior derecha */}
+              {selectedTemplateId === template._id && (
+                <div className="absolute top-3 right-3 flex-shrink-0">
+                  <div className="w-6 h-6 rounded-full bg-[#283618] flex items-center justify-center shadow-md">
+                    <svg
+                      className="w-4 h-4 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              )}
             </button>
           ))}
         </div>
       )}
-
       {/* Empty state */}
       {!loading && filteredTemplates.length === 0 && (
         <div className="text-center py-12 text-[#283618]/50">
           <FileText className="h-12 w-12 mx-auto mb-4 opacity-30" />
           <p>{t("selectTemplate.noTemplates")}</p>
         </div>
+      )}
+
+      {/* Preview Modal */}
+      {showPreviewModal && previewTemplateId && (
+        <PreviewModal
+          isOpen={showPreviewModal}
+          onClose={handleClosePreview}
+          contentType="template"
+          contentId={previewTemplateId}
+          showActions={false}
+          showNavigation={true}
+        />
       )}
     </div>
   );
