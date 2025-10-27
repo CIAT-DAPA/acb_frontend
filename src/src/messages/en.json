@@ -571,7 +571,7 @@
         "algorithm": "Algorithm",
         "page_number": "Page Number",
         "card": "Card",
-        "background_url": "Background URL"
+        "image": "Image"
       },
       "textConfig": {
         "subtype": "Text Type",
@@ -1119,8 +1119,7 @@
       "noFields": "No fields",
       "noContent": "No content yet"
     }
-  }
-  ,
+  },
   "Dashboard": {
     "title": "Dashboard",
     "subtitle": "Quick overview of templates, bulletins and cards available",

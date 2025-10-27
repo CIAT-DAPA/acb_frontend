@@ -571,7 +571,7 @@
         "algorithm": "Algoritmo",
         "page_number": "Número de Página",
         "card": "Tarjeta",
-        "background_url": "URL de Fondo"
+        "image": "Imagen"
       },
       "textConfig": {
         "subtype": "Tipo de Texto",
@@ -1119,8 +1119,7 @@
       "noFields": "Sin campos",
       "noContent": "No hay contenido aún"
     }
-  }
-  ,
+  },
   "Dashboard": {
     "title": "Panel",
     "subtitle": "Resumen rápido de plantillas, boletines y cards disponibles",

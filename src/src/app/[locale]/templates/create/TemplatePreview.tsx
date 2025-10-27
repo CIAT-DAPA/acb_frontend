@@ -235,7 +235,7 @@ export function TemplatePreview({
               selectedIcon.startsWith("/") ? (
                 <SmartIcon
                   src={selectedIcon}
-                  style={{ width: `${iconSize}px`, height: `${iconSize}px` }}
+                  style={{ width: `${iconSize}px` }}
                   color={useOriginalColor ? undefined : fieldStyles.color}
                   preserveOriginalColors={useOriginalColor}
                   alt="Icon"
@@ -662,6 +662,40 @@ export function TemplatePreview({
           </div>
         );
 
+      case "image":
+        // Mostrar la imagen si tiene valor (cuando form es false)
+        const imageUrl = field.value as string | undefined;
+
+        if (!imageUrl) {
+          return (
+            <div
+              key={key}
+              style={fieldStyles}
+              className="flex items-center justify-center bg-gray-100 border border-gray-300 rounded"
+            >
+              <span className="text-gray-400 text-sm">Sin imagen</span>
+            </div>
+          );
+        }
+
+        return (
+          <div
+            key={key}
+            style={fieldStyles}
+            className="flex items-center justify-center overflow-hidden"
+          >
+            <img
+              src={imageUrl}
+              alt={field.display_name || "Imagen"}
+              className="max-w-full max-h-full object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src =
+                  "/assets/img/imageNotFound.png";
+              }}
+            />
+          </div>
+        );
+
       default:
         // Para cualquier otro tipo de campo, si form es false y tiene valor, mostrarlo
         const defaultValue =
@@ -680,7 +714,7 @@ export function TemplatePreview({
   return (
     <div className="h-full">
       {/* Información de la plantilla */}
-      { description &&
+      {description && (
         <div className="mb-4 p-3 bg-[#bc6c25]/10 rounded-lg">
           <h3 className="font-semibold text-[#bc6c25]">
             {data.master.template_name ||
@@ -695,7 +729,7 @@ export function TemplatePreview({
             {data.master.access_config.access_type}
           </div>
         </div>
-      }
+      )}
 
       {/* Preview del documento */}
       <div
@@ -1136,7 +1170,7 @@ export function TemplatePreview({
       </div>
 
       {/* Información adicional */}
-      {moreInfo &&
+      {moreInfo && (
         <div className="mt-4 text-xs text-[#283618]/50 space-y-1">
           <div>Versión: {data.version.version_num}</div>
           <div>Mensaje: {data.version.commit_message}</div>
@@ -1156,7 +1190,7 @@ export function TemplatePreview({
               (footerConfig?.fields?.length || 0)}
           </div>
         </div>
-      }
+      )}
     </div>
   );
 }

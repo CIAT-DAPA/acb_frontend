@@ -91,8 +91,8 @@ export interface CardFieldConfig {
   card_type: string; // Ej: "pest_or_disease", "crop_info"
 }
 
-export interface BackgroundUrlFieldConfig {
-  background_url: string;
+export interface ImageFieldConfig {
+  images: string[];
 }
 
 // Tipo base para todos los campos
@@ -114,7 +114,7 @@ export interface FieldBase {
     | "algorithm"
     | "page_number"
     | "card"
-    | "background_url";
+    | "image";
   description?: string;
   label?: string;
   form: boolean;
@@ -136,7 +136,7 @@ export interface FieldBase {
     | AlgorithmFieldConfig
     | PageNumberFieldConfig
     | CardFieldConfig
-    | BackgroundUrlFieldConfig;
+    | ImageFieldConfig;
   value?: string | number | boolean | Date | string[] | null | undefined; // Para campos con valores predefinidos
 }
 
@@ -210,9 +210,9 @@ export interface CardField extends FieldBase {
   field_config: CardFieldConfig;
 }
 
-export interface BackgroundUrlField extends FieldBase {
-  type: "background_url";
-  field_config: BackgroundUrlFieldConfig;
+export interface ImageField extends FieldBase {
+  type: "image";
+  field_config: ImageFieldConfig;
 }
 
 // Union type para todos los tipos de campo
@@ -231,7 +231,7 @@ export type Field =
   | AlgorithmField
   | PageNumberField
   | CardField
-  | BackgroundUrlField;
+  | ImageField;
 
 export interface Block {
   block_id: string;
@@ -325,7 +325,7 @@ export const FIELD_TYPES = [
   "algorithm",
   "page_number",
   "card",
-  "background_url",
+  "image",
 ] as const;
 
 // Constantes específicas para template creation

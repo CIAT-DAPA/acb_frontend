@@ -11,6 +11,7 @@ import { PageNumberFieldTypeConfig } from "./PageNumberFieldTypeConfig";
 import { ListFieldTypeConfig } from "./ListFieldTypeConfig";
 import { SelectWithIconsFieldTypeConfig } from "./SelectWithIconsFieldTypeConfig";
 import { ClimateDataFieldTypeConfig } from "./ClimateDataFieldTypeConfig";
+import { ImageFieldTypeConfig } from "./ImageFieldTypeConfig";
 import { DefaultFieldTypeConfig } from "./DefaultFieldTypeConfig";
 
 // Registro de componentes por tipo de campo
@@ -24,6 +25,7 @@ const FIELD_TYPE_COMPONENTS: Record<string, FieldTypeComponent> = {
   list: ListFieldTypeConfig,
   select_with_icons: SelectWithIconsFieldTypeConfig,
   climate_data_puntual: ClimateDataFieldTypeConfig,
+  image: ImageFieldTypeConfig,
 };
 
 // Factory para obtener el componente correcto según el tipo
