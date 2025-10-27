@@ -12,6 +12,7 @@ export * from "./ListFieldTypeConfig";
 export * from "./SelectWithIconsFieldTypeConfig";
 export * from "./ClimateDataFieldTypeConfig";
 export * from "./ImageFieldTypeConfig";
+export * from "./CardFieldTypeConfig";
 export * from "./DefaultFieldTypeConfig";
 
 // Exportaciones del registro y factory

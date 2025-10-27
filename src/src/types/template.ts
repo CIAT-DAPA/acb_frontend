@@ -88,7 +88,8 @@ export interface PageNumberFieldConfig {
 }
 
 export interface CardFieldConfig {
-  card_type: string; // Ej: "pest_or_disease", "crop_info"
+  card_type?: string; // Tipo de card (opcional para filtrar por tipo)
+  available_cards: string[]; // Array de IDs de cards que el usuario puede seleccionar
 }
 
 export interface ImageFieldConfig {
