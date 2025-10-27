@@ -21,6 +21,9 @@ interface BaseItemCardProps {
   author: string;
 
   // Botones de acción (opcionales y compartidos)
+  previewBtn?: boolean;
+  onPreview?: () => void;
+
   editBtn?: boolean;
   onEdit?: () => void;
 
@@ -95,6 +98,16 @@ export default function ItemCard(props: ItemCardProps) {
   // Renderizar botones de acción compartidos
   const renderActionButtons = () => (
     <>
+      {props.previewBtn && props.onPreview && (
+        <button
+          onClick={props.onPreview}
+          className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors cursor-pointer"
+          title={t("preview")}
+        >
+          <Eye className="h-4 w-4 text-white" />
+        </button>
+      )}
+
       {props.editBtn && props.onEdit && (
         <button
           onClick={props.onEdit}

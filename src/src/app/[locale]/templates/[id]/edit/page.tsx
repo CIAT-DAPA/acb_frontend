@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import CreateTemplatePage from "../../create/FormTemplatePage";
 import { TemplateAPIService } from "../../../../../services/templateService";
-import { CreateTemplateData } from "../../../../../types/template";
+import { CreateTemplateData, TemplateVersionContent } from "../../../../../types/template";
 import { ProtectedRoute } from "../../../../../components/ProtectedRoute";
 import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
 
@@ -36,7 +36,7 @@ export default function EditTemplatePage() {
       setError(null);
 
       // Obtener la versión actual del template con todo su contenido
-      let versionContent = {
+      let versionContent: TemplateVersionContent = {
         style_config: {
           font: "Arial",
           primary_color: "#000000",
@@ -50,35 +50,14 @@ export default function EditTemplatePage() {
 
       let template: any = null;
 
-      // Primero, obtener la información del template master
+      // Obtener la información del template master y su versión actual en una sola llamada
       try {
-        const templateResponse = await TemplateAPIService.getTemplateById(
-          templateId
-        );
+        const response = await TemplateAPIService.getCurrentVersion(templateId);
 
-        if (templateResponse.success && templateResponse.data) {
-          template = templateResponse.data;
-          console.log("Template master cargado:", template);
-        } else {
-          setError("No se pudo cargar la información del template");
-          return;
-        }
-      } catch (templateError) {
-        console.error("Error cargando template master:", templateError);
-        setError("No se pudo cargar la información del template");
-        return;
-      }
-
-      // Obtener la versión actual del template
-      try {
-        const versionResponse = await TemplateAPIService.getCurrentVersion(
-          templateId
-        );
-
-        if (versionResponse.success && versionResponse.data) {
-          // El servicio ya normaliza la respuesta, response.data contiene directamente current_version
-          const currentVersion = versionResponse.data;
-          console.log("Versión actual cargada:", currentVersion);
+        if (response.success && response.data) {
+          const { master, current_version: currentVersion } = response.data;
+          template = master;
+          console.log("Template master y versión cargados:", { master, currentVersion });
 
           // Verificar que existe el content
           if (currentVersion && currentVersion.content) {
@@ -86,7 +65,7 @@ export default function EditTemplatePage() {
               style_config:
                 currentVersion.content.style_config ||
                 versionContent.style_config,
-              sections: currentVersion.content.sections || [],
+              sections: currentVersion.content.sections,
               header_config: currentVersion.content.header_config,
               footer_config: currentVersion.content.footer_config,
             };
@@ -96,13 +75,13 @@ export default function EditTemplatePage() {
             );
           }
         } else {
-          console.warn(
-            "No se pudo cargar la versión actual, usando valores por defecto"
-          );
+          setError("No se pudo cargar la información del template");
+          return;
         }
-      } catch (versionError) {
-        console.error("Error cargando versión del template:", versionError);
-        // Continuar con los valores por defecto
+      } catch (error) {
+        console.error("Error cargando template:", error);
+        setError("No se pudo cargar la información del template");
+        return;
       }
 
       // Transformar los datos del template al formato CreateTemplateData

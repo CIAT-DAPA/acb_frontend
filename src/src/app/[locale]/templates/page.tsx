@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
 import {
   Plus,
   Search,
@@ -31,11 +32,14 @@ import {
   pageSubtitle,
 } from "../components/ui";
 import { TemplateMaster } from "@/types/template";
+import { PreviewModal } from "../components/PreviewModal";
 
 export default function Templates() {
   const t = useTranslations("Templates");
   const { showToast } = useToast();
   const { can } = usePermissions();
+  const params = useParams();
+  const locale = params.locale as string;
   const [searchTerm, setSearchTerm] = useState("");
   const [templates, setTemplates] = useState<TemplateMaster[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,6 +48,10 @@ export default function Templates() {
   const [templateToDelete, setTemplateToDelete] =
     useState<TemplateMaster | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Estados para el modal de preview
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [previewTemplateId, setPreviewTemplateId] = useState<string | null>(null);
 
   // Cargar templates al montar el componente
   useEffect(() => {
@@ -154,6 +162,18 @@ export default function Templates() {
       );
       setIsDeleting(false);
     }
+  };
+
+  // Función para manejar el preview de un template
+  const handlePreviewTemplate = (templateId: string) => {
+    setPreviewTemplateId(templateId);
+    setShowPreviewModal(true);
+  };
+
+  // Función para cerrar el modal de preview
+  const handleClosePreview = () => {
+    setShowPreviewModal(false);
+    setPreviewTemplateId(null);
   };
 
   return (
@@ -287,6 +307,8 @@ export default function Templates() {
                         template.log.updated_at!,
                       ).toLocaleDateString()}
                       thumbnailImages={template.thumbnail_images}
+                      previewBtn={true}
+                      onPreview={() => handlePreviewTemplate(template._id!)}
                       editBtn={canEdit}
                       onEdit={
                         canEdit
@@ -439,6 +461,25 @@ export default function Templates() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Modal de Preview */}
+      {showPreviewModal && previewTemplateId && (
+        <PreviewModal
+          isOpen={showPreviewModal}
+          onClose={handleClosePreview}
+          contentType="template"
+          contentId={previewTemplateId}
+          locale={locale}
+          showActions={true}
+          actions={{
+            onEdit: (id) => (window.location.href = `/templates/${id}/edit`),
+            onDelete: (id) => {
+              const template = templates.find((t) => t._id === id);
+              if (template) handleDeleteTemplate(template);
+            },
+          }}
+        />
       )}
     </ProtectedRoute>
   );

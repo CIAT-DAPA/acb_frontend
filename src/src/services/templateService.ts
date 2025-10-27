@@ -1,5 +1,6 @@
 import { TemplateMaster, GetTemplatesResponse } from "@/types/api";
 import { TemplateStatus } from "@/types/core";
+import { TemplateVersion, TemplateWithCurrentVersion } from "@/types/template";
 import { BaseAPIService } from "./apiConfig";
 
 // Interfaz para respuestas de la API
@@ -189,22 +190,35 @@ export class TemplateAPIService extends BaseAPIService {
   }
 
   /**
-   * Obtiene la versión actual de un template
-   * La respuesta del API tiene la estructura: { template_master: {...}, current_version: {...} }
+   * Obtiene la versión actual de un template junto con la información del master
+   * La respuesta del API tiene la estructura: { master: {...}, current_version: {...} }
    */
-  static async getCurrentVersion(templateId: string): Promise<APIResponse> {
+  static async getCurrentVersion(
+    templateId: string
+  ): Promise<APIResponse<TemplateWithCurrentVersion>> {
     try {
       const data = await this.get<any>(
         `/templates/${templateId}/current-version`
       );
 
-      // Normalizar la respuesta - el API devuelve { template_master, current_version }
-      // Pero el código espera directamente los datos de current_version
-      const normalizedData = data.current_version || data.version || data.data || data;
+      // La API devuelve { master, current_version }
+      // Normalizar el master para tener _id en lugar de id
+      const normalizedMaster: TemplateMaster = {
+        ...data.master,
+        _id: data.master.id || data.master._id,
+      };
+
+      const normalizedVersion: TemplateVersion = {
+        ...data.current_version,
+        _id: data.current_version.id || data.current_version._id,
+      };
 
       return {
         success: true,
-        data: normalizedData,
+        data: {
+          master: normalizedMaster,
+          current_version: normalizedVersion,
+        },
       };
     } catch (error) {
       console.error("Error fetching current version:", error);

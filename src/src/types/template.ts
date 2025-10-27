@@ -333,3 +333,9 @@ export const TEXT_SUBTYPES = ["short", "long"] as const;
 
 export type FieldType = (typeof FIELD_TYPES)[number];
 export type TextSubtype = (typeof TEXT_SUBTYPES)[number];
+
+// Tipo para la respuesta de la API del endpoint /templates/{id}/current-version
+export interface TemplateWithCurrentVersion {
+  master: TemplateMaster;
+  current_version: TemplateVersion;
+}
