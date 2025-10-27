@@ -42,7 +42,7 @@ export interface Card {
   _id?: string; // ObjectId como string
   card_name: string; // Nombre de la card
   card_type: CardType; // Tipo de card para filtrado y categorización
-  thumbnail_url?: string[]; // URL de imagen en miniatura representativa
+  thumbnail_images?: string[]; // Rutas a las imágenes de preview de la card
   templates_master_ids: string[]; // Array de ObjectIds de templates donde esta card es válida
   access_config: AccessConfig; // Nivel de acceso al recurso
   content: CardContent; // Estructura flexible del contenido

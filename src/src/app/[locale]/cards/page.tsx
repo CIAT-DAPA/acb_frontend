@@ -187,7 +187,12 @@ export default function CardsPage() {
   };
 
   return (
-    <ProtectedRoute requiredPermission={{ action: PERMISSION_ACTIONS.Read, module: MODULES.CARD_MANAGEMENT }}>
+    <ProtectedRoute
+      requiredPermission={{
+        action: PERMISSION_ACTIONS.Read,
+        module: MODULES.CARD_MANAGEMENT,
+      }}
+    >
       <main>
         <section className="desk-texture desk-texture-strong bg-[#fefae0] py-10">
           <div className={container}>
@@ -228,7 +233,10 @@ export default function CardsPage() {
 
               {/* Botón Crear (condicionado) */}
               {can(PERMISSION_ACTIONS.Create, MODULES.CARD_MANAGEMENT) && (
-                <Link href="/cards/create" className={`${btnPrimary} whitespace-nowrap`}>
+                <Link
+                  href="/cards/create"
+                  className={`${btnPrimary} whitespace-nowrap`}
+                >
                   <Plus className="h-5 w-5" />
                   <span>{t("createNew")}</span>
                 </Link>
@@ -291,8 +299,16 @@ export default function CardsPage() {
               {filteredCards.map((card, index) => {
                 const stats = CardAPIService.getCardStats(card);
                 const allowedGroups = card.access_config?.allowed_groups || [];
-                const canEdit = can(PERMISSION_ACTIONS.Update, MODULES.CARD_MANAGEMENT, allowedGroups);
-                const canDelete = can(PERMISSION_ACTIONS.Delete, MODULES.CARD_MANAGEMENT, allowedGroups);
+                const canEdit = can(
+                  PERMISSION_ACTIONS.Update,
+                  MODULES.CARD_MANAGEMENT,
+                  allowedGroups
+                );
+                const canDelete = can(
+                  PERMISSION_ACTIONS.Delete,
+                  MODULES.CARD_MANAGEMENT,
+                  allowedGroups
+                );
 
                 return (
                   <ItemCard
@@ -303,9 +319,7 @@ export default function CardsPage() {
                     author={stats.createdBy}
                     lastModified={stats.updatedAt.toLocaleDateString()}
                     thumbnailImages={
-                      card.content.background_url
-                        ? [card.content.background_url]
-                        : undefined
+                      card.thumbnail_images ? card.thumbnail_images : undefined
                     }
                     badge={
                       <div className="flex items-center gap-1 text-xs">
@@ -336,9 +350,16 @@ export default function CardsPage() {
                       </div>
                     }
                     editBtn={canEdit}
-                    onEdit={canEdit ? () => (window.location.href = `/cards/${card._id}/edit`) : undefined}
+                    onEdit={
+                      canEdit
+                        ? () =>
+                            (window.location.href = `/cards/${card._id}/edit`)
+                        : undefined
+                    }
                     deleteBtn={canDelete}
-                    onDelete={canDelete ? () => handleDeleteCard(card) : undefined}
+                    onDelete={
+                      canDelete ? () => handleDeleteCard(card) : undefined
+                    }
                     isDeleting={isDeleting && cardToDelete?._id === card._id}
                   />
                 );
@@ -354,7 +375,7 @@ export default function CardsPage() {
                   ? t("noResults")
                   : t("noResults")}
               </p>
-              { can(PERMISSION_ACTIONS.Create, MODULES.CARD_MANAGEMENT) && (
+              {can(PERMISSION_ACTIONS.Create, MODULES.CARD_MANAGEMENT) && (
                 <Link href="/cards/create" className={btnPrimary}>
                   {t("createFirst")}
                 </Link>

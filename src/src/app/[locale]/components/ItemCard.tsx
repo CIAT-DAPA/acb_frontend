@@ -228,7 +228,7 @@ export default function ItemCard(props: ItemCardProps) {
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow group">
       {/* Thumbnail */}
-      <div className="aspect-square bg-gray-100 relative overflow-hidden">
+      <div className="h-64 bg-gray-100 relative overflow-hidden">
         <Image
           src={displayImage}
           alt={props.name}

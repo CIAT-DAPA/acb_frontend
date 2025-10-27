@@ -166,23 +166,62 @@ export default function FormCardPage({
     setIsLoading(true);
 
     try {
+      // 1. Crear o actualizar la card
       const response =
         isEditMode && cardId
           ? await CardAPIService.updateCard(cardId, creationState.data)
           : await CardAPIService.createCard(creationState.data);
 
-      if (response.success) {
-        showToast(
-          isEditMode
-            ? t("messages.updateSuccess")
-            : t("messages.createSuccess"),
-          "success",
-          3000
-        );
-        router.push("/cards");
-      } else {
+      if (!response.success) {
         throw new Error(response.message || "Error al guardar la card");
       }
+
+      const savedCardId = isEditMode ? cardId : response.data?._id;
+
+      if (!savedCardId) {
+        throw new Error("No se pudo obtener el ID de la card guardada");
+      }
+
+      // 2. Capturar y guardar thumbnail
+      try {
+        const { generateAndUploadThumbnails } = await import(
+          "../../../../utils/thumbnailCapture"
+        );
+
+        // Las cards solo tienen una "sección" (el contenido completo de la card)
+        const thumbnailPaths = await generateAndUploadThumbnails(
+          "template-preview-container", // El CardPreview usa TemplatePreview que tiene este ID
+          savedCardId,
+          1, // Solo una sección para cards
+          undefined // No necesitamos cambiar de sección
+        );
+
+        // 3. Actualizar la card con el thumbnail
+        if (thumbnailPaths.length > 0) {
+          const updateResponse = await CardAPIService.updateCard(savedCardId, {
+            thumbnail_images: thumbnailPaths, // Array con el thumbnail de la card (usar thumbnail_images como el backend espera)
+          } as any);
+        } else {
+          console.warn("⚠️ No thumbnail was generated");
+        }
+      } catch (thumbnailError) {
+        console.error("❌ ERROR capturando thumbnail:", thumbnailError);
+        console.error(
+          "❌ Error stack:",
+          thumbnailError instanceof Error
+            ? thumbnailError.stack
+            : "No stack trace"
+        );
+        // No fallar la operación completa si el thumbnail falla
+      }
+
+      // 4. Mostrar toast de éxito y redireccionar
+      showToast(
+        isEditMode ? t("messages.updateSuccess") : t("messages.createSuccess"),
+        "success",
+        3000
+      );
+      router.push("/cards");
     } catch (error) {
       console.error("Error saving card:", error);
       showToast(

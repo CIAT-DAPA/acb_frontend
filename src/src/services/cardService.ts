@@ -102,8 +102,16 @@ export class CardAPIService extends BaseAPIService {
   ): Promise<APIResponse<Card>> {
     const { log, ...cardDataWithoutLog } = cardData;
 
+    console.log("🔍 CardService.updateCard - ID:", id);
+    console.log(
+      "🔍 CardService.updateCard - Data to send:",
+      cardDataWithoutLog
+    );
+
     try {
       const data = await this.put<any>(`/cards/${id}`, cardDataWithoutLog);
+
+      console.log("✅ CardService.updateCard - Response:", data);
 
       return {
         success: true,
