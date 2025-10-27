@@ -119,16 +119,19 @@ export function TemplateSelectionStep({
                     </div>
                   )}
                   
+                  {/* Overlay oscuro */}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 md:group-hover:opacity-100 transition-opacity" />
+                  
                   {/* Botón Preview - Centro del thumbnail */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       handlePreview(template._id!);
                     }}
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-2 bg-white/90 backdrop-blur-sm rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-200 shadow-md hover:shadow-lg hover:scale-110 hover:bg-[#283618] z-10 border border-[#283618]/10 hover:border-[#283618] cursor-pointer group/preview"
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-2 bg-white/20 rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-200 hover:bg-white/30 z-10 cursor-pointer"
                     title="Vista previa"
                   >
-                    <Eye className="w-4 h-4 text-[#283618] group-hover/preview:text-white transition-colors" />
+                    <Eye className="w-4 h-4 text-white" />
                   </button>
                 </div>
 
