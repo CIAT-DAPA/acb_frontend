@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { TemplateAPIService } from "@/services/templateService";
 import { CreateTemplateData } from "@/types/template";
-import { TemplateFullPreview } from "../../create/TemplateFullPreview";
+import { ContentFullPreview } from "@/app/[locale]/components/ContentFullPreview";
 import { PreviewMode } from "@/types/templatePreview";
 import { ArrowLeft, Loader2 } from "lucide-react";
 
@@ -223,8 +223,8 @@ export default function TemplatePreviewPage() {
                         px-3 py-1.5 rounded-lg text-xs font-medium transition-all
                         ${
                           scrollOrientation === 'vertical'
-                            ? 'bg-[#ffaf68] text-white shadow-sm'
-                            : 'bg-gray-100 text-[#283618] hover:bg-gray-200'
+                            ? 'bg-[#606c38] text-white'
+                            : 'bg-white text-[#283618] border border-gray-200 hover:bg-gray-50'
                         }
                       `}
                   >
@@ -236,8 +236,8 @@ export default function TemplatePreviewPage() {
                         px-3 py-1.5 rounded-lg text-xs font-medium transition-all
                         ${
                           scrollOrientation === 'horizontal'
-                            ? 'bg-[#ffaf68] text-white shadow-sm'
-                            : 'bg-gray-100 text-[#283618] hover:bg-gray-200'
+                            ? 'bg-[#606c38] text-white'
+                            : 'bg-white text-[#283618] border border-gray-200 hover:bg-gray-50'
                         }
                       `}
                   >
@@ -259,8 +259,8 @@ export default function TemplatePreviewPage() {
                         px-3 py-1.5 rounded-lg text-xs font-medium transition-all
                         ${
                           gridThumbnailSize === 'small'
-                            ? 'bg-[#ffaf68] text-white shadow-sm'
-                            : 'bg-gray-100 text-[#283618] hover:bg-gray-200'
+                            ? 'bg-[#606c38] text-white'
+                            : 'bg-white text-[#283618] border border-gray-200 hover:bg-gray-50'
                         }
                       `}
                     >
@@ -272,8 +272,8 @@ export default function TemplatePreviewPage() {
                         px-3 py-1.5 rounded-lg text-xs font-medium transition-all
                         ${
                           gridThumbnailSize === 'medium'
-                            ? 'bg-[#ffaf68] text-white shadow-sm'
-                            : 'bg-gray-100 text-[#283618] hover:bg-gray-200'
+                            ? 'bg-[#606c38] text-white'
+                            : 'bg-white text-[#283618] border border-gray-200 hover:bg-gray-50'
                         }
                       `}
                     >
@@ -285,8 +285,8 @@ export default function TemplatePreviewPage() {
                         px-3 py-1.5 rounded-lg text-xs font-medium transition-all
                         ${
                           gridThumbnailSize === 'large'
-                            ? 'bg-[#ffaf68] text-white shadow-sm'
-                            : 'bg-gray-100 text-[#283618] hover:bg-gray-200'
+                            ? 'bg-[#606c38] text-white'
+                            : 'bg-white text-[#283618] border border-gray-200 hover:bg-gray-50'
                         }
                       `}
                     >
@@ -307,8 +307,8 @@ export default function TemplatePreviewPage() {
                           px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all min-w-[32px]
                           ${
                             gridColumns === num
-                              ? 'bg-[#ffaf68] text-white shadow-sm'
-                              : 'bg-gray-100 text-[#283618] hover:bg-gray-200'
+                              ? 'bg-[#606c38] text-white'
+                              : 'bg-white text-[#283618] border border-gray-200 hover:bg-gray-50'
                           }
                         `}
                       >
@@ -323,7 +323,7 @@ export default function TemplatePreviewPage() {
 
           {/* Componente de Preview - Sin padding en móvil */}
           <div className='w-full'>
-            <TemplateFullPreview
+            <ContentFullPreview
               data={templateData}
               mode={selectedMode}
               allowModeToggle={true}
@@ -335,6 +335,7 @@ export default function TemplatePreviewPage() {
                 showIndicators: true,
                 loop: true,
                 enableSwipe: true,
+                itemsPerView: gridColumns,
               }}
               scrollConfig={{
                 orientation: scrollOrientation,

@@ -27,6 +27,10 @@ export interface CarouselConfig {
   loop?: boolean;
   /** Habilitar gestos de swipe (default: true en móvil) */
   enableSwipe?: boolean;
+  /** Número de items visibles al mismo tiempo (default: 1) */
+  itemsPerView?: number;
+  /** Espacio entre items cuando se muestran varios (default: '1rem') */
+  gap?: string;
 }
 
 /**

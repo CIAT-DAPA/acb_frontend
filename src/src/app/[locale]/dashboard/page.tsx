@@ -188,10 +188,10 @@ export default function DashboardPage() {
               {canReadTemplates && (
                 <button
                   onClick={() => setActive('templates')}
-                  className={`px-4 py-2 rounded ${
+                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
                     active === 'templates'
-                      ? 'bg-[#ffaf68] text-white'
-                      : 'bg-white text-[#283618]'
+                      ? 'bg-[#606c38] text-white'
+                      : 'bg-white text-[#283618] border border-gray-200 hover:bg-gray-50'
                   }`}
                 >
                   {t('templates')}
@@ -201,10 +201,10 @@ export default function DashboardPage() {
               {canReadBulletins && (
                 <button
                   onClick={() => setActive('bulletins')}
-                  className={`px-4 py-2 rounded ${
+                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
                     active === 'bulletins'
-                      ? 'bg-[#ffaf68] text-white'
-                      : 'bg-white text-[#283618]'
+                      ? 'bg-[#606c38] text-white'
+                      : 'bg-white text-[#283618] border border-gray-200 hover:bg-gray-50'
                   }`}
                 >
                   {t('bulletins')}
@@ -214,10 +214,10 @@ export default function DashboardPage() {
               {canReadCards && (
                 <button
                   onClick={() => setActive('cards')}
-                  className={`px-4 py-2 rounded ${
+                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
                     active === 'cards'
-                      ? 'bg-[#ffaf68] text-white'
-                      : 'bg-white text-[#283618]'
+                      ? 'bg-[#606c38] text-white'
+                      : 'bg-white text-[#283618] border border-gray-200 hover:bg-gray-50'
                   }`}
                 >
                   {t('cards')}
