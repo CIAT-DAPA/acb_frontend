@@ -1041,7 +1041,8 @@
     "messages": {
       "createSuccess": "Card created successfully",
       "updateSuccess": "Card updated successfully",
-      "saveError": "Error saving card: {error}"
+      "saveError": "Error saving card: {error}",
+      "duplicateCardName": "A card with this name already exists. Please choose a different name."
     },
     "basicInfo": {
       "title": "Basic Information",

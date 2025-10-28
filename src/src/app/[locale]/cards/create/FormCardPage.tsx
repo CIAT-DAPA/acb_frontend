@@ -224,13 +224,23 @@ export default function FormCardPage({
       router.push("/cards");
     } catch (error) {
       console.error("Error saving card:", error);
-      showToast(
-        t("messages.saveError", {
-          error: error instanceof Error ? error.message : "Error desconocido",
-        }),
-        "error",
-        5000
-      );
+
+      // Verificar si es un error de clave duplicada
+      let errorMessage = t("messages.saveError", {
+        error: error instanceof Error ? error.message : "Error desconocido",
+      });
+
+      if (error instanceof Error && error.message.includes("E11000")) {
+        // Error de clave duplicada
+        if (error.message.includes("card_name")) {
+          errorMessage = t("messages.duplicateCardName", {
+            default:
+              "Ya existe una card con este nombre. Por favor, elige un nombre diferente.",
+          });
+        }
+      }
+
+      showToast(errorMessage, "error", 5000);
     } finally {
       setIsLoading(false);
     }

@@ -77,9 +77,17 @@ export class CardAPIService extends BaseAPIService {
     try {
       const data = await this.post<any>("/cards/", cardData);
 
+      const card = data.card || data.data || data;
+
+      // Map API response to match Card interface
+      const mappedCard = {
+        ...card,
+        _id: card.id || card._id, // Map 'id' to '_id'
+      };
+
       return {
         success: true,
-        data: data.card || data.data || data,
+        data: mappedCard,
         message: "Card creada exitosamente",
       };
     } catch (error) {

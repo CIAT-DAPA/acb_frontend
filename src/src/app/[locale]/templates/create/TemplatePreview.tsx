@@ -106,15 +106,30 @@ export function TemplatePreview({
 
   // Helper para construir URL completa de imagen
   const getBackgroundImageUrl = (imageUrl: string) => {
-    // Si ya es una URL completa, devolverla tal como está
+    // Si ya es una URL completa, devolverla tal como está (codificada)
     if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
-      return imageUrl;
+      // Codificar espacios y caracteres especiales en la URL
+      return imageUrl
+        .split("/")
+        .map((part, index) => {
+          // No codificar el protocolo (http: o https:)
+          if (index < 3) return part;
+          return encodeURIComponent(part);
+        })
+        .join("/");
     }
 
-    // Si es una ruta relativa, construir URL completa
+    // Si es una ruta relativa, construir URL completa y codificar
     const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
     const cleanUrl = imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`;
-    return `${baseUrl}${cleanUrl}`;
+
+    // Codificar cada parte del path (excepto las barras)
+    const encodedPath = cleanUrl
+      .split("/")
+      .map((part) => encodeURIComponent(part))
+      .join("/");
+
+    return `${baseUrl}${encodedPath}`;
   };
 
   // Helper function to format dates according to field configuration
