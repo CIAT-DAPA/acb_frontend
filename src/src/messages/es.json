@@ -315,7 +315,8 @@
         },
         "allowedGroups": {
           "label": "Grupos Permitidos",
-          "placeholder": "Selecciona los grupos que pueden acceder a esta plantilla..."
+          "placeholder": "Selecciona los grupos que pueden acceder a esta plantilla...",
+          "loading": "Cargando grupos..."
         }
       }
     },

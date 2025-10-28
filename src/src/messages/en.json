@@ -314,7 +314,8 @@
         },
         "allowedGroups": {
           "label": "Allowed Groups",
-          "placeholder": "Select groups that can access this template..."
+          "placeholder": "Select groups that can access this template...",
+          "loading": "Loading groups..."
         }
       }
     },

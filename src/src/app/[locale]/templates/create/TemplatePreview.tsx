@@ -1,11 +1,13 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { CreateTemplateData, Field } from "../../../../types/template";
 import { StyleConfig } from "../../../../types/core";
 import { getEffectiveFieldStyles } from "../../../../utils/styleInheritance";
 import { SmartIcon } from "../../components/AdaptiveSvgIcon";
+import { Card } from "../../../../types/card";
+import { CardAPIService } from "../../../../services/cardService";
 
 /**
  * Helper function para generar estilos de borde según los lados seleccionados
@@ -61,6 +63,31 @@ export function TemplatePreview({
   description = false,
 }: TemplatePreviewProps) {
   const t = useTranslations("CreateTemplate.preview");
+
+  // Estado para almacenar las cards cargadas
+  const [cardsCache, setCardsCache] = useState<Map<string, Card>>(new Map());
+
+  // Cargar todas las cards necesarias
+  useEffect(() => {
+    const loadCards = async () => {
+      try {
+        const response = await CardAPIService.getCards();
+        if (response.success && response.data) {
+          const cache = new Map<string, Card>();
+          response.data.forEach((card) => {
+            if (card._id) {
+              cache.set(card._id, card);
+            }
+          });
+          setCardsCache(cache);
+        }
+      } catch (error) {
+        console.error("Error loading cards:", error);
+      }
+    };
+
+    loadCards();
+  }, []);
 
   const styleConfig = data.version.content.style_config;
   const headerConfig = data.version.content.header_config;
@@ -696,6 +723,134 @@ export function TemplatePreview({
           </div>
         );
 
+      case "card":
+        // Obtener los IDs de cards disponibles desde field_config
+        const availableCardIds =
+          (field.field_config as any)?.available_cards || [];
+
+        // Determinar qué card mostrar
+        let cardIdToShow: string | null = null;
+
+        if (field.value && typeof field.value === "string") {
+          // Si hay un valor seleccionado (cuando el usuario llena el boletín), usar ese
+          cardIdToShow = field.value;
+        } else if (availableCardIds.length > 0) {
+          // Si no hay valor (preview del template), mostrar el primer card disponible
+          cardIdToShow = availableCardIds[0];
+        }
+
+        // Obtener la card del cache
+        const cardToRender = cardIdToShow ? cardsCache.get(cardIdToShow) : null;
+
+        if (!cardToRender) {
+          return (
+            <div
+              key={key}
+              style={fieldStyles}
+              className="flex items-center justify-center bg-gray-100 border border-gray-300 rounded p-4"
+            >
+              <span className="text-gray-400 text-sm">
+                {availableCardIds.length === 0
+                  ? "No hay cards disponibles"
+                  : "Cargando card..."}
+              </span>
+            </div>
+          );
+        }
+
+        // Renderizar el contenido de la card
+        const cardContent = cardToRender.content;
+        const cardBackgroundUrl = cardContent.background_url;
+        const cardBackgroundColor = cardContent.background_color;
+
+        // Estilos del contenedor de la card
+        const cardContainerStyles: React.CSSProperties = {
+          ...fieldStyles,
+          flex: 1, // Ocupar todo el espacio disponible
+          display: "flex",
+          flexDirection: "column",
+          ...(cardBackgroundColor && { backgroundColor: cardBackgroundColor }),
+          ...(cardBackgroundUrl && {
+            backgroundImage: `url(${getBackgroundImageUrl(cardBackgroundUrl)})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }),
+        };
+
+        // Aplicar estilos del card content si existen
+        const cardContentStyleConfig = cardContent.style_config;
+        if (cardContentStyleConfig) {
+          if (cardContentStyleConfig.padding) {
+            cardContainerStyles.padding = cardContentStyleConfig.padding;
+          }
+          if (cardContentStyleConfig.gap) {
+            cardContainerStyles.gap = cardContentStyleConfig.gap;
+          }
+        }
+
+        return (
+          <div key={key} style={cardContainerStyles} className="flex flex-col">
+            {/* Blocks del contenido de la card */}
+            {/* Nota: El header y footer de la card se renderizan a nivel de section, no aquí */}
+            {cardContent.blocks.map((block, blockIndex) => {
+              // Combinar estilos del block con los del contenido de la card
+              const blockStyleConfig = block.style_config || {};
+              const contentStyleConfig = cardContentStyleConfig || {};
+
+              // Usar los estilos del block con fallback a los del contenido
+              const effectiveBlockStyles = {
+                ...contentStyleConfig,
+                ...blockStyleConfig,
+              };
+
+              const blockContainerStyles: React.CSSProperties = {
+                display: "flex",
+                flexDirection:
+                  (block as any).layout === "horizontal" ? "row" : "column",
+                gap: effectiveBlockStyles.gap
+                  ? `${effectiveBlockStyles.gap}px`
+                  : "8px",
+                padding: effectiveBlockStyles.padding || undefined,
+                backgroundColor:
+                  effectiveBlockStyles.background_color || undefined,
+                ...getBorderStyles(block.style_config),
+                // Agregar background_image si existe
+                ...(effectiveBlockStyles.background_image && {
+                  backgroundImage: `url(${getBackgroundImageUrl(
+                    effectiveBlockStyles.background_image
+                  )})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }),
+              };
+
+              return (
+                <div
+                  key={`card-block-${blockIndex}`}
+                  style={blockContainerStyles}
+                >
+                  {block.fields.map((blockField, fieldIndex) => {
+                    // Asegurar que el field tenga todas las propiedades necesarias
+                    const safeField: Field = {
+                      ...blockField,
+                      style_manually_edited:
+                        blockField.style_manually_edited ?? false,
+                    } as Field;
+
+                    // Renderizar cada field del block usando la función renderField existente
+                    return renderField(
+                      safeField,
+                      `card-${cardIdToShow}-block-${blockIndex}-field-${fieldIndex}`,
+                      block.style_config,
+                      (block as any).layout || "vertical"
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+        );
+
       default:
         // Para cualquier otro tipo de campo, si form es false y tiene valor, mostrarlo
         const defaultValue =
@@ -855,7 +1010,54 @@ export function TemplatePreview({
                     ...getBorderStyles(section.style_config),
                   };
 
-                  // Determinar qué header usar: sección específica o global
+                  // Buscar si hay algún field de tipo "card" en los blocks de esta section
+                  let cardHeaderConfig = null;
+                  let cardFooterConfig = null;
+                  let cardBackgroundColor = null;
+
+                  for (const block of section.blocks) {
+                    for (const field of block.fields) {
+                      if (field.type === "card") {
+                        const availableCardIds =
+                          (field.field_config as any)?.available_cards || [];
+                        let cardIdToShow: string | null = null;
+
+                        if (field.value && typeof field.value === "string") {
+                          cardIdToShow = field.value;
+                        } else if (availableCardIds.length > 0) {
+                          cardIdToShow = availableCardIds[0];
+                        }
+
+                        if (cardIdToShow) {
+                          const card = cardsCache.get(cardIdToShow);
+                          if (card) {
+                            // Guardar el background color de la card
+                            cardBackgroundColor = card.content.background_color;
+
+                            // Si la card tiene header, usarlo
+                            if (
+                              card.content.header_config &&
+                              (card.content.header_config as any).fields
+                            ) {
+                              cardHeaderConfig = card.content.header_config;
+                            }
+                            // Si la card tiene footer, usarlo
+                            if (
+                              card.content.footer_config &&
+                              (card.content.footer_config as any).fields
+                            ) {
+                              cardFooterConfig = card.content.footer_config;
+                            }
+                            // Solo tomar el primer card encontrado
+                            break;
+                          }
+                        }
+                      }
+                    }
+                    if (cardHeaderConfig || cardFooterConfig) break;
+                  }
+
+                  // Determinar qué header usar: card > sección específica > global
                   const hasSectionHeader =
                     section.header_config?.fields &&
                     section.header_config.fields.length > 0;
@@ -863,14 +1065,16 @@ export function TemplatePreview({
                   const hasGlobalHeader =
                     headerConfig?.fields && headerConfig.fields.length > 0;
 
-                  // Si hay header de sección, tiene prioridad
-                  const activeHeaderConfig = hasSectionHeader
+                  // Prioridad: card header > section header > global header
+                  const activeHeaderConfig = cardHeaderConfig
+                    ? cardHeaderConfig
+                    : hasSectionHeader
                     ? section.header_config
                     : hasGlobalHeader
                     ? headerConfig
                     : null;
 
-                  // Determinar qué footer usar: sección específica o global
+                  // Determinar qué footer usar: card > sección específica > global
                   const hasSectionFooter =
                     section.footer_config?.fields &&
                     section.footer_config.fields.length > 0;
@@ -878,8 +1082,10 @@ export function TemplatePreview({
                   const hasGlobalFooter =
                     footerConfig?.fields && footerConfig.fields.length > 0;
 
-                  // Si hay footer de sección, tiene prioridad
-                  const activeFooterConfig = hasSectionFooter
+                  // Prioridad: card footer > section footer > global footer
+                  const activeFooterConfig = cardFooterConfig
+                    ? cardFooterConfig
+                    : hasSectionFooter
                     ? section.footer_config
                     : hasGlobalFooter
                     ? footerConfig
@@ -954,16 +1160,21 @@ export function TemplatePreview({
                       <div
                         data-section-preview={`section-${sectionIndex}`}
                         style={sectionStyles}
-                        className="flex-1 overflow-auto"
+                        className="flex-1 overflow-auto flex flex-col"
                       >
                         {/* Bloques de la sección */}
-                        <div className="space-y-1 w-full h-full">
+                        <div className="space-y-1 w-full flex-1 flex flex-col">
                           {section.blocks.length === 0 ? (
                             <div className="text-sm text-[#283618]/50 italic pl-4">
                               No hay bloques en esta sección
                             </div>
                           ) : (
                             section.blocks.map((block, blockIndex) => {
+                              // Verificar si el block contiene un field de tipo card
+                              const hasCardField = block.fields.some(
+                                (field) => field.type === "card"
+                              );
+
                               // Obtener estilos del bloque
                               const blockStyles: React.CSSProperties = {
                                 backgroundColor:
@@ -994,6 +1205,12 @@ export function TemplatePreview({
                                     ? block.style_config.gap
                                     : "8px",
                                 ...getBorderStyles(block.style_config),
+                                // Si tiene un card field, ocupar todo el espacio disponible
+                                ...(hasCardField && {
+                                  flex: 1,
+                                  display: "flex",
+                                  flexDirection: "column",
+                                }),
                               };
 
                               // Determinar layout de campos
@@ -1007,12 +1224,16 @@ export function TemplatePreview({
                               return (
                                 <div
                                   key={`preview-block-${sectionIndex}-${blockIndex}`}
-                                  className="w-full"
+                                  className={`w-full ${
+                                    hasCardField ? "flex-1" : ""
+                                  }`}
                                   style={blockStyles}
                                 >
                                   {/* Campos del bloque */}
                                   <div
-                                    className={fieldsContainerClass}
+                                    className={`${fieldsContainerClass} ${
+                                      hasCardField ? "flex-1" : ""
+                                    }`}
                                     style={{
                                       gap: block.style_config?.gap
                                         ? `${block.style_config.gap}px`
@@ -1056,7 +1277,9 @@ export function TemplatePreview({
                           style={{
                             backgroundColor:
                               activeFooterConfig.style_config
-                                ?.background_color || "transparent",
+                                ?.background_color ||
+                              cardBackgroundColor ||
+                              "transparent",
                             backgroundImage: activeFooterConfig.style_config
                               ?.background_image
                               ? `url("${getBackgroundImageUrl(
