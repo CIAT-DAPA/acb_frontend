@@ -362,6 +362,11 @@ export function TemplatePreview({
           </div>
         );
 
+      case "select_background":
+        // Este campo no renderiza contenido visible, solo cambia el fondo de la sección
+        // El fondo se aplica automáticamente a nivel de sección en el renderizado del contenedor
+        return null;
+
       case "date":
         const dateFormat =
           (field.field_config as any)?.date_format || "DD/MM/YYYY";
@@ -1011,6 +1016,37 @@ export function TemplatePreview({
                   const section = sections[selectedSectionIndex];
                   const sectionIndex = selectedSectionIndex;
 
+                  // Buscar campos de tipo select_background para aplicar el fondo seleccionado
+                  let dynamicBackgroundUrl = null;
+                  for (const block of section.blocks) {
+                    for (const field of block.fields) {
+                      if (field.type === "select_background") {
+                        const bgOptions =
+                          (field.field_config as any)?.options || [];
+                        const bgUrls =
+                          (field.field_config as any)?.backgrounds_url || [];
+
+                        if (field.value) {
+                          // Buscar el fondo correspondiente al valor seleccionado
+                          const selectedIndex = bgOptions.findIndex(
+                            (opt: string) => opt === field.value
+                          );
+                          if (selectedIndex !== -1 && bgUrls[selectedIndex]) {
+                            dynamicBackgroundUrl = bgUrls[selectedIndex];
+                            break;
+                          }
+                        } else {
+                          // Si no hay valor, usar el primer fondo por defecto
+                          if (bgUrls.length > 0) {
+                            dynamicBackgroundUrl = bgUrls[0];
+                            break;
+                          }
+                        }
+                      }
+                    }
+                    if (dynamicBackgroundUrl) break;
+                  }
+
                   // Estilos aplicados a la sección completa
                   const sectionStyles = {
                     fontFamily:
@@ -1021,7 +1057,9 @@ export function TemplatePreview({
                       ? `${section.style_config.font_size}px`
                       : globalStyles.fontSize,
                     backgroundColor: section.style_config?.background_color,
-                    backgroundImage: section.style_config?.background_image
+                    backgroundImage: dynamicBackgroundUrl
+                      ? `url("${getBackgroundImageUrl(dynamicBackgroundUrl)}")`
+                      : section.style_config?.background_image
                       ? `url("${getBackgroundImageUrl(
                           section.style_config.background_image
                         )}")`

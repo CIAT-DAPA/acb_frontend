@@ -10,6 +10,7 @@ import { DateRangeFieldTypeConfig } from "./DateRangeFieldTypeConfig";
 import { PageNumberFieldTypeConfig } from "./PageNumberFieldTypeConfig";
 import { ListFieldTypeConfig } from "./ListFieldTypeConfig";
 import { SelectWithIconsFieldTypeConfig } from "./SelectWithIconsFieldTypeConfig";
+import { SelectBackgroundFieldTypeConfig } from "./SelectBackgroundFieldTypeConfig";
 import { ClimateDataFieldTypeConfig } from "./ClimateDataFieldTypeConfig";
 import { ImageFieldTypeConfig } from "./ImageFieldTypeConfig";
 import { CardFieldTypeConfig } from "./CardFieldTypeConfig";
@@ -25,6 +26,7 @@ const FIELD_TYPE_COMPONENTS: Record<string, FieldTypeComponent> = {
   page_number: PageNumberFieldTypeConfig,
   list: ListFieldTypeConfig,
   select_with_icons: SelectWithIconsFieldTypeConfig,
+  select_background: SelectBackgroundFieldTypeConfig,
   climate_data_puntual: ClimateDataFieldTypeConfig,
   image: ImageFieldTypeConfig,
   card: CardFieldTypeConfig,

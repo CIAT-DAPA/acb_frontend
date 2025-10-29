@@ -10,6 +10,7 @@ export * from "./DateRangeFieldTypeConfig";
 export * from "./PageNumberFieldTypeConfig";
 export * from "./ListFieldTypeConfig";
 export * from "./SelectWithIconsFieldTypeConfig";
+export * from "./SelectBackgroundFieldTypeConfig";
 export * from "./ClimateDataFieldTypeConfig";
 export * from "./ImageFieldTypeConfig";
 export * from "./CardFieldTypeConfig";

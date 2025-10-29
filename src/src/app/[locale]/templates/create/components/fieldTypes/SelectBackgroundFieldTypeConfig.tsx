@@ -1,0 +1,189 @@
+"use client";
+
+import React, { useState } from "react";
+import { useTranslations } from "next-intl";
+import { BaseFieldTypeConfigProps } from "./BaseFieldTypeConfig";
+import { Plus, Trash2 } from "lucide-react";
+import { btnOutlineSecondary } from "@/app/[locale]/components/ui";
+import { VisualResourceSelector } from "../VisualResourceSelector";
+import Image from "next/image";
+
+interface SelectBackgroundFieldConfig {
+  options: string[];
+  backgrounds_url: string[];
+  allow_multiple?: boolean;
+}
+
+export const SelectBackgroundFieldTypeConfig: React.FC<
+  BaseFieldTypeConfigProps
+> = ({
+  currentField,
+  updateField,
+  updateFieldConfig,
+  updateValidation,
+  t: fieldT,
+}) => {
+  const t = useTranslations("CreateTemplate.fieldEditor");
+
+  const config =
+    (currentField.field_config as SelectBackgroundFieldConfig) || {};
+  const options = config.options || [];
+  const backgroundsUrl = config.backgrounds_url || [];
+
+  // Estado para el selector de imágenes de fondo
+  const [showBackgroundSelectorForIndex, setShowBackgroundSelectorForIndex] =
+    useState<number | null>(null);
+
+  const updateOptions = (newOptions: string[]) => {
+    updateFieldConfig({
+      options: newOptions,
+      // Si hay menos opciones que backgrounds, recortar backgrounds
+      backgrounds_url: backgroundsUrl.slice(0, newOptions.length),
+    });
+  };
+
+  const updateBackgroundsUrl = (newBackgroundsUrl: string[]) => {
+    updateFieldConfig({ backgrounds_url: newBackgroundsUrl });
+  };
+
+  const addOption = () => {
+    const newOptions = [...options, ""];
+    const newBackgroundsUrl = [...backgroundsUrl, ""];
+    updateFieldConfig({
+      options: newOptions,
+      backgrounds_url: newBackgroundsUrl,
+    });
+  };
+
+  const removeOption = (index: number) => {
+    const newOptions = options.filter((_, i) => i !== index);
+    const newBackgroundsUrl = backgroundsUrl.filter((_, i) => i !== index);
+    updateFieldConfig({
+      options: newOptions,
+      backgrounds_url: newBackgroundsUrl,
+    });
+  };
+
+  const updateOption = (index: number, value: string) => {
+    const newOptions = [...options];
+    newOptions[index] = value;
+    updateOptions(newOptions);
+  };
+
+  const updateBackground = (index: number, value: string) => {
+    const newBackgroundsUrl = [...backgroundsUrl];
+    newBackgroundsUrl[index] = value;
+    updateBackgroundsUrl(newBackgroundsUrl);
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Opciones e imágenes de fondo */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <label className="block text-sm font-medium text-[#283618]/70">
+            Opciones y Fondos
+          </label>
+          <button
+            type="button"
+            onClick={addOption}
+            className={`${btnOutlineSecondary} text-sm`}
+          >
+            <Plus className="w-4 h-4 mr-1" /> Agregar Opción
+          </button>
+        </div>
+
+        <div className="space-y-3">
+          {options.map((option, index) => (
+            <div
+              key={index}
+              className="grid grid-cols-12 gap-3 items-start p-3 border border-gray-200 rounded-md bg-gray-50"
+            >
+              {/* Label de la opción */}
+              <div className="col-span-4">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Label {index + 1}
+                </label>
+                <input
+                  type="text"
+                  value={option}
+                  onChange={(e) => updateOption(index, e.target.value)}
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  placeholder="Ej: Fondo claro"
+                />
+              </div>
+
+              {/* Vista previa del fondo */}
+              <div className="col-span-4">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Imagen de Fondo
+                </label>
+                {backgroundsUrl[index] ? (
+                  <div className="relative w-full h-20 border border-gray-300 rounded-md overflow-hidden bg-gray-100">
+                    <Image
+                      src={backgroundsUrl[index]}
+                      alt={`Fondo ${index + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-full h-20 border-2 border-dashed border-gray-300 rounded-md flex items-center justify-center bg-gray-50">
+                    <span className="text-xs text-gray-400">Sin imagen</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Botones de acción */}
+              <div className="col-span-4 flex items-end justify-end gap-2 h-full pb-1">
+                <button
+                  type="button"
+                  onClick={() => setShowBackgroundSelectorForIndex(index)}
+                  className={`${btnOutlineSecondary} text-xs px-3 py-2 whitespace-nowrap`}
+                >
+                  {backgroundsUrl[index] ? "Cambiar" : "Seleccionar"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => removeOption(index)}
+                  className="px-3 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors"
+                  title="Eliminar opción"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ))}
+
+          {options.length === 0 && (
+            <div className="text-center py-8 text-gray-500 text-sm border-2 border-dashed border-gray-300 rounded-md">
+              No hay opciones definidas. Haz clic en "Agregar Opción" para
+              comenzar.
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Modal del selector de imágenes de fondo */}
+      <VisualResourceSelector
+        isOpen={showBackgroundSelectorForIndex !== null}
+        onClose={() => setShowBackgroundSelectorForIndex(null)}
+        onSelect={(url) => {
+          if (showBackgroundSelectorForIndex !== null) {
+            updateBackground(showBackgroundSelectorForIndex, url);
+          }
+          setShowBackgroundSelectorForIndex(null);
+        }}
+        title={`Seleccionar Imagen de Fondo ${
+          (showBackgroundSelectorForIndex ?? 0) + 1
+        }`}
+        resourceType="image"
+        selectedUrl={
+          showBackgroundSelectorForIndex !== null
+            ? backgroundsUrl[showBackgroundSelectorForIndex]
+            : undefined
+        }
+      />
+    </div>
+  );
+};
