@@ -232,27 +232,31 @@ export const TextWithIconFieldTypeConfig: React.FC<
         </div>
       )}
 
-      {/* Configuración de visualización del label - Solo mostrar cuando form es false */}
-      {!currentField.form && (
-        <div className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            id="showLabel"
-            checked={
-              (currentField.field_config as TextWithIconFieldConfig)
-                ?.showLabel ?? true
-            }
-            onChange={(e) => updateFieldConfig({ showLabel: e.target.checked })}
-            className="w-4 h-4 text-[#bc6c25] border-gray-300 rounded focus:ring-[#bc6c25]"
-          />
-          <label
-            htmlFor="showLabel"
-            className="text-sm font-medium text-[#283618]/70"
-          >
-            Mostrar label en el preview
-          </label>
-        </div>
-      )}
+      {/* Configuración de visualización del label - Disponible para form true y false */}
+      <div className="flex items-center space-x-2">
+        <input
+          type="checkbox"
+          id="showLabel"
+          checked={
+            (currentField.field_config as TextWithIconFieldConfig)?.showLabel ??
+            true
+          }
+          onChange={(e) => updateFieldConfig({ showLabel: e.target.checked })}
+          className="w-4 h-4 text-[#bc6c25] border-gray-300 rounded focus:ring-[#bc6c25]"
+        />
+        <label
+          htmlFor="showLabel"
+          className="text-sm font-medium text-[#283618]/70"
+        >
+          Mostrar label{" "}
+          {currentField.form ? "en el formulario" : "en el preview"}
+        </label>
+        <p className="text-xs text-[#283618]/50">
+          {currentField.form
+            ? 'Si está activo, se mostrará "label: valor" en el boletín'
+            : "Si está activo, se mostrará el label junto al valor en el boletín"}
+        </p>
+      </div>
 
       {/* Validaciones - Solo mostrar cuando form es true */}
       {currentField.form && (

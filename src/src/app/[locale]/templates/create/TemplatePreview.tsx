@@ -266,12 +266,19 @@ export function TemplatePreview({
         // Verificar si se debe mostrar el label
         const showTextLabel = (field.field_config as any)?.showLabel ?? true;
 
+        // Si form=true y showLabel=true, mostrar "label: value"
+        // Si form=false y showLabel=true, mostrar solo "label" antes del icono
+        const displayLabel = showTextLabel
+          ? field.label || field.display_name
+          : null;
+
         return (
           <div
             key={key}
             style={fieldStyles}
             className="flex items-center gap-2"
           >
+            {/* Icono - siempre se muestra (configurado desde el template) */}
             {selectedIcon ? (
               selectedIcon.startsWith("http") ||
               selectedIcon.startsWith("/") ? (
@@ -290,8 +297,20 @@ export function TemplatePreview({
             ) : (
               <span style={{ fontSize: `${iconSize}px` }}>📄</span>
             )}
-            {showTextLabel && <span>{field.label || field.display_name}:</span>}
-            <span>{textWithIconValue}</span>
+
+            {/* Label y valor */}
+            {displayLabel && field.form ? (
+              // Cuando form=true y showLabel=true: "label: value"
+              <span>
+                {displayLabel}: {textWithIconValue}
+              </span>
+            ) : (
+              // Cuando form=false o showLabel=false
+              <>
+                {displayLabel && <span>{displayLabel}:</span>}
+                <span>{textWithIconValue}</span>
+              </>
+            )}
           </div>
         );
 
