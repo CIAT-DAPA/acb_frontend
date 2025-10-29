@@ -9,6 +9,7 @@ import {
   NormalizedMaster,
   NormalizedVersion,
 } from "@/types/content";
+import { CardAPIService } from "./cardService";
 
 // Interfaz para respuestas de la API
 interface APIResponse<T = any> {
@@ -35,8 +36,10 @@ export class ContentService {
     try {
       if (type === "template") {
         return await this.getTemplateAsNormalized(id);
-      } else {
+      } else if (type === "bulletin") {
         return await this.getBulletinAsNormalized(id);
+      } else {
+        return await this.getCardAsNormalized(id);
       }
     } catch (error) {
       console.error(`Error loading ${type}:`, error);
@@ -171,6 +174,88 @@ export class ContentService {
     };
   }
 
+  private static async getCardAsNormalized(
+    id: string
+  ): Promise<APIResponse<NormalizedContent>> {
+    // Obtener card por ID
+    const response = await CardAPIService.getCardById(id);
+
+    // Validar respuesta
+    if (!response.success || !response.data) {
+      return {
+        success: false,
+        message: response.message || "Tarjeta no encontrada",
+      };
+    }
+
+    const card = response.data;
+
+    // Validar que la card tenga contenido
+    if (!card.content || !card.content.blocks) {
+      return {
+        success: false,
+        message: "La tarjeta no tiene contenido definido",
+      };
+    }
+
+    // Normalizar a estructura común siguiendo el patrón de CardPreview
+    // Convertir Card a la misma estructura que usa CardPreview para TemplatePreview
+    const normalizedMaster: NormalizedMaster = {
+      id: card._id!,
+      name: card.card_name,
+      description: card.card_type, // Tipo de card como descripción
+      status: card.status,
+      log: card.log,
+      access_config: card.access_config,
+      thumbnail_images: card.thumbnail_images,
+    };
+
+    // Crear una sección a partir del contenido de la card (igual que CardPreview)
+    const section: any = {
+      section_id: "card_section",
+      display_name: card.card_name,
+      background_url: card.content.background_url
+        ? [card.content.background_url]
+        : [],
+      order: 0,
+      icon_url: "",
+      blocks: card.content.blocks,
+      style_config: {
+        background_color: card.content.background_color,
+        background_image: card.content.background_url,
+        // Aplicar padding y gap del content style_config
+        padding: card.content.style_config?.padding,
+        gap: card.content.style_config?.gap,
+      },
+      header_config: card.content.header_config,
+      footer_config: card.content.footer_config,
+    };
+
+    const normalizedVersion: NormalizedVersion = {
+      version_num: 1,
+      commit_message: "Card preview",
+      log: card.log,
+      sections: [section], // Una sola sección con todo el contenido
+      header_config: card.content.header_config,
+      footer_config: card.content.footer_config,
+      style_config: card.content.style_config || {
+        font: "Arial",
+        primary_color: "#000000",
+        secondary_color: "#666666",
+        background_color: "#ffffff",
+      },
+    };
+
+    return {
+      success: true,
+      data: {
+        master: normalizedMaster,
+        version: normalizedVersion,
+        contentType: "card",
+      },
+    };
+  }
+
   /**
    * Convierte contenido normalizado de vuelta al formato específico
    * Útil para guardar cambios
@@ -201,7 +286,7 @@ export class ContentService {
           },
         },
       };
-    } else {
+    } else if (content.contentType === "bulletin") {
       return {
         master: {
           _id: content.master.id,
@@ -227,6 +312,27 @@ export class ContentService {
           },
         },
       };
+    } else {
+      // card
+      return {
+        master: {
+          _id: content.master.id,
+          card_name: content.master.name,
+          card_type: content.master.description || "general", // Recuperar el tipo desde description
+          status: content.master.status,
+          log: content.master.log,
+          access_config: content.master.access_config,
+          thumbnail_images: content.master.thumbnail_images || [],
+          templates_master_ids: [], // Se debería pasar como parámetro adicional si se necesita
+          content: {
+            blocks: (content.version.sections[0] as any)?.blocks || [],
+            header_config: content.version.header_config,
+            footer_config: content.version.footer_config,
+            style_config: content.version.style_config,
+          },
+        },
+        version: null, // Cards no tienen versionamiento
+      };
     }
   }
 
@@ -234,13 +340,31 @@ export class ContentService {
    * Helper para obtener el nombre del tipo de contenido en español
    */
   static getContentTypeName(type: ContentType): string {
-    return type === "template" ? "Plantilla" : "Boletín";
+    switch (type) {
+      case "template":
+        return "Plantilla";
+      case "bulletin":
+        return "Boletín";
+      case "card":
+        return "Tarjeta";
+      default:
+        return "Contenido";
+    }
   }
 
   /**
    * Helper para obtener el endpoint base según el tipo
    */
   static getContentRoute(type: ContentType): string {
-    return type === "template" ? "templates" : "bulletins";
+    switch (type) {
+      case "template":
+        return "templates";
+      case "bulletin":
+        return "bulletins";
+      case "card":
+        return "cards";
+      default:
+        return "";
+    }
   }
 }

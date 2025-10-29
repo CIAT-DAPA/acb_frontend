@@ -16,12 +16,15 @@ import { BulletinMaster } from "@/types/bulletin";
 import { Loader2, Trash2, X, AlertCircle, FileText, Calendar, User, Search } from "lucide-react";
 import { useToast } from "../../../components/Toast";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { PreviewModal } from "../components/PreviewModal";
+import { ContentType } from "@/types/content";
 
 type TabKey = "templates" | "bulletins" | "cards";
 
 export default function DashboardPage() {
   const t = useTranslations("Dashboard");
   const { can } = usePermissions();
+  const [typePreview, setTypePreview] = useState<ContentType>("template");
 
   // Determine which tabs the user can read
   const canReadTemplates = can(PERMISSION_ACTIONS.Read, MODULES.TEMPLATE_MANAGEMENT);
@@ -58,6 +61,10 @@ export default function DashboardPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [previewId, setPreview] = useState<string | null>(null);
 
   // Load all data once on mount to avoid refetching on tab change
   useEffect(() => {
@@ -153,6 +160,20 @@ export default function DashboardPage() {
       setItemToDelete(null);
     }
   };
+
+    // Función para manejar el preview de un template
+  const handlePreview = (id: string, type: ContentType) => {
+    setPreview(id);
+    setTypePreview(type);
+    setShowPreviewModal(true);
+  };
+
+  // Función para cerrar el modal de preview
+  const handleClosePreview = () => {
+    setShowPreviewModal(false);
+    setPreview(null);
+  };
+
 
     // Función para mostrar el modal de confirmación de eliminación
     /* const handleDeleteTemplate = (template: TemplateMaster) => {
@@ -261,6 +282,8 @@ export default function DashboardPage() {
                     author={(template.log.updater_first_name || template.log.creator_first_name || '') + ' ' + (template.log.updater_last_name || template.log.creator_last_name || '')}
                     lastModified={template.log.updated_at ? new Date(template.log.updated_at).toLocaleDateString() : (template.log.created_at ? new Date(template.log.created_at).toLocaleDateString() : '')}
                       thumbnailImages={template.thumbnail_images}
+                    previewBtn={true}
+                    onPreview={() => handlePreview(template._id!, 'template')}
                     editBtn={canEdit}
                     onEdit={canEdit ? () => (window.location.href = `/templates/${template._id}/edit`) : undefined}
                     deleteBtn={canDelete}
@@ -283,6 +306,8 @@ export default function DashboardPage() {
                   author={b.log.creator_first_name || ''}
                   lastModified={b.log.updated_at ? new Date(b.log.updated_at).toLocaleDateString() : (b.log.created_at ? new Date(b.log.created_at).toLocaleDateString() : '')}
                   thumbnailImages={[]}
+                  previewBtn={true}
+                  onPreview={() => handlePreview(b._id!, 'bulletin')}
                   editBtn={can(PERMISSION_ACTIONS.Update, MODULES.BULLETINS_COMPOSER, b.access_config?.allowed_groups || [])}
                   onEdit={can(PERMISSION_ACTIONS.Update, MODULES.BULLETINS_COMPOSER, b.access_config?.allowed_groups || []) ? () => (window.location.href = `/bulletins/${b._id}/edit`) : undefined}
                   deleteBtn={can(PERMISSION_ACTIONS.Delete, MODULES.BULLETINS_COMPOSER, b.access_config?.allowed_groups || [])}
@@ -303,7 +328,9 @@ export default function DashboardPage() {
                   name={c.card_name || 'Card'}
                   author={c.log.creator_first_name || ''}
                   lastModified={c.log.updated_at ? new Date(c.log.updated_at).toLocaleDateString() : (c.log.created_at ? new Date(c.log.created_at).toLocaleDateString() : '')}
-                  thumbnailImages={c.content?.background_url ? [c.content.background_url] : []}
+                  thumbnailImages={c.thumbnail_images || []}
+                  previewBtn={true}
+                  onPreview={() => handlePreview(c._id!, 'card')}
                   editBtn={can(PERMISSION_ACTIONS.Update, MODULES.CARD_MANAGEMENT, c.access_config?.allowed_groups || [])}
                   onEdit={can(PERMISSION_ACTIONS.Update, MODULES.CARD_MANAGEMENT, c.access_config?.allowed_groups || []) ? () => (window.location.href = `/cards/${c._id}/edit`) : undefined}
                   deleteBtn={can(PERMISSION_ACTIONS.Delete, MODULES.CARD_MANAGEMENT, c.access_config?.allowed_groups || [])}
@@ -353,6 +380,16 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Modal de Preview */}
+      {showPreviewModal && previewId && (
+        <PreviewModal
+          isOpen={showPreviewModal}
+          onClose={handleClosePreview}
+          contentType={typePreview}
+          contentId={previewId}
+        />
       )}
     </main>
     </ProtectedRoute>

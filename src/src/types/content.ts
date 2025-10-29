@@ -7,7 +7,7 @@ import { BulletinSection, BulletinHeaderFooterConfig } from "./bulletin";
 /**
  * Tipo de contenido soportado
  */
-export type ContentType = "template" | "bulletin";
+export type ContentType = "template" | "bulletin" | "card";
 
 /**
  * Estructura normalizada de Master (Template o Bulletin)

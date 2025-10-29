@@ -12,6 +12,7 @@ import {
 import { TemplatePreview } from "../templates/create/TemplatePreview";
 import { TemplateModal } from "./TemplateModal";
 import { Loader2, Edit, Copy, Trash2, Send, FileText, Download } from "lucide-react";
+import { CardPreview } from "../cards/create/CardPreview";
 
 interface PreviewModalProps {
   isOpen: boolean;
@@ -186,26 +187,26 @@ export function PreviewModal({
       title={content?.master?.name || `Sección ${currentSectionIndex + 1}`}
       subtitle={
         currentSection?.display_name
-          ? `${currentSection.display_name} (${currentSectionIndex + 1}/${totalSections})`
+          ? `${currentSection.display_name} (${
+              currentSectionIndex + 1
+            }/${totalSections})`
           : !loading
           ? `Sección ${currentSectionIndex + 1} de ${totalSections}`
-          : "Cargando..."
+          : 'Cargando...'
       }
       showNavigation={showNavigation && totalSections > 1}
       currentIndex={currentSectionIndex}
       totalItems={totalSections}
-      onPrevious={() =>
-        setCurrentSectionIndex((prev) => Math.max(0, prev - 1))
-      }
+      onPrevious={() => setCurrentSectionIndex((prev) => Math.max(0, prev - 1))}
       onNext={() =>
         setCurrentSectionIndex((prev) => Math.min(totalSections - 1, prev + 1))
       }
     >
       {/* Estado de carga */}
       {loading && (
-        <div className="flex flex-col items-center justify-center py-12">
-          <Loader2 className="w-12 h-12 animate-spin text-[#ffaf68] mb-4" />
-          <p className="text-[#283618] font-medium">
+        <div className='flex flex-col items-center justify-center py-12'>
+          <Loader2 className='w-12 h-12 animate-spin text-[#ffaf68] mb-4' />
+          <p className='text-[#283618] font-medium'>
             Cargando {ContentService.getContentTypeName(contentType)}...
           </p>
         </div>
@@ -213,18 +214,18 @@ export function PreviewModal({
 
       {/* Estado de error */}
       {error && (
-        <div className="flex flex-col items-center justify-center py-12">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
-            <span className="text-red-600 text-2xl">⚠️</span>
+        <div className='flex flex-col items-center justify-center py-12'>
+          <div className='w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4'>
+            <span className='text-red-600 text-2xl'>⚠️</span>
           </div>
-          <h3 className="text-xl font-bold text-[#283618] mb-2">Error</h3>
-          <p className="text-[#283618]/70 text-center">{error}</p>
+          <h3 className='text-xl font-bold text-[#283618] mb-2'>Error</h3>
+          <p className='text-[#283618]/70 text-center'>{error}</p>
         </div>
       )}
 
       {/* Preview del contenido */}
       {!loading && !error && previewData && (
-        <div className="space-y-4">
+        <div className='space-y-4'>
           {/* Preview de la sección actual */}
           <div>
             <TemplatePreview
@@ -235,15 +236,15 @@ export function PreviewModal({
 
           {/* Botones de acción opcionales */}
           {showActions && (
-            <div className="flex flex-wrap gap-3 justify-end pt-4 border-t border-gray-200">
+            <div className='flex flex-wrap gap-3 justify-end pt-4 border-t border-gray-200'>
               {/* Editar */}
               {availableActions.edit && actions?.onEdit && (
                 <button
                   onClick={handleEdit}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#ffaf68] text-white rounded-lg hover:bg-[#ff9d4d] transition-colors font-medium text-sm"
-                  title="Editar"
+                  className='flex items-center gap-2 px-4 py-2 bg-[#ffaf68] text-white rounded-lg hover:bg-[#ff9d4d] transition-colors font-medium text-sm'
+                  title='Editar'
                 >
-                  <Edit className="w-4 h-4" />
+                  <Edit className='w-4 h-4' />
                   Editar
                 </button>
               )}
@@ -252,10 +253,10 @@ export function PreviewModal({
               {availableActions.clone && actions?.onClone && (
                 <button
                   onClick={handleClone}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#283618] text-white rounded-lg hover:bg-[#3a4a22] transition-colors font-medium text-sm"
-                  title="Clonar"
+                  className='flex items-center gap-2 px-4 py-2 bg-[#283618] text-white rounded-lg hover:bg-[#3a4a22] transition-colors font-medium text-sm'
+                  title='Clonar'
                 >
-                  <Copy className="w-4 h-4" />
+                  <Copy className='w-4 h-4' />
                   Clonar
                 </button>
               )}
@@ -264,10 +265,10 @@ export function PreviewModal({
               {availableActions.publish && actions?.onPublish && (
                 <button
                   onClick={handlePublish}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-sm"
-                  title="Publicar"
+                  className='flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-sm'
+                  title='Publicar'
                 >
-                  <FileText className="w-4 h-4" />
+                  <FileText className='w-4 h-4' />
                   Publicar
                 </button>
               )}
@@ -276,10 +277,10 @@ export function PreviewModal({
               {availableActions.sendToReview && actions?.onSendToReview && (
                 <button
                   onClick={handleSendToReview}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
-                  title="Enviar a revisión"
+                  className='flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm'
+                  title='Enviar a revisión'
                 >
-                  <Send className="w-4 h-4" />
+                  <Send className='w-4 h-4' />
                   Enviar a revisión
                 </button>
               )}
@@ -288,10 +289,10 @@ export function PreviewModal({
               {availableActions.downloadPDF && actions?.onDownloadPDF && (
                 <button
                   onClick={handleDownloadPDF}
-                  className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium text-sm"
-                  title="Descargar PDF"
+                  className='flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium text-sm'
+                  title='Descargar PDF'
                 >
-                  <Download className="w-4 h-4" />
+                  <Download className='w-4 h-4' />
                   Descargar PDF
                 </button>
               )}
@@ -300,10 +301,10 @@ export function PreviewModal({
               {availableActions.delete && actions?.onDelete && (
                 <button
                   onClick={handleDelete}
-                  className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm"
-                  title="Eliminar"
+                  className='flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm'
+                  title='Eliminar'
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className='w-4 h-4' />
                   Eliminar
                 </button>
               )}

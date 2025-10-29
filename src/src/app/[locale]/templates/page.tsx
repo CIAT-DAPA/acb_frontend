@@ -471,7 +471,6 @@ export default function Templates() {
           contentType="template"
           contentId={previewTemplateId}
           locale={locale}
-          showActions={true}
           actions={{
             onEdit: (id) => (window.location.href = `/templates/${id}/edit`),
             onDelete: (id) => {
