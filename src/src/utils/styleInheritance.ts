@@ -64,6 +64,8 @@ export function combineStyles(
       combined.border_color = childStyle.border_color;
     if (childStyle.border_width)
       combined.border_width = childStyle.border_width;
+    if (childStyle.border_style)
+      combined.border_style = childStyle.border_style;
     if (childStyle.border_radius)
       combined.border_radius = childStyle.border_radius;
     if (childStyle.border_sides)

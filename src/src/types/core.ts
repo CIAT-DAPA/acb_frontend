@@ -34,6 +34,7 @@ export interface StyleConfig {
   secondary_color?: string;
   border_color?: string;
   border_width?: string;
+  border_style?: string; // Estilo del borde: "solid", "dashed", "dotted", etc.
   border_radius?: string;
   border_sides?: string; // Qué lados del borde mostrar: "all", "top", "bottom", "left", "right", o combinación como "top,bottom"
   bulletin_width?: number; // Ancho del boletín en píxeles
@@ -103,6 +104,7 @@ export const PERMISSION_ACTIONS = {
   Delete: "d",
 } as const;
 
-export type PermissionModule = typeof MODULES[keyof typeof MODULES];
-export type CRUDOperation = typeof PERMISSION_ACTIONS[keyof typeof PERMISSION_ACTIONS];
+export type PermissionModule = (typeof MODULES)[keyof typeof MODULES];
+export type CRUDOperation =
+  (typeof PERMISSION_ACTIONS)[keyof typeof PERMISSION_ACTIONS];
 export type TextAlign = (typeof TEXT_ALIGN_OPTIONS)[number];
