@@ -11,6 +11,82 @@ import { BaseFieldTypeConfigProps } from "./BaseFieldTypeConfig";
 import { FieldEditor } from "../FieldEditor";
 import { btnOutlineSecondary } from "@/app/[locale]/components/ui";
 import { Plus, Settings, Trash2, GripVertical } from "lucide-react";
+import { VisualResourceSelector } from "../VisualResourceSelector";
+
+// Componente para renderizar el input apropiado según el tipo de campo
+interface ItemFieldInputProps {
+  fieldId: string;
+  fieldDef: any;
+  value: any;
+  onChange: (value: any) => void;
+}
+
+const ItemFieldInput: React.FC<ItemFieldInputProps> = ({
+  fieldId,
+  fieldDef,
+  value,
+  onChange,
+}) => {
+  const [showImageSelector, setShowImageSelector] = useState(false);
+
+  // Para campos de tipo image, usar el VisualResourceSelector
+  if (fieldDef.type === "image") {
+    return (
+      <>
+        <div className="flex items-center space-x-2">
+          {value ? (
+            <div className="flex items-center space-x-2 flex-1">
+              <div className="relative w-20 h-20 border border-gray-300 rounded-md overflow-hidden bg-gray-50">
+                <img
+                  src={value}
+                  alt={fieldDef.label || fieldId}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowImageSelector(true)}
+                className={`${btnOutlineSecondary} whitespace-nowrap`}
+              >
+                Cambiar
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowImageSelector(true)}
+              className={`${btnOutlineSecondary} w-full`}
+            >
+              Seleccionar Imagen
+            </button>
+          )}
+        </div>
+        <VisualResourceSelector
+          isOpen={showImageSelector}
+          onClose={() => setShowImageSelector(false)}
+          onSelect={(url) => {
+            onChange(url);
+            setShowImageSelector(false);
+          }}
+          title={`Seleccionar ${fieldDef.label || fieldId}`}
+          resourceType="image"
+          selectedUrl={value}
+        />
+      </>
+    );
+  }
+
+  // Para otros tipos, usar un input de texto simple por ahora
+  return (
+    <input
+      type="text"
+      value={value || ""}
+      onChange={(e) => onChange(e.target.value)}
+      className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
+      placeholder={`Ingresa ${fieldDef.label || fieldId}`}
+    />
+  );
+};
 
 // Componente para configurar cada campo del esquema usando el FieldEditor completo
 interface ItemSchemaFieldProps {
@@ -85,9 +161,7 @@ const ItemSchemaField: React.FC<ItemSchemaFieldProps> = ({
         <div>
           Form:
           <span
-            className={
-              fieldDef.form ? "text-green-600" : "text-[#283618]/50"
-            }
+            className={fieldDef.form ? "text-green-600" : "text-[#283618]/50"}
           >
             {fieldDef.form ? " Sí" : " No"}
           </span>
@@ -150,49 +224,53 @@ export const ListFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
   t: fieldT,
 }) => {
   const t = useTranslations("CreateTemplate.fieldEditor");
+  const isFormMode = currentField.form !== false;
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-            Elementos mínimos
-          </label>
-          <input
-            type="number"
-            min="0"
-            value={
-              (currentField.field_config as ListFieldConfig)?.min_items || 0
-            }
-            onChange={(e) =>
-              updateFieldConfig({
-                min_items: parseInt(e.target.value) || 0,
-              })
-            }
-            className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            placeholder="0"
-          />
+      {/* Solo mostrar límites en modo formulario */}
+      {isFormMode && (
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+              Elementos mínimos
+            </label>
+            <input
+              type="number"
+              min="0"
+              value={
+                (currentField.field_config as ListFieldConfig)?.min_items || 0
+              }
+              onChange={(e) =>
+                updateFieldConfig({
+                  min_items: parseInt(e.target.value) || 0,
+                })
+              }
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              placeholder="0"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+              Elementos máximos
+            </label>
+            <input
+              type="number"
+              min="1"
+              value={
+                (currentField.field_config as ListFieldConfig)?.max_items || 10
+              }
+              onChange={(e) =>
+                updateFieldConfig({
+                  max_items: parseInt(e.target.value) || 10,
+                })
+              }
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              placeholder="10"
+            />
+          </div>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-            Elementos máximos
-          </label>
-          <input
-            type="number"
-            min="1"
-            value={
-              (currentField.field_config as ListFieldConfig)?.max_items || 10
-            }
-            onChange={(e) =>
-              updateFieldConfig({
-                max_items: parseInt(e.target.value) || 10,
-              })
-            }
-            className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            placeholder="10"
-          />
-        </div>
-      </div>
+      )}
 
       <div>
         <label className="block text-sm font-medium text-[#283618]/70 mb-2">
@@ -242,7 +320,7 @@ export const ListFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                 const newField = {
                   type: "text",
                   label: "Nuevo Campo",
-                  form: true,
+                  form: isFormMode,
                   bulletin: true,
                   validation: {},
                 };
@@ -255,7 +333,8 @@ export const ListFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
               }}
               className={`${btnOutlineSecondary} text-sm px-2 py-2`}
             >
-              <Plus className="w-4 h-4" />Agregar Campo
+              <Plus className="w-4 h-4" />
+              Agregar Campo
             </button>
           </div>
 
@@ -302,6 +381,138 @@ export const ListFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Datos de items (solo cuando form = false) */}
+      {!isFormMode && (
+        <div>
+          <h4 className="text-md font-medium text-[#283618] mb-3">
+            Items de la Lista (Static Items Section)
+          </h4>
+
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-4 space-x-2">
+              <p className="text-sm text-gray-700">
+                Define los items que se mostrarán en el boletín
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  const currentItems = Array.isArray(currentField.value)
+                    ? currentField.value
+                    : [];
+                  const itemSchema =
+                    (currentField.field_config as ListFieldConfig)
+                      ?.item_schema || {};
+
+                  // Crear un nuevo item con valores vacíos basado en el schema
+                  const newItem: any = {};
+                  Object.keys(itemSchema).forEach((fieldId) => {
+                    newItem[fieldId] = "";
+                  });
+
+                  updateField({
+                    value: [...currentItems, newItem],
+                  });
+                }}
+                className={`${btnOutlineSecondary} text-sm px-2 py-2`}
+                disabled={
+                  !Object.keys(
+                    (currentField.field_config as ListFieldConfig)
+                      ?.item_schema || {}
+                  ).length
+                }
+              >
+                <Plus className="w-4 h-4" />
+                Agregar Item
+              </button>
+            </div>
+
+            {/* Lista de items */}
+            <div className="space-y-4">
+              {Array.isArray(currentField.value) &&
+              currentField.value.length > 0 ? (
+                currentField.value.map((item: any, itemIndex: number) => (
+                  <div
+                    key={itemIndex}
+                    className="border rounded-lg p-4 bg-white"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <h5 className="font-medium text-[#283618]">
+                        Item {itemIndex + 1}
+                      </h5>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const currentItems = (
+                            Array.isArray(currentField.value)
+                              ? currentField.value
+                              : []
+                          ) as Record<string, any>[];
+                          const newItems = currentItems.filter(
+                            (_, idx) => idx !== itemIndex
+                          );
+                          updateField({
+                            value: newItems,
+                          });
+                        }}
+                        className="text-[#283618]/50 hover:text-red-600"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* Campos del item según el schema */}
+                    <div className="space-y-3">
+                      {Object.entries(
+                        (currentField.field_config as ListFieldConfig)
+                          ?.item_schema || {}
+                      ).map(([fieldId, fieldDef]: [string, any]) => (
+                        <div key={fieldId}>
+                          <label className="block text-sm font-medium text-[#283618]/70 mb-1">
+                            {fieldDef.label || fieldId}
+                          </label>
+                          <ItemFieldInput
+                            fieldId={fieldId}
+                            fieldDef={fieldDef}
+                            value={item[fieldId]}
+                            onChange={(newValue) => {
+                              const currentItems = (
+                                Array.isArray(currentField.value)
+                                  ? currentField.value
+                                  : []
+                              ) as Record<string, any>[];
+                              const newItems = [...currentItems];
+                              const currentItem = newItems[itemIndex] || {};
+                              newItems[itemIndex] = {
+                                ...(typeof currentItem === "object"
+                                  ? currentItem
+                                  : {}),
+                                [fieldId]: newValue,
+                              };
+                              updateField({
+                                value: newItems,
+                              });
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-500 text-sm">
+                  {Object.keys(
+                    (currentField.field_config as ListFieldConfig)
+                      ?.item_schema || {}
+                  ).length === 0
+                    ? "Primero define el esquema de elementos arriba"
+                    : 'No hay items. Haz clic en "Agregar Item" para comenzar.'}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

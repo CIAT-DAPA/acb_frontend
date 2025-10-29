@@ -540,14 +540,24 @@ export function TemplatePreview({
         // Si no hay items, mostrar un item de ejemplo basado en el schema
         const itemsToRender = listItems.length > 0 ? listItems : [{}];
 
+        // Para layout horizontal, el contenedor de items debe ser flex
+        const itemsContainerClass =
+          listItemsLayout === "horizontal"
+            ? "flex flex-wrap gap-4 items-start"
+            : "space-y-2";
+
         return (
           <div key={key}>
-            <div className={showBullets ? "space-y-2" : "space-y-2"}>
+            <div className={itemsContainerClass}>
               {/* Renderizar elementos basados en el valor del campo */}
               {itemsToRender.map((item: any, itemIndex: number) => (
                 <div
                   key={itemIndex}
-                  className="flex items-center gap-2 w-full"
+                  className={
+                    listItemsLayout === "horizontal"
+                      ? "flex items-center gap-2"
+                      : "flex items-center gap-2 w-full"
+                  }
                   style={listItemStyles}
                 >
                   {showBullets && (
@@ -567,8 +577,16 @@ export function TemplatePreview({
                     </span>
                   )}
                   <div
-                    className={`flex-1 min-w-0 ${getItemLayoutClasses()}`}
-                    style={getGridColumnsStyle()}
+                    className={
+                      listItemsLayout === "horizontal"
+                        ? "flex gap-2 items-center"
+                        : `flex-1 min-w-0 ${getItemLayoutClasses()}`
+                    }
+                    style={
+                      listItemsLayout === "horizontal"
+                        ? undefined
+                        : getGridColumnsStyle()
+                    }
                   >
                     {field.field_config?.item_schema &&
                     Object.keys(field.field_config.item_schema).length > 0 ? (

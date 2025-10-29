@@ -138,7 +138,7 @@ export interface FieldBase {
     | PageNumberFieldConfig
     | CardFieldConfig
     | ImageFieldConfig;
-  value?: string | number | boolean | Date | string[] | null | undefined; // Para campos con valores predefinidos
+  value?: string | number | boolean | Date | string[] | Record<string, any>[] | null | undefined; // Para campos con valores predefinidos
 }
 
 // Tipos específicos de campo (para type safety)

@@ -283,12 +283,13 @@ export function FieldEditor({
         )}
       </div>
 
-      {/* Value - Solo mostrar si form es false y bulletin es true, pero no para page_number, text_with_icon e image */}
+      {/* Value - Solo mostrar si form es false y bulletin es true, pero no para page_number, text_with_icon, image y list */}
       {!currentField.form &&
         currentField.bulletin &&
         currentField.type !== "page_number" &&
         currentField.type !== "text_with_icon" &&
-        currentField.type !== "image" && (
+        currentField.type !== "image" &&
+        currentField.type !== "list" && (
           <div>
             <h3 className="text-lg font-medium text-[#283618] mb-4">
               {t("value.title")}
@@ -339,9 +340,10 @@ export function FieldEditor({
         </div>
       )}
 
-      {/* Configuración específica del tipo - Mostrar siempre para page_number, text_with_icon e image cuando form es false, solo si form es true para otros tipos */}
+      {/* Configuración específica del tipo - Mostrar siempre para page_number, text_with_icon, image y list cuando form es false, solo si form es true para otros tipos */}
       {(currentField.form ||
         currentField.type === "page_number" ||
+        currentField.type === "list" ||
         (currentField.type === "text_with_icon" && !currentField.form) ||
         (currentField.type === "image" && !currentField.form)) && (
         <div>
