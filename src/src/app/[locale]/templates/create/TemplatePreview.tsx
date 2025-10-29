@@ -219,7 +219,7 @@ export function TemplatePreview({
       textAlign:
         (effectiveStyles.text_align as "left" | "center" | "right") ||
         globalStyles.textAlign,
-      backgroundColor: effectiveStyles.background_color,
+      backgroundColor: effectiveStyles.background_color || "transparent",
       backgroundImage: effectiveStyles.background_image
         ? `url("${getBackgroundImageUrl(effectiveStyles.background_image)}")`
         : undefined,
@@ -509,7 +509,7 @@ export function TemplatePreview({
 
         // Estilos para cada item de la lista
         const listItemStyles: React.CSSProperties = {
-          backgroundColor: effectiveStyles.background_color || undefined,
+          backgroundColor: effectiveStyles.background_color || "transparent",
           backgroundImage: effectiveStyles.background_image
             ? `url("${getBackgroundImageUrl(
                 effectiveStyles.background_image
@@ -845,7 +845,7 @@ export function TemplatePreview({
                   : "8px",
                 padding: effectiveBlockStyles.padding || undefined,
                 backgroundColor:
-                  effectiveBlockStyles.background_color || undefined,
+                  effectiveBlockStyles.background_color || "transparent",
                 ...getBorderStyles(block.style_config),
                 // Agregar background_image si existe
                 ...(effectiveBlockStyles.background_image && {

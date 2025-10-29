@@ -19,8 +19,7 @@ export function combineStyles(
   if (parentStyle) {
     if (parentStyle.primary_color)
       combined.primary_color = parentStyle.primary_color;
-    if (parentStyle.background_color)
-      combined.background_color = parentStyle.background_color;
+    // background_color NO se hereda - se mantendrá transparente por defecto
     if (parentStyle.font_size) combined.font_size = parentStyle.font_size;
     if (parentStyle.icon_size) combined.icon_size = parentStyle.icon_size;
     if (parentStyle.icon_use_original_color !== undefined)
@@ -43,6 +42,7 @@ export function combineStyles(
   if (childStyle) {
     if (childStyle.primary_color)
       combined.primary_color = childStyle.primary_color;
+    // background_color solo se aplica si el hijo lo define explícitamente
     if (childStyle.background_color)
       combined.background_color = childStyle.background_color;
     if (childStyle.font_size) combined.font_size = childStyle.font_size;
