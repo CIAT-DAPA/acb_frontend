@@ -26,21 +26,25 @@ export function BasicInfoStep({ bulletinData, onUpdate }: BasicInfoStepProps) {
   };
 
   const handleHeaderFieldChange = (fieldIndex: number, value: any) => {
-    onUpdate((prev) => ({
-      ...prev,
-      version: {
-        ...prev.version,
-        data: {
-          ...prev.version.data,
-          header_config: {
-            ...prev.version.data.header_config,
-            fields: prev.version.data.header_config!.fields.map((field, idx) =>
-              idx === fieldIndex ? { ...field, value } : field
-            ),
+    onUpdate((prev) => {
+      const updatedData = {
+        ...prev,
+        version: {
+          ...prev.version,
+          data: {
+            ...prev.version.data,
+            header_config: {
+              ...prev.version.data.header_config,
+              fields: prev.version.data.header_config!.fields.map(
+                (field, idx) =>
+                  idx === fieldIndex ? { ...field, value } : field
+              ),
+            },
           },
         },
-      },
-    }));
+      };
+      return updatedData;
+    });
   };
 
   const handleFooterFieldChange = (fieldIndex: number, value: any) => {
@@ -147,6 +151,34 @@ export function BasicInfoStep({ bulletinData, onUpdate }: BasicInfoStepProps) {
           </select>
         );
 
+      case "text_with_icon":
+        const isLongTextWithIcon =
+          "field_config" in field &&
+          field.field_config &&
+          "subtype" in field.field_config &&
+          field.field_config.subtype === "long";
+
+        return isLongTextWithIcon ? (
+          <textarea
+            value={fieldValue as string}
+            onChange={(e) => {
+              handleChange(index, e.target.value);
+            }}
+            placeholder={field.description || field.label}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#283618] min-h-[100px]"
+          />
+        ) : (
+          <input
+            type="text"
+            value={fieldValue as string}
+            onChange={(e) => {
+              handleChange(index, e.target.value);
+            }}
+            placeholder={field.description || field.label}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#283618]"
+          />
+        );
+
       default:
         return (
           <input
@@ -163,6 +195,7 @@ export function BasicInfoStep({ bulletinData, onUpdate }: BasicInfoStepProps) {
   // Filtrar solo los campos editables (form === true)
   const headerFields = bulletinData.version.data.header_config?.fields || [];
   const footerFields = bulletinData.version.data.footer_config?.fields || [];
+
   const editableHeaderFields = headerFields.filter(
     (field) => field.form === true
   );

@@ -156,6 +156,30 @@ export function SectionStep({
           </select>
         );
 
+      case "text_with_icon":
+        const isLongTextWithIcon =
+          "field_config" in field &&
+          field.field_config &&
+          "subtype" in field.field_config &&
+          field.field_config.subtype === "long";
+
+        return isLongTextWithIcon ? (
+          <textarea
+            value={fieldValue as string}
+            onChange={(e) => handleChange(e.target.value)}
+            placeholder={field.description || field.label}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#283618] min-h-[100px]"
+          />
+        ) : (
+          <input
+            type="text"
+            value={fieldValue as string}
+            onChange={(e) => handleChange(e.target.value)}
+            placeholder={field.description || field.label}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#283618]"
+          />
+        );
+
       default:
         return (
           <input

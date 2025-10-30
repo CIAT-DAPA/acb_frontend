@@ -89,7 +89,7 @@ export default function FormBulletinPage() {
 
         if (response.success && response.data) {
           const { current_version, master } = response.data;
-          
+
           // Verificar que existe el content
           if (!current_version.content) {
             console.error(
@@ -119,6 +119,10 @@ export default function FormBulletinPage() {
               // Para campos de tipo list, inicializar como array vacío
               return field.value || [];
             }
+            if (field.type === "text" || field.type === "text_with_icon") {
+              // Para campos de texto, inicializar como string vacío
+              return field.value || "";
+            }
             return field.value || null;
           };
 
@@ -133,7 +137,10 @@ export default function FormBulletinPage() {
                 ...prev.data.master,
                 base_template_master_id: templateId,
                 base_template_version_id: versionId,
-                access_config: master.access_config || { access_type: "public", allowed_groups: [] },
+                access_config: master.access_config || {
+                  access_type: "public",
+                  allowed_groups: [],
+                },
               },
               version: {
                 ...prev.data.version,
@@ -328,7 +335,8 @@ export default function FormBulletinPage() {
     setIsLoading(true);
     try {
       // 1. Crear bulletin master
-      const { log: masterLog, ...masterDataWithoutLog } = creationState.data.master;
+      const { log: masterLog, ...masterDataWithoutLog } =
+        creationState.data.master;
 
       const masterResponse = await BulletinAPIService.createBulletin(
         masterDataWithoutLog
@@ -338,9 +346,11 @@ export default function FormBulletinPage() {
         throw new Error(masterResponse.message || "Error al crear el boletín");
       }
 
-      const bulletinId = (masterResponse.data as any).id || masterResponse.data._id;
+      const bulletinId =
+        (masterResponse.data as any).id || masterResponse.data._id;
 
-      const { log: versionLog, ...versionDataWithoutLog } = creationState.data.version;
+      const { log: versionLog, ...versionDataWithoutLog } =
+        creationState.data.version;
 
       // 2. Crear primera versión del boletín
       const versionResponse = await BulletinAPIService.createBulletinVersion(
@@ -368,6 +378,8 @@ export default function FormBulletinPage() {
 
   // Convertir bulletinData a CreateTemplateData para el preview
   const previewData = useMemo((): CreateTemplateData | null => {
+    const headerFields = creationState.data.version.data.header_config?.fields;
+
     if (!creationState.selectedTemplateId) {
       return null;
     }
@@ -539,7 +551,12 @@ export default function FormBulletinPage() {
                 id="bulletin-preview-container"
                 className="rounded-lg overflow-hidden"
               >
-                <TemplatePreview data={previewData} moreInfo={true} description={true} />
+                <TemplatePreview
+                  data={previewData}
+                  moreInfo={true}
+                  description={true}
+                  forceGlobalHeader={creationState.currentStep === "basic-info"}
+                />
               </div>
             ) : (
               <div className="flex items-center justify-center h-64 text-[#606c38]">

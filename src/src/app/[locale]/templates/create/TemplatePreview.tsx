@@ -54,6 +54,7 @@ interface TemplatePreviewProps {
   selectedSectionIndex?: number;
   moreInfo?: boolean;
   description?: boolean;
+  forceGlobalHeader?: boolean; // Forzar uso del header global en lugar del header de sección
 }
 
 export function TemplatePreview({
@@ -61,6 +62,7 @@ export function TemplatePreview({
   selectedSectionIndex = 0,
   moreInfo = false,
   description = false,
+  forceGlobalHeader = false,
 }: TemplatePreviewProps) {
   const t = useTranslations("CreateTemplate.preview");
 
@@ -246,8 +248,12 @@ export function TemplatePreview({
         );
 
       case "text_with_icon":
-        // Para text_with_icon, mostrar el value si existe, sino mostrar placeholder
-        const textWithIconValue = field.value
+        // Verificar si el valor existe y no está vacío
+        const hasValue =
+          field.value !== null &&
+          field.value !== undefined &&
+          field.value !== "";
+        const textWithIconValue = hasValue
           ? renderFieldValue(field.value)
           : field.label || "Texto con icono";
 
@@ -1007,14 +1013,16 @@ export function TemplatePreview({
                   ...getBorderStyles(headerConfig.style_config),
                 }}
               >
-                {headerConfig.fields.map((field, index) =>
-                  renderField(
-                    field,
-                    `header-global-${index}`,
-                    headerConfig.style_config,
-                    headerConfig.style_config?.fields_layout || "horizontal"
-                  )
-                )}
+                {(() => {
+                  return headerConfig.fields.map((field, index) =>
+                    renderField(
+                      field,
+                      `header-global-${index}`,
+                      headerConfig.style_config,
+                      headerConfig.style_config?.fields_layout || "horizontal"
+                    )
+                  );
+                })()}
               </div>
             )}
 
@@ -1155,16 +1163,20 @@ export function TemplatePreview({
                   const hasGlobalHeader =
                     headerConfig?.fields && headerConfig.fields.length > 0;
 
-                  // Prioridad: card header > section header > global header
+                  // Prioridad: card header > section header (si no forceGlobalHeader) > global header
                   const activeHeaderConfig = cardHeaderConfig
                     ? cardHeaderConfig
+                    : forceGlobalHeader
+                    ? hasGlobalHeader
+                      ? headerConfig
+                      : null
                     : hasSectionHeader
                     ? section.header_config
                     : hasGlobalHeader
                     ? headerConfig
                     : null;
 
-                  // Determinar qué footer usar: card > sección específica > global
+                  // Determinar qué footer usar: card > sección específica (si no forceGlobalHeader) > global
                   const hasSectionFooter =
                     section.footer_config?.fields &&
                     section.footer_config.fields.length > 0;
@@ -1172,9 +1184,13 @@ export function TemplatePreview({
                   const hasGlobalFooter =
                     footerConfig?.fields && footerConfig.fields.length > 0;
 
-                  // Prioridad: card footer > section footer > global footer
+                  // Prioridad: card footer > section footer (si no forceGlobalHeader) > global footer
                   const activeFooterConfig = cardFooterConfig
                     ? cardFooterConfig
+                    : forceGlobalHeader
+                    ? hasGlobalFooter
+                      ? footerConfig
+                      : null
                     : hasSectionFooter
                     ? section.footer_config
                     : hasGlobalFooter
