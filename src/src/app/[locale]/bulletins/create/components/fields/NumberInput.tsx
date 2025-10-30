@@ -1,8 +1,10 @@
 "use client";
 
 import React from "react";
+import { Field } from "../../../../../../types/template";
 
-interface NumberFieldProps {
+interface NumberInputProps {
+  field?: Field;
   value: number;
   onChange: (value: number) => void;
   placeholder?: string;
@@ -11,14 +13,17 @@ interface NumberFieldProps {
   disabled?: boolean;
 }
 
-export function NumberField({
-  value = 0,
+export function NumberInput({
+  field,
+  value,
   onChange,
   placeholder,
   min,
   max,
   disabled = false,
-}: NumberFieldProps) {
+}: NumberInputProps) {
+  const finalPlaceholder =
+    placeholder || field?.description || field?.label || "";
   const inputClass =
     "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#283618] text-sm disabled:bg-gray-100 disabled:cursor-not-allowed";
 
@@ -27,7 +32,7 @@ export function NumberField({
       type="number"
       value={value}
       onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
-      placeholder={placeholder}
+      placeholder={finalPlaceholder}
       className={inputClass}
       min={min}
       max={max}

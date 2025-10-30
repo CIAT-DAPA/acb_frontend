@@ -4,7 +4,14 @@ import React from "react";
 import { useTranslations } from "next-intl";
 import { CreateBulletinData } from "../../../../../types/bulletin";
 import { Field } from "../../../../../types/template";
-import { ListFieldEditor } from "../components/fields";
+import {
+  ListFieldEditor,
+  TextInput,
+  TextWithIconInput,
+  NumberInput,
+  DateInput,
+  SelectInput,
+} from "../components/fields";
 
 interface SectionStepProps {
   bulletinData: CreateBulletinData;
@@ -89,94 +96,47 @@ export function SectionStep({
         );
 
       case "text":
-        const isLongText =
-          "field_config" in field &&
-          field.field_config &&
-          "subtype" in field.field_config &&
-          field.field_config.subtype === "long";
-
-        return isLongText ? (
-          <textarea
+        return (
+          <TextInput
+            field={field}
             value={fieldValue as string}
-            onChange={(e) => handleChange(e.target.value)}
-            placeholder={field.description || field.label}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#283618] min-h-[100px]"
-          />
-        ) : (
-          <input
-            type="text"
-            value={fieldValue as string}
-            onChange={(e) => handleChange(e.target.value)}
-            placeholder={field.description || field.label}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#283618]"
+            onChange={handleChange}
           />
         );
 
       case "number":
         return (
-          <input
-            type="number"
+          <NumberInput
+            field={field}
             value={fieldValue as number}
-            onChange={(e) => handleChange(parseFloat(e.target.value))}
-            placeholder={field.description || field.label}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#283618]"
+            onChange={handleChange}
           />
         );
 
       case "date":
         return (
-          <input
-            type="date"
+          <DateInput
+            field={field}
             value={fieldValue as string}
-            onChange={(e) => handleChange(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#283618]"
+            onChange={handleChange}
           />
         );
 
       case "select":
-        const options =
-          "field_config" in field &&
-          field.field_config &&
-          "options" in field.field_config
-            ? field.field_config.options
-            : [];
-
         return (
-          <select
+          <SelectInput
+            field={field}
             value={fieldValue as string}
-            onChange={(e) => handleChange(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#283618]"
-          >
-            <option value="">{t("selectOption")}</option>
-            {options.map((option: string) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
+            onChange={handleChange}
+          />
         );
 
       case "text_with_icon":
-        const isLongTextWithIcon =
-          "field_config" in field &&
-          field.field_config &&
-          "subtype" in field.field_config &&
-          field.field_config.subtype === "long";
-
-        return isLongTextWithIcon ? (
-          <textarea
+        return (
+          <TextWithIconInput
+            field={field}
             value={fieldValue as string}
-            onChange={(e) => handleChange(e.target.value)}
-            placeholder={field.description || field.label}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#283618] min-h-[100px]"
-          />
-        ) : (
-          <input
-            type="text"
-            value={fieldValue as string}
-            onChange={(e) => handleChange(e.target.value)}
-            placeholder={field.description || field.label}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#283618]"
+            onChange={handleChange}
           />
         );
 
