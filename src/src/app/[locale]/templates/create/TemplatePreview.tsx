@@ -823,21 +823,40 @@ export function TemplatePreview({
         const availableCardIds =
           (field.field_config as any)?.available_cards || [];
 
-        // Determinar qué card mostrar
-        let cardIdToShow: string | null = null;
+        // El valor puede ser:
+        // 1. Un array de objetos {cardId, fieldValues}
+        // 2. Un array de strings (solo IDs)
+        // 3. Un string (un solo ID)
+        // 4. undefined/null
+        let cardsToRender: Array<{
+          cardId: string;
+          fieldValues: Record<string, any>;
+        }> = [];
 
-        if (field.value && typeof field.value === "string") {
-          // Si hay un valor seleccionado (cuando el usuario llena el boletín), usar ese
-          cardIdToShow = field.value;
+        if (Array.isArray(field.value)) {
+          // Es un array
+          cardsToRender = field.value
+            .map((item) => {
+              if (typeof item === "string") {
+                return { cardId: item, fieldValues: {} };
+              } else if (item && typeof item === "object") {
+                return {
+                  cardId: (item as any).cardId || "",
+                  fieldValues: (item as any).fieldValues || {},
+                };
+              }
+              return { cardId: "", fieldValues: {} };
+            })
+            .filter((item) => item.cardId);
+        } else if (field.value && typeof field.value === "string") {
+          // Es un string simple
+          cardsToRender = [{ cardId: field.value, fieldValues: {} }];
         } else if (availableCardIds.length > 0) {
           // Si no hay valor (preview del template), mostrar el primer card disponible
-          cardIdToShow = availableCardIds[0];
+          cardsToRender = [{ cardId: availableCardIds[0], fieldValues: {} }];
         }
 
-        // Obtener la card del cache
-        const cardToRender = cardIdToShow ? cardsCache.get(cardIdToShow) : null;
-
-        if (!cardToRender) {
+        if (cardsToRender.length === 0) {
           return (
             <div
               key={key}
@@ -847,97 +866,133 @@ export function TemplatePreview({
               <span className="text-gray-400 text-sm">
                 {availableCardIds.length === 0
                   ? "No hay cards disponibles"
-                  : "Cargando card..."}
+                  : "Seleccione una card"}
               </span>
             </div>
           );
         }
 
-        // Renderizar el contenido de la card
-        const cardContent = cardToRender.content;
-        const cardBackgroundUrl = cardContent.background_url;
-        const cardBackgroundColor = cardContent.background_color;
-
-        // Estilos del contenedor de la card
-        const cardContainerStyles: React.CSSProperties = {
-          ...fieldStyles,
-          flex: 1, // Ocupar todo el espacio disponible
-          display: "flex",
-          flexDirection: "column",
-          ...(cardBackgroundColor && { backgroundColor: cardBackgroundColor }),
-          ...(cardBackgroundUrl && {
-            backgroundImage: `url(${getBackgroundImageUrl(cardBackgroundUrl)})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }),
-        };
-
-        // Aplicar estilos del card content si existen
-        const cardContentStyleConfig = cardContent.style_config;
-        if (cardContentStyleConfig) {
-          if (cardContentStyleConfig.padding) {
-            cardContainerStyles.padding = cardContentStyleConfig.padding;
-          }
-          if (cardContentStyleConfig.gap) {
-            cardContainerStyles.gap = cardContentStyleConfig.gap;
-          }
-        }
-
+        // Renderizar todas las cards (cada una es una página)
         return (
-          <div key={key} style={cardContainerStyles} className="flex flex-col">
-            {/* Blocks del contenido de la card */}
-            {/* Nota: El header y footer de la card se renderizan a nivel de section, no aquí */}
-            {cardContent.blocks.map((block, blockIndex) => {
-              // Combinar estilos del block con los del contenido de la card
-              const blockStyleConfig = block.style_config || {};
-              const contentStyleConfig = cardContentStyleConfig || {};
+          <div key={key} style={fieldStyles} className="flex flex-col gap-4">
+            {cardsToRender.map((cardData, cardPageIndex) => {
+              const cardToRender = cardsCache.get(cardData.cardId);
 
-              // Usar los estilos del block con fallback a los del contenido
-              const effectiveBlockStyles = {
-                ...contentStyleConfig,
-                ...blockStyleConfig,
-              };
+              if (!cardToRender) {
+                return (
+                  <div
+                    key={`card-page-${cardPageIndex}`}
+                    className="flex items-center justify-center bg-gray-100 border border-gray-300 rounded p-4"
+                  >
+                    <span className="text-gray-400 text-sm">
+                      Cargando card...
+                    </span>
+                  </div>
+                );
+              }
 
-              const blockContainerStyles: React.CSSProperties = {
+              // Renderizar el contenido de la card
+              const cardContent = cardToRender.content;
+              const cardBackgroundUrl = cardContent.background_url;
+              const cardBackgroundColor = cardContent.background_color;
+
+              // Estilos del contenedor de la card
+              const cardContainerStyles: React.CSSProperties = {
+                flex: 1,
                 display: "flex",
-                flexDirection:
-                  (block as any).layout === "horizontal" ? "row" : "column",
-                gap: effectiveBlockStyles.gap
-                  ? `${effectiveBlockStyles.gap}px`
-                  : "8px",
-                padding: effectiveBlockStyles.padding || undefined,
-                backgroundColor:
-                  effectiveBlockStyles.background_color || "transparent",
-                ...getBorderStyles(block.style_config),
-                // Agregar background_image si existe
-                ...(effectiveBlockStyles.background_image && {
+                flexDirection: "column",
+                ...(cardBackgroundColor && {
+                  backgroundColor: cardBackgroundColor,
+                }),
+                ...(cardBackgroundUrl && {
                   backgroundImage: `url(${getBackgroundImageUrl(
-                    effectiveBlockStyles.background_image
+                    cardBackgroundUrl
                   )})`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                 }),
               };
 
+              // Aplicar estilos del card content si existen
+              const cardContentStyleConfig = cardContent.style_config;
+              if (cardContentStyleConfig) {
+                if (cardContentStyleConfig.padding) {
+                  cardContainerStyles.padding = cardContentStyleConfig.padding;
+                }
+                if (cardContentStyleConfig.gap) {
+                  cardContainerStyles.gap = cardContentStyleConfig.gap;
+                }
+              }
+
               return (
                 <div
-                  key={`card-block-${blockIndex}`}
-                  style={blockContainerStyles}
+                  key={`card-page-${cardPageIndex}`}
+                  style={cardContainerStyles}
+                  className="flex flex-col"
                 >
-                  {block.fields.map((blockField, fieldIndex) => {
-                    // Asegurar que el field tenga todas las propiedades necesarias
-                    const safeField: Field = {
-                      ...blockField,
-                      style_manually_edited:
-                        blockField.style_manually_edited ?? false,
-                    } as Field;
+                  {/* Blocks del contenido de la card */}
+                  {cardContent.blocks.map((block, blockIndex) => {
+                    const blockStyleConfig = block.style_config || {};
+                    const contentStyleConfig = cardContentStyleConfig || {};
 
-                    // Renderizar cada field del block usando la función renderField existente
-                    return renderField(
-                      safeField,
-                      `card-${cardIdToShow}-block-${blockIndex}-field-${fieldIndex}`,
-                      block.style_config,
-                      (block as any).layout || "vertical"
+                    const effectiveBlockStyles = {
+                      ...contentStyleConfig,
+                      ...blockStyleConfig,
+                    };
+
+                    const blockContainerStyles: React.CSSProperties = {
+                      display: "flex",
+                      flexDirection:
+                        (block as any).layout === "horizontal"
+                          ? "row"
+                          : "column",
+                      gap: effectiveBlockStyles.gap
+                        ? `${effectiveBlockStyles.gap}px`
+                        : "8px",
+                      padding: effectiveBlockStyles.padding || undefined,
+                      backgroundColor:
+                        effectiveBlockStyles.background_color || "transparent",
+                      ...getBorderStyles(block.style_config),
+                      ...(effectiveBlockStyles.background_image && {
+                        backgroundImage: `url(${getBackgroundImageUrl(
+                          effectiveBlockStyles.background_image
+                        )})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                      }),
+                    };
+
+                    return (
+                      <div
+                        key={`card-page-${cardPageIndex}-block-${blockIndex}`}
+                        style={blockContainerStyles}
+                      >
+                        {block.fields.map((blockField, fieldIndex) => {
+                          // Asegurar que el field tenga todas las propiedades necesarias
+                          const safeField: Field = {
+                            ...blockField,
+                            style_manually_edited:
+                              blockField.style_manually_edited ?? false,
+                          } as Field;
+
+                          // Si el field tiene form: true, usar el valor de fieldValues
+                          if (
+                            blockField.form &&
+                            cardData.fieldValues[blockField.field_id]
+                          ) {
+                            safeField.value =
+                              cardData.fieldValues[blockField.field_id];
+                          }
+
+                          // Renderizar cada field del block
+                          return renderField(
+                            safeField,
+                            `card-${cardData.cardId}-page-${cardPageIndex}-block-${blockIndex}-field-${fieldIndex}`,
+                            block.style_config,
+                            (block as any).layout || "vertical"
+                          );
+                        })}
+                      </div>
                     );
                   })}
                 </div>

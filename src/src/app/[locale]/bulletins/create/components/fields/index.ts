@@ -16,3 +16,4 @@ export { SelectInput as SelectField } from "./SelectInput";
 export { SelectWithIconsField } from "./SelectWithIconsField";
 export { ClimateDataField } from "./ClimateDataField";
 export { ListFieldEditor } from "./ListFieldEditor";
+export { CardFieldInput } from "./CardFieldInput";

@@ -12,6 +12,7 @@ import {
   DateInput,
   DateRangeInput,
   SelectInput,
+  CardFieldInput,
 } from "../components/fields";
 
 interface SectionStepProps {
@@ -182,6 +183,20 @@ export function SectionStep({
           />
         );
 
+      case "card":
+        const headerCardValue = Array.isArray(fieldValue)
+          ? fieldValue.map((item: any) =>
+              typeof item === "string" ? item : item.cardId || item._id || item
+            )
+          : [];
+        return (
+          <CardFieldInput
+            field={field}
+            value={headerCardValue}
+            onChange={handleChange}
+          />
+        );
+
       default:
         return (
           <input
@@ -282,6 +297,20 @@ export function SectionStep({
           <TextWithIconInput
             field={field}
             value={fieldValue as string}
+            onChange={handleChange}
+          />
+        );
+
+      case "card":
+        const cardValue = Array.isArray(fieldValue)
+          ? fieldValue.map((item: any) =>
+              typeof item === "string" ? item : item.cardId || item._id || item
+            )
+          : [];
+        return (
+          <CardFieldInput
+            field={field}
+            value={cardValue}
             onChange={handleChange}
           />
         );
