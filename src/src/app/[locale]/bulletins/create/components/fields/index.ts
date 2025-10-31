@@ -3,6 +3,7 @@ export { TextInput } from "./TextInput";
 export { TextWithIconInput } from "./TextWithIconInput";
 export { NumberInput } from "./NumberInput";
 export { DateInput } from "./DateInput";
+export { DateRangeInput } from "./DateRangeInput";
 export { SelectInput } from "./SelectInput";
 
 // Aliases for backward compatibility (all point to unified components)

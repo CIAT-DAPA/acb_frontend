@@ -449,14 +449,22 @@ export function TemplatePreview({
             field.value.start_date &&
             field.value.end_date
           ) {
-            const startDateVal =
-              typeof field.value.start_date === "string"
-                ? new Date(field.value.start_date)
-                : (field.value.start_date as Date);
-            const endDateVal =
-              typeof field.value.end_date === "string"
-                ? new Date(field.value.end_date)
-                : (field.value.end_date as Date);
+            // Parsear fechas como locales para evitar problemas de zona horaria
+            const parseLocalDate = (dateStr: string | Date): Date => {
+              if (typeof dateStr !== "string") return dateStr;
+              if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+                const [year, month, day] = dateStr.split("-").map(Number);
+                return new Date(year, month - 1, day);
+              }
+              return new Date(dateStr);
+            };
+
+            const startDateVal = parseLocalDate(
+              field.value.start_date as string | Date
+            );
+            const endDateVal = parseLocalDate(
+              field.value.end_date as string | Date
+            );
 
             const startDay = startDateVal.getDate();
             const endDay = endDateVal.getDate();
@@ -609,8 +617,8 @@ export function TemplatePreview({
                   key={itemIndex}
                   className={
                     listItemsLayout === "horizontal"
-                      ? "flex items-center gap-2"
-                      : "flex items-center gap-2 w-full"
+                      ? "flex items-start gap-2"
+                      : "flex items-start gap-2 w-full"
                   }
                   style={listItemStyles}
                 >

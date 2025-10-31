@@ -10,6 +10,7 @@ import {
   TextWithIconInput,
   NumberInput,
   DateInput,
+  DateRangeInput,
   SelectInput,
 } from "../components/fields";
 
@@ -67,6 +68,133 @@ export function SectionStep({
     }));
   };
 
+  // Handler para campos del header de la sección
+  const handleHeaderFieldChange = (fieldIndex: number, value: any) => {
+    onUpdate((prev) => ({
+      ...prev,
+      version: {
+        ...prev.version,
+        data: {
+          ...prev.version.data,
+          sections: prev.version.data.sections.map((sec, sIdx) =>
+            sIdx === sectionIndex
+              ? {
+                  ...sec,
+                  header_config: sec.header_config
+                    ? {
+                        ...sec.header_config,
+                        fields: sec.header_config.fields.map((field, fIdx) =>
+                          fIdx === fieldIndex ? { ...field, value } : field
+                        ),
+                      }
+                    : undefined,
+                }
+              : sec
+          ),
+        },
+      },
+    }));
+  };
+
+  const renderHeaderField = (field: Field, fieldIndex: number) => {
+    // Solo renderizar si form es true
+    if (!field.form) {
+      return null;
+    }
+
+    const fieldValue = field.value || "";
+
+    const handleChange = (value: any) => {
+      handleHeaderFieldChange(fieldIndex, value);
+    };
+
+    switch (field.type) {
+      case "list":
+        const listValue = Array.isArray(fieldValue) ? fieldValue : [];
+        return (
+          <ListFieldEditor
+            field={field}
+            value={listValue}
+            onChange={handleChange}
+          />
+        );
+
+      case "text":
+        return (
+          <TextInput
+            field={field}
+            value={fieldValue as string}
+            onChange={handleChange}
+          />
+        );
+
+      case "number":
+        return (
+          <NumberInput
+            field={field}
+            value={fieldValue as number}
+            onChange={handleChange}
+          />
+        );
+
+      case "date":
+        return (
+          <DateInput
+            field={field}
+            value={fieldValue as string}
+            onChange={handleChange}
+          />
+        );
+
+      case "date_range":
+        const headerDateRangeValue =
+          typeof fieldValue === "object" &&
+          fieldValue !== null &&
+          !Array.isArray(fieldValue)
+            ? (fieldValue as unknown as {
+                start_date: string;
+                end_date: string;
+              })
+            : { start_date: "", end_date: "" };
+        return (
+          <DateRangeInput
+            field={field}
+            value={headerDateRangeValue}
+            onChange={handleChange}
+          />
+        );
+
+      case "select":
+        return (
+          <SelectInput
+            field={field}
+            value={fieldValue as string}
+            onChange={handleChange}
+          />
+        );
+
+      case "text_with_icon":
+        return (
+          <TextWithIconInput
+            field={field}
+            value={fieldValue as string}
+            onChange={handleChange}
+          />
+        );
+
+      default:
+        return (
+          <input
+            type="text"
+            value={fieldValue as string}
+            onChange={(e) => handleChange(e.target.value)}
+            placeholder={field.description || field.label}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#283618]"
+          />
+        );
+    }
+  };
+
   const renderField = (
     field: Field,
     blockIndex: number,
@@ -122,6 +250,24 @@ export function SectionStep({
           />
         );
 
+      case "date_range":
+        const blockDateRangeValue =
+          typeof fieldValue === "object" &&
+          fieldValue !== null &&
+          !Array.isArray(fieldValue)
+            ? (fieldValue as unknown as {
+                start_date: string;
+                end_date: string;
+              })
+            : { start_date: "", end_date: "" };
+        return (
+          <DateRangeInput
+            field={field}
+            value={blockDateRangeValue}
+            onChange={handleChange}
+          />
+        );
+
       case "select":
         return (
           <SelectInput
@@ -161,6 +307,37 @@ export function SectionStep({
         </h3>
         <p className="text-sm text-[#606c38] mb-4">{t("description")}</p>
       </div>
+
+      {/* Campos del header de la sección con form=true */}
+      {section.header_config?.fields &&
+        section.header_config.fields.some((field) => field.form) && (
+          <div className="border-t pt-4">
+            <h4 className="text-md font-semibold text-[#283618] mb-4">
+              {t("headerFields", { defaultValue: "Header Fields" })}
+            </h4>
+            <div className="space-y-4">
+              {section.header_config.fields.map((field, fieldIndex) => {
+                if (!field.form) {
+                  return null;
+                }
+
+                return (
+                  <div key={field.field_id}>
+                    <label className="block text-sm font-medium text-[#283618] mb-1">
+                      {field.display_name}
+                    </label>
+                    {renderHeaderField(field, fieldIndex)}
+                    {field.description && (
+                      <p className="text-xs text-[#606c38] mt-1">
+                        {field.description}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
       {section.blocks.map((block, blockIndex) => {
         // Filtrar solo los campos que tienen form=true
