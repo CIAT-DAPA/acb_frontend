@@ -1,8 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useTranslations } from "next-intl";
-import { CreateTemplateData, Field } from "../../../../types/template";
+import { useTranslations, useLocale } from "next-intl";
+import { usePathname } from "next/navigation";
+import {
+  CreateTemplateData,
+  Field,
+  Section,
+  Block,
+} from "../../../../types/template";
 import { StyleConfig } from "../../../../types/core";
 import { getEffectiveFieldStyles } from "../../../../utils/styleInheritance";
 import { SmartIcon } from "../../components/AdaptiveSvgIcon";
@@ -65,9 +71,22 @@ export function TemplatePreview({
   forceGlobalHeader = false,
 }: TemplatePreviewProps) {
   const t = useTranslations("CreateTemplate.preview");
+  const pathname = usePathname();
+  const hookLocale = useLocale();
+
+  // Extraer el locale actual del pathname como backup (igual que LanguageSelector)
+  const pathnameLocale = pathname.split("/")[1];
+
+  // Usar el locale del pathname si está disponible, sino el del hook
+  const locale = ["es", "en"].includes(pathnameLocale)
+    ? pathnameLocale
+    : hookLocale;
 
   // Estado para almacenar las cards cargadas
   const [cardsCache, setCardsCache] = useState<Map<string, Card>>(new Map());
+
+  // Estado para controlar la página actual (para paginación de listas)
+  const [currentPageIndex, setCurrentPageIndex] = useState(0);
 
   // Cargar todas las cards necesarias
   useEffect(() => {
@@ -158,7 +177,10 @@ export function TemplatePreview({
     const day = dateObj.getDate().toString().padStart(2, "0");
     const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
     const year = dateObj.getFullYear();
-    const dayName = dateObj.toLocaleDateString("es-ES", { weekday: "long" });
+
+    // Usar el locale actual para el nombre del día
+    const localeCode = locale === "es" ? "es-ES" : "en-US";
+    const dayName = dateObj.toLocaleDateString(localeCode, { weekday: "long" });
     const dayNameCapitalized =
       dayName.charAt(0).toUpperCase() + dayName.slice(1);
 
@@ -192,7 +214,8 @@ export function TemplatePreview({
       if (field?.type === "date" && field.field_config?.date_format) {
         return formatDateValue(value, field.field_config.date_format);
       }
-      return value.toLocaleDateString();
+      const localeCode = locale === "es" ? "es-ES" : "en-US";
+      return value.toLocaleDateString(localeCode);
     }
     if (Array.isArray(value)) {
       return value.join(", ");
@@ -437,7 +460,8 @@ export function TemplatePreview({
 
             const startDay = startDateVal.getDate();
             const endDay = endDateVal.getDate();
-            const month = endDateVal.toLocaleDateString("es", {
+            const localeCode = locale === "es" ? "es-ES" : "en-US";
+            const month = endDateVal.toLocaleDateString(localeCode, {
               month: "long",
             });
             const year = endDateVal.getFullYear();
@@ -929,6 +953,106 @@ export function TemplatePreview({
     }
   };
 
+  // Tipo para info de paginación
+  type ListPaginationInfo = {
+    blockIndex: number;
+    fieldIndex: number;
+    field: Field;
+    maxItemsPerPage: number;
+    totalItems: number;
+    items: any[];
+  };
+
+  // Función para obtener info de paginación de una sección específica
+  const getSectionPagination = (
+    section: Section
+  ): {
+    totalPages: number;
+    listFieldWithPagination?: ListPaginationInfo;
+    paginatedSection: Section;
+  } => {
+    // Buscar si hay algún field de tipo list con max_items_per_page
+    let foundInfo: ListPaginationInfo | undefined;
+
+    for (let blockIndex = 0; blockIndex < section.blocks.length; blockIndex++) {
+      const block = section.blocks[blockIndex];
+      for (let fieldIndex = 0; fieldIndex < block.fields.length; fieldIndex++) {
+        const field = block.fields[fieldIndex];
+        if (field.type === "list" && field.field_config) {
+          const maxItemsPerPage = (field.field_config as any)
+            .max_items_per_page;
+          const items = Array.isArray(field.value) ? field.value : [];
+
+          if (maxItemsPerPage && items.length > maxItemsPerPage) {
+            foundInfo = {
+              blockIndex,
+              fieldIndex,
+              field,
+              maxItemsPerPage,
+              totalItems: items.length,
+              items,
+            };
+            break;
+          }
+        }
+      }
+      if (foundInfo) break;
+    }
+
+    if (!foundInfo) {
+      return { totalPages: 1, paginatedSection: section };
+    }
+
+    // Calcular total de páginas
+    const totalPages = Math.ceil(
+      foundInfo.totalItems / foundInfo.maxItemsPerPage
+    );
+
+    return {
+      totalPages,
+      listFieldWithPagination: foundInfo,
+      paginatedSection: section,
+    };
+  };
+
+  // Obtener la sección actual y su paginación
+  const currentSection = sections[selectedSectionIndex];
+  const paginationInfo = currentSection
+    ? getSectionPagination(currentSection)
+    : { totalPages: 1, paginatedSection: currentSection };
+
+  // Crear la sección con los items de la página actual
+  const getCurrentPageSection = (): Section | null => {
+    if (!currentSection || !paginationInfo.listFieldWithPagination) {
+      return currentSection;
+    }
+
+    const { listFieldWithPagination } = paginationInfo;
+    const startIndex =
+      currentPageIndex * listFieldWithPagination.maxItemsPerPage;
+    const endIndex = Math.min(
+      startIndex + listFieldWithPagination.maxItemsPerPage,
+      listFieldWithPagination.totalItems
+    );
+
+    // Clonar la sección
+    const clonedSection: Section = JSON.parse(JSON.stringify(currentSection));
+
+    // Actualizar el list field con solo los items de esta página
+    clonedSection.blocks[listFieldWithPagination.blockIndex].fields[
+      listFieldWithPagination.fieldIndex
+    ].value = listFieldWithPagination.items.slice(startIndex, endIndex);
+
+    return clonedSection;
+  };
+
+  // Resetear página cuando cambie la sección
+  useEffect(() => {
+    setCurrentPageIndex(0);
+  }, [selectedSectionIndex]);
+
+  const sectionToRender = getCurrentPageSection();
+
   return (
     <div className="h-full">
       {/* Información de la plantilla */}
@@ -1036,11 +1160,10 @@ export function TemplatePreview({
               </p>
             </div>
           ) : (
-            sections.length > 0 &&
-            sections[selectedSectionIndex] && (
+            sectionToRender && (
               <>
                 {(() => {
-                  const section = sections[selectedSectionIndex];
+                  const section = sectionToRender;
                   const sectionIndex = selectedSectionIndex;
 
                   // Buscar campos de tipo select_background para aplicar el fondo seleccionado
@@ -1497,6 +1620,35 @@ export function TemplatePreview({
             )}
         </div>
       </div>
+
+      {/* Controles de paginación de lista */}
+      {paginationInfo.totalPages > 1 && (
+        <div className="mt-4 flex items-center justify-center gap-4">
+          <button
+            onClick={() =>
+              setCurrentPageIndex(Math.max(0, currentPageIndex - 1))
+            }
+            disabled={currentPageIndex === 0}
+            className="px-4 py-2 bg-[#283618] text-white rounded-md disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-[#283618]/90 transition-colors"
+          >
+            ← Página Anterior
+          </button>
+          <span className="text-sm text-[#283618] font-medium">
+            Página {currentPageIndex + 1} de {paginationInfo.totalPages}
+          </span>
+          <button
+            onClick={() =>
+              setCurrentPageIndex(
+                Math.min(paginationInfo.totalPages - 1, currentPageIndex + 1)
+              )
+            }
+            disabled={currentPageIndex === paginationInfo.totalPages - 1}
+            className="px-4 py-2 bg-[#283618] text-white rounded-md disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-[#283618]/90 transition-colors"
+          >
+            Página Siguiente →
+          </button>
+        </div>
+      )}
 
       {/* Información adicional */}
       {moreInfo && (

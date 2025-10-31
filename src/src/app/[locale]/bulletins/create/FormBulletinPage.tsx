@@ -19,7 +19,6 @@ import {
 
 import { TemplateSelectionStep } from "./steps/TemplateSelectionStep";
 import { BasicInfoStep } from "./steps/BasicInfoStep";
-import { HeaderFooterStep } from "./steps/HeaderFooterStep";
 import { SectionStep } from "./steps/SectionStep";
 import { TemplatePreview } from "../../templates/create/TemplatePreview";
 import { CreateTemplateData } from "../../../../types/template";
