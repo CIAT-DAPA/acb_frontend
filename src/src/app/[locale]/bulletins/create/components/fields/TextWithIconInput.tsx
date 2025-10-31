@@ -38,7 +38,7 @@ export function TextWithIconInput({
 
   return isLongText ? (
     <textarea
-      value={value}
+      value={value || ""}
       onChange={(e) => onChange(e.target.value)}
       placeholder={finalPlaceholder}
       className={`${inputClass} min-h-[100px]`}
@@ -48,7 +48,7 @@ export function TextWithIconInput({
   ) : (
     <input
       type="text"
-      value={value}
+      value={value || ""}
       onChange={(e) => onChange(e.target.value)}
       placeholder={finalPlaceholder}
       className={inputClass}

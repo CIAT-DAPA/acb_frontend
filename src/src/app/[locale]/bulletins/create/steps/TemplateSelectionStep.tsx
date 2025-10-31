@@ -22,7 +22,9 @@ export function TemplateSelectionStep({
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [showPreviewModal, setShowPreviewModal] = useState(false);
-  const [previewTemplateId, setPreviewTemplateId] = useState<string | null>(null);
+  const [previewTemplateId, setPreviewTemplateId] = useState<string | null>(
+    null
+  );
 
   useEffect(() => {
     loadTemplates();
@@ -94,10 +96,10 @@ export function TemplateSelectionStep({
       {!loading && (
         <div className="grid grid-cols-1 gap-4 max-h-[400px] overflow-y-auto">
           {filteredTemplates.map((template) => (
-            <button
+            <div
               key={template._id}
               onClick={() => onSelectTemplate(template._id!)}
-              className={`relative group p-4 rounded-lg border-2 transition-all text-left ${
+              className={`relative group p-4 rounded-lg border-2 transition-all text-left cursor-pointer ${
                 selectedTemplateId === template._id
                   ? "border-[#283618] bg-[#283618]/10"
                   : "border-[#283618]/20 hover:border-[#283618]/50"
@@ -118,10 +120,10 @@ export function TemplateSelectionStep({
                       <FileText className="h-8 w-8 text-[#283618]/30" />
                     </div>
                   )}
-                  
+
                   {/* Overlay oscuro */}
                   <div className="absolute inset-0 bg-black/40 opacity-0 md:group-hover:opacity-100 transition-opacity" />
-                  
+
                   {/* Botón Preview - Centro del thumbnail */}
                   <button
                     onClick={(e) => {
@@ -153,7 +155,7 @@ export function TemplateSelectionStep({
                   </div>
                 </div>
               </div>
-              
+
               {/* Selected indicator - Esquina inferior derecha */}
               {selectedTemplateId === template._id && (
                 <div className="absolute top-3 right-3 flex-shrink-0">
@@ -174,7 +176,7 @@ export function TemplateSelectionStep({
                   </div>
                 </div>
               )}
-            </button>
+            </div>
           ))}
         </div>
       )}

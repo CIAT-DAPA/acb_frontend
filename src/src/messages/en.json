@@ -136,6 +136,7 @@
     "by": "by",
     "lastModified": "Last modified",
     "view": "View",
+    "preview": "Preview",
     "edit": "Edit",
     "download": "Download",
     "delete": "Archive",
@@ -211,13 +212,18 @@
       "headerSection": "Global Header",
       "footerSection": "Global Footer",
       "selectOption": "Select an option...",
-      "noFields": "This template has no configurable fields for header and footer"
+      "noFields": "This template has no configurable fields for header and footer",
+      "headerTitle": "Bulletin Header",
+      "headerDescription": "Configure the information that will appear in your bulletin's header",
+      "footerTitle": "Bulletin Footer",
+      "footerDescription": "Configure the information that will appear in your bulletin's footer"
     },
     "section": {
       "title": "Section",
       "description": "Fill in the information for this section",
       "selectOption": "Select an option...",
-      "noFields": "This section has no configurable fields"
+      "noFields": "This section has no configurable fields",
+      "headerFields": "Header Fields"
     },
     "fillData": {
       "sectionProgress": "Section {current} of {total}",
@@ -944,6 +950,7 @@
     "subtitle": "Define a new geographic group and assign users with specific roles",
     "titleEdit": "Edit Group",
     "subtitleEdit": "Modify information and users of the existing group",
+    "loading": "Loading...",
     "loadingGroup": "Loading group...",
     "basicInfo": "Basic Information",
     "groupName": "Group Name",
@@ -993,6 +1000,7 @@
     "createNew": "Create Card",
     "searchPlaceholder": "Search cards by name or type...",
     "by": "by",
+    "updatedBy": "Updated by",
     "lastModified": "Last modified",
     "view": "View",
     "edit": "Edit",

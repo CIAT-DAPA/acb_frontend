@@ -36,7 +36,7 @@ export function SelectInput({
 
   return (
     <select
-      value={value}
+      value={value || ""}
       onChange={(e) => onChange(e.target.value)}
       className={inputClass}
       disabled={disabled}

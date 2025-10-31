@@ -212,13 +212,18 @@
       "headerSection": "Encabezado Global",
       "footerSection": "Pie de Página Global",
       "selectOption": "Selecciona una opción...",
-      "noFields": "Esta plantilla no tiene campos configurables para encabezado y pie de página"
+      "noFields": "Esta plantilla no tiene campos configurables para encabezado y pie de página",
+      "headerTitle": "Encabezado del Boletín",
+      "headerDescription": "Configura la información que aparecerá en el encabezado de tu boletín",
+      "footerTitle": "Pie de Página del Boletín",
+      "footerDescription": "Configura la información que aparecerá en el pie de página de tu boletín"
     },
     "section": {
       "title": "Sección",
       "description": "Llena la información de esta sección",
       "selectOption": "Selecciona una opción...",
-      "noFields": "Esta sección no tiene campos configurables"
+      "noFields": "Esta sección no tiene campos configurables",
+      "headerFields": "Campos del Encabezado"
     },
     "fillData": {
       "sectionProgress": "Sección {current} de {total}",
@@ -945,6 +950,7 @@
     "subtitle": "Define un nuevo grupo geográfico y asigna usuarios con roles específicos",
     "titleEdit": "Editar Grupo",
     "subtitleEdit": "Modifica la información y usuarios del grupo existente",
+    "loading": "Cargando...",
     "loadingGroup": "Cargando grupo...",
     "basicInfo": "Información Básica",
     "groupName": "Nombre del Grupo",
@@ -994,6 +1000,7 @@
     "createNew": "Crear Card",
     "searchPlaceholder": "Buscar cards por nombre o tipo...",
     "by": "por",
+    "updatedBy": "Actualizado por",
     "lastModified": "Última modificación",
     "view": "Ver",
     "edit": "Editar",

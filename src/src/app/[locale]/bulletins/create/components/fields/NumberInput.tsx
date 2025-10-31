@@ -30,7 +30,7 @@ export function NumberInput({
   return (
     <input
       type="number"
-      value={value}
+      value={value ?? ""}
       onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
       placeholder={finalPlaceholder}
       className={inputClass}

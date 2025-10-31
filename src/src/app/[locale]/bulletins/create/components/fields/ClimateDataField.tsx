@@ -54,7 +54,7 @@ export function ClimateDataField({
             <div className="flex items-center gap-2">
               <input
                 type={paramConfig.type === "number" ? "number" : "text"}
-                value={currentValue}
+                value={currentValue || ""}
                 onChange={(e) => handleParamChange(paramKey, e.target.value)}
                 placeholder={paramConfig.label}
                 className={`flex-1 ${inputClass}`}
