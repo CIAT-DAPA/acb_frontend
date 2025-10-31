@@ -318,6 +318,43 @@ export class CardAPIService extends BaseAPIService {
     }
   }
 
+  /**
+   * Clona una card existente con nombre y descripción opcionales personalizados
+   * POST /cards/{card_id}/clone
+   */
+  static async cloneCard(
+    cardId: string,
+    cloneData?: {
+      card_name?: string;
+      description?: string;
+    }
+  ): Promise<APIResponse<Card>> {
+    try {
+      const data = await this.post<any>(`/cards/${cardId}/clone`, cloneData);
+
+      const card = data.card || data.data || data;
+
+      // Map API response to match Card interface
+      const mappedCard = {
+        ...card,
+        _id: card.id || card._id,
+      };
+
+      return {
+        success: true,
+        data: mappedCard,
+        message: "Card clonada exitosamente",
+      };
+    } catch (error) {
+      console.error("Error cloning card:", error);
+      return {
+        success: false,
+        message:
+          error instanceof Error ? error.message : "Error al clonar la card",
+      };
+    }
+  }
+
   // ============================================
   // HELPER METHODS
   // ============================================

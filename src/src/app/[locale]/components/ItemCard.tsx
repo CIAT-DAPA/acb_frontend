@@ -10,6 +10,7 @@ import {
   Calendar,
   User,
   Tag,
+  Copy,
 } from "lucide-react";
 
 // Props base compartidas
@@ -30,6 +31,10 @@ interface BaseItemCardProps {
   downloadBtn?: boolean;
   onDownload?: () => void;
   isDownloading?: boolean;
+
+  duplicateBtn?: boolean;
+  onDuplicate?: () => void;
+  isDuplicating?: boolean;
 
   deleteBtn?: boolean;
   onDelete?: () => void;
@@ -129,6 +134,21 @@ export default function ItemCard(props: ItemCardProps) {
             <Loader2 className="h-4 w-4 text-white animate-spin" />
           ) : (
             <Download className="h-4 w-4 text-white" />
+          )}
+        </button>
+      )}
+
+      {props.duplicateBtn && props.onDuplicate && (
+        <button
+          onClick={props.onDuplicate}
+          className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors cursor-pointer"
+          title={t("duplicate")}
+          disabled={props.isDuplicating}
+        >
+          {props.isDuplicating ? (
+            <Loader2 className="h-4 w-4 text-white animate-spin" />
+          ) : (
+            <Copy className="h-4 w-4 text-white" />
           )}
         </button>
       )}
