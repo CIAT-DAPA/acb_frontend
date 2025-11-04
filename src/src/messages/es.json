@@ -187,6 +187,7 @@
     "subtitle": "Crea un nuevo boletín agroclimático utilizando una plantilla",
     "backToBulletins": "Volver a Boletines",
     "success": "Boletín creado exitosamente",
+    "updateSuccess": "Boletín actualizado exitosamente",
     "error": "Error al crear el boletín",
     "errorLoadingTemplate": "Error al cargar la plantilla",
     "selectTemplate": {

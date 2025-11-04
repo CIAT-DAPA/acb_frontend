@@ -29,20 +29,33 @@ import { BulletinAPIService } from "../../../../services/bulletinService";
 import { useToast } from "../../../../components/Toast";
 import { btnOutlineSecondary, btnPrimary } from "../../components/ui";
 
-export default function FormBulletinPage() {
+interface FormBulletinPageProps {
+  mode?: "create" | "edit";
+  bulletinId?: string;
+  initialData?: CreateBulletinData;
+}
+
+export default function FormBulletinPage({
+  mode = "create",
+  bulletinId,
+  initialData,
+}: FormBulletinPageProps) {
   const t = useTranslations("CreateBulletin");
   const { userInfo } = useAuth();
   const router = useRouter();
   const { showToast } = useToast();
+  const isEditMode = mode === "edit";
 
   // Estado de paginación del preview (para sincronizar con CardFieldInput)
   const [previewPageIndex, setPreviewPageIndex] = useState(0);
 
   // Estado del wizard
   const [creationState, setCreationState] = useState<BulletinCreationState>({
-    currentStep: "select-template",
+    currentStep: initialData ? "basic-info" : "select-template",
     currentSectionIndex: 0,
-    data: {
+    selectedTemplateId: initialData?.master.base_template_master_id,
+    selectedTemplateVersionId: initialData?.master.base_template_version_id,
+    data: initialData || {
       master: {
         bulletin_name: "",
         status: "draft",
@@ -250,18 +263,22 @@ export default function FormBulletinPage() {
 
   // Configuración de los pasos del stepper
   const stepConfigs = useMemo((): StepConfig[] => {
-    const baseSteps: StepConfig[] = [
-      {
+    const baseSteps: StepConfig[] = [];
+
+    // En modo edición, no incluimos el paso de seleccionar template
+    if (!isEditMode) {
+      baseSteps.push({
         id: "select-template",
         title: t("selectTemplate.title"),
         description: t("selectTemplate.description"),
-      },
-      {
-        id: "basic-info",
-        title: t("basicInfo.title"),
-        description: t("basicInfo.description"),
-      },
-    ];
+      });
+    }
+
+    baseSteps.push({
+      id: "basic-info",
+      title: t("basicInfo.title"),
+      description: t("basicInfo.description"),
+    });
 
     // Agregar un paso por cada sección
     const sectionSteps: StepConfig[] =
@@ -272,7 +289,7 @@ export default function FormBulletinPage() {
       }));
 
     return [...baseSteps, ...sectionSteps];
-  }, [t, creationState.data.version.data.sections]);
+  }, [t, creationState.data.version.data.sections, isEditMode]);
 
   // Obtener índice del paso actual
   const currentStepIndex = useMemo(() => {
@@ -336,47 +353,93 @@ export default function FormBulletinPage() {
 
     setIsLoading(true);
     try {
-      // 1. Crear bulletin master
-      const { log: masterLog, ...masterDataWithoutLog } =
-        creationState.data.master;
+      if (isEditMode && bulletinId) {
+        // MODO EDICIÓN: Actualizar bulletin existente
+        const { log: masterLog, ...masterDataWithoutLog } =
+          creationState.data.master;
 
-      const masterResponse = await BulletinAPIService.createBulletin(
-        masterDataWithoutLog
-      );
-
-      if (!masterResponse.success || !masterResponse.data) {
-        throw new Error(masterResponse.message || "Error al crear el boletín");
-      }
-
-      const bulletinId =
-        (masterResponse.data as any).id || masterResponse.data._id;
-
-      const { log: versionLog, ...versionDataWithoutLog } =
-        creationState.data.version;
-
-      // 2. Crear primera versión del boletín
-      const versionResponse = await BulletinAPIService.createBulletinVersion(
-        bulletinId,
-        versionDataWithoutLog
-      );
-
-      if (!versionResponse.success) {
-        throw new Error(
-          versionResponse.message || "Error al crear la versión del boletín"
+        // 1. Actualizar bulletin master
+        const masterResponse = await BulletinAPIService.updateBulletin(
+          bulletinId,
+          masterDataWithoutLog
         );
-      }
 
-      showToast(t("success"), "success");
+        if (!masterResponse.success) {
+          throw new Error(
+            masterResponse.message || "Error al actualizar el boletín"
+          );
+        }
+
+        const { log: versionLog, ...versionDataWithoutLog } =
+          creationState.data.version;
+
+        // 2. Crear nueva versión del boletín
+        const versionResponse = await BulletinAPIService.createBulletinVersion(
+          bulletinId,
+          versionDataWithoutLog
+        );
+
+        if (!versionResponse.success) {
+          throw new Error(
+            versionResponse.message ||
+              "Error al crear la versión del boletín actualizado"
+          );
+        }
+
+        showToast(t("updateSuccess"), "success");
+      } else {
+        // MODO CREACIÓN: Crear nuevo bulletin
+        const { log: masterLog, ...masterDataWithoutLog } =
+          creationState.data.master;
+
+        const masterResponse = await BulletinAPIService.createBulletin(
+          masterDataWithoutLog
+        );
+
+        if (!masterResponse.success || !masterResponse.data) {
+          throw new Error(
+            masterResponse.message || "Error al crear el boletín"
+          );
+        }
+
+        const newBulletinId =
+          (masterResponse.data as any).id || masterResponse.data._id;
+
+        const { log: versionLog, ...versionDataWithoutLog } =
+          creationState.data.version;
+
+        // 2. Crear primera versión del boletín
+        const versionResponse = await BulletinAPIService.createBulletinVersion(
+          newBulletinId,
+          versionDataWithoutLog
+        );
+
+        if (!versionResponse.success) {
+          throw new Error(
+            versionResponse.message || "Error al crear la versión del boletín"
+          );
+        }
+
+        showToast(t("success"), "success");
+      }
 
       // Redirigir a la lista de boletines
       router.push("/bulletins");
     } catch (error) {
-      console.error("Error creating bulletin:", error);
+      console.error("Error saving bulletin:", error);
       showToast(error instanceof Error ? error.message : t("error"), "error");
     } finally {
       setIsLoading(false);
     }
-  }, [isCurrentStepValid, creationState.data, showToast, t, router]);
+  }, [
+    isCurrentStepValid,
+    creationState.data,
+    showToast,
+    t,
+    router,
+    isEditMode,
+    bulletinId,
+  ]);
 
   // Convertir bulletinData a CreateTemplateData para el preview
   const previewData = useMemo((): CreateTemplateData | null => {
@@ -484,8 +547,12 @@ export default function FormBulletinPage() {
         </div>
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-[#283618]">{t("title")}</h1>
-          <p className="text-[#606c38] mt-2">{t("subtitle")}</p>
+          <h1 className="text-3xl font-bold text-[#283618]">
+            {isEditMode ? "Editar Boletín" : t("title")}
+          </h1>
+          <p className="text-[#606c38] mt-2">
+            {isEditMode ? "Edita la información del boletín" : t("subtitle")}
+          </p>
         </div>
 
         {/* Stepper */}

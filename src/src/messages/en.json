@@ -187,6 +187,7 @@
     "subtitle": "Create a new agroclimatic bulletin using a template",
     "backToBulletins": "Back to Bulletins",
     "success": "Bulletin created successfully",
+    "updateSuccess": "Bulletin updated successfully",
     "error": "Error creating bulletin",
     "errorLoadingTemplate": "Error loading template",
     "selectTemplate": {
