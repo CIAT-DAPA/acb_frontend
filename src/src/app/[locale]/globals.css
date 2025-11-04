@@ -72,3 +72,37 @@ h6 {
   opacity: 0.75;
   mix-blend-mode: multiply;
 }
+
+/* Custom Scrollbar Styles */
+@layer utilities {
+  /* Scrollbar delgado */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 10px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(96, 108, 56, 0.3);
+    border-radius: 10px;
+    transition: background 0.2s;
+  }
+
+  .scrollbar-thin:hover::-webkit-scrollbar-thumb {
+    background: rgba(96, 108, 56, 0.5);
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: rgba(96, 108, 56, 0.7);
+  }
+
+  /* Firefox */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(96, 108, 56, 0.3) transparent;
+  }
+}
