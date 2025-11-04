@@ -20,6 +20,7 @@ import {
 import { TemplateSelectionStep } from "./steps/TemplateSelectionStep";
 import { BasicInfoStep } from "./steps/BasicInfoStep";
 import { SectionStep } from "./steps/SectionStep";
+import { ExportStep } from "./steps/ExportStep";
 import { TemplatePreview } from "../../templates/create/TemplatePreview";
 import { CreateTemplateData } from "../../../../types/template";
 import Link from "next/link";
@@ -288,7 +289,14 @@ export default function FormBulletinPage({
         description: t("section.description"),
       }));
 
-    return [...baseSteps, ...sectionSteps];
+    // Agregar paso de exportación al final
+    const exportStep: StepConfig = {
+      id: "export",
+      title: t("export.title"),
+      description: t("export.description"),
+    };
+
+    return [...baseSteps, ...sectionSteps, exportStep];
   }, [t, creationState.data.version.data.sections, isEditMode]);
 
   // Obtener índice del paso actual
@@ -305,6 +313,8 @@ export default function FormBulletinPage({
         return !!creationState.selectedTemplateId;
       case "basic-info":
         return creationState.data.master.bulletin_name.trim().length > 0;
+      case "export":
+        return true; // El paso de exportación siempre es válido
       default:
         // Para pasos de sección
         if (creationState.currentStep.startsWith("section-")) {
@@ -510,6 +520,14 @@ export default function FormBulletinPage({
           />
         );
 
+      case "export":
+        return (
+          <ExportStep
+            previewData={previewData!}
+            bulletinName={creationState.data.master.bulletin_name}
+          />
+        );
+
       default:
         // Pasos de sección
         if (creationState.currentStep.startsWith("section-")) {
@@ -565,8 +583,8 @@ export default function FormBulletinPage({
         </div>
 
         {/* Main Content: Form and Preview */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-          {/* Left: Form */}
+        {creationState.currentStep === "export" ? (
+          // Layout de ancho completo para el paso de exportación
           <div className="bg-white rounded-lg shadow-lg p-6">
             {/* Step Content */}
             <div className="min-h-[400px]">
@@ -590,54 +608,94 @@ export default function FormBulletinPage({
                 {t("navigation.previous")}
               </button>
 
-              {isLastStep ? (
+              <button
+                onClick={handleFinish}
+                disabled={!isCurrentStepValid || isLoading}
+                className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                {isLoading ? t("navigation.creating") : t("navigation.finish")}
+              </button>
+            </div>
+          </div>
+        ) : (
+          // Layout de dos columnas para los otros pasos
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+            {/* Left: Form */}
+            <div className="bg-white rounded-lg shadow-lg p-6">
+              {/* Step Content */}
+              <div className="min-h-[400px]">
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#283618]"></div>
+                  </div>
+                ) : (
+                  renderStepContent()
+                )}
+              </div>
+
+              {/* Navigation */}
+              <div className="flex justify-between pt-6 mt-6 border-t">
                 <button
-                  onClick={handleFinish}
-                  disabled={!isCurrentStepValid || isLoading}
-                  className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed`}
+                  onClick={handlePrevious}
+                  disabled={currentStepIndex === 0}
+                  className={`${btnOutlineSecondary} disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
-                  {isLoading
-                    ? t("navigation.creating")
-                    : t("navigation.finish")}
+                  <ArrowLeft className="w-4 h-4 mr-1" />{" "}
+                  {t("navigation.previous")}
                 </button>
+
+                {isLastStep ? (
+                  <button
+                    onClick={handleFinish}
+                    disabled={!isCurrentStepValid || isLoading}
+                    className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    {isLoading
+                      ? t("navigation.creating")
+                      : t("navigation.finish")}
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleNext}
+                    disabled={!isCurrentStepValid}
+                    className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    {t("navigation.next")}{" "}
+                    <ArrowRight className="w-4 h-4 ml-1" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Right: Preview */}
+            <div className="bg-white rounded-lg shadow-lg p-6 sticky top-8 self-start">
+              <h3 className="text-xl font-semibold text-[#283618] mb-4">
+                {t("preview.title")}
+              </h3>
+              {previewData ? (
+                <div
+                  id="bulletin-preview-container"
+                  className="rounded-lg overflow-hidden"
+                >
+                  <TemplatePreview
+                    data={previewData}
+                    moreInfo={true}
+                    description={true}
+                    forceGlobalHeader={
+                      creationState.currentStep === "basic-info"
+                    }
+                    currentPageIndex={previewPageIndex}
+                    onPageChange={setPreviewPageIndex}
+                  />
+                </div>
               ) : (
-                <button
-                  onClick={handleNext}
-                  disabled={!isCurrentStepValid}
-                  className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed`}
-                >
-                  {t("navigation.next")} <ArrowRight className="w-4 h-4 ml-1" />
-                </button>
+                <div className="flex items-center justify-center h-64 text-[#606c38]">
+                  {t("preview.selectTemplate")}
+                </div>
               )}
             </div>
           </div>
-
-          {/* Right: Preview */}
-          <div className="bg-white rounded-lg shadow-lg p-6 sticky top-8 self-start">
-            <h3 className="text-xl font-semibold text-[#283618] mb-4">
-              {t("preview.title")}
-            </h3>
-            {previewData ? (
-              <div
-                id="bulletin-preview-container"
-                className="rounded-lg overflow-hidden"
-              >
-                <TemplatePreview
-                  data={previewData}
-                  moreInfo={true}
-                  description={true}
-                  forceGlobalHeader={creationState.currentStep === "basic-info"}
-                  currentPageIndex={previewPageIndex}
-                  onPageChange={setPreviewPageIndex}
-                />
-              </div>
-            ) : (
-              <div className="flex items-center justify-center h-64 text-[#606c38]">
-                {t("preview.selectTemplate")}
-              </div>
-            )}
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

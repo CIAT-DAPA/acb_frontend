@@ -28,6 +28,7 @@ export function ScrollView({
     showMiniNav = true,
     highlightActive = true,
     spacing = "comfortable",
+    expandAllPages = false,
   } = config;
 
   const sections = data.version.content.sections || [];
@@ -159,7 +160,11 @@ export function ScrollView({
               
               // Animación de entrada/salida en móvil
               transition-transform duration-300 ease-in-out
-              ${isNavOpen ? "translate-y-0" : "-translate-y-[calc(100%+6rem)] md:translate-y-0"}
+              ${
+                isNavOpen
+                  ? "translate-y-0"
+                  : "-translate-y-[calc(100%+6rem)] md:translate-y-0"
+              }
               
               // Scroll interno si hay muchas secciones
               max-h-[60vh] md:max-h-[70vh] overflow-y-auto
@@ -218,7 +223,11 @@ export function ScrollView({
         ref={scrollContainerRef}
         className={`
           flex-1 w-full
-          ${isVertical ? "overflow-y-auto max-h-[85vh] md:max-h-[80vh]" : "overflow-x-auto md:max-w-[80vw] overflow-y-hidden"}
+          ${
+            isVertical
+              ? "overflow-y-auto max-h-[85vh] md:max-h-[80vh]"
+              : "overflow-x-auto md:max-w-[80vw] overflow-y-hidden"
+          }
           ${isVertical ? "flex-col" : "flex-row"}
           flex ${spacingMap[spacing]} 
           p-2 md:p-4
@@ -226,36 +235,110 @@ export function ScrollView({
           scrollbar-thin scrollbar-thumb-[#ffaf68] scrollbar-track-gray-100
         `}
       >
-        {sections.map((_, index) => (
-          <div
-            key={index}
-            ref={(el) => {
-              sectionRefs.current[index] = el;
-            }}
-            className={`
-              scroll-section flex-shrink-0
-              ${
-                highlightActive && activeSectionIndex === index 
-                  ? "ring-2 md:ring-4 ring-[#ffaf68] ring-offset-2 md:ring-offset-4 rounded-lg" 
-                  : ""
-              }
-              transition-all duration-300
-            `}
-          >
-            {/* Título de sección - Más compacto en móvil */}
-            <div className="mb-1.5 md:mb-2 px-1 md:px-2">
-              <h3 className="text-xs md:text-sm font-semibold text-[#283618]">
-                Sección {index + 1}
-                {sections[index].display_name && (
-                  <span className="hidden md:inline">: {sections[index].display_name}</span>
-                )}
-              </h3>
-            </div>
+        {sections.map((section, sectionIndex) => {
+          // Calcular el número de páginas para esta sección
+          const getSectionPageCount = () => {
+            if (!expandAllPages) return 1;
 
-            {/* Preview de la sección */}
-            <TemplatePreview data={data} selectedSectionIndex={index} />
-          </div>
-        ))}
+            let maxPages = 1;
+            section.blocks?.forEach((block: any) => {
+              block.fields?.forEach((field: any) => {
+                if (field.type === "card" && Array.isArray(field.value)) {
+                  maxPages = Math.max(maxPages, field.value.length);
+                } else if (
+                  field.type === "list" &&
+                  Array.isArray(field.value)
+                ) {
+                  const itemsPerPage =
+                    field.field_config?.max_items_per_page || 5;
+                  const pageCount = Math.ceil(
+                    field.value.length / itemsPerPage
+                  );
+                  maxPages = Math.max(maxPages, pageCount);
+                }
+              });
+            });
+            return maxPages;
+          };
+
+          const pageCount = getSectionPageCount();
+
+          return expandAllPages && pageCount > 1 ? (
+            // Modo expandido: mostrar todas las páginas de la sección
+            <div key={sectionIndex} className="flex gap-4">
+              {Array.from({ length: pageCount }).map((_, pageIndex) => (
+                <div
+                  key={`${sectionIndex}-${pageIndex}`}
+                  ref={(el) => {
+                    if (pageIndex === 0) sectionRefs.current[sectionIndex] = el;
+                  }}
+                  className={`
+                    scroll-section flex-shrink-0
+                    ${
+                      highlightActive && activeSectionIndex === sectionIndex
+                        ? "ring-2 md:ring-4 ring-[#ffaf68] ring-offset-2 md:ring-offset-4 rounded-lg"
+                        : ""
+                    }
+                    transition-all duration-300
+                  `}
+                >
+                  {/* Título de sección con número de página */}
+                  <div className="mb-1.5 md:mb-2 px-1 md:px-2">
+                    <h3 className="text-xs md:text-sm font-semibold text-[#283618]">
+                      {section.display_name || `Sección ${sectionIndex + 1}`}
+                      <span className="text-xs ml-2 text-[#606c38]">
+                        (Página {pageIndex + 1}/{pageCount})
+                      </span>
+                    </h3>
+                  </div>
+
+                  {/* Preview de la página específica */}
+                  <TemplatePreview
+                    data={data}
+                    selectedSectionIndex={sectionIndex}
+                    currentPageIndex={pageIndex}
+                    hidePagination={true}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            // Modo normal: una sección
+            <div
+              key={sectionIndex}
+              ref={(el) => {
+                sectionRefs.current[sectionIndex] = el;
+              }}
+              className={`
+                scroll-section flex-shrink-0
+                ${
+                  highlightActive && activeSectionIndex === sectionIndex
+                    ? "ring-2 md:ring-4 ring-[#ffaf68] ring-offset-2 md:ring-offset-4 rounded-lg"
+                    : ""
+                }
+                transition-all duration-300
+              `}
+            >
+              {/* Título de sección - Más compacto en móvil */}
+              <div className="mb-1.5 md:mb-2 px-1 md:px-2">
+                <h3 className="text-xs md:text-sm font-semibold text-[#283618]">
+                  Sección {sectionIndex + 1}
+                  {section.display_name && (
+                    <span className="hidden md:inline">
+                      : {section.display_name}
+                    </span>
+                  )}
+                </h3>
+              </div>
+
+              {/* Preview de la sección */}
+              <TemplatePreview
+                data={data}
+                selectedSectionIndex={sectionIndex}
+              />
+            </div>
+          );
+        })}
       </div>
     </div>
   );

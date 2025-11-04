@@ -63,6 +63,7 @@ interface TemplatePreviewProps {
   forceGlobalHeader?: boolean; // Forzar uso del header global en lugar del header de sección
   currentPageIndex?: number; // Control externo del índice de página
   onPageChange?: (pageIndex: number) => void; // Callback cuando cambia la página
+  hidePagination?: boolean; // Ocultar controles de paginación
 }
 
 export function TemplatePreview({
@@ -73,6 +74,7 @@ export function TemplatePreview({
   forceGlobalHeader = false,
   currentPageIndex: externalPageIndex,
   onPageChange,
+  hidePagination = false,
 }: TemplatePreviewProps) {
   const t = useTranslations("CreateTemplate.preview");
   const pathname = usePathname();
@@ -1747,7 +1749,7 @@ export function TemplatePreview({
       </div>
 
       {/* Controles de paginación de lista */}
-      {paginationInfo.totalPages > 1 && (
+      {!hidePagination && paginationInfo.totalPages > 1 && (
         <div className="mt-4 flex items-center justify-center gap-4">
           <button
             onClick={() => handlePageChange(Math.max(0, currentPageIndex - 1))}

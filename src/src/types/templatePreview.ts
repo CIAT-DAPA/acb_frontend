@@ -2,12 +2,12 @@
  * Types y configuraciones para el sistema de preview de templates
  */
 
-export type PreviewMode = 'carousel' | 'scroll' | 'grid';
+export type PreviewMode = "carousel" | "scroll" | "grid";
 
-export type CarouselOrientation = 'horizontal' | 'vertical';
-export type ScrollOrientation = 'horizontal' | 'vertical';
-export type ScrollSpacing = 'compact' | 'comfortable' | 'spacious';
-export type ThumbnailSize = 'small' | 'medium' | 'large';
+export type CarouselOrientation = "horizontal" | "vertical";
+export type ScrollOrientation = "horizontal" | "vertical";
+export type ScrollSpacing = "compact" | "comfortable" | "spacious";
+export type ThumbnailSize = "small" | "medium" | "large";
 
 /**
  * Configuración para el modo Carousel
@@ -45,6 +45,8 @@ export interface ScrollConfig {
   highlightActive?: boolean;
   /** Espaciado entre secciones */
   spacing?: ScrollSpacing;
+  /** Expandir todas las páginas de cada sección (para exportación) */
+  expandAllPages?: boolean;
 }
 
 /**
@@ -67,25 +69,25 @@ export interface GridConfig {
 export interface TemplateFullPreviewProps {
   /** Datos del template a previsualizar */
   data: any; // Usar CreateTemplateData del template.ts
-  
+
   /** Modo de visualización */
   mode: PreviewMode;
-  
+
   /** Configuración específica del modo Carousel */
   carouselConfig?: CarouselConfig;
-  
+
   /** Configuración específica del modo Scroll */
   scrollConfig?: ScrollConfig;
-  
+
   /** Configuración específica del modo Grid */
   gridConfig?: GridConfig;
-  
+
   /** Permitir cambio de modo con botones toggle (default: false) */
   allowModeToggle?: boolean;
-  
+
   /** Índice de sección inicial (default: 0) */
   initialSection?: number;
-  
+
   /** Clase CSS adicional */
   className?: string;
 }

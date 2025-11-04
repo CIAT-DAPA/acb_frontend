@@ -240,6 +240,12 @@
       "title": "Preview",
       "subtitle": "Visualize how your bulletin will look",
       "selectTemplate": "Select a template to see the preview"
+    },
+    "export": {
+      "title": "Export Bulletin",
+      "description": "Review all sections and export your bulletin as images",
+      "exportButton": "Export Bulletin",
+      "exporting": "Exporting..."
     }
   },
   "Authentication": {

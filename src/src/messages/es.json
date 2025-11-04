@@ -240,6 +240,12 @@
       "title": "Vista Previa",
       "subtitle": "Visualiza cómo se verá tu boletín",
       "selectTemplate": "Selecciona una plantilla para ver la vista previa"
+    },
+    "export": {
+      "title": "Exportar Boletín",
+      "description": "Revisa todas las secciones y exporta tu boletín como imágenes",
+      "exportButton": "Exportar Boletín",
+      "exporting": "Exportando..."
     }
   },
   "Authentication": {

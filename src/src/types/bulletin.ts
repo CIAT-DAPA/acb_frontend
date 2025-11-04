@@ -122,7 +122,8 @@ export interface CreateBulletinData {
 export type BulletinCreationStep =
   | "select-template"
   | "basic-info"
-  | `section-${number}`;
+  | `section-${number}`
+  | "export";
 
 export interface BulletinCreationState {
   currentStep: BulletinCreationStep;
