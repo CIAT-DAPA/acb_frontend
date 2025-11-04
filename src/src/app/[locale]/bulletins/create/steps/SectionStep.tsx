@@ -12,6 +12,7 @@ import {
   DateInput,
   DateRangeInput,
   SelectInput,
+  SelectBackgroundField,
   CardFieldInput,
 } from "../components/fields";
 
@@ -178,6 +179,15 @@ export function SectionStep({
           />
         );
 
+      case "select_background":
+        return (
+          <SelectBackgroundField
+            field={field}
+            value={fieldValue as string}
+            onChange={handleChange}
+          />
+        );
+
       case "text_with_icon":
         return (
           <TextWithIconInput
@@ -292,6 +302,15 @@ export function SectionStep({
       case "select":
         return (
           <SelectInput
+            field={field}
+            value={fieldValue as string}
+            onChange={handleChange}
+          />
+        );
+
+      case "select_background":
+        return (
+          <SelectBackgroundField
             field={field}
             value={fieldValue as string}
             onChange={handleChange}

@@ -21,6 +21,7 @@ import {
   DateRangeInput,
   SelectInput,
   SelectWithIconsField,
+  SelectBackgroundField,
   ClimateDataField,
   ListFieldEditor,
 } from "./index";
@@ -305,6 +306,16 @@ export function CardFieldInput({
       case "select":
         return (
           <SelectInput
+            field={cardField}
+            value={value || ""}
+            onChange={onChange}
+            disabled={disabled}
+          />
+        );
+
+      case "select_background":
+        return (
+          <SelectBackgroundField
             field={cardField}
             value={value || ""}
             onChange={onChange}

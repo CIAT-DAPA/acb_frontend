@@ -14,6 +14,7 @@ export { SelectInput as SelectField } from "./SelectInput";
 
 // Specialized field components
 export { SelectWithIconsField } from "./SelectWithIconsField";
+export { SelectBackgroundField } from "./SelectBackgroundField";
 export { ClimateDataField } from "./ClimateDataField";
 export { ListFieldEditor } from "./ListFieldEditor";
 export { CardFieldInput } from "./CardFieldInput";
