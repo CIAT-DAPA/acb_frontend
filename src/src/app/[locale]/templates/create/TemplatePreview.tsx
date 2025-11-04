@@ -246,7 +246,8 @@ export function TemplatePreview({
     field: Field,
     key: string | number,
     containerStyle?: StyleConfig,
-    layout: "vertical" | "horizontal" = "vertical"
+    layout: "vertical" | "horizontal" = "vertical",
+    pageInfo?: { currentPage: number; totalPages: number }
   ) => {
     // Usar herencia de estilos
     const effectiveStyles = getEffectiveFieldStyles(field, containerStyle);
@@ -537,9 +538,12 @@ export function TemplatePreview({
 
       case "page_number":
         const format = field.field_config?.format || "Página {page} de {total}";
+        const currentPage =
+          pageInfo?.currentPage !== undefined ? pageInfo.currentPage + 1 : 1;
+        const totalPages = pageInfo?.totalPages || 1;
         const pageNumber = format
-          .replace("{page}", "1")
-          .replace("{total}", "1");
+          .replace("{page}", String(currentPage))
+          .replace("{total}", String(totalPages));
         return (
           <div key={key} style={fieldStyles}>
             {pageNumber}
@@ -1108,6 +1112,30 @@ export function TemplatePreview({
     ? getSectionPagination(currentSection)
     : { totalPages: 1, paginatedSection: currentSection };
 
+  // Calcular el número de páginas acumuladas de todas las secciones anteriores
+  const getPreviousSectionsPagesCount = () => {
+    let totalPages = 0;
+    for (let i = 0; i < selectedSectionIndex; i++) {
+      const sectionPagination = getSectionPagination(sections[i]);
+      totalPages += sectionPagination.totalPages;
+    }
+    return totalPages;
+  };
+
+  // Calcular el número total de páginas de todo el documento
+  const getTotalDocumentPages = () => {
+    let totalPages = 0;
+    sections.forEach((section) => {
+      const sectionPagination = getSectionPagination(section);
+      totalPages += sectionPagination.totalPages;
+    });
+    return totalPages;
+  };
+
+  const previousPagesCount = getPreviousSectionsPagesCount();
+  const totalDocumentPages = getTotalDocumentPages();
+  const absolutePageNumber = previousPagesCount + currentPageIndex + 1; // Número de página absoluto
+
   // Crear la sección con los items de la página actual
   const getCurrentPageSection = (): Section | null => {
     if (!currentSection || !paginationInfo.fieldWithPagination) {
@@ -1229,7 +1257,11 @@ export function TemplatePreview({
                       field,
                       `header-global-${index}`,
                       headerConfig.style_config,
-                      headerConfig.style_config?.fields_layout || "horizontal"
+                      headerConfig.style_config?.fields_layout || "horizontal",
+                      {
+                        currentPage: absolutePageNumber - 1,
+                        totalPages: totalDocumentPages,
+                      }
                     )
                   );
                 })()}
@@ -1495,7 +1527,11 @@ export function TemplatePreview({
                               `header-${sectionIndex}-${index}`,
                               activeHeaderConfig.style_config,
                               activeHeaderConfig.style_config?.fields_layout ||
-                                "horizontal"
+                                "horizontal",
+                              {
+                                currentPage: absolutePageNumber - 1,
+                                totalPages: totalDocumentPages,
+                              }
                             );
                           })}
                         </div>
@@ -1680,7 +1716,11 @@ export function TemplatePreview({
                               `footer-${sectionIndex}-${index}`,
                               activeFooterConfig.style_config,
                               activeFooterConfig.style_config?.fields_layout ||
-                                "horizontal"
+                                "horizontal",
+                              {
+                                currentPage: absolutePageNumber - 1,
+                                totalPages: totalDocumentPages,
+                              }
                             );
                           })}
                         </div>
@@ -1740,7 +1780,11 @@ export function TemplatePreview({
                     field,
                     `footer-global-${index}`,
                     footerConfig.style_config,
-                    footerConfig.style_config?.fields_layout || "horizontal"
+                    footerConfig.style_config?.fields_layout || "horizontal",
+                    {
+                      currentPage: absolutePageNumber - 1,
+                      totalPages: totalDocumentPages,
+                    }
                   )
                 )}
               </div>
