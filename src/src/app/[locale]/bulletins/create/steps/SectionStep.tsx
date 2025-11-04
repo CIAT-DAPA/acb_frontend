@@ -19,12 +19,16 @@ interface SectionStepProps {
   bulletinData: CreateBulletinData;
   sectionIndex: number;
   onUpdate: (updater: (prev: CreateBulletinData) => CreateBulletinData) => void;
+  currentPageIndex?: number;
+  onPageChange?: (pageIndex: number) => void;
 }
 
 export function SectionStep({
   bulletinData,
   sectionIndex,
   onUpdate,
+  currentPageIndex,
+  onPageChange,
 }: SectionStepProps) {
   const t = useTranslations("CreateBulletin.section");
 
@@ -194,6 +198,8 @@ export function SectionStep({
             field={field}
             value={headerCardValue}
             onChange={handleChange}
+            currentPageIndex={currentPageIndex}
+            onPageChange={onPageChange}
           />
         );
 
@@ -312,6 +318,8 @@ export function SectionStep({
             field={field}
             value={cardValue}
             onChange={handleChange}
+            currentPageIndex={currentPageIndex}
+            onPageChange={onPageChange}
           />
         );
 

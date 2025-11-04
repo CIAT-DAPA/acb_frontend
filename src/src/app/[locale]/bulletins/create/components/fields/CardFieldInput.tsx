@@ -30,6 +30,8 @@ interface CardFieldInputProps {
   value: string[]; // Array de IDs de cards seleccionadas
   onChange: (value: string[]) => void;
   disabled?: boolean;
+  currentPageIndex?: number; // Índice de la página actual del preview
+  onPageChange?: (pageIndex: number) => void; // Callback para cambiar de página
 }
 
 interface SelectedCardData {
@@ -43,6 +45,8 @@ export function CardFieldInput({
   value = [],
   onChange,
   disabled = false,
+  currentPageIndex = 0,
+  onPageChange,
 }: CardFieldInputProps) {
   const t = useTranslations("CreateBulletin");
   const [availableCards, setAvailableCards] = useState<Card[]>([]);
@@ -101,6 +105,14 @@ export function CardFieldInput({
       setSelectedCards([]);
     }
   }, [value, availableCards]);
+
+  // Sincronizar la expansión con la página actual del preview
+  useEffect(() => {
+    if (currentPageIndex !== undefined && selectedCards.length > 0) {
+      // Solo expandir la card que corresponde a la página actual
+      setExpandedCards(new Set([currentPageIndex]));
+    }
+  }, [currentPageIndex, selectedCards.length]);
 
   const loadAvailableCards = async () => {
     setLoading(true);
@@ -178,13 +190,22 @@ export function CardFieldInput({
 
   // Toggle expandir/colapsar card
   const toggleCardExpanded = (index: number) => {
-    const newExpanded = new Set(expandedCards);
-    if (newExpanded.has(index)) {
+    const isCurrentlyExpanded = expandedCards.has(index);
+
+    if (isCurrentlyExpanded) {
+      // Si está expandida, colapsarla
+      const newExpanded = new Set(expandedCards);
       newExpanded.delete(index);
+      setExpandedCards(newExpanded);
     } else {
-      newExpanded.add(index);
+      // Si está colapsada, expandirla y cambiar el preview a esta card
+      setExpandedCards(new Set([index]));
+
+      // Notificar al preview que cambie de página
+      if (onPageChange) {
+        onPageChange(index);
+      }
     }
-    setExpandedCards(newExpanded);
   };
 
   // Actualizar el valor de un field dentro de una card

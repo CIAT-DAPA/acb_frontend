@@ -61,6 +61,8 @@ interface TemplatePreviewProps {
   moreInfo?: boolean;
   description?: boolean;
   forceGlobalHeader?: boolean; // Forzar uso del header global en lugar del header de sección
+  currentPageIndex?: number; // Control externo del índice de página
+  onPageChange?: (pageIndex: number) => void; // Callback cuando cambia la página
 }
 
 export function TemplatePreview({
@@ -69,6 +71,8 @@ export function TemplatePreview({
   moreInfo = false,
   description = false,
   forceGlobalHeader = false,
+  currentPageIndex: externalPageIndex,
+  onPageChange,
 }: TemplatePreviewProps) {
   const t = useTranslations("CreateTemplate.preview");
   const pathname = usePathname();
@@ -86,7 +90,20 @@ export function TemplatePreview({
   const [cardsCache, setCardsCache] = useState<Map<string, Card>>(new Map());
 
   // Estado para controlar la página actual (para paginación de listas)
-  const [currentPageIndex, setCurrentPageIndex] = useState(0);
+  const [internalPageIndex, setInternalPageIndex] = useState(0);
+
+  // Usar el índice externo si está disponible, sino usar el interno
+  const currentPageIndex =
+    externalPageIndex !== undefined ? externalPageIndex : internalPageIndex;
+
+  // Función para cambiar de página
+  const handlePageChange = (newPageIndex: number) => {
+    if (onPageChange) {
+      onPageChange(newPageIndex);
+    } else {
+      setInternalPageIndex(newPageIndex);
+    }
+  };
 
   // Cargar todas las cards necesarias
   useEffect(() => {
@@ -824,39 +841,38 @@ export function TemplatePreview({
           (field.field_config as any)?.available_cards || [];
 
         // El valor puede ser:
-        // 1. Un array de objetos {cardId, fieldValues}
+        // 1. Un array de objetos {cardId, fieldValues} - ya paginado por getSectionPagination
         // 2. Un array de strings (solo IDs)
         // 3. Un string (un solo ID)
         // 4. undefined/null
-        let cardsToRender: Array<{
+        // NOTA: Si hay múltiples cards, getSectionPagination ya las habrá dividido en páginas,
+        // por lo que aquí solo renderizamos lo que llegue (1 card a la vez)
+
+        let cardData: {
           cardId: string;
           fieldValues: Record<string, any>;
-        }> = [];
+        } | null = null;
 
-        if (Array.isArray(field.value)) {
-          // Es un array
-          cardsToRender = field.value
-            .map((item) => {
-              if (typeof item === "string") {
-                return { cardId: item, fieldValues: {} };
-              } else if (item && typeof item === "object") {
-                return {
-                  cardId: (item as any).cardId || "",
-                  fieldValues: (item as any).fieldValues || {},
-                };
-              }
-              return { cardId: "", fieldValues: {} };
-            })
-            .filter((item) => item.cardId);
+        if (Array.isArray(field.value) && field.value.length > 0) {
+          // Es un array, tomar el primer elemento (debería ser solo uno gracias a la paginación)
+          const item = field.value[0];
+          if (typeof item === "string") {
+            cardData = { cardId: item, fieldValues: {} };
+          } else if (item && typeof item === "object") {
+            cardData = {
+              cardId: (item as any).cardId || "",
+              fieldValues: (item as any).fieldValues || {},
+            };
+          }
         } else if (field.value && typeof field.value === "string") {
           // Es un string simple
-          cardsToRender = [{ cardId: field.value, fieldValues: {} }];
+          cardData = { cardId: field.value, fieldValues: {} };
         } else if (availableCardIds.length > 0) {
           // Si no hay valor (preview del template), mostrar el primer card disponible
-          cardsToRender = [{ cardId: availableCardIds[0], fieldValues: {} }];
+          cardData = { cardId: availableCardIds[0], fieldValues: {} };
         }
 
-        if (cardsToRender.length === 0) {
+        if (!cardData || !cardData.cardId) {
           return (
             <div
               key={key}
@@ -872,127 +888,110 @@ export function TemplatePreview({
           );
         }
 
-        // Renderizar todas las cards (cada una es una página)
+        const cardToRender = cardsCache.get(cardData.cardId);
+
+        if (!cardToRender) {
+          return (
+            <div
+              key={key}
+              style={fieldStyles}
+              className="flex items-center justify-center bg-gray-100 border border-gray-300 rounded p-4"
+            >
+              <span className="text-gray-400 text-sm">Cargando card...</span>
+            </div>
+          );
+        }
+
+        // Renderizar el contenido de la card
+        const cardContent = cardToRender.content;
+        const cardBackgroundUrl = cardContent.background_url;
+        const cardBackgroundColor = cardContent.background_color;
+
+        // Estilos del contenedor de la card
+        const cardContainerStyles: React.CSSProperties = {
+          ...fieldStyles,
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          ...(cardBackgroundColor && { backgroundColor: cardBackgroundColor }),
+          ...(cardBackgroundUrl && {
+            backgroundImage: `url(${getBackgroundImageUrl(cardBackgroundUrl)})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }),
+        };
+
+        // Aplicar estilos del card content si existen
+        const cardContentStyleConfig = cardContent.style_config;
+        if (cardContentStyleConfig) {
+          if (cardContentStyleConfig.padding) {
+            cardContainerStyles.padding = cardContentStyleConfig.padding;
+          }
+          if (cardContentStyleConfig.gap) {
+            cardContainerStyles.gap = cardContentStyleConfig.gap;
+          }
+        }
+
         return (
-          <div key={key} style={fieldStyles} className="flex flex-col gap-4">
-            {cardsToRender.map((cardData, cardPageIndex) => {
-              const cardToRender = cardsCache.get(cardData.cardId);
+          <div key={key} style={cardContainerStyles} className="flex flex-col">
+            {/* Blocks del contenido de la card */}
+            {cardContent.blocks.map((block, blockIndex) => {
+              const blockStyleConfig = block.style_config || {};
+              const contentStyleConfig = cardContentStyleConfig || {};
 
-              if (!cardToRender) {
-                return (
-                  <div
-                    key={`card-page-${cardPageIndex}`}
-                    className="flex items-center justify-center bg-gray-100 border border-gray-300 rounded p-4"
-                  >
-                    <span className="text-gray-400 text-sm">
-                      Cargando card...
-                    </span>
-                  </div>
-                );
-              }
+              const effectiveBlockStyles = {
+                ...contentStyleConfig,
+                ...blockStyleConfig,
+              };
 
-              // Renderizar el contenido de la card
-              const cardContent = cardToRender.content;
-              const cardBackgroundUrl = cardContent.background_url;
-              const cardBackgroundColor = cardContent.background_color;
-
-              // Estilos del contenedor de la card
-              const cardContainerStyles: React.CSSProperties = {
-                flex: 1,
+              const blockContainerStyles: React.CSSProperties = {
                 display: "flex",
-                flexDirection: "column",
-                ...(cardBackgroundColor && {
-                  backgroundColor: cardBackgroundColor,
-                }),
-                ...(cardBackgroundUrl && {
+                flexDirection:
+                  (block as any).layout === "horizontal" ? "row" : "column",
+                gap: effectiveBlockStyles.gap
+                  ? `${effectiveBlockStyles.gap}px`
+                  : "8px",
+                padding: effectiveBlockStyles.padding || undefined,
+                backgroundColor:
+                  effectiveBlockStyles.background_color || "transparent",
+                ...getBorderStyles(block.style_config),
+                ...(effectiveBlockStyles.background_image && {
                   backgroundImage: `url(${getBackgroundImageUrl(
-                    cardBackgroundUrl
+                    effectiveBlockStyles.background_image
                   )})`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                 }),
               };
 
-              // Aplicar estilos del card content si existen
-              const cardContentStyleConfig = cardContent.style_config;
-              if (cardContentStyleConfig) {
-                if (cardContentStyleConfig.padding) {
-                  cardContainerStyles.padding = cardContentStyleConfig.padding;
-                }
-                if (cardContentStyleConfig.gap) {
-                  cardContainerStyles.gap = cardContentStyleConfig.gap;
-                }
-              }
-
               return (
                 <div
-                  key={`card-page-${cardPageIndex}`}
-                  style={cardContainerStyles}
-                  className="flex flex-col"
+                  key={`card-block-${blockIndex}`}
+                  style={blockContainerStyles}
                 >
-                  {/* Blocks del contenido de la card */}
-                  {cardContent.blocks.map((block, blockIndex) => {
-                    const blockStyleConfig = block.style_config || {};
-                    const contentStyleConfig = cardContentStyleConfig || {};
+                  {block.fields.map((blockField, fieldIndex) => {
+                    // Asegurar que el field tenga todas las propiedades necesarias
+                    const safeField: Field = {
+                      ...blockField,
+                      style_manually_edited:
+                        blockField.style_manually_edited ?? false,
+                    } as Field;
 
-                    const effectiveBlockStyles = {
-                      ...contentStyleConfig,
-                      ...blockStyleConfig,
-                    };
+                    // Si el field tiene form: true, usar el valor de fieldValues
+                    if (
+                      blockField.form &&
+                      cardData.fieldValues[blockField.field_id]
+                    ) {
+                      safeField.value =
+                        cardData.fieldValues[blockField.field_id];
+                    }
 
-                    const blockContainerStyles: React.CSSProperties = {
-                      display: "flex",
-                      flexDirection:
-                        (block as any).layout === "horizontal"
-                          ? "row"
-                          : "column",
-                      gap: effectiveBlockStyles.gap
-                        ? `${effectiveBlockStyles.gap}px`
-                        : "8px",
-                      padding: effectiveBlockStyles.padding || undefined,
-                      backgroundColor:
-                        effectiveBlockStyles.background_color || "transparent",
-                      ...getBorderStyles(block.style_config),
-                      ...(effectiveBlockStyles.background_image && {
-                        backgroundImage: `url(${getBackgroundImageUrl(
-                          effectiveBlockStyles.background_image
-                        )})`,
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
-                      }),
-                    };
-
-                    return (
-                      <div
-                        key={`card-page-${cardPageIndex}-block-${blockIndex}`}
-                        style={blockContainerStyles}
-                      >
-                        {block.fields.map((blockField, fieldIndex) => {
-                          // Asegurar que el field tenga todas las propiedades necesarias
-                          const safeField: Field = {
-                            ...blockField,
-                            style_manually_edited:
-                              blockField.style_manually_edited ?? false,
-                          } as Field;
-
-                          // Si el field tiene form: true, usar el valor de fieldValues
-                          if (
-                            blockField.form &&
-                            cardData.fieldValues[blockField.field_id]
-                          ) {
-                            safeField.value =
-                              cardData.fieldValues[blockField.field_id];
-                          }
-
-                          // Renderizar cada field del block
-                          return renderField(
-                            safeField,
-                            `card-${cardData.cardId}-page-${cardPageIndex}-block-${blockIndex}-field-${fieldIndex}`,
-                            block.style_config,
-                            (block as any).layout || "vertical"
-                          );
-                        })}
-                      </div>
+                    // Renderizar cada field del block
+                    return renderField(
+                      safeField,
+                      `card-${cardData.cardId}-block-${blockIndex}-field-${fieldIndex}`,
+                      block.style_config,
+                      (block as any).layout || "vertical"
                     );
                   })}
                 </div>
@@ -1016,14 +1015,15 @@ export function TemplatePreview({
     }
   };
 
-  // Tipo para info de paginación
-  type ListPaginationInfo = {
+  // Tipo para info de paginación (funciona tanto para listas como para cards)
+  type PaginationInfo = {
     blockIndex: number;
     fieldIndex: number;
     field: Field;
     maxItemsPerPage: number;
     totalItems: number;
     items: any[];
+    type: "list" | "card"; // Tipo de campo paginado
   };
 
   // Función para obtener info de paginación de una sección específica
@@ -1031,16 +1031,18 @@ export function TemplatePreview({
     section: Section
   ): {
     totalPages: number;
-    listFieldWithPagination?: ListPaginationInfo;
+    fieldWithPagination?: PaginationInfo;
     paginatedSection: Section;
   } => {
-    // Buscar si hay algún field de tipo list con max_items_per_page
-    let foundInfo: ListPaginationInfo | undefined;
+    // Buscar si hay algún field de tipo list o card que requiera paginación
+    let foundInfo: PaginationInfo | undefined;
 
     for (let blockIndex = 0; blockIndex < section.blocks.length; blockIndex++) {
       const block = section.blocks[blockIndex];
       for (let fieldIndex = 0; fieldIndex < block.fields.length; fieldIndex++) {
         const field = block.fields[fieldIndex];
+
+        // Detectar paginación para listas
         if (field.type === "list" && field.field_config) {
           const maxItemsPerPage = (field.field_config as any)
             .max_items_per_page;
@@ -1054,6 +1056,26 @@ export function TemplatePreview({
               maxItemsPerPage,
               totalItems: items.length,
               items,
+              type: "list",
+            };
+            break;
+          }
+        }
+
+        // Detectar paginación para cards (cada card es una página)
+        if (field.type === "card" && Array.isArray(field.value)) {
+          const cards = field.value;
+
+          // Si hay más de una card, necesitamos paginación (1 card por página)
+          if (cards.length > 1) {
+            foundInfo = {
+              blockIndex,
+              fieldIndex,
+              field,
+              maxItemsPerPage: 1, // Una card por página
+              totalItems: cards.length,
+              items: cards,
+              type: "card",
             };
             break;
           }
@@ -1073,7 +1095,7 @@ export function TemplatePreview({
 
     return {
       totalPages,
-      listFieldWithPagination: foundInfo,
+      fieldWithPagination: foundInfo,
       paginatedSection: section,
     };
   };
@@ -1086,32 +1108,31 @@ export function TemplatePreview({
 
   // Crear la sección con los items de la página actual
   const getCurrentPageSection = (): Section | null => {
-    if (!currentSection || !paginationInfo.listFieldWithPagination) {
+    if (!currentSection || !paginationInfo.fieldWithPagination) {
       return currentSection;
     }
 
-    const { listFieldWithPagination } = paginationInfo;
-    const startIndex =
-      currentPageIndex * listFieldWithPagination.maxItemsPerPage;
+    const { fieldWithPagination } = paginationInfo;
+    const startIndex = currentPageIndex * fieldWithPagination.maxItemsPerPage;
     const endIndex = Math.min(
-      startIndex + listFieldWithPagination.maxItemsPerPage,
-      listFieldWithPagination.totalItems
+      startIndex + fieldWithPagination.maxItemsPerPage,
+      fieldWithPagination.totalItems
     );
 
     // Clonar la sección
     const clonedSection: Section = JSON.parse(JSON.stringify(currentSection));
 
-    // Actualizar el list field con solo los items de esta página
-    clonedSection.blocks[listFieldWithPagination.blockIndex].fields[
-      listFieldWithPagination.fieldIndex
-    ].value = listFieldWithPagination.items.slice(startIndex, endIndex);
+    // Actualizar el field con solo los items de esta página
+    clonedSection.blocks[fieldWithPagination.blockIndex].fields[
+      fieldWithPagination.fieldIndex
+    ].value = fieldWithPagination.items.slice(startIndex, endIndex);
 
     return clonedSection;
   };
 
   // Resetear página cuando cambie la sección
   useEffect(() => {
-    setCurrentPageIndex(0);
+    handlePageChange(0);
   }, [selectedSectionIndex]);
 
   const sectionToRender = getCurrentPageSection();
@@ -1298,18 +1319,37 @@ export function TemplatePreview({
                   let cardHeaderConfig = null;
                   let cardFooterConfig = null;
                   let cardBackgroundColor = null;
+                  let cardFieldValues: Record<string, any> = {}; // Valores de los campos de la card actual
 
                   for (const block of section.blocks) {
                     for (const field of block.fields) {
                       if (field.type === "card") {
-                        const availableCardIds =
-                          (field.field_config as any)?.available_cards || [];
                         let cardIdToShow: string | null = null;
 
-                        if (field.value && typeof field.value === "string") {
+                        // Si hay un valor y es un array, tomar el primer elemento (paginación ya aplicada)
+                        if (
+                          Array.isArray(field.value) &&
+                          field.value.length > 0
+                        ) {
+                          const item = field.value[0];
+                          if (typeof item === "string") {
+                            cardIdToShow = item;
+                          } else if (item && typeof item === "object") {
+                            cardIdToShow = (item as any).cardId || "";
+                            cardFieldValues = (item as any).fieldValues || {};
+                          }
+                        } else if (
+                          field.value &&
+                          typeof field.value === "string"
+                        ) {
                           cardIdToShow = field.value;
-                        } else if (availableCardIds.length > 0) {
-                          cardIdToShow = availableCardIds[0];
+                        } else {
+                          // Fallback: usar el primer card disponible (preview de template)
+                          const availableCardIds =
+                            (field.field_config as any)?.available_cards || [];
+                          if (availableCardIds.length > 0) {
+                            cardIdToShow = availableCardIds[0];
+                          }
                         }
 
                         if (cardIdToShow) {
@@ -1436,15 +1476,26 @@ export function TemplatePreview({
                             ...getBorderStyles(activeHeaderConfig.style_config),
                           }}
                         >
-                          {activeHeaderConfig.fields.map((field, index) =>
-                            renderField(
-                              field,
+                          {activeHeaderConfig.fields.map((field, index) => {
+                            // Si estamos renderizando el header de una card y el campo tiene form: true, usar fieldValues
+                            const fieldToRender =
+                              cardHeaderConfig &&
+                              field.form &&
+                              cardFieldValues[field.field_id]
+                                ? {
+                                    ...field,
+                                    value: cardFieldValues[field.field_id],
+                                  }
+                                : field;
+
+                            return renderField(
+                              fieldToRender,
                               `header-${sectionIndex}-${index}`,
                               activeHeaderConfig.style_config,
                               activeHeaderConfig.style_config?.fields_layout ||
                                 "horizontal"
-                            )
-                          )}
+                            );
+                          })}
                         </div>
                       )}
 
@@ -1610,15 +1661,26 @@ export function TemplatePreview({
                             ...getBorderStyles(activeFooterConfig.style_config),
                           }}
                         >
-                          {activeFooterConfig.fields.map((field, index) =>
-                            renderField(
-                              field,
+                          {activeFooterConfig.fields.map((field, index) => {
+                            // Si estamos renderizando el footer de una card y el campo tiene form: true, usar fieldValues
+                            const fieldToRender =
+                              cardFooterConfig &&
+                              field.form &&
+                              cardFieldValues[field.field_id]
+                                ? {
+                                    ...field,
+                                    value: cardFieldValues[field.field_id],
+                                  }
+                                : field;
+
+                            return renderField(
+                              fieldToRender,
                               `footer-${sectionIndex}-${index}`,
                               activeFooterConfig.style_config,
                               activeFooterConfig.style_config?.fields_layout ||
                                 "horizontal"
-                            )
-                          )}
+                            );
+                          })}
                         </div>
                       )}
                     </>
@@ -1688,9 +1750,7 @@ export function TemplatePreview({
       {paginationInfo.totalPages > 1 && (
         <div className="mt-4 flex items-center justify-center gap-4">
           <button
-            onClick={() =>
-              setCurrentPageIndex(Math.max(0, currentPageIndex - 1))
-            }
+            onClick={() => handlePageChange(Math.max(0, currentPageIndex - 1))}
             disabled={currentPageIndex === 0}
             className="px-4 py-2 bg-[#283618] text-white rounded-md disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-[#283618]/90 transition-colors"
           >
@@ -1701,7 +1761,7 @@ export function TemplatePreview({
           </span>
           <button
             onClick={() =>
-              setCurrentPageIndex(
+              handlePageChange(
                 Math.min(paginationInfo.totalPages - 1, currentPageIndex + 1)
               )
             }

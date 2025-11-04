@@ -35,6 +35,9 @@ export default function FormBulletinPage() {
   const router = useRouter();
   const { showToast } = useToast();
 
+  // Estado de paginación del preview (para sincronizar con CardFieldInput)
+  const [previewPageIndex, setPreviewPageIndex] = useState(0);
+
   // Estado del wizard
   const [creationState, setCreationState] = useState<BulletinCreationState>({
     currentStep: "select-template",
@@ -456,6 +459,8 @@ export default function FormBulletinPage() {
               bulletinData={creationState.data}
               sectionIndex={sectionIndex}
               onUpdate={updateBulletinData}
+              currentPageIndex={previewPageIndex}
+              onPageChange={setPreviewPageIndex}
             />
           );
         }
@@ -493,7 +498,7 @@ export default function FormBulletinPage() {
         </div>
 
         {/* Main Content: Form and Preview */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
           {/* Left: Form */}
           <div className="bg-white rounded-lg shadow-lg p-6">
             {/* Step Content */}
@@ -541,7 +546,7 @@ export default function FormBulletinPage() {
           </div>
 
           {/* Right: Preview */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="bg-white rounded-lg shadow-lg p-6 sticky top-8 self-start">
             <h3 className="text-xl font-semibold text-[#283618] mb-4">
               {t("preview.title")}
             </h3>
@@ -555,6 +560,8 @@ export default function FormBulletinPage() {
                   moreInfo={true}
                   description={true}
                   forceGlobalHeader={creationState.currentStep === "basic-info"}
+                  currentPageIndex={previewPageIndex}
+                  onPageChange={setPreviewPageIndex}
                 />
               </div>
             ) : (
