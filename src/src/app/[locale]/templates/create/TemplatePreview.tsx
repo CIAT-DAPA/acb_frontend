@@ -1140,7 +1140,7 @@ export function TemplatePreview({
   const sectionToRender = getCurrentPageSection();
 
   return (
-    <div className="h-full">
+    <div className="h-full" id="template-preview-root">
       {/* Información de la plantilla */}
       {description && (
         <div className="mb-4 p-3 bg-[#bc6c25]/10 rounded-lg">

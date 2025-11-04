@@ -99,8 +99,8 @@ export function TemplateModal({
         </div>
 
         {/* Contenido del modal - SOLO ESTA PARTE HACE SCROLL */}
-        <div className="px-6 py-4 flex-1 overflow-y-auto overflow-x-hidden">
-          <div className="overflow-x-auto flex justify-center">
+        <div className="px-6 py-4 flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin">
+          <div className="overflow-x-auto flex justify-center scrollbar-thin">
             <div className="w-fit h-fit">
               {children}
             </div>

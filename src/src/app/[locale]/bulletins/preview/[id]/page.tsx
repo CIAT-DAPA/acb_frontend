@@ -9,6 +9,7 @@ import { PreviewMode } from "@/types/templatePreview";
 import { ArrowLeft, Loader2, Download } from "lucide-react";
 import { ExportModal, ExportConfig } from "@/app/[locale]/components/ExportModal";
 import { downloadFromPreview } from "@/utils/downloadContentSimple";
+import BulletinAPIService from "@/services/bulletinService";
 
 /**
  * Página de preview independiente para templates
@@ -49,7 +50,7 @@ export default function TemplatePreviewPage() {
         setError(null);
 
         // Obtener el template master y su versión actual en una sola llamada
-        const response = await TemplateAPIService.getCurrentVersion(templateId);
+        const response = await BulletinAPIService.getCurrentVersion(templateId);
         
         if (!response.success || !response.data) {
           throw new Error("Template no encontrado");
@@ -58,14 +59,14 @@ export default function TemplatePreviewPage() {
         const { master: templateMaster, current_version: currentVersion } = response.data;
 
         // Validar que la versión tenga contenido
-        if (!currentVersion.content || !currentVersion.content.sections) {
+        if (!currentVersion.data || !currentVersion.data.sections) {
           throw new Error("El template no tiene secciones definidas");
         }
         
         // Convertir la respuesta del API al formato CreateTemplateData
         const templateDataFormatted: CreateTemplateData = {
           master: {
-            template_name: templateMaster.template_name || "Template sin nombre",
+            template_name: templateMaster.bulletin_name || "Template sin nombre",
             description: templateMaster.description || "",
             log: templateMaster.log || {
               created_at: new Date().toISOString(),
@@ -73,7 +74,7 @@ export default function TemplatePreviewPage() {
               creator_first_name: null,
               creator_last_name: null,
             },
-            status: templateMaster.status || "draft",
+            status: "active",
             access_config: templateMaster.access_config || {
               access_type: "public",
               allowed_groups: [],
@@ -90,10 +91,10 @@ export default function TemplatePreviewPage() {
             },
             commit_message: currentVersion.commit_message || "Versión inicial",
             content: {
-              style_config: currentVersion.content.style_config || {},
-              header_config: currentVersion.content.header_config,
-              sections: currentVersion.content.sections || [],
-              footer_config: currentVersion.content.footer_config,
+              style_config: currentVersion.data.style_config || {},
+              header_config: currentVersion.data.header_config,
+              sections: currentVersion.data.sections || [],
+              footer_config: currentVersion.data.footer_config,
             },
           },
         };
@@ -443,7 +444,7 @@ export default function TemplatePreviewPage() {
         totalSections={templateData.version.content.sections.length}
         contentName={templateData.master.template_name}
         contentId={templateId}
-        contentType="template"
+        contentType="bulletin"
       />
 
       {/* Botón flotante de exportación (móvil) */}

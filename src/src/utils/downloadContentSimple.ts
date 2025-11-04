@@ -133,6 +133,21 @@ async function captureSectionsFromPreview(
     throw new Error(`Container con id "${containerId}" no encontrado`);
   }
 
+  // Buscar el template-preview-container (el div interno con dimensiones fijas)
+  const templatePreviewContainer = container.querySelector("#template-preview-container") as HTMLElement;
+  
+  if (!templatePreviewContainer) {
+    throw new Error(
+      `No se encontró el contenedor de preview dentro de #${containerId}. ` +
+      `Asegúrate de que TemplatePreview esté renderizado dentro del modal.`
+    );
+  }
+
+  console.log("✅ Encontrado contenedor de preview con dimensiones:", {
+    width: templatePreviewContainer.offsetWidth,
+    height: templatePreviewContainer.offsetHeight
+  });
+
   const blobs: Blob[] = [];
 
   for (let i = 0; i < sectionIndices.length; i++) {
@@ -144,8 +159,7 @@ async function captureSectionsFromPreview(
     // Esperar a que React actualice el DOM
     await new Promise((resolve) => setTimeout(resolve, 500));
 
-    // Capturar (reutilizando lógica de thumbnails)
-    const blob = await captureSingleElement(container, scale);
+    const blob = await captureSingleElement(templatePreviewContainer, scale);
     blobs.push(blob);
 
     onProgress?.(i + 1, sectionIndices.length);
@@ -161,15 +175,66 @@ async function captureSingleElement(
   element: HTMLElement,
   scale: number
 ): Promise<Blob> {
-  // Crear wrapper oculto
+  // Crear wrapper oculto CON dimensiones explícitas
   const wrapper = document.createElement("div");
   wrapper.style.position = "absolute";
   wrapper.style.left = "-9999px";
   wrapper.style.top = "0";
   wrapper.style.width = element.offsetWidth + "px";
+  wrapper.style.height = element.offsetHeight + "px"; // ✅ AGREGAR ALTURA
+  wrapper.style.overflow = "hidden";
 
   // Clonar elemento
   const clone = element.cloneNode(true) as HTMLElement;
+  
+  // ✅ Aplicar dimensiones explícitas al clon para preservar el layout
+  clone.style.width = element.offsetWidth + "px";
+  clone.style.height = element.offsetHeight + "px";
+
+  // ✅ Copiar estilos computados importantes al clon
+  function copyComputedStylesToClone(original: HTMLElement, cloned: HTMLElement) {
+    const computedStyle = window.getComputedStyle(original);
+    
+    // Estilos críticos para preservar el layout de Tailwind
+    const criticalStyles = [
+      // Flexbox layout
+      'display', 'flex-direction', 'justify-content', 'align-items', 'align-content', 'align-self',
+      'flex', 'flex-grow', 'flex-shrink', 'flex-basis', 'flex-wrap',
+      'gap', 'row-gap', 'column-gap',
+      // Spacing
+      'margin-top', 'margin-bottom', 'margin-left', 'margin-right',
+      'padding-top', 'padding-bottom', 'padding-left', 'padding-right',
+      'box-shadow', 'padding', 'margin',
+      // Text alignment and typography
+      'text-align', 'vertical-align', 'line-height', 'letter-spacing', 'word-spacing',
+      'text-indent', 'white-space', 'text-transform',
+      // Position and transform
+      'position', 'top', 'bottom', 'left', 'right', 'transform',
+    ];
+
+    criticalStyles.forEach(prop => {
+      const value = computedStyle.getPropertyValue(prop);
+      if (value && value !== 'normal' && value !== 'none') {
+        cloned.style.setProperty(prop, value, 'important');
+      }
+    });
+
+    // Recursivamente aplicar a todos los hijos
+    const originalChildren = original.children;
+    const clonedChildren = cloned.children;
+    
+    for (let i = 0; i < originalChildren.length; i++) {
+      if (originalChildren[i] instanceof HTMLElement && clonedChildren[i] instanceof HTMLElement) {
+        copyComputedStylesToClone(
+          originalChildren[i] as HTMLElement,
+          clonedChildren[i] as HTMLElement
+        );
+      }
+    }
+  }
+
+  // Copiar estilos computados antes de limpiar colores
+  copyComputedStylesToClone(element, clone);
 
   // Limpiar estilos problemáticos (lab/lch/oklab)
   const allElements = clone.querySelectorAll("*");
