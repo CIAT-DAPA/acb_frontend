@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useRef } from "react";
+import React from "react";
 import { useTranslations } from "next-intl";
 import { CreateTemplateData } from "@/types/template";
+import {
+  ExportModal,
+  ExportConfig,
+} from "@/app/[locale]/components/ExportModal";
 import { ContentFullPreview } from "@/app/[locale]/components/ContentFullPreview";
 import { Download } from "lucide-react";
-import html2canvas from "html2canvas";
-import { useToast } from "@/components/Toast";
 
 interface ExportStepProps {
   previewData: CreateTemplateData;
@@ -15,74 +17,189 @@ interface ExportStepProps {
 
 export function ExportStep({ previewData, bulletinName }: ExportStepProps) {
   const t = useTranslations("CreateBulletin.export");
-  const { showToast } = useToast();
-  const previewRef = useRef<HTMLDivElement>(null);
-  const [isExporting, setIsExporting] = React.useState(false);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
 
-  const handleExport = async () => {
-    if (!previewRef.current) {
-      showToast("No se pudo encontrar el contenido para exportar", "error");
-      return;
+  // Función helper para calcular el número total de páginas de una sección
+  const getSectionTotalPages = (section: any): number => {
+    // Buscar si hay algún field de tipo list o card que requiera paginación
+    for (const block of section.blocks) {
+      for (const field of block.fields) {
+        // Detectar paginación para listas
+        if (field.type === "list" && field.field_config) {
+          const maxItemsPerPage = field.field_config.max_items_per_page;
+          const items = Array.isArray(field.value) ? field.value : [];
+
+          if (maxItemsPerPage && items.length > maxItemsPerPage) {
+            return Math.ceil(items.length / maxItemsPerPage);
+          }
+        }
+
+        // Detectar paginación para cards (cada card es una página)
+        if (field.type === "card" && Array.isArray(field.value)) {
+          const cards = field.value;
+          if (cards.length > 1) {
+            return cards.length; // Una card por página
+          }
+        }
+      }
     }
 
-    setIsExporting(true);
-    try {
-      // Obtener todas las secciones del preview
-      const sectionElements =
-        previewRef.current.querySelectorAll(".scroll-section");
+    return 1; // Por defecto, 1 página si no hay paginación
+  };
 
-      if (sectionElements.length === 0) {
-        showToast("No se encontraron secciones para exportar", "error");
-        return;
+  const handleExport = async (
+    config: ExportConfig,
+    onSectionChange: (index: number) => void,
+    onProgressUpdate: (current: number, message: string) => void
+  ) => {
+    const { serializeElementToHTML } = await import("@/utils/exportPuppeteer");
+    const JSZip = (await import("jszip")).default;
+
+    const totalSections = previewData.version.content.sections.length;
+    const sectionsToExport =
+      config.selectedSections.length > 0
+        ? config.selectedSections
+        : Array.from({ length: totalSections }, (_, i) => i);
+
+    try {
+      const zip = new JSZip();
+      const format = config.format === "pdf" ? "png" : config.format;
+
+      // Asegurar que quality sea un número entero válido
+      const qualityNumber =
+        typeof config.quality === "string"
+          ? parseInt(config.quality, 10)
+          : config.quality;
+
+      let imageCounter = 0; // Contador global de imágenes exportadas
+
+      // Cambiar al contenedor de preview primero
+      onSectionChange(0);
+
+      // Esperar a que el contenedor scroll se monte con todas las secciones expandidas
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      // Obtener el contenedor principal del scroll
+      const scrollContainer = document.querySelector(
+        "#bulletin-export-preview .flex.gap-8"
+      );
+
+      if (!scrollContainer) {
+        throw new Error("No se encontró el contenedor de secciones");
       }
 
-      // Exportar cada sección como imagen
-      const exportPromises = Array.from(sectionElements).map(
-        async (section, index) => {
-          const canvas = await html2canvas(section as HTMLElement, {
-            backgroundColor: "#ffffff",
-            scale: 2, // Mayor calidad
-            logging: false,
-            useCORS: true,
-          });
+      // Exportar cada sección (y sus páginas si tiene múltiples)
+      for (let i = 0; i < sectionsToExport.length; i++) {
+        const sectionIndex = sectionsToExport[i];
+        const section = previewData.version.content.sections[sectionIndex];
 
-          // Convertir a blob y descargar
-          return new Promise<void>((resolve) => {
-            canvas.toBlob(
-              (blob) => {
-                if (blob) {
-                  const url = URL.createObjectURL(blob);
-                  const link = document.createElement("a");
-                  link.href = url;
-                  link.download = `${bulletinName}-seccion-${index + 1}.jpg`;
-                  document.body.appendChild(link);
-                  link.click();
-                  document.body.removeChild(link);
-                  URL.revokeObjectURL(url);
-                }
-                resolve();
-              },
-              "image/jpeg",
-              0.95
+        // Detectar cuántas páginas tiene esta sección
+        const totalPages = getSectionTotalPages(section);
+
+        // Exportar cada página de la sección
+        for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
+          imageCounter++;
+
+          onProgressUpdate(
+            imageCounter,
+            `Generando sección ${sectionIndex + 1}, página ${
+              pageIndex + 1
+            }/${totalPages}...`
+          );
+
+          // Buscar el elemento de preview específico usando data attributes
+          const previewElement = scrollContainer.querySelector(
+            `[data-section-index="${sectionIndex}"][data-page-index="${pageIndex}"]`
+          );
+
+          if (!previewElement) {
+            console.warn(
+              `⚠️ No se encontró preview para sección ${
+                sectionIndex + 1
+              }, página ${pageIndex + 1}`
             );
-          });
-        }
-      );
+            continue;
+          }
 
-      await Promise.all(exportPromises);
-      showToast(
-        `${sectionElements.length} ${
-          sectionElements.length === 1
-            ? "sección exportada"
-            : "secciones exportadas"
-        } exitosamente`,
-        "success"
-      );
+          // Buscar el contenedor del TemplatePreview (el div interno con el boletín)
+          const templatePreviewContainer = previewElement.querySelector(
+            "#template-preview-container > div"
+          );
+
+          if (!templatePreviewContainer) {
+            console.warn(
+              `⚠️ No se encontró TemplatePreview container en sección ${
+                sectionIndex + 1
+              }, página ${pageIndex + 1}`
+            );
+            continue;
+          }
+
+          // Serializar el HTML con estilos
+          const html = serializeElementToHTML(
+            templatePreviewContainer as HTMLElement
+          );
+
+          // Obtener dimensiones del elemento
+          const rect = templatePreviewContainer.getBoundingClientRect();
+          const width = Math.round(rect.width);
+          const height = Math.round(rect.height);
+
+          // Llamar a la API para generar la imagen
+          const response = await fetch("/api/export-bulletin", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              html,
+              width,
+              height,
+              format: format,
+              quality: qualityNumber,
+              baseUrl: window.location.origin, // Agregar URL base para resolver imágenes
+            }),
+          });
+
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.details || "Error al generar imagen");
+          }
+
+          // Obtener el blob de la imagen
+          const blob = await response.blob();
+
+          // Agregar al ZIP con nombre descriptivo
+          const filename =
+            totalPages > 1
+              ? `seccion_${sectionIndex + 1}_pagina_${pageIndex + 1}.${format}`
+              : sectionsToExport.length > 1
+              ? `seccion_${sectionIndex + 1}.${format}`
+              : `${bulletinName}.${format}`;
+
+          zip.file(filename, blob);
+        }
+      }
+
+      // Generar el archivo ZIP
+      onProgressUpdate(sectionsToExport.length, "Generando archivo ZIP...");
+
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+
+      // Descargar el ZIP
+      const url = URL.createObjectURL(zipBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${bulletinName}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      onProgressUpdate(sectionsToExport.length, "¡Exportación completada!");
     } catch (error) {
-      console.error("Error al exportar:", error);
-      showToast("Error al exportar el boletín", "error");
-    } finally {
-      setIsExporting(false);
+      console.error("❌ Error al exportar:", error);
+      throw error;
     }
   };
 
@@ -99,28 +216,17 @@ export function ExportStep({ previewData, bulletinName }: ExportStepProps) {
       {/* Botón de exportación */}
       <div className="flex justify-center mb-4">
         <button
-          onClick={handleExport}
-          disabled={isExporting}
-          className={`
-            flex items-center gap-2 px-6 py-3 rounded-lg font-medium
-            transition-all duration-200 shadow-sm
-            ${
-              isExporting
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "bg-[#283618] hover:bg-[#606c38] text-white hover:shadow-md"
-            }
-          `}
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium bg-[#283618] hover:bg-[#606c38] text-white hover:shadow-md transition-all duration-200 shadow-sm"
         >
-          <Download
-            className={`w-5 h-5 ${isExporting ? "animate-bounce" : ""}`}
-          />
-          {isExporting ? t("exporting") : t("exportButton")}
+          <Download className="w-5 h-5" />
+          {t("exportButton")}
         </button>
       </div>
 
       {/* Preview completo en modo scroll horizontal con páginas expandidas */}
       <div
-        ref={previewRef}
+        id="bulletin-export-preview"
         className="bg-white rounded-lg shadow-sm border border-[#283618]/10 overflow-hidden"
       >
         <ContentFullPreview
@@ -131,12 +237,22 @@ export function ExportStep({ previewData, bulletinName }: ExportStepProps) {
             showMiniNav: true,
             highlightActive: true,
             spacing: "comfortable",
-            expandAllPages: true, // Nueva prop para expandir todas las páginas
+            expandAllPages: true,
           }}
           allowModeToggle={false}
           className="w-full"
         />
       </div>
+
+      {/* Modal de exportación */}
+      <ExportModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onExport={handleExport}
+        totalSections={previewData.version.content.sections.length}
+        contentName={bulletinName}
+        templateData={previewData}
+      />
     </div>
   );
 }

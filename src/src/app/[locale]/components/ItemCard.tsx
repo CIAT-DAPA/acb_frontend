@@ -45,7 +45,8 @@ interface BaseItemCardProps {
 export interface TemplateCardProps extends BaseItemCardProps {
   type: "template";
   lastModified: string;
-  thumbnailImages?: string[]; // Array de thumbnails de las secciones
+  thumbnailImages?: string[]; // Array de thumbnails de las secciones (máximo 3)
+  totalSections?: number; // Número real total de secciones del template
 }
 
 // Props específicas para visual resources
@@ -172,25 +173,29 @@ export default function ItemCard(props: ItemCardProps) {
 
   // Renderizar card para templates
   if (props.type === "template") {
-    const hasMutipleThumbnails =
-      props.thumbnailImages && props.thumbnailImages.length > 1;
+    // Usar totalSections si está disponible, sino usar el número de thumbnails
+    const totalSections =
+      props.totalSections || props.thumbnailImages?.length || 1;
+    const hasMutipleSections = totalSections > 1;
 
     return (
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow group">
         {/* Thumbnails para templates */}
         <div className="h-64 bg-gray-100 relative overflow-hidden">
-          {hasMutipleThumbnails ? (
+          {hasMutipleSections &&
+          props.thumbnailImages &&
+          props.thumbnailImages.length > 1 ? (
             // Mostrar grilla de thumbnails cuando hay múltiples secciones
             <div
               className="grid gap-0.5 h-full"
               style={{
                 gridTemplateColumns: `repeat(${Math.min(
-                  props.thumbnailImages!.length,
+                  props.thumbnailImages.length,
                   3
                 )}, 1fr)`,
               }}
             >
-              {props.thumbnailImages!.slice(0, 3).map((thumbnail, index) => (
+              {props.thumbnailImages.slice(0, 3).map((thumbnail, index) => (
                 <div key={index} className="relative bg-gray-50">
                   <Image
                     src={thumbnail}
@@ -203,9 +208,9 @@ export default function ItemCard(props: ItemCardProps) {
                   />
                 </div>
               ))}
-              {props.thumbnailImages!.length > 3 && (
+              {totalSections > 3 && (
                 <div className="absolute bottom-1 right-1 bg-black/70 text-white text-xs px-2 py-0.5 rounded-full">
-                  +{props.thumbnailImages!.length - 3}
+                  +{totalSections - 3}
                 </div>
               )}
             </div>
@@ -234,10 +239,9 @@ export default function ItemCard(props: ItemCardProps) {
             <h3 className="font-medium text-sm text-[#283618] truncate flex-1">
               {props.name}
             </h3>
-            {hasMutipleThumbnails && (
+            {hasMutipleSections && (
               <span className="text-xs text-[#283618]/60 ml-2 whitespace-nowrap">
-                {props.thumbnailImages!.length}{" "}
-                {props.thumbnailImages!.length === 1 ? "página" : "páginas"}
+                {totalSections} {totalSections === 1 ? "página" : "páginas"}
               </span>
             )}
           </div>

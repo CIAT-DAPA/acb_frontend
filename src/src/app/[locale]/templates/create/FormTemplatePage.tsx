@@ -23,6 +23,7 @@ import { HeaderFooterStep } from "./steps/HeaderFooterStep";
 import { SectionsStep } from "./steps/SectionsStep";
 import { TemplatePreview } from "./TemplatePreview";
 import { AutosaveIndicator } from "../../components/AutosaveIndicator";
+import { ThumbnailGenerationModal } from "../../components/ThumbnailGenerationModal";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { TemplateAPIService } from "../../../../services/templateService";
@@ -90,6 +91,15 @@ export default function CreateTemplatePage({
 
   // Estado para controlar qué sección se muestra en el preview
   const [selectedSectionIndex, setSelectedSectionIndex] = useState(0);
+
+  // Estado para el modal de generación de thumbnails
+  const [thumbnailModal, setThumbnailModal] = useState({
+    isOpen: false,
+    progress: 0,
+    message: "",
+    status: "loading" as "loading" | "success" | "error",
+    errorMessage: "",
+  });
 
   // Actualizar creator_user_id cuando userInfo esté disponible
   useEffect(() => {
@@ -225,11 +235,9 @@ export default function CreateTemplatePage({
         return !!(
           data.master.template_name.trim() &&
           data.master.description.trim() &&
-          (
-            data.master.access_config?.access_type !== "restricted" ||
+          (data.master.access_config?.access_type !== "restricted" ||
             (Array.isArray(data.master.access_config?.allowed_groups) &&
-              data.master.access_config.allowed_groups.length > 0)
-          )
+              data.master.access_config.allowed_groups.length > 0))
         );
 
       case "general-config":
@@ -341,37 +349,63 @@ export default function CreateTemplatePage({
 
         // 3. Capturar y guardar thumbnails
         try {
-          console.log("🚀 Importing thumbnail capture module...");
+          // Mostrar modal de carga
+          setThumbnailModal({
+            isOpen: true,
+            progress: 0,
+            message: "Preparando generación de thumbnails...",
+            status: "loading",
+            errorMessage: "",
+          });
+
           const { generateAndUploadThumbnails } = await import(
             "../../../../utils/thumbnailCapture"
           );
-          console.log(
-            "✅ Module imported, calling generateAndUploadThumbnails..."
-          );
 
-          const sectionCount = creationState.data.version.content.sections.length || 1;
-          console.log(`📋 Template has ${sectionCount} section(s)`);
-
+          const sectionCount =
+            creationState.data.version.content.sections.length || 1;
           const thumbnailPaths = await generateAndUploadThumbnails(
             "template-preview-container",
             templateId,
             sectionCount,
             (index: number) => {
-              console.log(`🔄 Switching to section ${index + 1}/${sectionCount}`);
               setSelectedSectionIndex(index);
+            },
+            (current: number, total: number, message: string) => {
+              // Actualizar progreso en el modal
+              setThumbnailModal((prev) => ({
+                ...prev,
+                progress: Math.round((current / total) * 100),
+                message,
+              }));
             }
           );
 
-          console.log("✅ Thumbnails generated, updating template...");
-          // 4. Actualizar el template con los thumbnails
+          // Actualizar modal a estado de éxito
+          setThumbnailModal({
+            isOpen: true,
+            progress: 100,
+            message: "¡Thumbnails generados exitosamente!",
+            status: "success",
+            errorMessage: "",
+          });
+
+          // 4. Actualizar el template con los thumbnails y section_count
           if (thumbnailPaths.length > 0) {
+            const sectionCount =
+              creationState.data.version.content.sections.length;
             await TemplateAPIService.updateTemplate(templateId, {
               thumbnail_images: thumbnailPaths,
+              section_count: sectionCount,
             } as any);
-            console.log("✅ Template updated with thumbnails");
           } else {
             console.warn("⚠️ No thumbnails were generated");
           }
+
+          // Cerrar modal después de 1.5 segundos
+          setTimeout(() => {
+            setThumbnailModal((prev) => ({ ...prev, isOpen: false }));
+          }, 1500);
         } catch (thumbnailError) {
           console.error("❌ ERROR capturando thumbnails:", thumbnailError);
           console.error(
@@ -380,6 +414,24 @@ export default function CreateTemplatePage({
               ? thumbnailError.stack
               : "No stack trace"
           );
+
+          // Mostrar error en el modal
+          setThumbnailModal({
+            isOpen: true,
+            progress: 0,
+            message: "Error al generar thumbnails",
+            status: "error",
+            errorMessage:
+              thumbnailError instanceof Error
+                ? thumbnailError.message
+                : "Error desconocido",
+          });
+
+          // Cerrar modal después de 3 segundos
+          setTimeout(() => {
+            setThumbnailModal((prev) => ({ ...prev, isOpen: false }));
+          }, 3000);
+
           // No fallar la operación completa si los thumbnails fallan
         }
 
@@ -441,37 +493,64 @@ export default function CreateTemplatePage({
 
         // 3. Capturar y guardar thumbnails
         try {
-          console.log("🚀 Importing thumbnail capture module...");
+          // Mostrar modal de carga
+          setThumbnailModal({
+            isOpen: true,
+            progress: 0,
+            message: "Preparando generación de thumbnails...",
+            status: "loading",
+            errorMessage: "",
+          });
+
           const { generateAndUploadThumbnails } = await import(
             "../../../../utils/thumbnailCapture"
           );
-          console.log(
-            "✅ Module imported, calling generateAndUploadThumbnails..."
-          );
 
-          const sectionCount = creationState.data.version.content.sections.length || 1;
-          console.log(`📋 Template has ${sectionCount} section(s)`);
+          const sectionCount =
+            creationState.data.version.content.sections.length || 1;
 
           const thumbnailPaths = await generateAndUploadThumbnails(
             "template-preview-container",
             newTemplateId,
             sectionCount,
             (index: number) => {
-              console.log(`🔄 Switching to section ${index + 1}/${sectionCount}`);
               setSelectedSectionIndex(index);
+            },
+            (current: number, total: number, message: string) => {
+              // Actualizar progreso en el modal
+              setThumbnailModal((prev) => ({
+                ...prev,
+                progress: Math.round((current / total) * 100),
+                message,
+              }));
             }
           );
 
-          console.log("✅ Thumbnails generated, updating template...");
-          // 4. Actualizar el template con los thumbnails
+          // Actualizar modal a estado de éxito
+          setThumbnailModal({
+            isOpen: true,
+            progress: 100,
+            message: "¡Thumbnails generados exitosamente!",
+            status: "success",
+            errorMessage: "",
+          });
+
+          // 4. Actualizar el template con los thumbnails y section_count
           if (thumbnailPaths.length > 0) {
+            const sectionCount =
+              creationState.data.version.content.sections.length;
             await TemplateAPIService.updateTemplate(newTemplateId, {
               thumbnail_images: thumbnailPaths,
+              section_count: sectionCount,
             } as any);
-            console.log("✅ Template updated with thumbnails");
           } else {
             console.warn("⚠️ No thumbnails were generated");
           }
+
+          // Cerrar modal después de 1.5 segundos
+          setTimeout(() => {
+            setThumbnailModal((prev) => ({ ...prev, isOpen: false }));
+          }, 1500);
         } catch (thumbnailError) {
           console.error("❌ ERROR capturando thumbnails:", thumbnailError);
           console.error(
@@ -480,6 +559,24 @@ export default function CreateTemplatePage({
               ? thumbnailError.stack
               : "No stack trace"
           );
+
+          // Mostrar error en el modal
+          setThumbnailModal({
+            isOpen: true,
+            progress: 0,
+            message: "Error al generar thumbnails",
+            status: "error",
+            errorMessage:
+              thumbnailError instanceof Error
+                ? thumbnailError.message
+                : "Error desconocido",
+          });
+
+          // Cerrar modal después de 3 segundos
+          setTimeout(() => {
+            setThumbnailModal((prev) => ({ ...prev, isOpen: false }));
+          }, 3000);
+
           // No fallar la operación completa si los thumbnails fallan
         }
 
@@ -642,6 +739,15 @@ export default function CreateTemplatePage({
           </div>
         </div>
       </div>
+
+      {/* Modal de generación de thumbnails */}
+      <ThumbnailGenerationModal
+        isOpen={thumbnailModal.isOpen}
+        progress={thumbnailModal.progress}
+        message={thumbnailModal.message}
+        status={thumbnailModal.status}
+        errorMessage={thumbnailModal.errorMessage}
+      />
     </div>
   );
 }

@@ -138,7 +138,15 @@ export interface FieldBase {
     | PageNumberFieldConfig
     | CardFieldConfig
     | ImageFieldConfig;
-  value?: string | number | boolean | Date | string[] | Record<string, any>[] | null | undefined; // Para campos con valores predefinidos
+  value?:
+    | string
+    | number
+    | boolean
+    | Date
+    | string[]
+    | Record<string, any>[]
+    | null
+    | undefined; // Para campos con valores predefinidos
 }
 
 // Tipos específicos de campo (para type safety)
@@ -284,7 +292,8 @@ export interface TemplateMaster {
   status: TemplateStatus;
   current_version_id?: string;
   access_config: AccessConfig;
-  thumbnail_images?: string[]; // Rutas a las imágenes de preview de las secciones
+  thumbnail_images?: string[]; // Rutas a las imágenes de preview de las secciones (máximo 3)
+  section_count?: number; // Número total de secciones del template
 }
 
 // Tipos para el formulario de creación

@@ -265,13 +265,19 @@ export function ScrollView({
 
           return expandAllPages && pageCount > 1 ? (
             // Modo expandido: mostrar todas las páginas de la sección
-            <div key={sectionIndex} className="flex gap-4">
+            <div
+              key={sectionIndex}
+              className="flex gap-4"
+              data-section-index={sectionIndex}
+            >
               {Array.from({ length: pageCount }).map((_, pageIndex) => (
                 <div
                   key={`${sectionIndex}-${pageIndex}`}
                   ref={(el) => {
                     if (pageIndex === 0) sectionRefs.current[sectionIndex] = el;
                   }}
+                  data-section-index={sectionIndex}
+                  data-page-index={pageIndex}
                   className={`
                     scroll-section flex-shrink-0
                     ${
@@ -309,6 +315,8 @@ export function ScrollView({
               ref={(el) => {
                 sectionRefs.current[sectionIndex] = el;
               }}
+              data-section-index={sectionIndex}
+              data-page-index={0}
               className={`
                 scroll-section flex-shrink-0
                 ${

@@ -8,7 +8,6 @@ import { ContentFullPreview } from "@/app/[locale]/components/ContentFullPreview
 import { PreviewMode } from "@/types/templatePreview";
 import { ArrowLeft, Loader2, Download } from "lucide-react";
 import { ExportModal, ExportConfig } from "@/app/[locale]/components/ExportModal";
-import { downloadFromPreview } from "@/utils/downloadContentSimple";
 
 /**
  * Página de preview independiente para templates
@@ -118,35 +117,9 @@ export default function TemplatePreviewPage() {
     onSectionChange: (index: number) => void,
     onProgressUpdate: (current: number, message: string) => void
   ) => {
-    console.log("🚀 Iniciando exportación con config:", config);
-
-    try {
-      // Exportación desde preview renderizado
-      console.log("📸 Usando exportación desde preview");
-      
-      await downloadFromPreview({
-        previewContainerId,
-        contentName: templateData?.master.template_name || "template",
-        format: config.format as "png" | "jpg" | "pdf",
-        totalSections: templateData?.version.content.sections.length || 0,
-        sectionIndices: config.selectedSections.length > 0 ? config.selectedSections : undefined,
-        onSectionChange, // Usar el callback del modal
-        quality: config.quality,
-        pageSize: config.pageSize,
-        sectionsPerPage: config.sectionsPerPage,
-        onProgress: (current, total, message) => {
-          console.log(`📊 Progreso: ${current}/${total} - ${message}`);
-          // Actualizar el progreso en el modal
-          const percentage = Math.round((current / total) * 100);
-          onProgressUpdate(percentage, message);
-        },
-      });
-
-      console.log("✅ Exportación completada");
-    } catch (error) {
-      console.error("❌ Error en exportación:", error);
-      throw error;
-    }
+    // La exportación ahora se maneja internamente en ExportModal con Puppeteer
+    // No se necesita lógica adicional aquí
+    console.log("🚀 Exportación iniciada desde ExportModal");
   };
 
   // Loading state

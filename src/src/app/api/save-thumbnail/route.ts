@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
+import { writeFile, mkdir, readdir, unlink } from "fs/promises";
 import path from "path";
 
 export async function POST(request: NextRequest) {
@@ -29,6 +29,24 @@ export async function POST(request: NextRequest) {
       "thumbnails",
       templateId
     );
+
+    // Eliminar solo los thumbnails antiguos (archivos), mantener el directorio
+    try {
+      const existingFiles = await readdir(uploadDir).catch(() => []);
+      if (existingFiles.length > 0) {
+        console.log(
+          `🗑️ Deleting ${existingFiles.length} old thumbnail(s) from: ${uploadDir}`
+        );
+        for (const file of existingFiles) {
+          const filePath = path.join(uploadDir, file);
+          await unlink(filePath);
+        }
+        console.log("✅ Old thumbnails deleted");
+      }
+    } catch (cleanupError) {
+      console.warn("⚠️ Error cleaning old thumbnails:", cleanupError);
+      // Continuar incluso si hay error en la limpieza
+    }
 
     // Crear el directorio si no existe
     await mkdir(uploadDir, { recursive: true });
