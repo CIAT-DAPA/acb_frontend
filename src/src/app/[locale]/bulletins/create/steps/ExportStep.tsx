@@ -64,7 +64,9 @@ export function ExportStep({ previewData, bulletinName }: ExportStepProps) {
 
     try {
       const zip = new JSZip();
-      const format = config.format === "pdf" ? "png" : config.format;
+      // Para PDF, generamos PNG de alta calidad y luego convertimos
+      const imageFormat = config.format === "pdf" ? "png" : config.format;
+      const finalFormat = config.format;
 
       // Asegurar que quality sea un número entero válido
       const qualityNumber =
@@ -108,6 +110,9 @@ export function ExportStep({ previewData, bulletinName }: ExportStepProps) {
             }/${totalPages}...`
           );
 
+          // Pequeño delay para asegurar que la sección esté renderizada
+          await new Promise((resolve) => setTimeout(resolve, 300));
+
           // Buscar el elemento de preview específico usando data attributes
           const previewElement = scrollContainer.querySelector(
             `[data-section-index="${sectionIndex}"][data-page-index="${pageIndex}"]`
@@ -136,6 +141,22 @@ export function ExportStep({ previewData, bulletinName }: ExportStepProps) {
             continue;
           }
 
+          // Esperar a que todas las imágenes dentro del contenedor se carguen
+          const images = templatePreviewContainer.querySelectorAll("img");
+          if (images.length > 0) {
+            await Promise.all(
+              Array.from(images).map((img) => {
+                if (img.complete) return Promise.resolve();
+                return new Promise((resolve) => {
+                  img.onload = () => resolve(true);
+                  img.onerror = () => resolve(false);
+                  // Timeout de 5 segundos por imagen
+                  setTimeout(() => resolve(false), 5000);
+                });
+              })
+            );
+          }
+
           // Serializar el HTML con estilos
           const html = serializeElementToHTML(
             templatePreviewContainer as HTMLElement
@@ -145,6 +166,23 @@ export function ExportStep({ previewData, bulletinName }: ExportStepProps) {
           const rect = templatePreviewContainer.getBoundingClientRect();
           const width = Math.round(rect.width);
           const height = Math.round(rect.height);
+
+          // Calcular deviceScaleFactor según la calidad seleccionada
+          let deviceScaleFactor = 1;
+          switch (config.quality) {
+            case "low":
+              deviceScaleFactor = 1;
+              break;
+            case "medium":
+              deviceScaleFactor = 1.5;
+              break;
+            case "high":
+              deviceScaleFactor = 2;
+              break;
+            case "ultra":
+              deviceScaleFactor = 3;
+              break;
+          }
 
           // Llamar a la API para generar la imagen
           const response = await fetch("/api/export-bulletin", {
@@ -156,8 +194,9 @@ export function ExportStep({ previewData, bulletinName }: ExportStepProps) {
               html,
               width,
               height,
-              format: format,
+              format: imageFormat,
               quality: qualityNumber,
+              deviceScaleFactor, // Enviar el factor de escala
               baseUrl: window.location.origin, // Agregar URL base para resolver imágenes
             }),
           });
@@ -173,29 +212,106 @@ export function ExportStep({ previewData, bulletinName }: ExportStepProps) {
           // Agregar al ZIP con nombre descriptivo
           const filename =
             totalPages > 1
-              ? `seccion_${sectionIndex + 1}_pagina_${pageIndex + 1}.${format}`
+              ? `seccion_${sectionIndex + 1}_pagina_${
+                  pageIndex + 1
+                }.${imageFormat}`
               : sectionsToExport.length > 1
-              ? `seccion_${sectionIndex + 1}.${format}`
-              : `${bulletinName}.${format}`;
+              ? `seccion_${sectionIndex + 1}.${imageFormat}`
+              : `${bulletinName}.${imageFormat}`;
 
           zip.file(filename, blob);
         }
       }
 
-      // Generar el archivo ZIP
-      onProgressUpdate(sectionsToExport.length, "Generando archivo ZIP...");
+      // Si el formato es PDF, convertir las imágenes a PDF
+      if (finalFormat === "pdf") {
+        onProgressUpdate(sectionsToExport.length, "Convirtiendo a PDF...");
 
-      const zipBlob = await zip.generateAsync({ type: "blob" });
+        // Importar jsPDF dinámicamente
+        const { jsPDF } = await import("jspdf");
 
-      // Descargar el ZIP
-      const url = URL.createObjectURL(zipBlob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `${bulletinName}.zip`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+        // Crear documento PDF
+        const pdf = new jsPDF({
+          orientation: "portrait",
+          unit: "px",
+          format: "a4",
+        });
+
+        let isFirstPage = true;
+
+        // Obtener todos los archivos del ZIP
+        const files = Object.keys(zip.files).sort();
+
+        for (const filename of files) {
+          const file = zip.files[filename];
+          const blob = await file.async("blob");
+
+          // Convertir blob a data URL
+          const dataUrl = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(blob);
+          });
+
+          // Crear imagen para obtener dimensiones
+          const img = await new Promise<HTMLImageElement>((resolve) => {
+            const image = new Image();
+            image.onload = () => resolve(image);
+            image.src = dataUrl;
+          });
+
+          // Calcular dimensiones para ajustar a la página
+          const pdfWidth = pdf.internal.pageSize.getWidth();
+          const pdfHeight = pdf.internal.pageSize.getHeight();
+          const imgRatio = img.width / img.height;
+          const pageRatio = pdfWidth / pdfHeight;
+
+          let finalWidth = pdfWidth;
+          let finalHeight = pdfHeight;
+
+          if (imgRatio > pageRatio) {
+            // Imagen más ancha
+            finalHeight = pdfWidth / imgRatio;
+          } else {
+            // Imagen más alta
+            finalWidth = pdfHeight * imgRatio;
+          }
+
+          // Agregar nueva página si no es la primera
+          if (!isFirstPage) {
+            pdf.addPage();
+          }
+          isFirstPage = false;
+
+          // Agregar imagen al PDF
+          pdf.addImage(
+            dataUrl,
+            imageFormat.toUpperCase(),
+            0,
+            0,
+            finalWidth,
+            finalHeight
+          );
+        }
+
+        // Descargar el PDF
+        pdf.save(`${bulletinName}.pdf`);
+      } else {
+        // Generar el archivo ZIP para imágenes
+        onProgressUpdate(sectionsToExport.length, "Generando archivo ZIP...");
+
+        const zipBlob = await zip.generateAsync({ type: "blob" });
+
+        // Descargar el ZIP
+        const url = URL.createObjectURL(zipBlob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${bulletinName}.zip`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
 
       onProgressUpdate(sectionsToExport.length, "¡Exportación completada!");
     } catch (error) {

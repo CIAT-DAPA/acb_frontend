@@ -14,6 +14,7 @@ export async function POST(request: NextRequest) {
       height = 1600,
       format = "png",
       quality = 90,
+      deviceScaleFactor = 1,
       baseUrl,
     } = body;
 
@@ -41,9 +42,11 @@ export async function POST(request: NextRequest) {
     const widthInt = Math.max(1, parseInt(String(width)) || 1200);
     const heightInt = Math.max(1, parseInt(String(height)) || 1600);
 
-    // deviceScaleFactor debe ser un número válido
-    // Usar valor fijo de 2 para alta calidad (puede ser 1, 2, o 3)
-    const scaleFactor = 2;
+    // deviceScaleFactor debe ser un número válido (1, 1.5, 2, o 3)
+    const scaleFactor = Math.min(
+      3,
+      Math.max(1, Number(deviceScaleFactor) || 1)
+    );
 
     // Iniciar el navegador
     browser = await puppeteer.launch({
@@ -156,10 +159,10 @@ export async function POST(request: NextRequest) {
           } else {
             const timeout = setTimeout(() => {
               console.error(
-                `❌ TIMEOUT imagen ${index + 1}: ${imgSrc} (no cargó en 3s)`
+                `❌ TIMEOUT imagen ${index + 1}: ${imgSrc} (no cargó en 8s)`
               );
               resolve({ success: false, src: imgSrc });
-            }, 3000); // Reducido a 3 segundos
+            }, 8000); // Aumentado a 8 segundos para dar más tiempo
 
             img.onload = () => {
               clearTimeout(timeout);
@@ -203,6 +206,9 @@ export async function POST(request: NextRequest) {
       );
       console.warn("URLs fallidas:", imagesProcessed.failedUrls);
     }
+
+    // Dar un pequeño tiempo adicional para asegurar que todo se renderice correctamente
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     // Capturar el screenshot
     const screenshotOptions: any = {

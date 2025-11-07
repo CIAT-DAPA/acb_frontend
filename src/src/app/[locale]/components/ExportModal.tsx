@@ -102,8 +102,8 @@ export function ExportModal({
 
   // Estado del formulario
   const [config, setConfig] = useState<ExportConfig>({
-    format: "pdf",
-    quality: "high",
+    format: "jpg",
+    quality: "low",
     pageSize: "auto",
     sectionsPerPage: 1,
     selectedSections: [], // Todas por defecto
@@ -388,8 +388,8 @@ export function ExportModal({
                 <label className="block text-sm font-semibold text-[#283618] mb-3">
                   Formato de Archivo
                 </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {(["png", "jpg", "pdf"] as DownloadFormat[]).map((format) => (
+                <div className="grid grid-cols-2 gap-2">
+                  {(["jpg", "pdf"] as DownloadFormat[]).map((format) => (
                     <button
                       key={format}
                       onClick={() => handleFormatChange(format)}
@@ -497,55 +497,6 @@ export function ExportModal({
               <div className="border-2 border-[#283618]/10 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-semibold text-[#283618]">
-                    Opciones de Visualización
-                  </h3>
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={() =>
-                      setConfig({
-                        ...config,
-                        showDescription: !config.showDescription,
-                      })
-                    }
-                    disabled={isExporting}
-                    className={`flex-1 py-3 px-4 rounded text-sm transition-colors ${
-                      config.showDescription
-                        ? "bg-[#bc6c25] text-[#fefae0] font-semibold"
-                        : "border-2 border-[#bc6c25] text-[#283618] hover:bg-[#bc6c25]/90 hover:text-[#fefae0]"
-                    } disabled:opacity-30 disabled:cursor-not-allowed`}
-                  >
-                    Mostrar Descripción
-                  </button>
-                  <button
-                    onClick={() =>
-                      setConfig({
-                        ...config,
-                        showMoreInfo: !config.showMoreInfo,
-                      })
-                    }
-                    disabled={isExporting}
-                    className={`flex-1 py-3 px-4 rounded text-sm transition-colors ${
-                      config.showMoreInfo
-                        ? "bg-[#bc6c25] text-[#fefae0] font-semibold"
-                        : "border-2 border-[#bc6c25] text-[#283618] hover:bg-[#bc6c25]/90 hover:text-[#fefae0]"
-                    } disabled:opacity-30 disabled:cursor-not-allowed`}
-                  >
-                    Mostrar Más Info
-                  </button>
-                </div>
-
-                <p className="text-xs text-[#283618]/60 mt-2">
-                  Estas opciones agregan información adicional a cada sección
-                  exportada
-                </p>
-              </div>
-
-              {/* Selector de secciones */}
-              <div className="border-2 border-[#283618]/10 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-[#283618]">
                     Secciones a Exportar
                   </h3>
                   <button
@@ -557,21 +508,34 @@ export function ExportModal({
                   </button>
                 </div>
 
-                <div className="grid grid-cols-6 gap-2 max-h-40 overflow-y-auto p-2">
-                  {allSections.map((index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleSectionToggle(index)}
-                      disabled={isExporting}
-                      className={`py-2 px-3 rounded text-sm transition-all ${
-                        selectAll || config.selectedSections.includes(index)
-                          ? "bg-[#bc6c25] text-[#fefae0] font-semibold"
-                          : "border-2 border-[#bc6c25] text-[#283618] hover:bg-[#bc6c25]/90 hover:text-[#fefae0]"
-                      } disabled:opacity-50`}
-                    >
-                      {index + 1}
-                    </button>
-                  ))}
+                <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto p-2">
+                  {allSections.map((index) => {
+                    const section =
+                      templateData?.version.content.sections[index];
+                    const sectionName =
+                      section?.display_name || `Sección ${index + 1}`;
+
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => handleSectionToggle(index)}
+                        disabled={isExporting}
+                        className={`py-2 px-3 rounded text-xs transition-all text-left ${
+                          selectAll || config.selectedSections.includes(index)
+                            ? "bg-[#bc6c25] text-[#fefae0] font-semibold"
+                            : "border-2 border-[#bc6c25] text-[#283618] hover:bg-[#bc6c25]/90 hover:text-[#fefae0]"
+                        } disabled:opacity-50`}
+                        title={sectionName}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-[10px] opacity-70 flex-shrink-0">
+                            {String(index + 1).padStart(2, "0")}
+                          </span>
+                          <span className="truncate">{sectionName}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
 
                 <p className="text-xs text-[#283618]/60 mt-3">
