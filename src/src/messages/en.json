@@ -122,10 +122,8 @@
     "brand": "Bulletin builder",
     "description": "Free tool to create agroclimatic bulletins collaboratively.",
     "links": "Links",
-    "contact": "Contact",
-    "copyright": "© 2025 Bulletin Builder.",
-    "email": "test@example.com",
-    "phone": "+1 (555) 123-4567"
+    "partner": "Partners",
+    "copyright": "© 2025 Bulletin Builder."
   },
   "Templates": {
     "title": "Create fully customizable new templates",

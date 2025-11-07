@@ -10,6 +10,7 @@ import { LanguageSelector } from "./LanguageSelector";
 import { useAuth } from "../../../hooks/useAuth";
 import usePermissions from "../../../hooks/usePermissions";
 import { MODULES } from "../../../types/core";
+import Image from "next/image";
 
 // Clases simples con colores corregidos
 const NAV_BASE = "py-2 px-3 transition-colors duration-200 relative";
@@ -31,9 +32,24 @@ export function Navbar() {
 
   // Navegación condicional - solo mostrar rutas que requieren auth si está autenticado
   const ALL_NAV_ITEMS = [
-    { name: t("templates"), path: "/templates", requiresAuth: true, module: MODULES.TEMPLATE_MANAGEMENT },
-    { name: t("cards"), path: "/cards", requiresAuth: true, module: MODULES.CARD_MANAGEMENT },
-    { name: t("bulletins"), path: "/bulletins", requiresAuth: true, module: MODULES.BULLETINS_COMPOSER },
+    {
+      name: t("templates"),
+      path: "/templates",
+      requiresAuth: true,
+      module: MODULES.TEMPLATE_MANAGEMENT,
+    },
+    {
+      name: t("cards"),
+      path: "/cards",
+      requiresAuth: true,
+      module: MODULES.CARD_MANAGEMENT,
+    },
+    {
+      name: t("bulletins"),
+      path: "/bulletins",
+      requiresAuth: true,
+      module: MODULES.BULLETINS_COMPOSER,
+    },
   ];
 
   // Filtrar items según autenticación
@@ -67,7 +83,12 @@ export function Navbar() {
           href="/"
           className={`${brand} text-2xl font-bold py-2 hover:text-[#ffaf68] transition-colors`}
         >
-          <Cloud className={brandIcon} />
+          <Image
+            src="/assets/img/bulletinLogo.png"
+            alt="logo del bulletin builder"
+            width={34}
+            height={37}
+          />
           <span className="font-headers">Bulletin Builder</span>
         </Link>
 
@@ -122,14 +143,15 @@ export function Navbar() {
 
                 {showAccessMenu && (
                   <div className="absolute left-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-                    { isSuperadmin && (
+                    {isSuperadmin && (
                       <Link
                         href="/roles"
                         onClick={() => setShowAccessMenu(false)}
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                       >
                         {t("roles")}
-                    </Link>)}
+                      </Link>
+                    )}
                     <Link
                       href="/groups"
                       onClick={() => setShowAccessMenu(false)}
@@ -237,17 +259,18 @@ export function Navbar() {
                 {showAccessMenu && (
                   <ul className="pl-4 mt-2 space-y-2">
                     <li>
-                      { isAdminAnywhere && (
+                      {isAdminAnywhere && (
                         <Link
-                        href="/roles"
-                        onClick={() => {
-                          setShowAccessMenu(false);
-                          setIsOpen(false);
-                        }}
-                        className="block text-[#fefae0]/70 hover:text-[#ffaf68] transition-colors text-sm"
-                      >
-                        {t("roles")}
-                      </Link>)}
+                          href="/roles"
+                          onClick={() => {
+                            setShowAccessMenu(false);
+                            setIsOpen(false);
+                          }}
+                          className="block text-[#fefae0]/70 hover:text-[#ffaf68] transition-colors text-sm"
+                        >
+                          {t("roles")}
+                        </Link>
+                      )}
                     </li>
                     <li>
                       <Link
