@@ -5,6 +5,7 @@ import { ScrollConfig } from "@/types/templatePreview";
 import { CreateTemplateData } from "@/types/template";
 import { TemplatePreview } from "../templates/create/TemplatePreview";
 import { List, X } from "lucide-react";
+import * as ui from "@/app/[locale]/components/ui";
 
 interface ScrollViewProps {
   data: CreateTemplateData;
@@ -127,13 +128,13 @@ export function ScrollView({
           onClick={() => setIsNavOpen(true)}
           className="
             md:hidden fixed bottom-4 left-4 z-20
-            bg-white/80 backdrop-blur-sm hover:bg-white
+            bg-[#bc6c25] text-[#fefae0] hover:bg-[#bc6c25]/90
             p-2.5 rounded-full shadow-lg
-            transition-all border border-[#283618]/10
+            transition-all
           "
           aria-label="Abrir navegador de secciones"
         >
-          <List className="w-5 h-5 text-[#283618]" />
+          <List className="w-5 h-5" />
         </button>
       )}
 
@@ -177,10 +178,10 @@ export function ScrollView({
               </div>
               <button
                 onClick={() => setIsNavOpen(false)}
-                className="md:hidden p-1 hover:bg-[#283618]/5 rounded transition-colors"
+                className="md:hidden p-1.5 hover:bg-[#bc6c25]/10 rounded transition-colors"
                 aria-label="Cerrar navegador"
               >
-                <X className="w-4 h-4 text-[#283618]" />
+                <X className="w-4 h-4 text-[#bc6c25]" />
               </button>
             </div>
 
@@ -197,8 +198,8 @@ export function ScrollView({
                   px-2.5 md:px-3 py-1.5 md:py-2 rounded text-xs md:text-sm transition-all text-left
                   ${
                     activeSectionIndex === index
-                      ? "bg-[#ffaf68] text-white font-medium shadow-sm"
-                      : "bg-[#283618]/5 text-[#283618] hover:bg-[#283618]/10"
+                      ? "bg-[#bc6c25] text-[#fefae0] font-semibold shadow-sm"
+                      : "border border-[#bc6c25]/30 text-[#283618] hover:bg-[#bc6c25]/10 hover:border-[#bc6c25]"
                   }
                 `}
                 aria-label={`Ir a sección ${index + 1}`}

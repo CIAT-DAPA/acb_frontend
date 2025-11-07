@@ -14,6 +14,7 @@ import { CreateTemplateData } from "@/types/template";
 import { TemplatePreview } from "@/app/[locale]/templates/create/TemplatePreview";
 import { ContentService } from "@/services/contentService";
 import { ContentType, NormalizedContent } from "@/types/content";
+import * as ui from "@/app/[locale]/components/ui";
 
 // Tipos para la configuración de exportación
 export type DownloadFormat = "png" | "jpg" | "pdf";
@@ -277,8 +278,6 @@ export function ExportModal({
     }
   };
 
-
-
   const resetModal = () => {
     setConfig({
       format: "pdf",
@@ -395,10 +394,10 @@ export function ExportModal({
                       key={format}
                       onClick={() => handleFormatChange(format)}
                       disabled={isExporting}
-                      className={`py-3 px-4 rounded-lg font-semibold uppercase text-sm transition-colors ${
+                      className={`py-3 px-4 rounded uppercase text-sm transition-colors ${
                         config.format === format
-                          ? "bg-[#606c38] text-white"
-                          : "bg-white text-[#283618] border border-gray-200 hover:bg-gray-50"
+                          ? "bg-[#bc6c25] text-[#fefae0] font-semibold"
+                          : "border-2 border-[#bc6c25] text-[#283618] hover:bg-[#bc6c25]/90 hover:text-[#fefae0]"
                       } disabled:opacity-30 disabled:cursor-not-allowed`}
                     >
                       {format}
@@ -419,10 +418,10 @@ export function ExportModal({
                         key={quality}
                         onClick={() => handleQualityChange(quality)}
                         disabled={isExporting}
-                        className={`py-3 px-4 rounded-lg font-semibold capitalize text-sm transition-colors ${
+                        className={`py-3 px-4 rounded capitalize text-sm transition-colors ${
                           config.quality === quality
-                            ? "bg-[#606c38] text-white"
-                            : "bg-white text-[#283618] border border-gray-200 hover:bg-gray-50"
+                            ? "bg-[#bc6c25] text-[#fefae0] font-semibold"
+                            : "border-2 border-[#bc6c25] text-[#283618] hover:bg-[#bc6c25]/90 hover:text-[#fefae0]"
                         } disabled:opacity-50`}
                       >
                         {quality}
@@ -457,10 +456,10 @@ export function ExportModal({
                             key={size}
                             onClick={() => handlePageSizeChange(size)}
                             disabled={isExporting}
-                            className={`py-2 px-3 rounded-lg font-medium uppercase text-xs transition-colors ${
+                            className={`py-2 px-3 rounded uppercase text-xs transition-colors ${
                               config.pageSize === size
-                                ? "bg-[#606c38] text-white"
-                                : "bg-white text-[#283618] border border-gray-200 hover:bg-gray-50"
+                                ? "bg-[#bc6c25] text-[#fefae0] font-semibold"
+                                : "border-2 border-[#bc6c25] text-[#283618] hover:bg-[#bc6c25]/90 hover:text-[#fefae0]"
                             } disabled:opacity-50`}
                           >
                             {size}
@@ -511,10 +510,10 @@ export function ExportModal({
                       })
                     }
                     disabled={isExporting}
-                    className={`flex-1 py-3 px-4 rounded-lg font-semibold text-sm transition-colors ${
+                    className={`flex-1 py-3 px-4 rounded text-sm transition-colors ${
                       config.showDescription
-                        ? "bg-[#606c38] text-white"
-                        : "bg-white text-[#283618] border border-gray-200 hover:bg-gray-50"
+                        ? "bg-[#bc6c25] text-[#fefae0] font-semibold"
+                        : "border-2 border-[#bc6c25] text-[#283618] hover:bg-[#bc6c25]/90 hover:text-[#fefae0]"
                     } disabled:opacity-30 disabled:cursor-not-allowed`}
                   >
                     Mostrar Descripción
@@ -527,10 +526,10 @@ export function ExportModal({
                       })
                     }
                     disabled={isExporting}
-                    className={`flex-1 py-3 px-4 rounded-lg font-semibold text-sm transition-colors ${
+                    className={`flex-1 py-3 px-4 rounded text-sm transition-colors ${
                       config.showMoreInfo
-                        ? "bg-[#606c38] text-white"
-                        : "bg-white text-[#283618] border border-gray-200 hover:bg-gray-50"
+                        ? "bg-[#bc6c25] text-[#fefae0] font-semibold"
+                        : "border-2 border-[#bc6c25] text-[#283618] hover:bg-[#bc6c25]/90 hover:text-[#fefae0]"
                     } disabled:opacity-30 disabled:cursor-not-allowed`}
                   >
                     Mostrar Más Info
@@ -564,10 +563,10 @@ export function ExportModal({
                       key={index}
                       onClick={() => handleSectionToggle(index)}
                       disabled={isExporting}
-                      className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                      className={`py-2 px-3 rounded text-sm transition-all ${
                         selectAll || config.selectedSections.includes(index)
-                          ? "bg-[#606c38] text-white"
-                          : "bg-white text-[#283618] border border-gray-200 hover:bg-gray-50"
+                          ? "bg-[#bc6c25] text-[#fefae0] font-semibold"
+                          : "border-2 border-[#bc6c25] text-[#283618] hover:bg-[#bc6c25]/90 hover:text-[#fefae0]"
                       } disabled:opacity-50`}
                     >
                       {index + 1}
@@ -631,14 +630,14 @@ export function ExportModal({
               <button
                 onClick={handleClose}
                 disabled={isExporting}
-                className="px-6 py-3 rounded-lg border-2 border-[#283618]/20 text-[#283618] hover:bg-[#283618]/5 transition-colors disabled:opacity-50"
+                className={`${ui.btnCancel} disabled:opacity-50`}
               >
                 Cancelar
               </button>
               <button
                 onClick={handleExport}
                 disabled={isExporting}
-                className="px-6 py-3 rounded-lg bg-[#606c38] text-white hover:bg-[#606c38]/90 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className={`${ui.btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 <Download className="w-5 h-5" />
                 {isExporting ? "Exportando..." : "Exportar"}

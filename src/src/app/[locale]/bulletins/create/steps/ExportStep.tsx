@@ -9,6 +9,7 @@ import {
 } from "@/app/[locale]/components/ExportModal";
 import { ContentFullPreview } from "@/app/[locale]/components/ContentFullPreview";
 import { Download } from "lucide-react";
+import * as ui from "@/app/[locale]/components/ui";
 
 interface ExportStepProps {
   previewData: CreateTemplateData;
@@ -215,10 +216,7 @@ export function ExportStep({ previewData, bulletinName }: ExportStepProps) {
 
       {/* Botón de exportación */}
       <div className="flex justify-center mb-4">
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium bg-[#283618] hover:bg-[#606c38] text-white hover:shadow-md transition-all duration-200 shadow-sm"
-        >
+        <button onClick={() => setIsModalOpen(true)} className={ui.btnPrimary}>
           <Download className="w-5 h-5" />
           {t("exportButton")}
         </button>
