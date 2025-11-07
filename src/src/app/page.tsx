@@ -1,11 +1,5 @@
-import { HeroSection } from "./components/HeroSection";
-import { FeaturesSection } from "./components/FeatureSection";
+import { redirect } from "next/navigation";
 
-export default function Home() {
-  return (
-    <main className="flex-1">
-      <HeroSection />
-      <FeaturesSection />
-    </main>
-  );
+export default function RootPage() {
+  redirect("/es");
 }

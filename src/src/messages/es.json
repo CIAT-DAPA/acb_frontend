@@ -1,0 +1,1169 @@
+{
+  "Navbar": {
+    "templates": "Plantillas",
+    "bulletins": "Boletines",
+    "cards": "Tarjetas",
+    "access": "Acceso",
+    "roles": "Roles",
+    "groups": "Grupos",
+    "login": "Iniciar sesión",
+    "logout": "Cerrar sesión"
+  },
+  "Hero": {
+    "title": "Crea boletines con",
+    "subtitle": "",
+    "description": "Plataforma para crear, revisar y distribuir boletines agroclimáticos profesionales de manera colaborativa.",
+    "cta": "Comenzar a crear",
+    "stats": {
+      "countries": "Boletines de 2 paises",
+      "templates": "Plantillas personalizables"
+    },
+    "animatedWords": {
+      "word1": "información climática",
+      "word2": "recomendaciones",
+      "word3": "pronósticos"
+    }
+  },
+  "VisualResources": {
+    "title": "Recursos Visuales",
+    "subtitle": "Gestiona archivos visuales para tus boletines agroclimáticos: imágenes, fondos e iconos.",
+    "searchPlaceholder": "Buscar archivos...",
+    "uploadFile": "Subir Archivo",
+    "allFiles": "Todos los Archivos",
+    "images": "Imágenes",
+    "icons": "Iconos",
+    "noResults": "No se encontraron recursos",
+    "noResources": "No hay recursos visuales",
+    "tryDifferentSearch": "Intenta con diferentes términos de búsqueda",
+    "uploadFirst": "Comienza subiendo tus primeros archivos visuales",
+    "uploadFirstFile": "Subir Primer Archivo",
+    "uploadedBy": "Subido por",
+    "viewFile": "Ver Archivo",
+    "downloadFile": "Descargar Archivo",
+    "deleteFile": "Eliminar Archivo",
+    "updatedBy": "Actualizado por",
+    "edit": "Editar",
+    "download": "Descargar",
+    "delete": "Eliminar",
+    "editSuccess": "Recurso visual actualizado exitosamente",
+    "editError": "Error al actualizar el recurso visual",
+    "deleteSuccess": "Recurso visual eliminado exitosamente",
+    "deleteError": "Error al eliminar el recurso visual",
+    "backToTemplates": "Volver a Plantillas",
+    "backToVisualResources": "Volver a Recursos Visuales",
+    "uploadConfiguration": "Configuración del Recurso",
+    "resourceType": "Tipo de Recurso",
+    "accessType": "Tipo de Acceso",
+    "selectGroup": "Seleccionar Grupo",
+    "public": "Público",
+    "private": "Privado",
+    "groupSpecific": "Grupo Específico",
+    "dragFiles": "Arrastra archivos aquí",
+    "dropFiles": "Suelta los archivos aquí",
+    "clickToSelect": "o haz click para seleccionar archivos",
+    "selectFiles": "Seleccionar Archivos",
+    "selectedFiles": "Archivos Seleccionados",
+    "fileTooLarge": "Archivo demasiado grande",
+    "invalidFileType": "Tipo de archivo no válido para",
+    "uploading": "Subiendo...",
+    "uploaded": "Subido",
+    "uploadError": "Error",
+    "cancel": "Cancelar",
+    "uploadFiles": "Subir",
+    "customFileName": "Nombre Personalizado del Archivo",
+    "customFileNamePlaceholder": "Ingresa nombre personalizado (opcional)",
+    "customFileNameHelp": "Si se deja vacío, se usará el nombre original del archivo. La extensión se agregará automáticamente.",
+    "editFile": "Editar Archivo",
+    "editResource": "Editar Recurso Visual",
+    "preview": "Vista Previa",
+    "resourceInfo": "Información del Recurso",
+    "fileName": "Nombre del archivo",
+    "fileNamePlaceholder": "Nombre del archivo",
+    "fileType": "Tipo de archivo",
+    "image": "Imagen",
+    "icon": "Icono",
+    "accessTypeLabel": "Tipo de acceso",
+    "publicAccess": "Público",
+    "privateAccess": "Privado",
+    "restrictedAccess": "Restringido a grupo",
+    "allowedGroup": "Grupo permitido",
+    "saveChanges": "Guardar Cambios",
+    "saving": "Guardando...",
+    "cancelEdit": "Cancelar",
+    "deleteResource": "Eliminar Recurso",
+    "deleteConfirmTitle": "¿Eliminar recurso visual?",
+    "deleteConfirmMessage": "¿Estás seguro de que deseas eliminar \"{fileName}\"? Esta acción no se puede deshacer.",
+    "confirmDelete": "Sí, eliminar",
+    "cancelDelete": "Cancelar",
+    "deleting": "Eliminando..."
+  },
+  "Features": {
+    "title": "Todo lo que necesitas para crear",
+    "titleHighlight": "boletines excepcionales",
+    "description": "Una herramienta colaborativa que simplifica el proceso de creación, revisión y distribución de boletines agroclimáticos.",
+    "feature1": {
+      "title": "Generación de Boletines",
+      "description": "Crea boletines agroclimáticos profesionales con un editor intuitivo diseñado específicamente para cada país."
+    },
+    "feature2": {
+      "title": "Exportación Flexible",
+      "description": "Exporta tus boletines en múltiples formatos: PDF para impresión o imágenes en formato PNG o JPG para compartir en redes sociales."
+    },
+    "feature3": {
+      "title": "Flujo de Revisión",
+      "description": "Sistema completo de revisión colaborativa con control de versiones, comentarios y aprobaciones para garantizar la calidad del contenido."
+    },
+    "feature4": {
+      "title": "Plantillas Personalizadas",
+      "description": "Crea y guarda plantillas reutilizables que se adapten a tus necesidades específicas."
+    }
+  },
+  "Footer": {
+    "brand": "Bulletin builder",
+    "description": "Herramienta gratuita para crear boletines agroclimáticos de forma colaborativa.",
+    "links": "Enlaces",
+    "contact": "Contacto",
+    "copyright": "© 2025 Bulletin Builder.",
+    "email": "test@example.com",
+    "phone": "+1 (555) 123-4567"
+  },
+  "Templates": {
+    "title": "Crea nuevas plantillas totalmente personalizables",
+    "subtitle": "Gestiona y crea plantillas de boletines agroclimáticos con los campos que desees, imágenes y gráficos.",
+    "createNew": "Crear Nueva",
+    "visualResources": "Recursos Visuales",
+    "searchPlaceholder": "Buscar plantillas...",
+    "by": "por",
+    "lastModified": "Última modificación",
+    "view": "Ver",
+    "preview": "Vista Previa",
+    "edit": "Editar",
+    "download": "Descargar",
+    "delete": "Archivar",
+    "deleteConfirmTitle": "Archivar Plantilla",
+    "deleteConfirmMessage": "¿Estás seguro de que deseas archivar {name}? Esta acción cambiará su estado a archivado y no será visible en la lista principal.",
+    "cancelDelete": "Cancelar",
+    "confirmDeleteBtn": "Archivar",
+    "deleting": "Archivando...",
+    "deleteSuccess": "Plantilla {name} archivada exitosamente",
+    "deleteError": "Error al archivar la plantilla {name}: {error}",
+    "noResults": "No se encontraron plantillas",
+    "loading": "Cargando plantillas...",
+    "retry": "Reintentar",
+    "createFirst": "Crear tu primera plantilla",
+    "Create": {
+      "title": "Nueva Plantilla",
+      "subtitle": "Crea una nueva plantilla de boletín agroclimático",
+      "back": "Volver",
+      "name": "Nombre de la plantilla",
+      "namePlaceholder": "Ej. Boletín Mensual de Café",
+      "description": "Descripción",
+      "descriptionPlaceholder": "Describe el propósito de esta plantilla...",
+      "category": "Categoría",
+      "categories": {
+        "monthly": "Boletín Mensual",
+        "weekly": "Reporte Semanal",
+        "alerts": "Alertas Climáticas"
+      },
+      "create": "Crear Plantilla",
+      "cancel": "Cancelar"
+    }
+  },
+  "Bulletins": {
+    "title": "Gestiona y crea boletines agroclimáticos fácilmente",
+    "subtitle": "Crea, revisa y distribuye boletines profesionales con un flujo de trabajo colaborativo.",
+    "searchPlaceholder": "Buscar boletines...",
+    "createNew": "Crear Nuevo",
+    "noResults": "No se encontraron boletines",
+    "loading": "Cargando boletines...",
+    "createFirst": "Crear Nuevo Boletín",
+    "by": "por",
+    "lastModified": "Última modificación",
+    "view": "Ver",
+    "download": "Descargar"
+  },
+  "CreateBulletin": {
+    "title": "Crear Boletín",
+    "subtitle": "Crea un nuevo boletín agroclimático utilizando una plantilla",
+    "backToBulletins": "Volver a Boletines",
+    "success": "Boletín creado exitosamente",
+    "updateSuccess": "Boletín actualizado exitosamente",
+    "error": "Error al crear el boletín",
+    "errorLoadingTemplate": "Error al cargar la plantilla",
+    "selectTemplate": {
+      "title": "Seleccionar Plantilla",
+      "description": "Elige la plantilla que deseas utilizar para tu boletín",
+      "searchPlaceholder": "Buscar plantillas...",
+      "noTemplates": "No se encontraron plantillas disponibles"
+    },
+    "basicInfo": {
+      "title": "Información Básica",
+      "description": "Define el nombre y los datos principales de tu boletín",
+      "fields": {
+        "name": {
+          "label": "Nombre del Boletín",
+          "placeholder": "Ej: Boletín Agroclimático - Enero 2025",
+          "helper": "Elige un nombre descriptivo para identificar fácilmente este boletín"
+        }
+      }
+    },
+    "headerFooter": {
+      "title": "Encabezado y Pie de Página",
+      "description": "Configura el encabezado y pie de página global de tu boletín",
+      "headerSection": "Encabezado Global",
+      "footerSection": "Pie de Página Global",
+      "selectOption": "Selecciona una opción...",
+      "noFields": "Esta plantilla no tiene campos configurables para encabezado y pie de página",
+      "headerTitle": "Encabezado del Boletín",
+      "headerDescription": "Configura la información que aparecerá en el encabezado de tu boletín",
+      "footerTitle": "Pie de Página del Boletín",
+      "footerDescription": "Configura la información que aparecerá en el pie de página de tu boletín"
+    },
+    "section": {
+      "title": "Sección",
+      "description": "Llena la información de esta sección",
+      "selectOption": "Selecciona una opción...",
+      "noFields": "Esta sección no tiene campos configurables",
+      "headerFields": "Campos del Encabezado"
+    },
+    "fillData": {
+      "sectionProgress": "Sección {current} de {total}",
+      "selectOption": "Selecciona una opción..."
+    },
+    "navigation": {
+      "next": "Siguiente",
+      "previous": "Anterior",
+      "finish": "Crear Boletín",
+      "creating": "Creando..."
+    },
+    "preview": {
+      "title": "Vista Previa",
+      "subtitle": "Visualiza cómo se verá tu boletín",
+      "selectTemplate": "Selecciona una plantilla para ver la vista previa"
+    },
+    "export": {
+      "title": "Exportar Boletín",
+      "description": "Revisa todas las secciones y exporta tu boletín como imágenes",
+      "exportButton": "Exportar Boletín",
+      "exporting": "Exportando..."
+    }
+  },
+  "Authentication": {
+    "verification": "Verificación en curso...",
+    "accessRestrictedTitle": "Acceso restringido",
+    "accessRestrictedMessage": "Debes iniciar sesión para acceder a esta página.",
+    "redirecting": "Redirigiendo a inicio de sesión...",
+    "accessDeniedTitle": "Acceso denegado",
+    "accessDeniedMessage": "No tienes permisos para acceder a esta sección."
+  },
+  "CreateTemplate": {
+    "title": "Crear Nueva Plantilla",
+    "subtitle": "Diseña una plantilla personalizada para tus boletines agroclimáticos",
+    "editTitle": "Editar Plantilla",
+    "editSubtitle": "Actualiza y mejora tu plantilla de boletín agroclimático",
+    "back": "Volver a Plantillas",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "finish": "Crear Plantilla",
+    "creating": "Creando...",
+    "success": "¡Plantilla creada exitosamente!",
+    "updateSuccess": "¡Plantilla actualizada exitosamente!",
+    "error": "Error al crear la plantilla: {error}",
+    "backToTemplates": "Volver a Plantillas",
+    "steps": {
+      "basicInfo": {
+        "title": "Info Básica",
+        "description": "Nombre y descripción"
+      },
+      "generalConfig": {
+        "title": "Config General",
+        "description": "Estilos globales"
+      },
+      "headerFooter": {
+        "title": "Header/Footer",
+        "description": "Encabezados y pie"
+      },
+      "sections": {
+        "title": "Secciones",
+        "description": "Contenido principal"
+      }
+    },
+    "navigation": {
+      "next": "Siguiente",
+      "previous": "Anterior",
+      "finish": "Crear Plantilla",
+      "update": "Actualizar Plantilla"
+    },
+    "basicInfo": {
+      "title": "Información Básica",
+      "description": "Define los datos principales de tu plantilla",
+      "fields": {
+        "name": {
+          "label": "Nombre de la Plantilla",
+          "placeholder": "Ej: Boletín Agroclimático de Café - Nariño"
+        },
+        "description": {
+          "label": "Descripción",
+          "placeholder": "Describe el propósito y alcance de esta plantilla..."
+        },
+        "status": {
+          "label": "Estado",
+          "options": {
+            "draft": "Borrador",
+            "active": "Activa",
+            "archived": "Archivada"
+          }
+        },
+        "accessType": {
+          "label": "Tipo de Acceso",
+          "options": {
+            "public": "Público",
+            "restricted": "Restringido"
+          },
+          "help": {
+            "public": "Visible para todos los usuarios",
+            "restricted": "Solo visible para grupos específicos"
+          }
+        },
+        "allowedGroups": {
+          "label": "Grupos Permitidos",
+          "placeholder": "Selecciona los grupos que pueden acceder a esta plantilla...",
+          "loading": "Cargando grupos..."
+        }
+      }
+    },
+    "generalConfig": {
+      "title": "Configuración General",
+      "description": "Define los estilos globales que se aplicarán a toda la plantilla",
+      "fields": {
+        "commitMessage": {
+          "label": "Mensaje de Versión",
+          "placeholder": "Describe los cambios de esta versión..."
+        }
+      },
+      "dimensions": {
+        "title": "Dimensiones del Boletín",
+        "width": {
+          "label": "Ancho (px)"
+        },
+        "height": {
+          "label": "Alto (px)"
+        },
+        "help": "Define el tamaño del boletín. Los valores por defecto son 638x366 píxeles."
+      },
+      "styles": {
+        "title": "Estilos Globales",
+        "font": {
+          "label": "Fuente"
+        },
+        "primaryColor": {
+          "label": "Color Primario"
+        },
+        "secondaryColor": {
+          "label": "Color Secundario"
+        },
+        "backgroundColor": {
+          "label": "Color de Fondo"
+        },
+        "fontSize": {
+          "label": "Tamaño de Fuente (px)"
+        },
+        "textAlign": {
+          "label": "Alineación del Texto",
+          "options": {
+            "left": "Izquierda",
+            "center": "Centro",
+            "right": "Derecha"
+          }
+        }
+      },
+      "preview": {
+        "title": "Vista Previa de Estilos",
+        "sampleText": "Así es como se verá tu texto",
+        "primaryText": "Ejemplo de texto con color primario",
+        "secondaryText": "Ejemplo de texto con color secundario",
+        "backgroundNote": "El color de fondo se aplicará a todo el documento",
+        "subtitle": "Subtítulo de ejemplo",
+        "text": "Este es un texto de ejemplo que muestra cómo se verá tu contenido con los estilos seleccionados.",
+        "smallText": "Texto pequeño para detalles adicionales y notas."
+      }
+    },
+    "headerFooter": {
+      "title": "Configuración de Header y Footer",
+      "description": "Configura los campos que aparecerán en el encabezado y pie de página",
+      "tabs": {
+        "header": "Encabezado",
+        "footer": "Pie de Página"
+      },
+      "info": {
+        "header": {
+          "title": "¿Qué es el Header?",
+          "description": "El header aparece al inicio de cada página del boletín. Es ideal para títulos, fechas, logos y información general."
+        },
+        "footer": {
+          "title": "¿Qué es el Footer?",
+          "description": "El footer aparece al final de cada página del boletín. Es perfecto para numeración de páginas, información de contacto y créditos."
+        }
+      },
+      "addField": "Agregar Campo",
+      "noFields": "Aún no se han agregado campos",
+      "removeField": "Eliminar Campo",
+      "fieldsList": "Lista de Campos ({count})",
+      "fields": {
+        "title": "Campos",
+        "add": "Agregar Campo",
+        "empty": "No hay campos configurados",
+        "emptyHint": "Agrega campos para personalizar este componente",
+        "type": "Tipo",
+        "form": "Formulario",
+        "bulletin": "Boletín"
+      },
+      "editField": {
+        "title": "Editar Campo"
+      },
+      "globalStyles": {
+        "title": "Estilos Globales",
+        "font": "Fuente",
+        "color": "Color del Texto",
+        "secondaryColor": "Color Secundario",
+        "backgroundColor": "Color de Fondo",
+        "fontSize": "Tamaño de Fuente (px)",
+        "iconSize": "Tamaño de Iconos (px)",
+        "iconUseOriginalColor": "Mantener color original del icono",
+        "iconUseOriginalColorHelp": "Si está desactivado, el icono usará el color primario del contexto",
+        "fontWeight": "Grosor del Texto",
+        "fontStyle": "Estilo del Texto",
+        "textDecoration": "Decoración del Texto",
+        "textAlign": "Alineación del Texto",
+        "borderColor": "Color del Borde",
+        "backgroundImage": "Imagen de Fondo",
+        "borderWidth": "Grosor del Borde",
+        "borderRadius": "Redondeado",
+        "borderSides": "Lados del Borde",
+        "borderSidesHelp": "Selecciona los lados donde quieres mostrar el borde",
+        "borderTop": "Superior",
+        "borderBottom": "Inferior",
+        "borderLeft": "Izquierda",
+        "borderRight": "Derecha",
+        "padding": "Espaciado Interno",
+        "margin": "Espaciado Externo",
+        "gap": "Espaciado entre Campos",
+        "help": "Estos estilos se aplicarán a todo el componente. Los estilos individuales de los campos pueden sobrescribir estos valores.",
+        "alignOptions": {
+          "left": "Izquierda",
+          "center": "Centro",
+          "right": "Derecha"
+        }
+      },
+      "layout": {
+        "title": "Disposición de Campos",
+        "fieldsLayout": {
+          "label": "Organización de campos",
+          "options": {
+            "horizontal": "Horizontal (uno al lado del otro)",
+            "vertical": "Vertical (uno debajo del otro)"
+          },
+          "help": "Define cómo se organizarán los campos del componente."
+        }
+      }
+    },
+    "sections": {
+      "title": "Configuración de Secciones",
+      "description": "Diseña las secciones principales del contenido de tu plantilla",
+      "addSection": "Agregar Sección",
+      "info": "Total de secciones",
+      "noSections": {
+        "title": "Aún no hay secciones",
+        "description": "Las secciones son los bloques principales de tu plantilla. Cada sección puede contener múltiples bloques de contenido.",
+        "cta": "Agrega tu primera sección"
+      },
+      "empty": {
+        "title": "No hay secciones",
+        "description": "Agrega tu primera sección para comenzar a estructurar tu plantilla",
+        "addFirst": "Agregar Primera Sección"
+      },
+      "section": {
+        "editName": "Editar nombre de sección",
+        "addBlock": "Agregar Bloque",
+        "duplicate": "Duplicar",
+        "remove": "Eliminar",
+        "moveUp": "Mover Arriba",
+        "moveDown": "Mover Abajo",
+        "blocks": "Bloques",
+        "noBlocks": "No hay bloques en esta sección",
+        "sectionId": "ID de Sección",
+        "iconUrl": "URL del Icono"
+      },
+      "block": {
+        "editName": "Editar nombre del bloque",
+        "addField": "Agregar Campo",
+        "remove": "Eliminar Bloque",
+        "fields": "Campos",
+        "noFields": "No hay campos en este bloque"
+      }
+    },
+    "fieldEditor": {
+      "title": "Editor de Campos",
+      "basicInfo": "Información Básica",
+      "save": "Guardar Cambios",
+      "cancel": "Cancelar",
+      "noConfig": "No hay configuraciones específicas para este tipo de campo",
+      "basic": {
+        "fieldId": "ID del Campo",
+        "displayName": "Nombre para Mostrar",
+        "type": "Tipo de Campo",
+        "label": "Etiqueta",
+        "description": "Descripción"
+      },
+      "visibility": {
+        "title": "Visibilidad",
+        "form": "Mostrar en formulario de creación de boletín",
+        "bulletin": "Mostrar en boletín final",
+        "formHelp": "Si no se muestra en el formulario, la etiqueta y descripción se asignarán automáticamente del nombre a mostrar"
+      },
+      "validation": {
+        "title": "Validación",
+        "required": "Campo obligatorio",
+        "minLength": "Longitud Mínima",
+        "maxLength": "Longitud Máxima"
+      },
+      "specificConfig": {
+        "title": "Configuración Específica"
+      },
+      "actions": {
+        "save": "Guardar",
+        "cancel": "Cancelar",
+        "remove": "Eliminar",
+        "addOption": "Agregar Opción",
+        "addParameter": "Agregar Parámetro",
+        "add": "Agregar"
+      },
+      "fields": {
+        "fieldId": {
+          "label": "ID del Campo",
+          "help": "Identificador único (sin espacios ni caracteres especiales)"
+        },
+        "displayName": {
+          "label": "Nombre para Mostrar",
+          "help": "Nombre que verán los usuarios"
+        },
+        "type": {
+          "label": "Tipo de Campo"
+        },
+        "label": {
+          "label": "Etiqueta",
+          "help": "Etiqueta opcional para el usuario"
+        },
+        "description": {
+          "label": "Descripción",
+          "help": "Texto de ayuda para el usuario"
+        },
+        "form": {
+          "label": "Mostrar en formulario",
+          "help": "El campo aparecerá en el formulario de entrada de datos"
+        },
+        "bulletin": {
+          "label": "Mostrar en boletín",
+          "help": "El campo aparecerá en el boletín final"
+        },
+        "required": {
+          "label": "Campo obligatorio"
+        }
+      },
+      "fieldTypes": {
+        "text": "Texto",
+        "text_with_icon": "Texto con Icono",
+        "climate_data_puntual": "Datos Climáticos",
+        "list": "Lista",
+        "select": "Selección",
+        "select_with_icons": "Selección con Iconos",
+        "select_background": "Selección con Fondo",
+        "number": "Número",
+        "date": "Fecha",
+        "date_range": "Rango de Fechas",
+        "image_upload": "Subir Imagen",
+        "algorithm": "Algoritmo",
+        "page_number": "Número de Página",
+        "card": "Tarjeta",
+        "image": "Imagen"
+      },
+      "textConfig": {
+        "subtype": "Tipo de Texto",
+        "short": "Corto",
+        "long": "Largo",
+        "placeholder": {
+          "label": "Texto de Ejemplo"
+        },
+        "maxLength": {
+          "label": "Longitud Máxima"
+        },
+        "minLength": {
+          "label": "Longitud Mínima"
+        }
+      },
+      "textWithIconConfig": {
+        "iconOptions": "Opciones de Iconos",
+        "addIcon": "Agregar Icono",
+        "iconUrlPlaceholder": "https://ejemplo.com/icono.svg"
+      },
+      "numberConfig": {
+        "subtype": {
+          "label": "Tipo de Número",
+          "integer": "Entero",
+          "decimal": "Decimal"
+        },
+        "min": {
+          "label": "Valor Mínimo"
+        },
+        "max": {
+          "label": "Valor Máximo"
+        },
+        "step": {
+          "label": "Incremento"
+        },
+        "decimals": {
+          "label": "Lugares Decimales"
+        },
+        "minValue": "Valor Mínimo",
+        "maxValue": "Valor Máximo",
+        "decimalPlaces": "Lugares Decimales"
+      },
+      "dateConfig": {
+        "format": "Formato de Fecha"
+      },
+      "dateRangeConfig": {
+        "format": "Formato de Fecha",
+        "startDateSection": "Fecha de Inicio",
+        "startDateLabel": "Etiqueta",
+        "startDateLabelPlaceholder": "Ej: Fecha Inicial, Desde, etc.",
+        "startDateDescription": "Descripción",
+        "startDateDescriptionPlaceholder": "Texto descriptivo para la fecha de inicio",
+        "endDateSection": "Fecha de Fin",
+        "endDateLabel": "Etiqueta",
+        "endDateLabelPlaceholder": "Ej: Fecha Final, Hasta, etc.",
+        "endDateDescription": "Descripción",
+        "endDateDescriptionPlaceholder": "Texto descriptivo para la fecha de fin"
+      },
+      "pageNumberConfig": {
+        "format": "Formato",
+        "help": "Use '{page}' para página actual y '{total}' para total de páginas",
+        "previewTitle": "Vista Previa de Paginación",
+        "formatLabel": "Formato configurado:",
+        "previewHelp": "Esta es una vista previa. Los números de página se generarán automáticamente."
+      },
+      "selectWithIconsConfig": {
+        "allowMultiple": "Permitir selección múltiple",
+        "allowMultipleHelp": "Si está activado, los usuarios podrán seleccionar múltiples opciones",
+        "showLabel": "Mostrar etiqueta junto al icono",
+        "showLabelHelp": "Si está activado, se mostrará el texto de la opción al lado del icono",
+        "optionsAndIcons": "Opciones e Iconos",
+        "optionLabel": "Opción",
+        "optionPlaceholder": "Texto de la opción",
+        "noOptionsMessage": "No hay opciones definidas. Haz clic en 'Agregar Opción' para comenzar.",
+        "iconUrl": "URL del Icono",
+        "iconUrlPlaceholder": "https://ejemplo.com/icono.png"
+      },
+      "climateDataConfig": {
+        "availableParameters": "Parámetros Climáticos Disponibles",
+        "parameterKey": "Clave del Parámetro",
+        "label": "Etiqueta",
+        "unit": "Unidad",
+        "type": "Tipo",
+        "colName": "Nombre de Columna",
+        "addNewParameter": "Agregar Nuevo Parámetro",
+        "noParameters": "No hay parámetros climáticos configurados. Haz clic en 'Agregar Parámetro' para comenzar.",
+        "helpTitle": "Información sobre Datos Climáticos",
+        "helpParameter": "Cada parámetro representa un tipo de dato climático",
+        "helpColName": "El nombre de columna debe coincidir con el archivo de datos",
+        "helpType": "Usa 'Número' para valores numéricos y 'Texto' para observaciones",
+        "helpUnit": "La unidad se mostrará junto al valor en el boletín",
+        "defaultTitle": "Datos Climáticos",
+        "typeNumber": "Número",
+        "typeText": "Texto",
+        "placeholders": {
+          "labelExample": "Ej: Temperatura Máxima",
+          "unitExample": "Ej: °C, mm, %",
+          "colNameExample": "Ej: temp_max, precip",
+          "keyExample": "Ej: t_max, precip"
+        },
+        "previewExampleValue": "Valor ejemplo"
+      },
+      "value": {
+        "title": "Valor del Campo",
+        "label": "Valor",
+        "placeholder": "Valor que se mostrará en el boletín",
+        "help": "Como este campo no aparece en el formulario, debes definir aquí el valor que se mostrará",
+        "iconLabel": "Icono",
+        "loadingIcons": "Cargando iconos disponibles...",
+        "noIconsAvailable": "No hay iconos disponibles. Por favor, suba iconos en la sección de Recursos Visuales.",
+        "selectIconPlaceholder": "Seleccione un icono",
+        "selectIcon": "Seleccionar Icono",
+        "selectedIcon": "Icono seleccionado",
+        "iconHelp": "Seleccione el icono que acompañará al texto en el boletín"
+      },
+      "styleConfig": {
+        "title": "Estilos del Campo",
+        "color": "Color del Texto",
+        "fontSize": "Tamaño de Fuente (px)",
+        "iconSize": "Tamaño de Iconos (px)",
+        "iconUseOriginalColor": "Mantener color original del icono",
+        "iconUseOriginalColorHelp": "Si está desactivado, el icono usará el color primario del contexto",
+        "fontWeight": "Grosor del Texto",
+        "fontStyle": "Estilo del Texto",
+        "textDecoration": "Decoración del Texto",
+        "textAlign": "Alineación del Texto",
+        "borderColor": "Color del Borde",
+        "borderWidth": "Grosor del Borde (px)",
+        "borderRadius": "Redondeado (px)",
+        "borderSides": "Lados del Borde",
+        "borderSidesHelp": "Selecciona los lados donde quieres mostrar el borde",
+        "borderTop": "Superior",
+        "borderBottom": "Inferior",
+        "borderLeft": "Izquierda",
+        "borderRight": "Derecha",
+        "padding": "Padding (CSS)",
+        "margin": "Margin (CSS)",
+        "gap": "Espaciado entre Campos (px)",
+        "backgroundImage": "Imagen de Fondo",
+        "alignOptions": {
+          "left": "Izquierda",
+          "center": "Centro",
+          "right": "Derecha"
+        },
+        "fontWeightOptions": {
+          "thin": "Thin (100)",
+          "extraLight": "Extra Light (200)",
+          "light": "Light (300)",
+          "normal": "Normal (400)",
+          "medium": "Medium (500)",
+          "semiBold": "Semi Bold (600)",
+          "bold": "Bold (700)",
+          "extraBold": "Extra Bold (800)",
+          "black": "Black (900)"
+        },
+        "fontStyleOptions": {
+          "normal": "Normal",
+          "italic": "Cursiva"
+        },
+        "textDecorationOptions": {
+          "none": "Ninguna",
+          "underline": "Subrayado",
+          "lineThrough": "Tachado"
+        }
+      },
+      "preview": {
+        "title": "Vista Previa"
+      }
+    },
+    "preview": {
+      "title": "Vista Previa",
+      "subtitle": "Así es como se verá tu plantilla",
+      "untitled": "Plantilla Sin Título",
+      "noDescription": "Sin descripción",
+      "header": "ENCABEZADO",
+      "footer": "PIE DE PÁGINA",
+      "noSections": "No hay secciones configuradas",
+      "emptySection": "Sección vacía",
+      "emptyBlock": "Bloque vacío",
+      "sampleData": {
+        "textField": "Texto de ejemplo",
+        "dateField": "Fecha: {date}",
+        "dateRange": "Período: {start} - {end}",
+        "listTitle": "Lista de Ejemplo:",
+        "listItems": ["Elemento 1", "Elemento 2", "Elemento 3"],
+        "climateTitle": "Datos Climáticos:",
+        "climateData": [
+          "Temperatura: 25°C",
+          "Humedad: 65%",
+          "Precipitación: 15mm"
+        ]
+      }
+    }
+  },
+  "Roles": {
+    "title": "Gestión de Roles",
+    "subtitle": "Los roles definen los permisos y nivel de acceso de los usuarios en la plataforma. Cada rol tiene permisos específicos para diferentes módulos del sistema usando un modelo CRUD (Crear, Leer, Actualizar, Eliminar).",
+    "searchPlaceholder": "Buscar roles por nombre o descripción...",
+    "createNew": "Crear Rol",
+    "loading": "Cargando roles...",
+    "errorTitle": "Error al cargar roles",
+    "showing": "Mostrando {filtered} de {total} roles",
+    "totalRoles": "Total de roles: {count}",
+    "table": {
+      "role": "Rol",
+      "description": "Descripción",
+      "activePermissions": "Permisos Activos",
+      "enabledModules": "Módulos Habilitados",
+      "actions": "Acciones",
+      "viewDetails": "Ver detalles",
+      "modulesCount": "{count} / 7 módulos",
+      "edit": "Editar",
+      "hide": "Ocultar",
+      "activePermissionsLabel": "Permisos activos:",
+      "enabledModulesLabel": "de 7 módulos habilitados",
+      "enabledModulesCount": "{count} de 7 módulos habilitados",
+      "modulesAndPermissions": "Módulos y Permisos CRUD:",
+      "noModulesEnabled": "Este rol no tiene módulos habilitados"
+    },
+    "modules": {
+      "bulletinscomposer": "Boletines",
+      "templatemanagement": "Plantillas",
+      "dashboardbulletins": "Dashboard",
+      "review": "Revisión",
+      "cardmanagement": "Cards",
+      "accesscontrol": "Acceso",
+      "externalintegrations": "Integraciones"
+    },
+    "crud": {
+      "create": "Crear",
+      "read": "Leer",
+      "update": "Actualizar",
+      "delete": "Eliminar"
+    },
+    "noResults": "No se encontraron roles",
+    "noResultsSearch": "Intenta con otros términos de búsqueda",
+    "noRolesSystem": "No hay roles configurados en el sistema",
+    "permissionsInfo": {
+      "title": "Módulos de Permisos del Sistema",
+      "bulletinsComposer": "Crear y editar boletines",
+      "templateManagement": "Gestionar plantillas",
+      "dashboardBulletins": "Ver listado de boletines",
+      "review": "Gestionar proceso de revisión",
+      "cardManagement": "Gestionar cards reutilizables",
+      "accessControl": "Gestionar usuarios y roles",
+      "externalIntegrations": "Gestionar integraciones",
+      "crudNote": "Cada módulo puede tener permisos de {create}, {read}, {update} y {delete} (CRUD).",
+      "create": "Crear",
+      "read": "Leer",
+      "update": "Actualizar",
+      "delete": "Eliminar"
+    }
+  },
+  "CreateRole": {
+    "backToRoles": "Volver a Roles",
+    "title": "Crear Nuevo Rol",
+    "subtitle": "Define permisos y accesos para un nuevo rol en el sistema",
+    "titleEdit": "Editar Rol",
+    "subtitleEdit": "Modifica permisos y accesos del rol existente",
+    "loadingRole": "Cargando rol...",
+    "basicInfo": "Información Básica",
+    "roleName": "Nombre del Rol",
+    "roleNamePlaceholder": "ej. Editor de Boletines",
+    "roleNameRequired": "El nombre del rol es requerido",
+    "roleNameMinLength": "El nombre debe tener al menos 3 caracteres",
+    "description": "Descripción",
+    "descriptionPlaceholder": "Describe las responsabilidades y alcance de este rol...",
+    "descriptionRequired": "La descripción es requerida",
+    "descriptionMinLength": "La descripción debe tener al menos 10 caracteres",
+    "permissions": "Permisos del Rol",
+    "permissionsEnabled": "Permisos habilitados",
+    "permissionsRequired": "Debe habilitar al menos un permiso para el rol",
+    "module": "Módulo",
+    "all": "Todo",
+    "checkAll": "Marcar",
+    "uncheckAll": "Desmarcar",
+    "complete": "Completar",
+    "permissionsNote": "Nota: Los permisos CRUD permiten: Crear nuevos recursos, Leer y visualizar información, Actualizar recursos existentes y Eliminar recursos. Asegúrate de otorgar solo los permisos necesarios para cada rol.",
+    "cancel": "Cancelar",
+    "createRole": "Crear Rol",
+    "creating": "Creando Rol...",
+    "createSuccess": "Rol creado exitosamente",
+    "createError": "Error al crear el rol",
+    "updateRole": "Actualizar Rol",
+    "updating": "Actualizando...",
+    "updateSuccess": "Rol actualizado exitosamente",
+    "updateError": "Error al actualizar el rol",
+    "validationError": "Por favor corrige los errores del formulario",
+    "connectionError": "Error de conexión al crear el rol",
+    "modules": {
+      "bulletinscomposer": {
+        "name": "Compositor de Boletines",
+        "description": "Crear y editar boletines agroclimáticos"
+      },
+      "templatemanagement": {
+        "name": "Gestión de Plantillas",
+        "description": "Administrar plantillas de boletines"
+      },
+      "dashboardbulletins": {
+        "name": "Dashboard de Boletines",
+        "description": "Ver listado y estado de boletines"
+      },
+      "review": {
+        "name": "Revisión",
+        "description": "Gestionar proceso de revisión de boletines"
+      },
+      "cardmanagement": {
+        "name": "Gestión de Cards",
+        "description": "Administrar cards reutilizables"
+      },
+      "accesscontrol": {
+        "name": "Control de Acceso",
+        "description": "Gestionar usuarios, roles y grupos"
+      },
+      "externalintegrations": {
+        "name": "Integraciones Externas",
+        "description": "Configurar integraciones con sistemas externos"
+      }
+    },
+    "crud": {
+      "create": "Crear",
+      "read": "Leer",
+      "update": "Actualizar",
+      "delete": "Eliminar"
+    }
+  },
+  "Groups": {
+    "title": "Gestión de Grupos",
+    "subtitle": "Los grupos organizan usuarios por afiliación geográfica y facilitan la gestión de permisos. Cada grupo representa un país o región y contiene usuarios con roles específicos.",
+    "searchPlaceholder": "Buscar grupos por nombre, país o descripción...",
+    "createNew": "Crear Grupo",
+    "loading": "Cargando grupos...",
+    "errorTitle": "Error al cargar grupos",
+    "showing": "Mostrando {filtered} de {total} grupos",
+    "totalGroups": "Total de grupos: {count}",
+    "table": {
+      "group": "Grupo",
+      "country": "País",
+      "description": "Descripción",
+      "members": "Miembros",
+      "roles": "Roles",
+      "actions": "Acciones",
+      "viewDetails": "Ver detalles",
+      "edit": "Editar",
+      "hide": "Ocultar",
+      "membersCount": "{count} miembros",
+      "rolesCount": "{count} roles únicos",
+      "usersAndRoles": "Usuarios y Roles:",
+      "noUsers": "Este grupo no tiene usuarios asignados",
+      "user": "Usuario",
+      "role": "Rol"
+    },
+    "noResults": "No se encontraron grupos",
+    "noResultsSearch": "Intenta con otros términos de búsqueda",
+    "noGroupsSystem": "No hay grupos configurados en el sistema",
+    "groupsInfo": {
+      "title": "Acerca de los Grupos",
+      "description": "Los grupos permiten organizar usuarios según su ubicación geográfica (país) y asignarles roles específicos para gestionar boletines y recursos de manera colaborativa.",
+      "benefits": "Beneficios de usar grupos:",
+      "benefit1": "Organización geográfica de usuarios",
+      "benefit2": "Asignación de roles específicos por grupo",
+      "benefit3": "Gestión centralizada de permisos",
+      "benefit4": "Colaboración efectiva en boletines regionales"
+    }
+  },
+  "CreateGroup": {
+    "backToGroups": "Volver a Grupos",
+    "title": "Crear Nuevo Grupo",
+    "subtitle": "Define un nuevo grupo geográfico y asigna usuarios con roles específicos",
+    "titleEdit": "Editar Grupo",
+    "subtitleEdit": "Modifica la información y usuarios del grupo existente",
+    "loading": "Cargando...",
+    "loadingGroup": "Cargando grupo...",
+    "basicInfo": "Información Básica",
+    "groupName": "Nombre del Grupo",
+    "groupNamePlaceholder": "ej. Colombia, Vietnam",
+    "groupNameRequired": "El nombre del grupo es requerido",
+    "groupNameMinLength": "El nombre debe tener al menos 3 caracteres",
+    "country": "País (Código ISO-2)",
+    "countryPlaceholder": "ej. CO, VN, BR",
+    "countryRequired": "El código del país es requerido",
+    "countryInvalid": "El código del país debe ser de 2 caracteres (ISO-2)",
+    "description": "Descripción",
+    "descriptionPlaceholder": "Describe el alcance y propósito de este grupo...",
+    "descriptionRequired": "La descripción es requerida",
+    "descriptionMinLength": "La descripción debe tener al menos 10 caracteres",
+    "usersAccess": "Usuarios y Roles",
+    "usersAccessDescription": "Asigna usuarios y sus roles en este grupo. Puedes agregar usuarios después de crear el grupo.",
+    "addUser": "Agregar Usuario",
+    "removeUser": "Eliminar",
+    "userId": "Usuario",
+    "userIdPlaceholder": "ej. 507f1f77bcf86cd799439011",
+    "selectUser": "Selecciona un usuario",
+    "roleId": "Rol",
+    "roleIdPlaceholder": "ej. 507f191e810c19729de860ea",
+    "selectRole": "Selecciona un rol",
+    "noUsers": "No hay usuarios asignados aún",
+    "usersNote": "Nota: Los usuarios agregados tendrán acceso al grupo con los roles especificados. Asegúrate de que los IDs sean válidos.",
+    "cancel": "Cancelar",
+    "createGroup": "Crear Grupo",
+    "creating": "Creando Grupo...",
+    "createSuccess": "Grupo creado exitosamente",
+    "createError": "Error al crear el grupo",
+    "updateGroup": "Actualizar Grupo",
+    "updating": "Actualizando...",
+    "updateSuccess": "Grupo actualizado exitosamente",
+    "updateError": "Error al actualizar el grupo",
+    "validationError": "Por favor corrige los errores del formulario",
+    "connectionError": "Error de conexión al crear el grupo",
+    "countryInfo": {
+      "title": "Códigos de País (ISO 3166-1 alpha-2)",
+      "description": "Usa códigos de 2 letras en mayúsculas:",
+      "examples": "Ejemplos: CO (Colombia), VN (Vietnam), BR (Brasil), US (Estados Unidos), MX (México)"
+    }
+  },
+  "Cards": {
+    "title": "Gestiona cards reutilizables para tus boletines",
+    "subtitle": "Las cards son contenido predefinido que puedes insertar en tus boletines: plagas, enfermedades, información de cultivos y recomendaciones.",
+    "createNew": "Crear Card",
+    "searchPlaceholder": "Buscar cards por nombre o tipo...",
+    "by": "por",
+    "updatedBy": "Actualizado por",
+    "lastModified": "Última modificación",
+    "view": "Ver",
+    "edit": "Editar",
+    "duplicate": "Duplicar",
+    "delete": "Eliminar",
+    "deleteConfirmTitle": "Eliminar Card",
+    "deleteConfirmMessage": "¿Estás seguro de que deseas eliminar \"{name}\"? Esta acción no se puede deshacer.",
+    "cancelDelete": "Cancelar",
+    "confirmDeleteBtn": "Eliminar",
+    "deleting": "Eliminando...",
+    "deleteSuccess": "Card \"{name}\" eliminada exitosamente",
+    "deleteError": "Error al eliminar la card \"{name}\": {error}",
+    "duplicateConfirmTitle": "Duplicar Card",
+    "duplicateConfirmMessage": "Ingresa el nombre para la nueva card duplicada:",
+    "cardNameLabel": "Nombre de la Card",
+    "cardNamePlaceholder": "Nombre de la card duplicada",
+    "cancelDuplicate": "Cancelar",
+    "confirmDuplicateBtn": "Duplicar",
+    "duplicating": "Duplicando...",
+    "duplicateSuccess": "Card \"{name}\" duplicada exitosamente",
+    "duplicateError": "Error al duplicar la card \"{name}\": {error}",
+    "noResults": "No se encontraron cards",
+    "loading": "Cargando cards...",
+    "retry": "Reintentar",
+    "createFirst": "Crear tu primera card",
+    "cardTypes": {
+      "pest_or_disease": "Plaga o Enfermedad",
+      "crop_info": "Información de Cultivo",
+      "recommendation": "Recomendación",
+      "weather_alert": "Alerta Climática",
+      "general": "General"
+    },
+    "filterByType": "Filtrar por tipo",
+    "allTypes": "Todos los tipos",
+    "blocks": "bloques",
+    "fields": "campos",
+    "templates": "plantillas"
+  },
+  "CreateCard": {
+    "title": "Crear Card",
+    "titleEdit": "Editar Card",
+    "subtitle": "Define el contenido predefinido que podrá ser usado en los boletines",
+    "backToCards": "Volver a Cards",
+    "steps": {
+      "basicInfo": "Información Básica",
+      "basicInfoDesc": "Define los datos principales de la card",
+      "content": "Contenido",
+      "contentDesc": "Configura los bloques y campos de la card"
+    },
+    "actions": {
+      "next": "Siguiente",
+      "back": "Atrás",
+      "create": "Crear Card",
+      "update": "Actualizar Card"
+    },
+    "messages": {
+      "createSuccess": "Card creada exitosamente",
+      "updateSuccess": "Card actualizada exitosamente",
+      "saveError": "Error al guardar la card: {error}",
+      "duplicateCardName": "Ya existe una card con este nombre. Por favor, elige un nombre diferente."
+    },
+    "basicInfo": {
+      "title": "Información Básica",
+      "description": "Define los datos principales de tu card",
+      "name": "Nombre de la Card",
+      "namePlaceholder": "Ej: Alerta de Plagas en Café",
+      "type": "Tipo de Card",
+      "typeHelp": "Selecciona el tipo de card según su propósito",
+      "accessType": "Tipo de Acceso",
+      "accessTypeHelp": "Define quién puede usar esta card",
+      "accessTypes": {
+        "public": "Público",
+        "private": "Privado",
+        "restricted": "Restringido"
+      },
+      "allowedGroups": "Grupos Permitidos",
+      "allowedGroupsHelp": "Mantén presionado Ctrl/Cmd para seleccionar múltiples grupos",
+      "loadingGroups": "Cargando grupos...",
+      "errors": {
+        "nameRequired": "El nombre de la card es requerido",
+        "typeRequired": "El tipo de card es requerido",
+        "groupsRequired": "Debes seleccionar al menos un grupo para cards restringidas"
+      }
+    },
+    "content": {
+      "title": "Contenido de la Card",
+      "description": "Configura los bloques y campos que formarán el contenido de la card",
+      "tabs": {
+        "blocks": "Bloques",
+        "header": "Encabezado",
+        "footer": "Pie de Página"
+      },
+      "images": "Imágenes",
+      "backgroundUrl": "URL de Fondo",
+      "backgroundUrlPlaceholder": "https://ejemplo.com/fondo.jpg",
+      "backgroundUrlHelp": "URL de la imagen de fondo para la card",
+      "iconUrl": "URL del Ícono",
+      "iconUrlPlaceholder": "https://ejemplo.com/icono.svg",
+      "iconUrlHelp": "URL del ícono que representa la card",
+      "blocks": "Bloques",
+      "addBlock": "Agregar Bloque",
+      "removeBlock": "Eliminar Bloque",
+      "blockNamePlaceholder": "Nombre del bloque",
+      "blockType": "Tipo de Bloque",
+      "blockTypes": {
+        "text": "Texto",
+        "image": "Imagen",
+        "mixed": "Mixto"
+      },
+      "fields": "Campos",
+      "addField": "Agregar Campo",
+      "editField": "Editar Campo",
+      "removeField": "Eliminar Campo",
+      "edit": "Editar",
+      "noBlocks": "No hay bloques aún. Agrega el primer bloque para comenzar.",
+      "noFields": "Este bloque no tiene campos aún",
+      "errors": {
+        "blocksRequired": "Debes agregar al menos un bloque"
+      }
+    },
+    "preview": {
+      "title": "Vista Previa",
+      "cardName": "Nombre",
+      "untitled": "Sin título",
+      "cardType": "Tipo",
+      "accessType": "Acceso",
+      "public": "Público",
+      "private": "Privado",
+      "images": "Imágenes",
+      "background": "Fondo",
+      "icon": "Ícono",
+      "statistics": "Estadísticas",
+      "blocks": "Bloques",
+      "fields": "Campos",
+      "content": "Contenido",
+      "noFields": "Sin campos",
+      "noContent": "No hay contenido aún"
+    }
+  },
+  "Dashboard": {
+    "title": "Panel",
+    "subtitle": "Resumen rápido de plantillas, boletines y cards disponibles",
+    "templates": "Plantillas",
+    "bulletins": "Boletines",
+    "cards": "Tarjetas",
+    "searchPlaceholder": "Buscar en el dashboard...",
+    "loading": "Cargando elementos...",
+    "noResults": "No se encontraron elementos",
+    "noAccessTitle": "Sin acceso",
+    "noAccessMessage": "No tienes acceso a ninguna sección del panel.",
+    "deleteConfirmTitle": "Confirmar acción",
+    "deleteConfirmMessage": "¿Estás seguro de que deseas archivar \"{name}\"? Esta acción cambiará su estado a archivado.",
+    "cancelDelete": "Cancelar",
+    "confirmDeleteBtn": "Archivar",
+    "deleting": "Archivando...",
+    "deleteSuccess": "{name} archivado exitosamente",
+    "deleteError": "Error al archivar {name}: {error}"
+  }
+}

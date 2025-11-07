@@ -1,0 +1,1169 @@
+{
+  "Navbar": {
+    "templates": "Templates",
+    "bulletins": "Bulletins",
+    "cards": "Cards",
+    "access": "Access",
+    "roles": "Roles",
+    "groups": "Groups",
+    "login": "Login",
+    "logout": "Logout"
+  },
+  "Hero": {
+    "title": "Create bulletins with",
+    "subtitle": "",
+    "description": "Platform to create, review and distribute professional agroclimatic bulletins collaboratively.",
+    "cta": "Start creating",
+    "stats": {
+      "countries": "Bulletins from 2 countries",
+      "templates": "Customizable templates"
+    },
+    "animatedWords": {
+      "word1": "climate information",
+      "word2": "recommendations",
+      "word3": "forecasts"
+    }
+  },
+  "VisualResources": {
+    "title": "Visual Resources",
+    "subtitle": "Manage visual files for your agroclimatic bulletins: images, backgrounds and icons.",
+    "searchPlaceholder": "Search files...",
+    "uploadFile": "Upload File",
+    "allFiles": "All Files",
+    "images": "Images",
+    "icons": "Icons",
+    "noResults": "No resources found",
+    "noResources": "No visual resources",
+    "tryDifferentSearch": "Try different search terms",
+    "uploadFirst": "Start by uploading your first visual files",
+    "uploadFirstFile": "Upload First File",
+    "uploadedBy": "Uploaded by",
+    "viewFile": "View File",
+    "downloadFile": "Download File",
+    "deleteFile": "Delete File",
+    "updatedBy": "Updated by",
+    "edit": "Edit",
+    "download": "Download",
+    "delete": "Delete",
+    "editSuccess": "Visual resource updated successfully",
+    "editError": "Error updating visual resource",
+    "deleteSuccess": "Visual resource deleted successfully",
+    "deleteError": "Error deleting visual resource",
+    "backToTemplates": "Back to Templates",
+    "backToVisualResources": "Back to Visual Resources",
+    "uploadConfiguration": "Resource Configuration",
+    "resourceType": "Resource Type",
+    "accessType": "Access Type",
+    "selectGroup": "Select Group",
+    "public": "Public",
+    "private": "Private",
+    "groupSpecific": "Group Specific",
+    "dragFiles": "Drag files here",
+    "dropFiles": "Drop files here",
+    "clickToSelect": "or click to select files",
+    "selectFiles": "Select Files",
+    "selectedFiles": "Selected Files",
+    "fileTooLarge": "File too large",
+    "invalidFileType": "Invalid file type for",
+    "uploading": "Uploading...",
+    "uploaded": "Uploaded",
+    "uploadError": "Error",
+    "cancel": "Cancel",
+    "uploadFiles": "Upload",
+    "customFileName": "Custom File Name",
+    "customFileNamePlaceholder": "Enter custom name (optional)",
+    "customFileNameHelp": "If left empty, the original file name will be used. Extension will be added automatically.",
+    "editFile": "Edit File",
+    "editResource": "Edit Visual Resource",
+    "preview": "Preview",
+    "resourceInfo": "Resource Information",
+    "fileName": "File name",
+    "fileNamePlaceholder": "File name",
+    "fileType": "File type",
+    "image": "Image",
+    "icon": "Icon",
+    "accessTypeLabel": "Access type",
+    "publicAccess": "Public",
+    "privateAccess": "Private",
+    "restrictedAccess": "Restricted to group",
+    "allowedGroup": "Allowed group",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "cancelEdit": "Cancel",
+    "deleteResource": "Delete Resource",
+    "deleteConfirmTitle": "Delete visual resource?",
+    "deleteConfirmMessage": "Are you sure you want to delete \"{fileName}\"? This action cannot be undone.",
+    "confirmDelete": "Yes, delete",
+    "cancelDelete": "Cancel",
+    "deleting": "Deleting..."
+  },
+  "Features": {
+    "title": "Everything you need to create",
+    "titleHighlight": "exceptional bulletins",
+    "description": "A collaborative tool that simplifies the process of creating, reviewing and distributing agroclimatic bulletins.",
+    "feature1": {
+      "title": "Bulletin Generation",
+      "description": "Create professional agroclimatic bulletins with an intuitive editor designed specifically for each country."
+    },
+    "feature2": {
+      "title": "Flexible Export",
+      "description": "Export your bulletins in multiple formats: PDF for printing or images in PNG or JPG format to share on social networks."
+    },
+    "feature3": {
+      "title": "Review Workflow",
+      "description": "Complete collaborative review system with version control, comments and approvals to ensure content quality."
+    },
+    "feature4": {
+      "title": "Custom Templates",
+      "description": "Create and save reusable templates that adapt to your specific needs."
+    }
+  },
+  "Footer": {
+    "brand": "Bulletin builder",
+    "description": "Free tool to create agroclimatic bulletins collaboratively.",
+    "links": "Links",
+    "contact": "Contact",
+    "copyright": "© 2025 Bulletin Builder.",
+    "email": "test@example.com",
+    "phone": "+1 (555) 123-4567"
+  },
+  "Templates": {
+    "title": "Create fully customizable new templates",
+    "subtitle": "Manage and create agroclimatic bulletin templates with the fields you want, images and charts.",
+    "createNew": "Create New",
+    "visualResources": "Visual Resources",
+    "searchPlaceholder": "Search templates...",
+    "by": "by",
+    "lastModified": "Last modified",
+    "view": "View",
+    "preview": "Preview",
+    "edit": "Edit",
+    "download": "Download",
+    "delete": "Archive",
+    "deleteConfirmTitle": "Archive Template",
+    "deleteConfirmMessage": "Are you sure you want to archive {name}? This action will change its status to archived and it will not be visible in the main list.",
+    "cancelDelete": "Cancel",
+    "confirmDeleteBtn": "Archive",
+    "deleting": "Archiving...",
+    "deleteSuccess": "Template {name} archived successfully",
+    "deleteError": "Error archiving template {name}: {error}",
+    "noResults": "No templates found",
+    "loading": "Loading templates...",
+    "retry": "Retry",
+    "createFirst": "Create your first template",
+    "Create": {
+      "title": "New Template",
+      "subtitle": "Create a new agroclimatic bulletin template",
+      "back": "Back",
+      "name": "Template name",
+      "namePlaceholder": "e.g. Monthly Coffee Bulletin",
+      "description": "Description",
+      "descriptionPlaceholder": "Describe the purpose of this template...",
+      "category": "Category",
+      "categories": {
+        "monthly": "Monthly Bulletin",
+        "weekly": "Weekly Report",
+        "alerts": "Climate Alerts"
+      },
+      "create": "Create Template",
+      "cancel": "Cancel"
+    }
+  },
+  "Bulletins": {
+    "title": "Manage and create agroclimatic bulletins",
+    "subtitle": "Create, review and distribute agroclimatic bulletins using customizable templates.",
+    "searchPlaceholder": "Search bulletins...",
+    "createNew": "Create New",
+    "noResults": "No bulletins found",
+    "loading": "Loading bulletins...",
+    "createFirst": "Create New Bulletin",
+    "by": "by",
+    "lastModified": "Last modified",
+    "view": "View",
+    "download": "Download"
+  },
+  "CreateBulletin": {
+    "title": "Create Bulletin",
+    "subtitle": "Create a new agroclimatic bulletin using a template",
+    "backToBulletins": "Back to Bulletins",
+    "success": "Bulletin created successfully",
+    "updateSuccess": "Bulletin updated successfully",
+    "error": "Error creating bulletin",
+    "errorLoadingTemplate": "Error loading template",
+    "selectTemplate": {
+      "title": "Select Template",
+      "description": "Choose the template you want to use for your bulletin",
+      "searchPlaceholder": "Search templates...",
+      "noTemplates": "No templates available"
+    },
+    "basicInfo": {
+      "title": "Basic Information",
+      "description": "Define the name and main data for your bulletin",
+      "fields": {
+        "name": {
+          "label": "Bulletin Name",
+          "placeholder": "e.g. Agroclimatic Bulletin - January 2025",
+          "helper": "Choose a descriptive name to easily identify this bulletin"
+        }
+      }
+    },
+    "headerFooter": {
+      "title": "Header and Footer",
+      "description": "Configure the global header and footer of your bulletin",
+      "headerSection": "Global Header",
+      "footerSection": "Global Footer",
+      "selectOption": "Select an option...",
+      "noFields": "This template has no configurable fields for header and footer",
+      "headerTitle": "Bulletin Header",
+      "headerDescription": "Configure the information that will appear in your bulletin's header",
+      "footerTitle": "Bulletin Footer",
+      "footerDescription": "Configure the information that will appear in your bulletin's footer"
+    },
+    "section": {
+      "title": "Section",
+      "description": "Fill in the information for this section",
+      "selectOption": "Select an option...",
+      "noFields": "This section has no configurable fields",
+      "headerFields": "Header Fields"
+    },
+    "fillData": {
+      "sectionProgress": "Section {current} of {total}",
+      "selectOption": "Select an option..."
+    },
+    "navigation": {
+      "next": "Next",
+      "previous": "Previous",
+      "finish": "Create Bulletin",
+      "creating": "Creating..."
+    },
+    "preview": {
+      "title": "Preview",
+      "subtitle": "Visualize how your bulletin will look",
+      "selectTemplate": "Select a template to see the preview"
+    },
+    "export": {
+      "title": "Export Bulletin",
+      "description": "Review all sections and export your bulletin as images",
+      "exportButton": "Export Bulletin",
+      "exporting": "Exporting..."
+    }
+  },
+  "Authentication": {
+    "verification": "Verification in progress...",
+    "accessRestrictedTitle": "Access restricted",
+    "accessRestrictedMessage": "You must be logged in to access this page.",
+    "redirecting": "Redirecting to login...",
+    "accessDeniedTitle": "Access Denied",
+    "accessDeniedMessage": "You do not have permission to access this section."
+  },
+  "CreateTemplate": {
+    "title": "Create New Template",
+    "subtitle": "Design a custom template for your agroclimatic bulletins",
+    "editTitle": "Edit Template",
+    "editSubtitle": "Update and improve your agroclimatic bulletin template",
+    "back": "Back to Templates",
+    "next": "Next",
+    "previous": "Previous",
+    "finish": "Create Template",
+    "creating": "Creating...",
+    "success": "Template created successfully!",
+    "updateSuccess": "Template updated successfully!",
+    "error": "Error creating template: {error}",
+    "backToTemplates": "Back to Templates",
+    "steps": {
+      "basicInfo": {
+        "title": "Basic Info",
+        "description": "Name and description"
+      },
+      "generalConfig": {
+        "title": "General Config",
+        "description": "Global styles"
+      },
+      "headerFooter": {
+        "title": "Header/Footer",
+        "description": "Headers and footers"
+      },
+      "sections": {
+        "title": "Sections",
+        "description": "Main content"
+      }
+    },
+    "navigation": {
+      "next": "Next",
+      "previous": "Previous",
+      "finish": "Create Template",
+      "update": "Update Template"
+    },
+    "basicInfo": {
+      "title": "Basic Information",
+      "description": "Define the main data for your template",
+      "fields": {
+        "name": {
+          "label": "Template Name",
+          "placeholder": "e.g. Coffee Agroclimatic Bulletin - Nariño"
+        },
+        "description": {
+          "label": "Description",
+          "placeholder": "Describe the purpose and scope of this template..."
+        },
+        "status": {
+          "label": "Status",
+          "options": {
+            "draft": "Draft",
+            "active": "Active",
+            "archived": "Archived"
+          }
+        },
+        "accessType": {
+          "label": "Access Type",
+          "options": {
+            "public": "Public",
+            "restricted": "Restricted"
+          },
+          "help": {
+            "public": "Visible to all users",
+            "restricted": "Only visible to specific groups"
+          }
+        },
+        "allowedGroups": {
+          "label": "Allowed Groups",
+          "placeholder": "Select groups that can access this template...",
+          "loading": "Loading groups..."
+        }
+      }
+    },
+    "generalConfig": {
+      "title": "General Configuration",
+      "description": "Define the global styles that will be applied to the entire template",
+      "fields": {
+        "commitMessage": {
+          "label": "Version Message",
+          "placeholder": "Describe the changes in this version..."
+        }
+      },
+      "dimensions": {
+        "title": "Bulletin Dimensions",
+        "width": {
+          "label": "Width (px)"
+        },
+        "height": {
+          "label": "Height (px)"
+        },
+        "help": "Define the bulletin size. Default values are 638x366 pixels."
+      },
+      "styles": {
+        "title": "Global Styles",
+        "font": {
+          "label": "Font"
+        },
+        "primaryColor": {
+          "label": "Primary Color"
+        },
+        "secondaryColor": {
+          "label": "Secondary Color"
+        },
+        "backgroundColor": {
+          "label": "Background Color"
+        },
+        "fontSize": {
+          "label": "Font Size (px)"
+        },
+        "textAlign": {
+          "label": "Text Alignment",
+          "options": {
+            "left": "Left",
+            "center": "Center",
+            "right": "Right"
+          }
+        }
+      },
+      "preview": {
+        "title": "Style Preview",
+        "sampleText": "This is how your text will look",
+        "primaryText": "Primary color text example",
+        "secondaryText": "Secondary color text example",
+        "backgroundNote": "Background color will be applied to the entire document",
+        "subtitle": "Sample subtitle",
+        "text": "This is sample body text that shows how your content will look with the selected styles.",
+        "smallText": "Small text for additional details and notes."
+      }
+    },
+    "headerFooter": {
+      "title": "Header and Footer Configuration",
+      "description": "Configure the fields that will appear in the header and footer",
+      "tabs": {
+        "header": "Header",
+        "footer": "Footer"
+      },
+      "info": {
+        "header": {
+          "title": "What is a Header?",
+          "description": "The header appears at the beginning of each page of the bulletin. It's ideal for titles, dates, logos and general information."
+        },
+        "footer": {
+          "title": "What is a Footer?",
+          "description": "The footer appears at the end of each page of the bulletin. It's perfect for page numbering, contact information and credits."
+        }
+      },
+      "addField": "Add Field",
+      "noFields": "No fields added yet",
+      "removeField": "Remove Field",
+      "fieldsList": "Fields List ({count})",
+      "fields": {
+        "title": "Fields",
+        "add": "Add Field",
+        "empty": "No fields configured",
+        "emptyHint": "Add fields to customize this component",
+        "type": "Type",
+        "form": "Form",
+        "bulletin": "Bulletin"
+      },
+      "editField": {
+        "title": "Edit Field"
+      },
+      "globalStyles": {
+        "title": "Global Styles",
+        "font": "Font",
+        "color": "Text Color",
+        "secondaryColor": "Secondary Color",
+        "backgroundColor": "Background Color",
+        "fontSize": "Font Size (px)",
+        "iconSize": "Icon Size (px)",
+        "iconUseOriginalColor": "Keep original icon color",
+        "iconUseOriginalColorHelp": "If disabled, the icon will use the primary color from the context",
+        "fontWeight": "Font Weight",
+        "fontStyle": "Font Style",
+        "textDecoration": "Text Decoration",
+        "textAlign": "Text Alignment",
+        "borderColor": "Border Color",
+        "backgroundImage": "Background Image",
+        "borderWidth": "Border Width",
+        "borderRadius": "Border Radius",
+        "borderSides": "Border Sides",
+        "borderSidesHelp": "Select which sides should display the border",
+        "borderTop": "Top",
+        "borderBottom": "Bottom",
+        "borderLeft": "Left",
+        "borderRight": "Right",
+        "padding": "Padding",
+        "margin": "Margin",
+        "gap": "Gap between Fields",
+        "help": "These styles will be applied to the entire component. Individual field styles can override these values.",
+        "alignOptions": {
+          "left": "Left",
+          "center": "Center",
+          "right": "Right"
+        }
+      },
+      "layout": {
+        "title": "Fields Layout",
+        "fieldsLayout": {
+          "label": "Fields organization",
+          "options": {
+            "horizontal": "Horizontal (side by side)",
+            "vertical": "Vertical (one below the other)"
+          },
+          "help": "Define how fields will be organized within the component."
+        }
+      }
+    },
+    "sections": {
+      "title": "Sections Configuration",
+      "description": "Design the main sections of your template content",
+      "addSection": "Add Section",
+      "info": "Total sections",
+      "noSections": {
+        "title": "No sections yet",
+        "description": "Sections are the main building blocks of your template. Each section can contain multiple content blocks.",
+        "cta": "Add your first section"
+      },
+      "empty": {
+        "title": "No sections",
+        "description": "Add your first section to start structuring your template",
+        "addFirst": "Add First Section"
+      },
+      "section": {
+        "editName": "Edit section name",
+        "addBlock": "Add Block",
+        "duplicate": "Duplicate",
+        "remove": "Remove",
+        "moveUp": "Move Up",
+        "moveDown": "Move Down",
+        "blocks": "Blocks",
+        "noBlocks": "No blocks in this section",
+        "sectionId": "Section ID",
+        "iconUrl": "Icon URL"
+      },
+      "block": {
+        "editName": "Edit block name",
+        "addField": "Add Field",
+        "remove": "Remove Block",
+        "fields": "Fields",
+        "noFields": "No fields in this block"
+      }
+    },
+    "fieldEditor": {
+      "title": "Field Editor",
+      "basicInfo": "Basic Information",
+      "save": "Save Changes",
+      "cancel": "Cancel",
+      "noConfig": "No specific configurations for this field type",
+      "basic": {
+        "fieldId": "Field ID",
+        "displayName": "Display Name",
+        "type": "Field Type",
+        "label": "Label",
+        "description": "Description"
+      },
+      "visibility": {
+        "title": "Visibility",
+        "form": "Show in form for bulletin creation",
+        "bulletin": "Show in final bulletin",
+        "formHelp": "If not shown in the form, the label and description will be automatically assigned from the display name"
+      },
+      "validation": {
+        "title": "Validation",
+        "required": "Required field",
+        "minLength": "Minimum Length",
+        "maxLength": "Maximum Length"
+      },
+      "specificConfig": {
+        "title": "Specific Configuration"
+      },
+      "actions": {
+        "save": "Save",
+        "cancel": "Cancel",
+        "remove": "Remove",
+        "addOption": "Add Option",
+        "addParameter": "Add Parameter",
+        "add": "Add"
+      },
+      "fields": {
+        "fieldId": {
+          "label": "Field ID",
+          "help": "Unique identifier (no spaces or special characters)"
+        },
+        "displayName": {
+          "label": "Display Name",
+          "help": "Name shown to users"
+        },
+        "type": {
+          "label": "Field Type"
+        },
+        "label": {
+          "label": "Label",
+          "help": "Optional label for the user"
+        },
+        "description": {
+          "label": "Description",
+          "help": "Help text for the user"
+        },
+        "form": {
+          "label": "Show in form",
+          "help": "The field will appear in the data entry form"
+        },
+        "bulletin": {
+          "label": "Show in bulletin",
+          "help": "The field will appear in the final bulletin"
+        },
+        "required": {
+          "label": "Required field"
+        }
+      },
+      "fieldTypes": {
+        "text": "Text",
+        "text_with_icon": "Text with Icon",
+        "climate_data_puntual": "Climate Data",
+        "list": "List",
+        "select": "Select",
+        "select_with_icons": "Select with Icons",
+        "select_background": "Select with Background",
+        "number": "Number",
+        "date": "Date",
+        "date_range": "Date Range",
+        "image_upload": "Image Upload",
+        "algorithm": "Algorithm",
+        "page_number": "Page Number",
+        "card": "Card",
+        "image": "Image"
+      },
+      "textConfig": {
+        "subtype": "Text Type",
+        "short": "Short",
+        "long": "Long",
+        "placeholder": {
+          "label": "Placeholder"
+        },
+        "maxLength": {
+          "label": "Maximum Length"
+        },
+        "minLength": {
+          "label": "Minimum Length"
+        }
+      },
+      "textWithIconConfig": {
+        "iconOptions": "Icon Options",
+        "addIcon": "Add Icon",
+        "iconUrlPlaceholder": "https://example.com/icon.svg"
+      },
+      "numberConfig": {
+        "subtype": {
+          "label": "Number Type",
+          "integer": "Integer",
+          "decimal": "Decimal"
+        },
+        "min": {
+          "label": "Minimum Value"
+        },
+        "max": {
+          "label": "Maximum Value"
+        },
+        "step": {
+          "label": "Step"
+        },
+        "decimals": {
+          "label": "Decimal Places"
+        },
+        "minValue": "Minimum Value",
+        "maxValue": "Maximum Value",
+        "decimalPlaces": "Decimal Places"
+      },
+      "dateConfig": {
+        "format": "Date Format"
+      },
+      "dateRangeConfig": {
+        "format": "Date Format",
+        "startDateSection": "Start Date",
+        "startDateLabel": "Label",
+        "startDateLabelPlaceholder": "E.g: Start Date, From, etc.",
+        "startDateDescription": "Description",
+        "startDateDescriptionPlaceholder": "Descriptive text for start date",
+        "endDateSection": "End Date",
+        "endDateLabel": "Label",
+        "endDateLabelPlaceholder": "E.g: End Date, To, etc.",
+        "endDateDescription": "Description",
+        "endDateDescriptionPlaceholder": "Descriptive text for end date"
+      },
+      "pageNumberConfig": {
+        "format": "Format",
+        "help": "Use '{page}' for current page and '{total}' for total pages",
+        "previewTitle": "Pagination Preview",
+        "formatLabel": "Configured format:",
+        "previewHelp": "This is a preview. Page numbers will be generated automatically."
+      },
+      "selectWithIconsConfig": {
+        "allowMultiple": "Allow multiple selection",
+        "allowMultipleHelp": "If enabled, users will be able to select multiple options",
+        "showLabel": "Show label next to icon",
+        "showLabelHelp": "If enabled, the option text will be displayed next to the icon",
+        "optionsAndIcons": "Options and Icons",
+        "optionLabel": "Option",
+        "optionPlaceholder": "Option text",
+        "noOptionsMessage": "No options defined. Click 'Add Option' to get started.",
+        "iconUrl": "Icon URL",
+        "iconUrlPlaceholder": "https://example.com/icon.png"
+      },
+      "climateDataConfig": {
+        "availableParameters": "Available Climate Parameters",
+        "parameterKey": "Parameter Key",
+        "label": "Label",
+        "unit": "Unit",
+        "type": "Type",
+        "colName": "Column Name",
+        "addNewParameter": "Add New Parameter",
+        "noParameters": "No climate parameters configured. Click 'Add Parameter' to get started.",
+        "helpTitle": "Climate Data Information",
+        "helpParameter": "Each parameter represents a type of climate data",
+        "helpColName": "The column name must match the data file",
+        "helpType": "Use 'Number' for numeric values and 'Text' for observations",
+        "helpUnit": "The unit will be displayed alongside the value in the bulletin",
+        "defaultTitle": "Climate Data",
+        "typeNumber": "Number",
+        "typeText": "Text",
+        "placeholders": {
+          "labelExample": "Ex: Maximum Temperature",
+          "unitExample": "Ex: °C, mm, %",
+          "colNameExample": "Ex: temp_max, precip",
+          "keyExample": "Ex: t_max, precip"
+        },
+        "previewExampleValue": "Example value"
+      },
+      "value": {
+        "title": "Field Value",
+        "label": "Value",
+        "placeholder": "Value to display in the bulletin",
+        "help": "Since this field doesn't appear in the form, you must define here the value that will be shown",
+        "iconLabel": "Icon",
+        "loadingIcons": "Loading available icons...",
+        "noIconsAvailable": "No icons available. Please upload icons in the Visual Resources section.",
+        "selectIconPlaceholder": "Select an icon",
+        "selectIcon": "Select Icon",
+        "selectedIcon": "Selected icon",
+        "iconHelp": "Select the icon that will accompany the text in the bulletin"
+      },
+      "styleConfig": {
+        "title": "Field Styles",
+        "color": "Text Color",
+        "fontSize": "Font Size (px)",
+        "iconSize": "Icon Size (px)",
+        "iconUseOriginalColor": "Keep original icon color",
+        "iconUseOriginalColorHelp": "If disabled, the icon will use the primary color from the context",
+        "fontWeight": "Font Weight",
+        "fontStyle": "Font Style",
+        "textDecoration": "Text Decoration",
+        "textAlign": "Text Alignment",
+        "borderColor": "Border Color",
+        "borderWidth": "Border Width (px)",
+        "borderRadius": "Border Radius (px)",
+        "borderSides": "Border Sides",
+        "borderSidesHelp": "Select which sides should display the border",
+        "borderTop": "Top",
+        "borderBottom": "Bottom",
+        "borderLeft": "Left",
+        "borderRight": "Right",
+        "padding": "Padding (CSS)",
+        "margin": "Margin (CSS)",
+        "gap": "Field Spacing (px)",
+        "backgroundImage": "Background Image",
+        "alignOptions": {
+          "left": "Left",
+          "center": "Center",
+          "right": "Right"
+        },
+        "fontWeightOptions": {
+          "thin": "Thin (100)",
+          "extraLight": "Extra Light (200)",
+          "light": "Light (300)",
+          "normal": "Normal (400)",
+          "medium": "Medium (500)",
+          "semiBold": "Semi Bold (600)",
+          "bold": "Bold (700)",
+          "extraBold": "Extra Bold (800)",
+          "black": "Black (900)"
+        },
+        "fontStyleOptions": {
+          "normal": "Normal",
+          "italic": "Italic"
+        },
+        "textDecorationOptions": {
+          "none": "None",
+          "underline": "Underline",
+          "lineThrough": "Line Through"
+        }
+      },
+      "preview": {
+        "title": "Preview"
+      }
+    },
+    "preview": {
+      "title": "Preview",
+      "subtitle": "This is how your template will look",
+      "untitled": "Untitled Template",
+      "noDescription": "No description",
+      "header": "HEADER",
+      "footer": "FOOTER",
+      "noSections": "No sections configured",
+      "emptySection": "Empty section",
+      "emptyBlock": "Empty block",
+      "sampleData": {
+        "textField": "Sample text",
+        "dateField": "Date: {date}",
+        "dateRange": "Period: {start} - {end}",
+        "listTitle": "Sample List:",
+        "listItems": ["Item 1", "Item 2", "Item 3"],
+        "climateTitle": "Climate Data:",
+        "climateData": [
+          "Temperature: 25°C",
+          "Humidity: 65%",
+          "Precipitation: 15mm"
+        ]
+      }
+    }
+  },
+  "Roles": {
+    "title": "Role Management",
+    "subtitle": "Roles define user permissions and access levels in the platform. Each role has specific permissions for different system modules using a CRUD model (Create, Read, Update, Delete).",
+    "searchPlaceholder": "Search roles by name or description...",
+    "createNew": "Create Role",
+    "loading": "Loading roles...",
+    "errorTitle": "Error loading roles",
+    "showing": "Showing {filtered} of {total} roles",
+    "totalRoles": "Total roles: {count}",
+    "table": {
+      "role": "Role",
+      "description": "Description",
+      "activePermissions": "Active Permissions",
+      "enabledModules": "Enabled Modules",
+      "actions": "Actions",
+      "viewDetails": "View details",
+      "modulesCount": "{count} / 7 modules",
+      "edit": "Edit",
+      "hide": "Hide",
+      "activePermissionsLabel": "Active permissions:",
+      "enabledModulesLabel": "of 7 modules enabled",
+      "enabledModulesCount": "{count} of 7 modules enabled",
+      "modulesAndPermissions": "Modules and CRUD Permissions:",
+      "noModulesEnabled": "This role has no enabled modules"
+    },
+    "modules": {
+      "bulletinscomposer": "Bulletins",
+      "templatemanagement": "Templates",
+      "dashboardbulletins": "Dashboard",
+      "review": "Review",
+      "cardmanagement": "Cards",
+      "accesscontrol": "Access",
+      "externalintegrations": "Integrations"
+    },
+    "crud": {
+      "create": "Create",
+      "read": "Read",
+      "update": "Update",
+      "delete": "Delete"
+    },
+    "noResults": "No roles found",
+    "noResultsSearch": "Try different search terms",
+    "noRolesSystem": "No roles configured in the system",
+    "permissionsInfo": {
+      "title": "System Permission Modules",
+      "bulletinsComposer": "Create and edit bulletins",
+      "templateManagement": "Manage templates",
+      "dashboardBulletins": "View bulletin list",
+      "review": "Manage review process",
+      "cardManagement": "Manage reusable cards",
+      "accessControl": "Manage users and roles",
+      "externalIntegrations": "Manage integrations",
+      "crudNote": "Each module can have {create}, {read}, {update}, and {delete} permissions (CRUD).",
+      "create": "Create",
+      "read": "Read",
+      "update": "Update",
+      "delete": "Delete"
+    }
+  },
+  "CreateRole": {
+    "backToRoles": "Back to Roles",
+    "title": "Create New Role",
+    "subtitle": "Define permissions and access for a new role in the system",
+    "titleEdit": "Edit Role",
+    "subtitleEdit": "Modify permissions and access for the existing role",
+    "loadingRole": "Loading role...",
+    "basicInfo": "Basic Information",
+    "roleName": "Role Name",
+    "roleNamePlaceholder": "e.g. Bulletin Editor",
+    "roleNameRequired": "Role name is required",
+    "roleNameMinLength": "Name must be at least 3 characters",
+    "description": "Description",
+    "descriptionPlaceholder": "Describe the responsibilities and scope of this role...",
+    "descriptionRequired": "Description is required",
+    "descriptionMinLength": "Description must be at least 10 characters",
+    "permissions": "Role Permissions",
+    "permissionsEnabled": "Permissions enabled",
+    "permissionsRequired": "At least one permission must be enabled for the role",
+    "module": "Module",
+    "all": "All",
+    "checkAll": "Check All",
+    "uncheckAll": "Uncheck All",
+    "complete": "Complete",
+    "permissionsNote": "Note: CRUD permissions allow: Create new resources, Read and view information, Update existing resources, and Delete resources. Make sure to grant only the necessary permissions for each role.",
+    "cancel": "Cancel",
+    "createRole": "Create Role",
+    "creating": "Creating Role...",
+    "createSuccess": "Role created successfully",
+    "createError": "Error creating role",
+    "updateRole": "Update Role",
+    "updating": "Updating...",
+    "updateSuccess": "Role updated successfully",
+    "updateError": "Error updating role",
+    "validationError": "Please correct the form errors",
+    "connectionError": "Connection error while creating role",
+    "modules": {
+      "bulletinscomposer": {
+        "name": "Bulletin Composer",
+        "description": "Create and edit agroclimatic bulletins"
+      },
+      "templatemanagement": {
+        "name": "Template Management",
+        "description": "Manage bulletin templates"
+      },
+      "dashboardbulletins": {
+        "name": "Bulletin Dashboard",
+        "description": "View bulletin list and status"
+      },
+      "review": {
+        "name": "Review",
+        "description": "Manage bulletin review process"
+      },
+      "cardmanagement": {
+        "name": "Card Management",
+        "description": "Manage reusable cards"
+      },
+      "accesscontrol": {
+        "name": "Access Control",
+        "description": "Manage users, roles and groups"
+      },
+      "externalintegrations": {
+        "name": "External Integrations",
+        "description": "Configure integrations with external systems"
+      }
+    },
+    "crud": {
+      "create": "Create",
+      "read": "Read",
+      "update": "Update",
+      "delete": "Delete"
+    }
+  },
+  "Groups": {
+    "title": "Group Management",
+    "subtitle": "Groups organize users by geographic affiliation and facilitate permission management. Each group represents a country or region and contains users with specific roles.",
+    "searchPlaceholder": "Search groups by name, country or description...",
+    "createNew": "Create Group",
+    "loading": "Loading groups...",
+    "errorTitle": "Error loading groups",
+    "showing": "Showing {filtered} of {total} groups",
+    "totalGroups": "Total groups: {count}",
+    "table": {
+      "group": "Group",
+      "country": "Country",
+      "description": "Description",
+      "members": "Members",
+      "roles": "Roles",
+      "actions": "Actions",
+      "viewDetails": "View details",
+      "edit": "Edit",
+      "hide": "Hide",
+      "membersCount": "{count} members",
+      "rolesCount": "{count} unique roles",
+      "usersAndRoles": "Users and Roles:",
+      "noUsers": "This group has no assigned users",
+      "user": "User",
+      "role": "Role"
+    },
+    "noResults": "No groups found",
+    "noResultsSearch": "Try different search terms",
+    "noGroupsSystem": "No groups configured in the system",
+    "groupsInfo": {
+      "title": "About Groups",
+      "description": "Groups allow organizing users by geographic location (country) and assigning specific roles to manage bulletins and resources collaboratively.",
+      "benefits": "Benefits of using groups:",
+      "benefit1": "Geographic organization of users",
+      "benefit2": "Assignment of specific roles per group",
+      "benefit3": "Centralized permission management",
+      "benefit4": "Effective collaboration on regional bulletins"
+    }
+  },
+  "CreateGroup": {
+    "backToGroups": "Back to Groups",
+    "title": "Create New Group",
+    "subtitle": "Define a new geographic group and assign users with specific roles",
+    "titleEdit": "Edit Group",
+    "subtitleEdit": "Modify information and users of the existing group",
+    "loading": "Loading...",
+    "loadingGroup": "Loading group...",
+    "basicInfo": "Basic Information",
+    "groupName": "Group Name",
+    "groupNamePlaceholder": "e.g. Colombia, Vietnam",
+    "groupNameRequired": "Group name is required",
+    "groupNameMinLength": "Name must be at least 3 characters",
+    "country": "Country (ISO-2 Code)",
+    "countryPlaceholder": "e.g. CO, VN, BR",
+    "countryRequired": "Country code is required",
+    "countryInvalid": "Country code must be 2 characters (ISO-2)",
+    "description": "Description",
+    "descriptionPlaceholder": "Describe the scope and purpose of this group...",
+    "descriptionRequired": "Description is required",
+    "descriptionMinLength": "Description must be at least 10 characters",
+    "usersAccess": "Users and Roles",
+    "usersAccessDescription": "Assign users and their roles in this group. You can add users after creating the group.",
+    "addUser": "Add User",
+    "removeUser": "Remove",
+    "userId": "User",
+    "userIdPlaceholder": "e.g. 507f1f77bcf86cd799439011",
+    "selectUser": "Select a user",
+    "roleId": "Role",
+    "roleIdPlaceholder": "e.g. 507f191e810c19729de860ea",
+    "selectRole": "Select a role",
+    "noUsers": "No users assigned yet",
+    "usersNote": "Note: Added users will have access to the group with the specified roles. Make sure the IDs are valid.",
+    "cancel": "Cancel",
+    "createGroup": "Create Group",
+    "creating": "Creating Group...",
+    "createSuccess": "Group created successfully",
+    "createError": "Error creating group",
+    "updateGroup": "Update Group",
+    "updating": "Updating...",
+    "updateSuccess": "Group updated successfully",
+    "updateError": "Error updating group",
+    "validationError": "Please correct the form errors",
+    "connectionError": "Connection error while creating group",
+    "countryInfo": {
+      "title": "Country Codes (ISO 3166-1 alpha-2)",
+      "description": "Use 2-letter uppercase codes:",
+      "examples": "Examples: CO (Colombia), VN (Vietnam), BR (Brazil), US (United States), MX (Mexico)"
+    }
+  },
+  "Cards": {
+    "title": "Manage reusable cards for your bulletins",
+    "subtitle": "Cards are predefined content you can insert into your bulletins: pests, diseases, crop information and recommendations.",
+    "createNew": "Create Card",
+    "searchPlaceholder": "Search cards by name or type...",
+    "by": "by",
+    "updatedBy": "Updated by",
+    "lastModified": "Last modified",
+    "view": "View",
+    "edit": "Edit",
+    "duplicate": "Duplicate",
+    "delete": "Delete",
+    "deleteConfirmTitle": "Delete Card",
+    "deleteConfirmMessage": "Are you sure you want to delete \"{name}\"? This action cannot be undone.",
+    "cancelDelete": "Cancel",
+    "confirmDeleteBtn": "Delete",
+    "deleting": "Deleting...",
+    "deleteSuccess": "Card \"{name}\" deleted successfully",
+    "deleteError": "Error deleting card \"{name}\": {error}",
+    "duplicateConfirmTitle": "Duplicate Card",
+    "duplicateConfirmMessage": "Enter the name for the new duplicated card:",
+    "cardNameLabel": "Card Name",
+    "cardNamePlaceholder": "Duplicated card name",
+    "cancelDuplicate": "Cancel",
+    "confirmDuplicateBtn": "Duplicate",
+    "duplicating": "Duplicating...",
+    "duplicateSuccess": "Card \"{name}\" duplicated successfully",
+    "duplicateError": "Error duplicating card \"{name}\": {error}",
+    "noResults": "No cards found",
+    "loading": "Loading cards...",
+    "retry": "Retry",
+    "createFirst": "Create your first card",
+    "cardTypes": {
+      "pest_or_disease": "Pest or Disease",
+      "crop_info": "Crop Information",
+      "recommendation": "Recommendation",
+      "weather_alert": "Weather Alert",
+      "general": "General"
+    },
+    "filterByType": "Filter by type",
+    "allTypes": "All types",
+    "blocks": "blocks",
+    "fields": "fields",
+    "templates": "templates"
+  },
+  "CreateCard": {
+    "title": "Create Card",
+    "titleEdit": "Edit Card",
+    "subtitle": "Define predefined content that can be used in bulletins",
+    "backToCards": "Back to Cards",
+    "steps": {
+      "basicInfo": "Basic Information",
+      "basicInfoDesc": "Define the main card data",
+      "content": "Content",
+      "contentDesc": "Configure card blocks and fields"
+    },
+    "actions": {
+      "next": "Next",
+      "back": "Back",
+      "create": "Create Card",
+      "update": "Update Card"
+    },
+    "messages": {
+      "createSuccess": "Card created successfully",
+      "updateSuccess": "Card updated successfully",
+      "saveError": "Error saving card: {error}",
+      "duplicateCardName": "A card with this name already exists. Please choose a different name."
+    },
+    "basicInfo": {
+      "title": "Basic Information",
+      "description": "Define your card's main data",
+      "name": "Card Name",
+      "namePlaceholder": "Ex: Coffee Pest Alert",
+      "type": "Card Type",
+      "typeHelp": "Select card type based on its purpose",
+      "accessType": "Access Type",
+      "accessTypeHelp": "Define who can use this card",
+      "accessTypes": {
+        "public": "Public",
+        "private": "Private",
+        "restricted": "Restricted"
+      },
+      "allowedGroups": "Allowed Groups",
+      "allowedGroupsHelp": "Hold Ctrl/Cmd to select multiple groups",
+      "loadingGroups": "Loading groups...",
+      "errors": {
+        "nameRequired": "Card name is required",
+        "typeRequired": "Card type is required",
+        "groupsRequired": "You must select at least one group for restricted cards"
+      }
+    },
+    "content": {
+      "title": "Card Content",
+      "description": "Configure blocks and fields that will form the card content",
+      "tabs": {
+        "blocks": "Blocks",
+        "header": "Header",
+        "footer": "Footer"
+      },
+      "images": "Images",
+      "backgroundUrl": "Background URL",
+      "backgroundUrlPlaceholder": "https://example.com/background.jpg",
+      "backgroundUrlHelp": "Background image URL for the card",
+      "iconUrl": "Icon URL",
+      "iconUrlPlaceholder": "https://example.com/icon.svg",
+      "iconUrlHelp": "Icon URL representing the card",
+      "blocks": "Blocks",
+      "addBlock": "Add Block",
+      "removeBlock": "Remove Block",
+      "blockNamePlaceholder": "Block name",
+      "blockType": "Block Type",
+      "blockTypes": {
+        "text": "Text",
+        "image": "Image",
+        "mixed": "Mixed"
+      },
+      "fields": "Fields",
+      "addField": "Add Field",
+      "editField": "Edit Field",
+      "removeField": "Remove Field",
+      "edit": "Edit",
+      "noBlocks": "No blocks yet. Add the first block to get started.",
+      "noFields": "This block has no fields yet",
+      "errors": {
+        "blocksRequired": "You must add at least one block"
+      }
+    },
+    "preview": {
+      "title": "Preview",
+      "cardName": "Name",
+      "untitled": "Untitled",
+      "cardType": "Type",
+      "accessType": "Access",
+      "public": "Public",
+      "private": "Private",
+      "images": "Images",
+      "background": "Background",
+      "icon": "Icon",
+      "statistics": "Statistics",
+      "blocks": "Blocks",
+      "fields": "Fields",
+      "content": "Content",
+      "noFields": "No fields",
+      "noContent": "No content yet"
+    }
+  },
+  "Dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Quick overview of templates, bulletins and cards available",
+    "templates": "Templates",
+    "bulletins": "Bulletins",
+    "cards": "Cards",
+    "searchPlaceholder": "Search the dashboard...",
+    "loading": "Loading items...",
+    "noResults": "No items found",
+    "noAccessTitle": "No access",
+    "noAccessMessage": "You don't have access to any dashboard sections.",
+    "deleteConfirmTitle": "Confirm action",
+    "deleteConfirmMessage": "Are you sure you want to archive \"{name}\"? This will mark it as archived.",
+    "cancelDelete": "Cancel",
+    "confirmDeleteBtn": "Archive",
+    "deleting": "Archiving...",
+    "deleteSuccess": "{name} archived successfully",
+    "deleteError": "Error archiving {name}: {error}"
+  }
+}
