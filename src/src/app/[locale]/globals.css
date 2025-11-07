@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #283618;
+  --primary: #bc6c25;
+  --font-headers: var(--font-sintony);
+  --font-body: var(--font-poppins);
+}
+
+body {
+  background: #ffffff;
+  color: #283618;
+  font-family: var(--font-poppins), Arial, Helvetica, sans-serif;
+}
+
+/* Headers usando Sintony */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-sintony), Arial, Helvetica, sans-serif;
+}
+
+/* Utility: force headers font */
+.font-headers {
+  font-family: var(--font-sintony), Arial, Helvetica, sans-serif;
+}
+
+/* Blinking caret for typewriter effect */
+.caret {
+  display: inline-block;
+  width: 1ch;
+  color: currentColor;
+  animation: caret-blink 1s step-end infinite;
+}
+
+@keyframes caret-blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50.01%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Desk-like hero background texture */
+.desk-texture {
+  position: relative;
+  background-image: radial-gradient(
+      1200px 800px at 50% -10%,
+      rgba(255, 255, 255, 0.85) 0%,
+      rgba(255, 255, 255, 0) 70%
+    ),
+    linear-gradient(180deg, #f7f9fc 0%, #eef2f7 100%);
+  background-blend-mode: screen, normal;
+}
+
+.desk-texture::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.1) 1.4px, transparent 1.8px),
+    radial-gradient(rgba(0, 0, 0, 0.08) 1.2px, transparent 1.6px);
+  background-size: 7px 7px, 11px 11px;
+  background-position: 0 0, 5px 5px;
+  opacity: 0.75;
+  mix-blend-mode: multiply;
+}
+
+/* Custom Scrollbar Styles */
+@layer utilities {
+  /* Scrollbar delgado */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 10px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(96, 108, 56, 0.3);
+    border-radius: 10px;
+    transition: background 0.2s;
+  }
+
+  .scrollbar-thin:hover::-webkit-scrollbar-thumb {
+    background: rgba(96, 108, 56, 0.5);
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: rgba(96, 108, 56, 0.7);
+  }
+
+  /* Firefox */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(96, 108, 56, 0.3) transparent;
+  }
+}
