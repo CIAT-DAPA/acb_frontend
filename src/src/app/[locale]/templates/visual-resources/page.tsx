@@ -86,52 +86,37 @@ export default function VisualResources() {
     };
   }, [showEditModal, showDeleteModal, isDeleting]);
 
-  // Función para cargar recursos visuales desde el servicio
   const loadVisualResources = async () => {
     setLoading(true);
     setError(null);
-
     try {
-      const allResourcesResponse =
-        await VisualResourcesService.getVisualResourcesByStatus("active");
-
-      setAllResources(allResourcesResponse.data || []); // Guardar todos los recursos originales
-      console.log("Recursos visuales cargados:", allResourcesResponse.data);
+      const response = await VisualResourcesService.getVisualResourcesByStatus(
+        "active"
+      );
+      setAllResources(response.data || []);
     } catch (err) {
       setError("Error de conexión al cargar los recursos visuales");
       console.error("Error loading visual resources:", err);
-      setAllResources([]); // Limpiar recursos en caso de error
+      setAllResources([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Filtrar recursos localmente basado en el término de búsqueda y tipo
   const filteredResources = allResources.filter((resource) => {
-    // Filtrar por tipo si no es "all"
     const matchesType =
       filterType === "all" || resource.file_type === filterType;
-
-    // Filtrar por término de búsqueda (en nombre del archivo)
     const matchesSearch =
-      searchTerm === "" ||
+      !searchTerm ||
       resource.file_name.toLowerCase().includes(searchTerm.toLowerCase());
-
     return matchesType && matchesSearch;
   });
 
-  // Función para obtener las etiquetas/categorías del recurso
-  const getResourceTags = (resource: VisualResource) => {
-    const tags = [];
-
-    // Agregar tipo como etiqueta
-    tags.push(resource.file_type);
-
-    // Agregar acceso como etiqueta si no es público
+  const getResourceTags = (resource: VisualResource): string[] => {
+    const tags: string[] = [resource.file_type];
     if (resource.access_config.access_type !== "public") {
       tags.push(resource.access_config.access_type);
     }
-
     return tags;
   };
 
@@ -174,13 +159,11 @@ export default function VisualResources() {
     });
   };
 
-  // Función para guardar los cambios
   const handleSaveChanges = async () => {
     if (!selectedResource) return;
 
     setIsEditing(true);
     setError(null);
-
     try {
       const updateData = {
         file_name: editForm.file_name,
@@ -201,13 +184,11 @@ export default function VisualResources() {
       );
 
       if (response.success) {
-        // Actualizar el recurso en la lista local
-        setAllResources((prevResources: VisualResource[]) =>
-          prevResources.map((r: VisualResource) =>
+        setAllResources((prev) =>
+          prev.map((r) =>
             r.id === selectedResource.id ? { ...r, ...updateData } : r
           )
         );
-
         handleCloseEdit();
         showToast(t("editSuccess"), "success");
       } else {
@@ -237,21 +218,15 @@ export default function VisualResources() {
     setIsDeleting(false);
   };
 
-  // Función para confirmar la eliminación
   const handleConfirmDelete = async () => {
     if (!resourceToDelete) return;
 
     try {
       setIsDeleting(true);
       await VisualResourcesService.deleteVisualResource(resourceToDelete.id);
-
-      // Remover el recurso de la lista local
-      setAllResources((prevResources: VisualResource[]) =>
-        prevResources.filter(
-          (r: VisualResource) => r.id !== resourceToDelete.id
-        )
+      setAllResources((prev) =>
+        prev.filter((r) => r.id !== resourceToDelete.id)
       );
-
       handleCloseDeleteModal();
       showToast(t("deleteSuccess"), "success");
     } catch (error) {
@@ -403,32 +378,38 @@ export default function VisualResources() {
           {/* Grilla de recursos */}
           {!loading && !error && (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-              {filteredResources.map((resource) => (
-                <ItemCard
-                  key={resource.id}
-                  type="visual-resource"
-                  id={resource.id}
-                  name={resource.file_name}
-                  image={resource.file_url}
-                  fileType={resource.file_type}
-                  author={
-                    resource.log.updater_first_name +
-                      " " +
-                      resource.log.updater_last_name ||
-                    resource.log.creator_first_name +
-                      " " +
-                      resource.log.creator_last_name
-                  }
-                  tags={getResourceTags(resource)}
-                  editBtn={true}
-                  onEdit={() => handleEditResource(resource)}
-                  downloadBtn={true}
-                  onDownload={() => handleDownloadResource(resource)}
-                  deleteBtn={true}
-                  onDelete={() => handleDeleteResource(resource)}
-                  isDownloading={downloadingId === resource.id}
-                />
-              ))}
+              {filteredResources.map((resource) => {
+                const updaterName =
+                  resource.log.updater_first_name &&
+                  resource.log.updater_last_name
+                    ? `${resource.log.updater_first_name} ${resource.log.updater_last_name}`
+                    : "";
+                const creatorName =
+                  resource.log.creator_first_name &&
+                  resource.log.creator_last_name
+                    ? `${resource.log.creator_first_name} ${resource.log.creator_last_name}`
+                    : "";
+
+                return (
+                  <ItemCard
+                    key={resource.id}
+                    type="visual-resource"
+                    id={resource.id}
+                    name={resource.file_name}
+                    image={resource.file_url}
+                    fileType={resource.file_type}
+                    author={updaterName || creatorName}
+                    tags={getResourceTags(resource)}
+                    editBtn={true}
+                    onEdit={() => handleEditResource(resource)}
+                    downloadBtn={true}
+                    onDownload={() => handleDownloadResource(resource)}
+                    deleteBtn={true}
+                    onDelete={() => handleDeleteResource(resource)}
+                    isDownloading={downloadingId === resource.id}
+                  />
+                );
+              })}
             </div>
           )}
 
