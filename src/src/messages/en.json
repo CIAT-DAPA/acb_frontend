@@ -580,6 +580,7 @@
         "climate_data_puntual": "Climate Data",
         "list": "List",
         "select": "Select",
+        "searchable": "Searchable Select",
         "select_with_icons": "Select with Icons",
         "select_background": "Select with Background",
         "number": "Number",
@@ -666,6 +667,14 @@
         "noOptionsMessage": "No options defined. Click 'Add Option' to get started.",
         "iconUrl": "Icon URL",
         "iconUrlPlaceholder": "https://example.com/icon.png"
+      },
+      "searchableConfig": {
+        "options": "Available Options",
+        "addOption": "Add Option",
+        "optionPlaceholder": "Option name",
+        "noOptionsMessage": "No options defined. Click 'Add Option' to get started.",
+        "help": "Users will be able to search among these options or create a new one if it doesn't exist",
+        "removeOption": "Remove option"
       },
       "climateDataConfig": {
         "availableParameters": "Available Climate Parameters",

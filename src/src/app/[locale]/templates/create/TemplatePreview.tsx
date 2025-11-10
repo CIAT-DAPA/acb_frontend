@@ -430,6 +430,17 @@ export function TemplatePreview({
           </div>
         );
 
+      case "searchable":
+        // Mostrar la primera opción si no hay valor seleccionado
+        const searchableOptions = (field.field_config as any)?.options || [];
+        const searchableValue = field.value || searchableOptions[0] || "Opción";
+
+        return (
+          <div key={key} style={fieldStyles}>
+            {searchableValue}
+          </div>
+        );
+
       case "select_background":
         // Este campo no renderiza contenido visible, solo cambia el fondo de la sección
         // El fondo se aplica automáticamente a nivel de sección en el renderizado del contenedor

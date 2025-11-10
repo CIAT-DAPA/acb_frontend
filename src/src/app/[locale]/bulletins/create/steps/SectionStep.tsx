@@ -12,6 +12,7 @@ import {
   DateInput,
   DateRangeInput,
   SelectInput,
+  SearchableInput,
   SelectBackgroundField,
   CardFieldInput,
 } from "../components/fields";
@@ -179,6 +180,15 @@ export function SectionStep({
           />
         );
 
+      case "searchable":
+        return (
+          <SearchableInput
+            field={field}
+            value={fieldValue as string}
+            onChange={handleChange}
+          />
+        );
+
       case "select_background":
         return (
           <SelectBackgroundField
@@ -302,6 +312,15 @@ export function SectionStep({
       case "select":
         return (
           <SelectInput
+            field={field}
+            value={fieldValue as string}
+            onChange={handleChange}
+          />
+        );
+
+      case "searchable":
+        return (
+          <SearchableInput
             field={field}
             value={fieldValue as string}
             onChange={handleChange}

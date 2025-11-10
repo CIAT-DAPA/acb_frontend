@@ -9,6 +9,7 @@ export * from "./DateFieldTypeConfig";
 export * from "./DateRangeFieldTypeConfig";
 export * from "./PageNumberFieldTypeConfig";
 export * from "./ListFieldTypeConfig";
+export * from "./SearchableFieldTypeConfig";
 export * from "./SelectWithIconsFieldTypeConfig";
 export * from "./SelectBackgroundFieldTypeConfig";
 export * from "./ClimateDataFieldTypeConfig";

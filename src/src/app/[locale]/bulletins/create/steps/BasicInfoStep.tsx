@@ -11,6 +11,7 @@ import {
   NumberInput,
   DateInput,
   SelectInput,
+  SearchableInput,
 } from "../components/fields";
 
 interface BasicInfoStepProps {
@@ -120,6 +121,15 @@ export function BasicInfoStep({ bulletinData, onUpdate }: BasicInfoStepProps) {
       case "select":
         return (
           <SelectInput
+            field={field}
+            value={fieldValue as string}
+            onChange={(value) => handleChange(index, value)}
+          />
+        );
+
+      case "searchable":
+        return (
+          <SearchableInput
             field={field}
             value={fieldValue as string}
             onChange={(value) => handleChange(index, value)}

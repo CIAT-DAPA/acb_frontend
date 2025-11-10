@@ -20,6 +20,7 @@ import {
   DateInput,
   DateRangeInput,
   SelectInput,
+  SearchableInput,
   SelectWithIconsField,
   SelectBackgroundField,
   ClimateDataField,
@@ -306,6 +307,16 @@ export function CardFieldInput({
       case "select":
         return (
           <SelectInput
+            field={cardField}
+            value={value || ""}
+            onChange={onChange}
+            disabled={disabled}
+          />
+        );
+
+      case "searchable":
+        return (
+          <SearchableInput
             field={cardField}
             value={value || ""}
             onChange={onChange}

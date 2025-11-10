@@ -580,6 +580,7 @@
         "climate_data_puntual": "Datos Climáticos",
         "list": "Lista",
         "select": "Selección",
+        "searchable": "Selección Buscable",
         "select_with_icons": "Selección con Iconos",
         "select_background": "Selección con Fondo",
         "number": "Número",
@@ -666,6 +667,14 @@
         "noOptionsMessage": "No hay opciones definidas. Haz clic en 'Agregar Opción' para comenzar.",
         "iconUrl": "URL del Icono",
         "iconUrlPlaceholder": "https://ejemplo.com/icono.png"
+      },
+      "searchableConfig": {
+        "options": "Opciones Disponibles",
+        "addOption": "Agregar Opción",
+        "optionPlaceholder": "Nombre de la opción",
+        "noOptionsMessage": "No hay opciones definidas. Haz clic en 'Agregar Opción' para comenzar.",
+        "help": "Los usuarios podrán buscar entre estas opciones o crear una nueva si no existe",
+        "removeOption": "Eliminar opción"
       },
       "climateDataConfig": {
         "availableParameters": "Parámetros Climáticos Disponibles",

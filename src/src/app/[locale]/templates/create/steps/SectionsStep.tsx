@@ -182,6 +182,11 @@ const FIELD_TYPES = [
     description: "Lista desplegable de opciones",
   },
   {
+    value: "searchable",
+    label: "Selección Buscable",
+    description: "Búsqueda de opciones o creación de nuevas",
+  },
+  {
     value: "select_with_icons",
     label: "Selección con Iconos",
     description: "Lista con iconos para cada opción",
@@ -275,6 +280,8 @@ function BlockConfiguration({
         return { subtype: "short", icon_options: [] };
       case "select":
         return { options: [], allow_multiple: false };
+      case "searchable":
+        return { options: [] };
       case "select_with_icons":
         return { options: [], allow_multiple: false, icons_url: [] };
       case "select_background":
