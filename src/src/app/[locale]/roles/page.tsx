@@ -148,7 +148,7 @@ export default function RolesPage() {
                 className={searchField}
               />
             </div>
-            {/* Botón Crear */}
+            {/* Botón Crear - COMENTADO TEMPORALMENTE
             <Link
               href="/roles/create"
               className={`${btnPrimary} whitespace-nowrap`}
@@ -156,6 +156,7 @@ export default function RolesPage() {
               <Plus className="h-5 w-5" />
               <span>{t("createNew")}</span>
             </Link>
+            */}
           </div>
           {/* Loading State */}
           {loading && (
