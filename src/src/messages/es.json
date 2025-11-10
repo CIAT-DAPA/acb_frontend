@@ -1037,9 +1037,13 @@
     "createFirst": "Crear tu primera card",
     "cardTypes": {
       "pest_or_disease": "Plaga o Enfermedad",
+      "pest": "Plaga",
       "crop_info": "Información de Cultivo",
+      "crop": "Cultivo",
+      "crops": "Cultivos",
       "recommendation": "Recomendación",
       "weather_alert": "Alerta Climática",
+      "alert": "Alerta",
       "general": "General"
     },
     "filterByType": "Filtrar por tipo",

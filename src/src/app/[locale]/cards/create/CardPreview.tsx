@@ -2,7 +2,11 @@
 
 import React, { useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { CreateCardData, CARD_TYPES } from "../../../../types/card";
+import {
+  CreateCardData,
+  getCardTypeIcon,
+  hasCardTypeTranslation,
+} from "../../../../types/card";
 import { CreateTemplateData, Section } from "../../../../types/template";
 import { TemplatePreview } from "../../templates/create/TemplatePreview";
 
@@ -12,6 +16,15 @@ interface CardPreviewProps {
 
 export function CardPreview({ data }: CardPreviewProps) {
   const t = useTranslations("CreateCard.preview");
+  const tCards = useTranslations("Cards");
+
+  // Función helper para obtener el label del tipo de card
+  const getCardTypeLabel = (cardType: string): string => {
+    if (hasCardTypeTranslation(cardType)) {
+      return tCards(`cardTypes.${cardType}`);
+    }
+    return cardType;
+  };
 
   // Convertir CardData a TemplateData para reutilizar TemplatePreview
   const templateData = useMemo((): CreateTemplateData => {
@@ -38,10 +51,10 @@ export function CardPreview({ data }: CardPreviewProps) {
 
     return {
       master: {
-        template_name: `${CARD_TYPES[data.card_type]?.icon} ${
+        template_name: `${getCardTypeIcon(data.card_type)} ${
           data.card_name || t("untitled")
         }`,
-        description: `Card de tipo: ${CARD_TYPES[data.card_type]?.label}`,
+        description: `Card de tipo: ${getCardTypeLabel(data.card_type)}`,
         status: data.status || "active",
         log: data.log || {
           created_at: new Date().toISOString(),
@@ -71,8 +84,15 @@ export function CardPreview({ data }: CardPreviewProps) {
         },
       },
     };
-  }, [data, t]);
+  }, [data, t, tCards]);
 
   // Reutilizar el TemplatePreview con los datos convertidos
-  return <TemplatePreview data={templateData} selectedSectionIndex={0} moreInfo={true} description={true} />;
+  return (
+    <TemplatePreview
+      data={templateData}
+      selectedSectionIndex={0}
+      moreInfo={true}
+      description={true}
+    />
+  );
 }

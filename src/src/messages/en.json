@@ -1037,9 +1037,13 @@
     "createFirst": "Create your first card",
     "cardTypes": {
       "pest_or_disease": "Pest or Disease",
+      "pest": "Pest",
       "crop_info": "Crop Information",
+      "crop": "Crop",
+      "crops": "Crops",
       "recommendation": "Recommendation",
       "weather_alert": "Weather Alert",
+      "alert": "Alert",
       "general": "General"
     },
     "filterByType": "Filter by type",
