@@ -343,13 +343,17 @@
       },
       "dimensions": {
         "title": "Dimensiones del Boletín",
+        "preset": {
+          "label": "Formato Predefinido",
+          "help": "Selecciona un formato predefinido o elige Personalizado para definir tus propias dimensiones."
+        },
         "width": {
           "label": "Ancho (px)"
         },
         "height": {
           "label": "Alto (px)"
         },
-        "help": "Define el tamaño del boletín. Los valores por defecto son 638x366 píxeles."
+        "help": "Puedes modificar las dimensiones manualmente en cualquier momento."
       },
       "styles": {
         "title": "Estilos Globales",

@@ -343,13 +343,17 @@
       },
       "dimensions": {
         "title": "Bulletin Dimensions",
+        "preset": {
+          "label": "Predefined Format",
+          "help": "Select a predefined format or choose Custom to define your own dimensions."
+        },
         "width": {
           "label": "Width (px)"
         },
         "height": {
           "label": "Height (px)"
         },
-        "help": "Define the bulletin size. Default values are 638x366 pixels."
+        "help": "You can manually modify the dimensions at any time."
       },
       "styles": {
         "title": "Global Styles",
