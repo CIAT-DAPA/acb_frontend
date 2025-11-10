@@ -117,52 +117,42 @@ export default function CreateGroupPage() {
     }
   };
 
-  // Validar formulario
   const validateForm = (): boolean => {
     const newErrors: typeof errors = {};
+    const trimmed = {
+      name: groupName.trim(),
+      country: country.trim(),
+      desc: description.trim(),
+    };
 
-    if (!groupName.trim()) {
-      newErrors.groupName = t("groupNameRequired");
-    } else if (groupName.length < 3) {
+    if (!trimmed.name) newErrors.groupName = t("groupNameRequired");
+    else if (trimmed.name.length < 3)
       newErrors.groupName = t("groupNameMinLength");
-    }
 
-    if (!country.trim()) {
-      newErrors.country = t("countryRequired");
-    } else if (country.length !== 2) {
+    if (!trimmed.country) newErrors.country = t("countryRequired");
+    else if (trimmed.country.length !== 2)
       newErrors.country = t("countryInvalid");
-    }
 
-    if (!description.trim()) {
-      newErrors.description = t("descriptionRequired");
-    } else if (description.length < 10) {
+    if (!trimmed.desc) newErrors.description = t("descriptionRequired");
+    else if (trimmed.desc.length < 10)
       newErrors.description = t("descriptionMinLength");
-    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Agregar un usuario al grupo
-  const addUser = () => {
+  const addUser = () =>
     setUsersAccess([...usersAccess, { user_id: "", role_id: "" }]);
-  };
-
-  // Remover un usuario del grupo
-  const removeUser = (index: number) => {
-    const newUsers = usersAccess.filter((_, i) => i !== index);
-    setUsersAccess(newUsers);
-  };
-
-  // Actualizar datos de un usuario
+  const removeUser = (index: number) =>
+    setUsersAccess(usersAccess.filter((_, i) => i !== index));
   const updateUser = (
     index: number,
     field: "user_id" | "role_id",
     value: string
   ) => {
-    const newUsers = [...usersAccess];
-    newUsers[index][field] = value;
-    setUsersAccess(newUsers);
+    const updated = [...usersAccess];
+    updated[index][field] = value;
+    setUsersAccess(updated);
   };
 
   // Función para obtener código de bandera del país
@@ -179,36 +169,29 @@ export default function CreateGroupPage() {
     }
   };
 
-  // Manejar submit del formulario
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!validateForm()) {
-      showToast(t("validationError"), "error", 4000);
-      return;
-    }
+    if (!validateForm()) return showToast(t("validationError"), "error", 4000);
 
     setIsSubmitting(true);
-
     try {
-      // Filtrar usuarios con IDs vacíos
-      const validUsers = usersAccess.filter(
-        (user) => user.user_id.trim() && user.role_id.trim()
-      );
-
       const response = await GroupAPIService.createGroup({
         group_name: groupName.trim(),
         country: country.trim().toUpperCase(),
         description: description.trim(),
-        users_access: validUsers,
+        users_access: usersAccess.filter(
+          (u) => u.user_id.trim() && u.role_id.trim()
+        ),
       });
 
-      if (response.success) {
-        showToast(t("createSuccess"), "success", 4000);
-        router.push("/groups");
-      } else {
-        showToast(response.message || t("createError"), "error", 4000);
-      }
+      showToast(
+        response.success
+          ? t("createSuccess")
+          : response.message || t("createError"),
+        response.success ? "success" : "error",
+        4000
+      );
+      if (response.success) router.push("/groups");
     } catch (error) {
       console.error("Error creating group:", error);
       showToast(t("connectionError"), "error", 4000);
