@@ -2,15 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { Cloud, Mail, Phone } from "lucide-react";
-import {
-  container,
-  brand,
-  brandIcon,
-  linkAccent,
-  muted,
-  sectionTitle,
-} from "./ui";
+import { container, brand, linkAccent, muted, sectionTitle } from "./ui";
 import Image from "next/image";
 import { useAuth } from "../../../hooks/useAuth";
 import usePermissions from "../../../hooks/usePermissions";
@@ -22,56 +14,57 @@ export function Footer() {
   const { authenticated } = useAuth();
   const { can, isAdminAnywhere, isSuperadmin } = usePermissions();
 
+  // Helper function para verificar permisos
+  const hasPermission = (
+    module?: string,
+    requiresSuperadmin?: boolean,
+    requiresAdmin?: boolean
+  ) => {
+    if (!authenticated) return false;
+    if (requiresSuperadmin && !isSuperadmin) return false;
+    if (requiresAdmin && !isAdminAnywhere) return false;
+    if (module && !can("r", module)) return false;
+    return true;
+  };
+
   // Definir todos los links con sus permisos
   const ALL_LINKS = [
     {
       name: tNavbar("templates"),
       path: "/templates",
-      requiresAuth: true,
       module: MODULES.TEMPLATE_MANAGEMENT,
     },
     {
       name: tNavbar("cards"),
       path: "/cards",
-      requiresAuth: true,
       module: MODULES.CARD_MANAGEMENT,
+    },
+    {
+      name: tNavbar("visualResources"),
+      path: "/templates/visual-resources",
+      module: MODULES.TEMPLATE_MANAGEMENT,
     },
     {
       name: tNavbar("bulletins"),
       path: "/bulletins",
-      requiresAuth: true,
       module: MODULES.BULLETINS_COMPOSER,
     },
     {
       name: tNavbar("roles"),
       path: "/roles",
-      requiresAuth: true,
       requiresSuperadmin: true,
     },
     {
       name: tNavbar("groups"),
       path: "/groups",
-      requiresAuth: true,
       requiresAdmin: true,
     },
   ];
 
   // Filtrar links según permisos
-  const VISIBLE_LINKS = ALL_LINKS.filter((link) => {
-    // Si requiere auth y el usuario no está autenticado
-    if (link.requiresAuth && !authenticated) return false;
-
-    // Si requiere superadmin
-    if (link.requiresSuperadmin && !isSuperadmin) return false;
-
-    // Si requiere admin
-    if (link.requiresAdmin && !isAdminAnywhere) return false;
-
-    // Si tiene módulo, verificar permisos
-    if (link.module && !can("r", link.module)) return false;
-
-    return true;
-  });
+  const VISIBLE_LINKS = ALL_LINKS.filter((link) =>
+    hasPermission(link.module, link.requiresSuperadmin, link.requiresAdmin)
+  );
 
   return (
     <footer className="bg-[#283618] text-[#fefae0]/80 border-t border-[#283618]/80">

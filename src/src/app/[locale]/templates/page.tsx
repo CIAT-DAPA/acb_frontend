@@ -8,7 +8,6 @@ import {
   Plus,
   Search,
   Loader2,
-  Images,
   Trash2,
   X,
   AlertCircle,
@@ -120,9 +119,10 @@ export default function Templates() {
 
   // Función para cerrar el modal de eliminación
   const handleCloseDeleteModal = () => {
-    setShowDeleteModal(false);
-    setTemplateToDelete(null);
-    setIsDeleting(false);
+    if (!isDeleting) {
+      setShowDeleteModal(false);
+      setTemplateToDelete(null);
+    }
   };
 
   // Función para confirmar la eliminación (archivar)
@@ -132,26 +132,22 @@ export default function Templates() {
     setIsDeleting(true);
 
     try {
-      // Actualizar el estado del template a "archived"
       const response = await TemplateAPIService.updateTemplate(
         templateToDelete._id!,
-        {
-          status: "archived",
-        }
+        { status: "archived" }
       );
 
-      if (response.success) {
-        showToast(
-          t("deleteSuccess", { name: templateToDelete.template_name }),
-          "success",
-          3000
-        );
-        // Recargar la lista de templates
-        loadTemplates(searchTerm);
-        handleCloseDeleteModal();
-      } else {
+      if (!response.success) {
         throw new Error(response.message || "Error al archivar la plantilla");
       }
+
+      showToast(
+        t("deleteSuccess", { name: templateToDelete.template_name }),
+        "success",
+        3000
+      );
+      loadTemplates(searchTerm);
+      handleCloseDeleteModal();
     } catch (error) {
       console.error("Error archiving template:", error);
       showToast(
@@ -162,6 +158,7 @@ export default function Templates() {
         "error",
         5000
       );
+    } finally {
       setIsDeleting(false);
     }
   };
@@ -224,24 +221,13 @@ export default function Templates() {
 
             {/* Botón Recursos Visuales */}
             {can(PERMISSION_ACTIONS.Create, MODULES.TEMPLATE_MANAGEMENT) && (
-              <>
-                <Link
-                  href="/templates/visual-resources"
-                  className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-[#ffaf68] text-[#283618] rounded-lg hover:bg-[#ffaf68]/10 transition-colors whitespace-nowrap"
-                >
-                  <Images className="h-5 w-5" />
-                  <span>{t("visualResources")}</span>
-                </Link>
-
-                {/* Botón Crear (condicionado por permiso) */}
-                <Link
-                  href="/templates/create"
-                  className={`${btnPrimary} whitespace-nowrap`}
-                >
-                  <Plus className="h-5 w-5" />
-                  <span>{t("createNew")}</span>
-                </Link>
-              </>
+              <Link
+                href="/templates/create"
+                className={`${btnPrimary} whitespace-nowrap`}
+              >
+                <Plus className="h-5 w-5" />
+                <span>{t("createNew")}</span>
+              </Link>
             )}
           </div>
 

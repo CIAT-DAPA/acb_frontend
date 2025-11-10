@@ -14,6 +14,7 @@ import {
   dot,
   elevated,
 } from "./ui";
+import Link from "next/link";
 
 export function HeroSection() {
   const t = useTranslations("Hero");
@@ -21,7 +22,7 @@ export function HeroSection() {
   const words = [
     t("animatedWords.word1"),
     t("animatedWords.word2"),
-    t("animatedWords.word3")
+    t("animatedWords.word3"),
   ];
   return (
     <section className={heroSection}>
@@ -96,13 +97,13 @@ export function HeroSection() {
             <p className={`${heroSubtext} mx-auto`}>{t("description")}</p>
 
             <div className="flex justify-center">
-              <button
-                type="button"
+              <Link
+                href="/bulletins"
                 className={`${btnPrimary} shadow-2xl shadow-black/20`}
                 aria-label={t("cta")}
               >
                 {t("cta")} <ArrowRight className="h-5 w-5" />
-              </button>
+              </Link>
             </div>
 
             <div className="flex items-center justify-center gap-8 text-sm text-foreground/80">
