@@ -124,8 +124,6 @@ export default function CardsPage() {
       const response = await CardAPIService.getCards();
 
       if (response.success) {
-        console.log("Fetched cards:", response);
-        // Filtrar solo las cards activas
         const activeCards = response.data.filter(
           (card) => card.status === "active"
         );
@@ -144,23 +142,18 @@ export default function CardsPage() {
 
   // Filtrar cards cuando cambia el término de búsqueda o el tipo seleccionado
   useEffect(() => {
-    let filtered = cards;
+    const term = searchTerm.trim().toLowerCase();
 
-    // Filtrar por tipo
-    if (selectedType !== "all") {
-      filtered = filtered.filter((card) => card.card_type === selectedType);
-    }
+    const filtered = cards.filter((card) => {
+      const matchesType =
+        selectedType === "all" || card.card_type === selectedType;
+      const matchesSearch =
+        !term ||
+        card.card_name.toLowerCase().includes(term) ||
+        getCardTypeLabel(card.card_type).toLowerCase().includes(term);
 
-    // Filtrar por búsqueda
-    if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter((card) => {
-        const cardNameMatch = card.card_name.toLowerCase().includes(term);
-        const cardTypeLabel = getCardTypeLabel(card.card_type);
-        const cardTypeMatch = cardTypeLabel.toLowerCase().includes(term);
-        return cardNameMatch || cardTypeMatch;
-      });
-    }
+      return matchesType && matchesSearch;
+    });
 
     setFilteredCards(filtered);
   }, [searchTerm, selectedType, cards, cardTypes, t]);
@@ -204,12 +197,11 @@ export default function CardsPage() {
 
   // Función para confirmar la eliminación (cambiar status a archived)
   const handleConfirmDelete = async () => {
-    if (!cardToDelete || !cardToDelete._id) return;
+    if (!cardToDelete?._id) return;
 
     setIsDeleting(true);
 
     try {
-      // Actualizar el card cambiando su status a archived
       const response = await CardAPIService.updateCard(cardToDelete._id, {
         ...cardToDelete,
         status: "archived",
@@ -221,8 +213,6 @@ export default function CardsPage() {
           "success",
           3000
         );
-
-        // Recargar la lista de cards
         loadCards();
         handleCloseDeleteModal();
       } else {
@@ -259,7 +249,7 @@ export default function CardsPage() {
 
   // Función para confirmar la duplicación
   const handleConfirmDuplicate = async () => {
-    if (!cardToDuplicate || !cardToDuplicate._id) return;
+    if (!cardToDuplicate?._id) return;
 
     setIsDuplicating(true);
 
@@ -274,8 +264,6 @@ export default function CardsPage() {
           "success",
           3000
         );
-
-        // Recargar la lista de cards
         loadCards();
         handleCloseDuplicateModal();
       } else {
@@ -371,7 +359,7 @@ export default function CardsPage() {
                 <div className="flex items-center gap-2 px-4 py-2">
                   <Loader2 className="h-4 w-4 animate-spin text-[#606c38]" />
                   <span className="text-sm text-[#283618]/60">
-                    Cargando tipos...
+                    {t("loading")}
                   </span>
                 </div>
               ) : (

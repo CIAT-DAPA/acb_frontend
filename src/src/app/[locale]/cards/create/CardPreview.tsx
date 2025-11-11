@@ -18,17 +18,20 @@ export function CardPreview({ data }: CardPreviewProps) {
   const t = useTranslations("CreateCard.preview");
   const tCards = useTranslations("Cards");
 
-  // Función helper para obtener el label del tipo de card
   const getCardTypeLabel = (cardType: string): string => {
-    if (hasCardTypeTranslation(cardType)) {
-      return tCards(`cardTypes.${cardType}`);
-    }
-    return cardType;
+    return hasCardTypeTranslation(cardType)
+      ? tCards(`cardTypes.${cardType}`)
+      : cardType;
   };
 
-  // Convertir CardData a TemplateData para reutilizar TemplatePreview
   const templateData = useMemo((): CreateTemplateData => {
-    // Crear una sección a partir del contenido de la card
+    const defaultLog = {
+      created_at: new Date().toISOString(),
+      creator_user_id: "",
+      creator_first_name: null,
+      creator_last_name: null,
+    };
+
     const section: Section = {
       section_id: "card_section",
       display_name: data.card_name || t("untitled"),
@@ -41,7 +44,6 @@ export function CardPreview({ data }: CardPreviewProps) {
       style_config: {
         background_color: data.content.background_color,
         background_image: data.content.background_url,
-        // Aplicar padding y gap del content style_config
         padding: data.content.style_config?.padding,
         gap: data.content.style_config?.gap,
       },
@@ -54,25 +56,15 @@ export function CardPreview({ data }: CardPreviewProps) {
         template_name: `${getCardTypeIcon(data.card_type)} ${
           data.card_name || t("untitled")
         }`,
-        description: `Card de tipo: ${getCardTypeLabel(data.card_type)}`,
+        description: `${t("cardType")}: ${getCardTypeLabel(data.card_type)}`,
         status: data.status || "active",
-        log: data.log || {
-          created_at: new Date().toISOString(),
-          creator_user_id: "",
-          creator_first_name: null,
-          creator_last_name: null,
-        },
+        log: data.log || defaultLog,
         access_config: data.access_config,
       },
       version: {
         version_num: 1,
         commit_message: "Card preview",
-        log: data.log || {
-          created_at: new Date().toISOString(),
-          creator_user_id: "",
-          creator_first_name: null,
-          creator_last_name: null,
-        },
+        log: data.log || defaultLog,
         content: {
           style_config: {
             font: "Arial",
@@ -84,9 +76,8 @@ export function CardPreview({ data }: CardPreviewProps) {
         },
       },
     };
-  }, [data, t, tCards]);
+  }, [data, t, getCardTypeLabel]);
 
-  // Reutilizar el TemplatePreview con los datos convertidos
   return (
     <TemplatePreview
       data={templateData}
