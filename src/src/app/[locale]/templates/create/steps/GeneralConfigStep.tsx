@@ -157,7 +157,7 @@ export function GeneralConfigStep({
         {/* Dimensiones del Boletín */}
         <div>
           <h3 className="text-lg font-medium text-[#283618] mb-4">
-            {t("dimensions.title", { default: "Dimensiones del Boletín" })}
+            {t("dimensions.title")}
           </h3>
 
           {/* Selector de Presets */}
@@ -166,9 +166,7 @@ export function GeneralConfigStep({
               htmlFor="dimension-preset"
               className="block text-sm font-medium text-[#283618]/70 mb-2"
             >
-              {t("dimensions.preset.label", {
-                default: "Formato Predefinido",
-              })}
+              {t("dimensions.preset.label")}
             </label>
             <select
               id="dimension-preset"
@@ -222,7 +220,7 @@ export function GeneralConfigStep({
                 htmlFor="bulletin_height"
                 className="block text-sm font-medium text-[#283618]/70 mb-2"
               >
-                {t("dimensions.height.label", { default: "Alto (px)" })}
+                {t("dimensions.height.label")}
               </label>
               <input
                 type="number"
@@ -243,10 +241,7 @@ export function GeneralConfigStep({
           </div>
 
           <p className="mt-3 text-xs text-[#283618]/50">
-            {t("dimensions.help", {
-              default:
-                "Puedes modificar las dimensiones manualmente en cualquier momento.",
-            })}
+            {t("dimensions.help")}
           </p>
         </div>
 

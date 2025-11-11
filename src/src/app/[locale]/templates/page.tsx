@@ -54,6 +54,11 @@ export default function Templates() {
     null
   );
 
+  // Helper para obtener el nombre del autor
+  const getAuthorName = (log: TemplateMaster["log"]) =>
+    `${log.updater_first_name || ""} ${log.updater_last_name || ""}`.trim() ||
+    `${log.creator_first_name || ""} ${log.creator_last_name || ""}`.trim();
+
   // Cargar templates al montar el componente
   useEffect(() => {
     loadTemplates();
@@ -71,13 +76,12 @@ export default function Templates() {
       );
 
       if (response.success) {
-        console.log("Fetched templates:", response);
         setTemplates(templatesActive);
       } else {
-        setError(response.message || "Error al cargar las plantillas");
+        setError(response.message || t("loadError"));
       }
     } catch (err) {
-      setError("Error de conexión al cargar las plantillas");
+      setError(t("connectionError"));
     } finally {
       setLoading(false);
     }
@@ -153,7 +157,7 @@ export default function Templates() {
       showToast(
         t("deleteError", {
           name: templateToDelete.template_name,
-          error: error instanceof Error ? error.message : "Error desconocido",
+          error: error instanceof Error ? error.message : t("unknownError"),
         }),
         "error",
         5000
@@ -283,14 +287,7 @@ export default function Templates() {
                       type="template"
                       id={template._id!}
                       name={template.template_name}
-                      author={
-                        template.log.updater_first_name +
-                          " " +
-                          template.log.updater_last_name ||
-                        template.log.creator_first_name +
-                          " " +
-                          template.log.creator_last_name
-                      }
+                      author={getAuthorName(template.log)}
                       lastModified={new Date(
                         template.log.updated_at!
                       ).toLocaleDateString()}
@@ -384,13 +381,7 @@ export default function Templates() {
                     <div className="flex items-center gap-2">
                       <User className="h-3 w-3" />
                       <span>
-                        {t("by")}{" "}
-                        {templateToDelete.log.updater_first_name +
-                          " " +
-                          templateToDelete.log.updater_last_name ||
-                          templateToDelete.log.creator_first_name +
-                            " " +
-                            templateToDelete.log.creator_last_name}
+                        {t("by")} {getAuthorName(templateToDelete.log)}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">

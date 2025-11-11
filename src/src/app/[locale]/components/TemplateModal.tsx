@@ -1,7 +1,9 @@
 "use client";
 
 import React, { ReactNode, useEffect } from "react";
-import { X } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { btnDark } from "./ui";
 
 interface TemplateModalProps {
   isOpen: boolean;
@@ -34,6 +36,8 @@ export function TemplateModal({
   onNext,
   maxWidth = "4xl",
 }: TemplateModalProps) {
+  const t = useTranslations("TemplateModal");
+
   if (!isOpen) return null;
 
   const maxWidthMap = {
@@ -54,7 +58,7 @@ export function TemplateModal({
     if (isOpen) {
       // Guardar el scroll actual
       const scrollY = window.scrollY;
-      
+
       // Prevenir scroll
       document.body.style.overflow = "hidden";
       document.body.style.position = "fixed";
@@ -85,7 +89,7 @@ export function TemplateModal({
         <button
           onClick={onClose}
           className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-lg hover:bg-gray-100 transition-colors z-10 border border-[#283618]/10"
-          aria-label="Cerrar modal"
+          aria-label={t("closeModal")}
         >
           <X className="w-5 h-5 text-[#283618]" />
         </button>
@@ -101,9 +105,7 @@ export function TemplateModal({
         {/* Contenido del modal - SOLO ESTA PARTE HACE SCROLL */}
         <div className="px-6 py-4 flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin">
           <div className="overflow-x-auto flex justify-center scrollbar-thin">
-            <div className="w-fit h-fit">
-              {children}
-            </div>
+            <div className="w-fit h-fit">{children}</div>
           </div>
         </div>
 
@@ -113,10 +115,11 @@ export function TemplateModal({
             <button
               onClick={onPrevious}
               disabled={isFirstItem}
-              className="px-4 py-2 bg-[#283618] text-white rounded-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#ffaf68] transition-colors font-medium text-sm"
-              aria-label="Anterior"
+              className={`${btnDark} disabled:opacity-30 disabled:cursor-not-allowed`}
+              aria-label={t("previous")}
             >
-              ← Anterior
+              <ChevronLeft className="w-4 h-4" />
+              {t("previous")}
             </button>
 
             <span className="text-sm text-[#283618]/70 font-medium">
@@ -126,10 +129,11 @@ export function TemplateModal({
             <button
               onClick={onNext}
               disabled={isLastItem}
-              className="px-4 py-2 bg-[#283618] text-white rounded-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#ffaf68] transition-colors font-medium text-sm"
-              aria-label="Siguiente"
+              className={`${btnDark} disabled:opacity-30 disabled:cursor-not-allowed`}
+              aria-label={t("next")}
             >
-              Siguiente →
+              {t("next")}
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         )}

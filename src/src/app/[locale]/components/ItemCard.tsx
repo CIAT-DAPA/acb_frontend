@@ -80,8 +80,16 @@ export default function ItemCard(props: ItemCardProps) {
       : "VisualResources"
   );
 
+  // Constantes reutilizables
+  const ACTION_BUTTON_CLASS =
+    "p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors cursor-pointer";
+  const DELETE_BUTTON_CLASS =
+    "p-2 bg-white/20 rounded-full hover:bg-red-500/50 transition-colors cursor-pointer";
+  const ICON_CLASS = "h-4 w-4 text-white";
+  const IMAGE_FALLBACK = "/assets/img/imageNotFound.png";
+
   // Imagen a mostrar
-  let displayImage = props.image || "/assets/img/imageNotFound.png";
+  let displayImage = props.image || IMAGE_FALLBACK;
 
   // Para templates, usar el primer thumbnail si existe
   if (
@@ -101,40 +109,45 @@ export default function ItemCard(props: ItemCardProps) {
     displayImage = props.thumbnailImages[0];
   }
 
+  // Helper para manejar errores de imágenes
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.src = IMAGE_FALLBACK;
+  };
+
   // Renderizar botones de acción compartidos
   const renderActionButtons = () => (
     <>
       {props.previewBtn && props.onPreview && (
         <button
           onClick={props.onPreview}
-          className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors cursor-pointer"
+          className={ACTION_BUTTON_CLASS}
           title={t("preview")}
         >
-          <Eye className="h-4 w-4 text-white" />
+          <Eye className={ICON_CLASS} />
         </button>
       )}
 
       {props.editBtn && props.onEdit && (
         <button
           onClick={props.onEdit}
-          className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors cursor-pointer"
+          className={ACTION_BUTTON_CLASS}
           title={t("edit")}
         >
-          <Edit3 className="h-4 w-4 text-white" />
+          <Edit3 className={ICON_CLASS} />
         </button>
       )}
 
       {props.downloadBtn && props.onDownload && (
         <button
           onClick={props.onDownload}
-          className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors cursor-pointer"
+          className={ACTION_BUTTON_CLASS}
           title={t("download")}
           disabled={props.isDownloading}
         >
           {props.isDownloading ? (
-            <Loader2 className="h-4 w-4 text-white animate-spin" />
+            <Loader2 className={`${ICON_CLASS} animate-spin`} />
           ) : (
-            <Download className="h-4 w-4 text-white" />
+            <Download className={ICON_CLASS} />
           )}
         </button>
       )}
@@ -142,14 +155,14 @@ export default function ItemCard(props: ItemCardProps) {
       {props.duplicateBtn && props.onDuplicate && (
         <button
           onClick={props.onDuplicate}
-          className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors cursor-pointer"
+          className={ACTION_BUTTON_CLASS}
           title={t("duplicate")}
           disabled={props.isDuplicating}
         >
           {props.isDuplicating ? (
-            <Loader2 className="h-4 w-4 text-white animate-spin" />
+            <Loader2 className={`${ICON_CLASS} animate-spin`} />
           ) : (
-            <Copy className="h-4 w-4 text-white" />
+            <Copy className={ICON_CLASS} />
           )}
         </button>
       )}
@@ -157,14 +170,14 @@ export default function ItemCard(props: ItemCardProps) {
       {props.deleteBtn && props.onDelete && (
         <button
           onClick={props.onDelete}
-          className="p-2 bg-white/20 rounded-full hover:bg-red-500/50 transition-colors cursor-pointer"
+          className={DELETE_BUTTON_CLASS}
           title={t("delete")}
           disabled={props.isDeleting}
         >
           {props.isDeleting ? (
-            <Loader2 className="h-4 w-4 text-white animate-spin" />
+            <Loader2 className={`${ICON_CLASS} animate-spin`} />
           ) : (
-            <Trash2 className="h-4 w-4 text-white" />
+            <Trash2 className={ICON_CLASS} />
           )}
         </button>
       )}
@@ -199,12 +212,10 @@ export default function ItemCard(props: ItemCardProps) {
                 <div key={index} className="relative bg-gray-50">
                   <Image
                     src={thumbnail}
-                    alt={`${props.name} - Sección ${index + 1}`}
+                    alt={`${props.name} - ${t("section")} ${index + 1}`}
                     fill
                     className="object-contain"
-                    onError={(e) => {
-                      e.currentTarget.src = "/assets/img/imageNotFound.png";
-                    }}
+                    onError={handleImageError}
                   />
                 </div>
               ))}
@@ -221,9 +232,7 @@ export default function ItemCard(props: ItemCardProps) {
               alt={props.name}
               fill
               className="object-contain group-hover:scale-105 transition-transform"
-              onError={(e) => {
-                e.currentTarget.src = "/assets/img/imageNotFound.png";
-              }}
+              onError={handleImageError}
             />
           )}
 
@@ -241,7 +250,7 @@ export default function ItemCard(props: ItemCardProps) {
             </h3>
             {hasMutipleSections && (
               <span className="text-xs text-[#283618]/60 ml-2 whitespace-nowrap">
-                {totalSections} {totalSections === 1 ? "página" : "páginas"}
+                {totalSections} {totalSections === 1 ? t("page") : t("pages")}
               </span>
             )}
           </div>
@@ -271,9 +280,7 @@ export default function ItemCard(props: ItemCardProps) {
           alt={props.name}
           fill
           className="object-contain group-hover:scale-105 transition-transform"
-          onError={(e) => {
-            e.currentTarget.src = "/assets/img/imageNotFound.png";
-          }}
+          onError={handleImageError}
         />
         {/* Overlay con acciones */}
         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">

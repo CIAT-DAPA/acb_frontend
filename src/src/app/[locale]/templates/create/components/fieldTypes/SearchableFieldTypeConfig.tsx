@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl";
 import { BaseFieldTypeConfigProps } from "./BaseFieldTypeConfig";
 import { Plus, X } from "lucide-react";
 import {
-  btnOutlinePrimary,
   btnOutlineSecondary,
 } from "@/app/[locale]/components/ui";
 
