@@ -197,6 +197,14 @@
     "updateSuccess": "Bulletin updated successfully",
     "error": "Error creating bulletin",
     "errorLoadingTemplate": "Error loading template",
+    "editBulletin": {
+      "loading": "Loading bulletin...",
+      "errorTitle": "Error loading bulletin",
+      "errorInvalidId": "Invalid bulletin ID",
+      "errorNoData": "Could not load bulletin information",
+      "errorNoVersion": "Bulletin version has no valid data",
+      "errorGeneric": "Error loading bulletin data"
+    },
     "selectTemplate": {
       "title": "Select Template",
       "description": "Choose the template you want to use for your bulletin",
@@ -231,7 +239,8 @@
       "description": "Fill in the information for this section",
       "selectOption": "Select an option...",
       "noFields": "This section has no configurable fields",
-      "headerFields": "Header Fields"
+      "headerFields": "Header Fields",
+      "notFound": "Section not found"
     },
     "fillData": {
       "sectionProgress": "Section {current} of {total}",
@@ -248,11 +257,68 @@
       "subtitle": "Visualize how your bulletin will look",
       "selectTemplate": "Select a template to see the preview"
     },
+    "bulletinPreview": {
+      "loading": "Loading bulletin...",
+      "loadingWithId": "Loading bulletin {id}...",
+      "errorTitle": "Error loading bulletin",
+      "errorMessage": "Could not load the bulletin",
+      "errorId": "ID: {id}",
+      "backToTemplates": "Back to Templates",
+      "backButton": "Back",
+      "title": "Bulletin Preview",
+      "description": "Bulletin created from template",
+      "orientation": "Orientation:",
+      "vertical": "Vertical",
+      "horizontal": "Horizontal",
+      "size": "Size:",
+      "columns": "Columns:",
+      "sectionCount": "{count, plural, =1 {1 section} other {{count} sections}}",
+      "section": "section",
+      "sections": "sections",
+      "exportButton": "Export",
+      "exportTitle": "Export Bulletin",
+      "templateId": "Template ID",
+      "status": "Status",
+      "previewTitle": "Preview View",
+      "descriptionLabel": "Description",
+      "noDescription": "No description",
+      "version": "Version",
+      "access": "Access"
+    },
     "export": {
       "title": "Export Bulletin",
       "description": "Review all sections and export your bulletin as images",
       "exportButton": "Export Bulletin",
       "exporting": "Exporting..."
+    },
+    "exportModal": {
+      "title": "Export Content",
+      "format": "File Format",
+      "quality": "Image Quality",
+      "pdfConfig": "PDF Configuration",
+      "pageSize": "Page Size",
+      "sectionsPerPage": "Sections per Page",
+      "sectionsPerPageRange": "{count} (one per page)",
+      "sectionsPerPageMax": "{count} (2x3 grid)",
+      "sectionsToExport": "Sections to Export",
+      "selectAll": "Select all",
+      "deselectAll": "Deselect all",
+      "section": "Section",
+      "allSections": "All sections ({total})",
+      "selectedSections": "{selected} of {total} sections selected",
+      "loading": "Loading content...",
+      "loadError": "Error",
+      "cancel": "Cancel",
+      "export": "Export",
+      "exporting": "Exporting...",
+      "startingExport": "Starting export...",
+      "exportComplete": "Export completed!",
+      "exportSuccess": "Export successful!",
+      "exportSuccessMessage": "The file was downloaded successfully.",
+      "exportError": "Export error",
+      "contentLabel": "Content",
+      "formatLabel": "Format: {format}",
+      "sectionsLabel": "Sections: {count}"
     }
   },
   "Authentication": {

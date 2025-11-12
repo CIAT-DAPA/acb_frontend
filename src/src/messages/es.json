@@ -197,6 +197,14 @@
     "updateSuccess": "Boletín actualizado exitosamente",
     "error": "Error al crear el boletín",
     "errorLoadingTemplate": "Error al cargar la plantilla",
+    "editBulletin": {
+      "loading": "Cargando boletín...",
+      "errorTitle": "Error al cargar el boletín",
+      "errorInvalidId": "ID de boletín no válido",
+      "errorNoData": "No se pudo cargar la información del boletín",
+      "errorNoVersion": "La versión del boletín no tiene datos válidos",
+      "errorGeneric": "Error al cargar los datos del boletín"
+    },
     "selectTemplate": {
       "title": "Seleccionar Plantilla",
       "description": "Elige la plantilla que deseas utilizar para tu boletín",
@@ -231,7 +239,8 @@
       "description": "Llena la información de esta sección",
       "selectOption": "Selecciona una opción...",
       "noFields": "Esta sección no tiene campos configurables",
-      "headerFields": "Campos del Encabezado"
+      "headerFields": "Campos del Encabezado",
+      "notFound": "Sección no encontrada"
     },
     "fillData": {
       "sectionProgress": "Sección {current} de {total}",
@@ -248,11 +257,68 @@
       "subtitle": "Visualiza cómo se verá tu boletín",
       "selectTemplate": "Selecciona una plantilla para ver la vista previa"
     },
+    "bulletinPreview": {
+      "loading": "Cargando template...",
+      "loadingWithId": "ID: {id}",
+      "errorTitle": "Error al cargar template",
+      "errorMessage": "No se pudo cargar el template",
+      "errorId": "ID: {id}",
+      "backToTemplates": "Volver a Templates",
+      "backButton": "Volver a Templates",
+      "title": "Vista de Preview",
+      "description": "Cambia entre los diferentes modos de visualización usando el toggle",
+      "orientation": "Orientación:",
+      "vertical": "Vertical",
+      "horizontal": "Horizontal",
+      "size": "Tamaño:",
+      "columns": "Columnas:",
+      "sectionCount": "{count} {plural}",
+      "section": "sección",
+      "sections": "secciones",
+      "exportButton": "Exportar",
+      "exportTitle": "Exportar template",
+      "templateId": "ID del Template",
+      "status": "Estado",
+      "previewTitle": "Vista de Preview",
+      "descriptionLabel": "Descripción",
+      "noDescription": "Sin descripción",
+      "version": "Versión",
+      "access": "Acceso"
+    },
     "export": {
       "title": "Exportar Boletín",
       "description": "Revisa todas las secciones y exporta tu boletín como imágenes",
       "exportButton": "Exportar Boletín",
       "exporting": "Exportando..."
+    },
+    "exportModal": {
+      "title": "Exportar Contenido",
+      "format": "Formato de Archivo",
+      "quality": "Calidad de Imagen",
+      "pdfConfig": "Configuración PDF",
+      "pageSize": "Tamaño de Página",
+      "sectionsPerPage": "Secciones por Página",
+      "sectionsPerPageRange": "{count} (una por página)",
+      "sectionsPerPageMax": "{count} (grid 2x3)",
+      "sectionsToExport": "Secciones a Exportar",
+      "selectAll": "Seleccionar todas",
+      "deselectAll": "Deseleccionar todas",
+      "section": "Sección",
+      "allSections": "Todas las secciones ({total})",
+      "selectedSections": "{selected} de {total} secciones seleccionadas",
+      "loading": "Cargando contenido...",
+      "loadError": "Error",
+      "cancel": "Cancelar",
+      "export": "Exportar",
+      "exporting": "Exportando...",
+      "startingExport": "Iniciando exportación...",
+      "exportComplete": "¡Exportación completada!",
+      "exportSuccess": "¡Exportación exitosa!",
+      "exportSuccessMessage": "El archivo se descargó correctamente.",
+      "exportError": "Error en la exportación",
+      "contentLabel": "Contenido",
+      "formatLabel": "Formato: {format}",
+      "sectionsLabel": "Secciones: {count}"
     }
   },
   "Authentication": {
