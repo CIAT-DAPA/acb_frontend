@@ -66,6 +66,13 @@ interface TemplatePreviewProps {
   hidePagination?: boolean; // Ocultar controles de paginación
 }
 
+// Constantes para estilos repetidos
+const PLACEHOLDER_CONTAINER_CLASS =
+  "flex items-center justify-center bg-gray-100 border border-gray-300 rounded";
+const PLACEHOLDER_TEXT_CLASS = "text-gray-400 text-sm";
+const PAGINATION_BUTTON_CLASS =
+  "px-4 py-2 bg-[#283618] text-white rounded-md disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-[#283618]/90 transition-colors";
+
 export function TemplatePreview({
   data,
   selectedSectionIndex = 0,
@@ -87,6 +94,9 @@ export function TemplatePreview({
   const locale = ["es", "en"].includes(pathnameLocale)
     ? pathnameLocale
     : hookLocale;
+
+  // Código de locale para formateo de fechas
+  const localeCode = locale === "es" ? "es-ES" : "en-US";
 
   // Estado para almacenar las cards cargadas
   const [cardsCache, setCardsCache] = useState<Map<string, Card>>(new Map());
@@ -172,33 +182,28 @@ export function TemplatePreview({
     return `${baseUrl}${encodedPath}`;
   };
 
+  // Helper para parsear fechas como locales
+  const parseLocalDate = (date: string | Date): Date => {
+    if (typeof date !== "string") return date;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      const [year, month, day] = date.split("-").map(Number);
+      return new Date(year, month - 1, day);
+    }
+    return new Date(date);
+  };
+
   // Helper function to format dates according to field configuration
   const formatDateValue = (date: Date | string, format: string): string => {
-    let dateObj: Date;
-
-    if (typeof date === "string") {
-      // Si la fecha viene en formato YYYY-MM-DD (del input date),
-      // parsearlo como fecha local para evitar problemas de zona horaria
-      if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-        const [year, month, day] = date.split("-").map(Number);
-        dateObj = new Date(year, month - 1, day);
-      } else {
-        dateObj = new Date(date);
-      }
-    } else {
-      dateObj = date;
-    }
+    const dateObj = parseLocalDate(date);
 
     if (isNaN(dateObj.getTime())) {
-      return "Fecha inválida";
+      return t("invalidDate");
     }
 
     const day = dateObj.getDate().toString().padStart(2, "0");
     const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
     const year = dateObj.getFullYear();
 
-    // Usar el locale actual para el nombre del día
-    const localeCode = locale === "es" ? "es-ES" : "en-US";
     const dayName = dateObj.toLocaleDateString(localeCode, { weekday: "long" });
     const dayNameCapitalized =
       dayName.charAt(0).toUpperCase() + dayName.slice(1);
@@ -233,7 +238,6 @@ export function TemplatePreview({
       if (field?.type === "date" && field.field_config?.date_format) {
         return formatDateValue(value, field.field_config.date_format);
       }
-      const localeCode = locale === "es" ? "es-ES" : "en-US";
       return value.toLocaleDateString(localeCode);
     }
     if (Array.isArray(value)) {
@@ -430,6 +434,17 @@ export function TemplatePreview({
           </div>
         );
 
+      case "searchable":
+        // Mostrar la primera opción si no hay valor seleccionado
+        const searchableOptions = (field.field_config as any)?.options || [];
+        const searchableValue = field.value || searchableOptions[0] || "Opción";
+
+        return (
+          <div key={key} style={fieldStyles}>
+            {searchableValue}
+          </div>
+        );
+
       case "select_background":
         // Este campo no renderiza contenido visible, solo cambia el fondo de la sección
         // El fondo se aplica automáticamente a nivel de sección en el renderizado del contenedor
@@ -469,16 +484,6 @@ export function TemplatePreview({
             field.value.start_date &&
             field.value.end_date
           ) {
-            // Parsear fechas como locales para evitar problemas de zona horaria
-            const parseLocalDate = (dateStr: string | Date): Date => {
-              if (typeof dateStr !== "string") return dateStr;
-              if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-                const [year, month, day] = dateStr.split("-").map(Number);
-                return new Date(year, month - 1, day);
-              }
-              return new Date(dateStr);
-            };
-
             const startDateVal = parseLocalDate(
               field.value.start_date as string | Date
             );
@@ -488,7 +493,6 @@ export function TemplatePreview({
 
             const startDay = startDateVal.getDate();
             const endDay = endDateVal.getDate();
-            const localeCode = locale === "es" ? "es-ES" : "en-US";
             const month = endDateVal.toLocaleDateString(localeCode, {
               month: "long",
             });
@@ -537,7 +541,7 @@ export function TemplatePreview({
         );
 
       case "page_number":
-        const format = field.field_config?.format || "Página {page} de {total}";
+        const format = field.field_config?.format || t("pageFormat");
         const currentPage =
           pageInfo?.currentPage !== undefined ? pageInfo.currentPage + 1 : 1;
         const totalPages = pageInfo?.totalPages || 1;
@@ -816,9 +820,9 @@ export function TemplatePreview({
             <div
               key={key}
               style={fieldStyles}
-              className="flex items-center justify-center bg-gray-100 border border-gray-300 rounded"
+              className={PLACEHOLDER_CONTAINER_CLASS}
             >
-              <span className="text-gray-400 text-sm">Sin imagen</span>
+              <span className={PLACEHOLDER_TEXT_CLASS}>{t("noImage")}</span>
             </div>
           );
         }
@@ -883,12 +887,12 @@ export function TemplatePreview({
             <div
               key={key}
               style={fieldStyles}
-              className="flex items-center justify-center bg-gray-100 border border-gray-300 rounded p-4"
+              className={`${PLACEHOLDER_CONTAINER_CLASS} p-4`}
             >
-              <span className="text-gray-400 text-sm">
+              <span className={PLACEHOLDER_TEXT_CLASS}>
                 {availableCardIds.length === 0
-                  ? "No hay cards disponibles"
-                  : "Seleccione una card"}
+                  ? t("noCardsAvailable")
+                  : t("selectCard")}
               </span>
             </div>
           );
@@ -901,9 +905,9 @@ export function TemplatePreview({
             <div
               key={key}
               style={fieldStyles}
-              className="flex items-center justify-center bg-gray-100 border border-gray-300 rounded p-4"
+              className={`${PLACEHOLDER_CONTAINER_CLASS} p-4`}
             >
-              <span className="text-gray-400 text-sm">Cargando card...</span>
+              <span className={PLACEHOLDER_TEXT_CLASS}>{t("loadingCard")}</span>
             </div>
           );
         }
@@ -1180,10 +1184,10 @@ export function TemplatePreview({
             {data.master.description ||
               t("noDescription", { default: "Sin descripción" })}
           </p>
-          <div className="text-xs text-[#bc6c25] mt-2">
-            Estado: {data.master.status} | Acceso:{" "}
+            <div className="text-xs text-[#bc6c25] mt-2">
+            {t("status")}: {data.master.status} | {t("access")}:{" "}
             {data.master.access_config.access_type}
-          </div>
+            </div>
         </div>
       )}
 
@@ -1798,12 +1802,15 @@ export function TemplatePreview({
           <button
             onClick={() => handlePageChange(Math.max(0, currentPageIndex - 1))}
             disabled={currentPageIndex === 0}
-            className="px-4 py-2 bg-[#283618] text-white rounded-md disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-[#283618]/90 transition-colors"
+            className={PAGINATION_BUTTON_CLASS}
           >
-            ← Página Anterior
+            {t("previousPage")}
           </button>
           <span className="text-sm text-[#283618] font-medium">
-            Página {currentPageIndex + 1} de {paginationInfo.totalPages}
+            {t("pageOf", {
+              current: currentPageIndex + 1,
+              total: paginationInfo.totalPages,
+            })}
           </span>
           <button
             onClick={() =>
@@ -1812,9 +1819,9 @@ export function TemplatePreview({
               )
             }
             disabled={currentPageIndex === paginationInfo.totalPages - 1}
-            className="px-4 py-2 bg-[#283618] text-white rounded-md disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-[#283618]/90 transition-colors"
+            className={PAGINATION_BUTTON_CLASS}
           >
-            Página Siguiente →
+            {t("nextPage")}
           </button>
         </div>
       )}

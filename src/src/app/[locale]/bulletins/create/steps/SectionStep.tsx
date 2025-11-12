@@ -12,6 +12,7 @@ import {
   DateInput,
   DateRangeInput,
   SelectInput,
+  SearchableInput,
   SelectBackgroundField,
   CardFieldInput,
 } from "../components/fields";
@@ -23,6 +24,24 @@ interface SectionStepProps {
   currentPageIndex?: number;
   onPageChange?: (pageIndex: number) => void;
 }
+
+// Helper para normalizar valores de date_range
+const normalizeDateRangeValue = (
+  value: any
+): { start_date: string; end_date: string } => {
+  if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+    return value as { start_date: string; end_date: string };
+  }
+  return { start_date: "", end_date: "" };
+};
+
+// Helper para normalizar valores de card
+const normalizeCardValue = (value: any): string[] => {
+  if (!Array.isArray(value)) return [];
+  return value.map((item: any) =>
+    typeof item === "string" ? item : item.cardId || item._id || item
+  );
+};
 
 export function SectionStep({
   bulletinData,
@@ -36,9 +55,7 @@ export function SectionStep({
   const section = bulletinData.version.data.sections[sectionIndex];
 
   if (!section) {
-    return (
-      <div className="text-center py-8 text-red-500">Sección no encontrada</div>
-    );
+    return <div className="text-center py-8 text-red-500">{t("notFound")}</div>;
   }
 
   const handleFieldChange = (
@@ -74,7 +91,6 @@ export function SectionStep({
     }));
   };
 
-  // Handler para campos del header de la sección
   const handleHeaderFieldChange = (fieldIndex: number, value: any) => {
     onUpdate((prev) => ({
       ...prev,
@@ -102,17 +118,11 @@ export function SectionStep({
     }));
   };
 
-  const renderHeaderField = (field: Field, fieldIndex: number) => {
-    // Solo renderizar si form es true
-    if (!field.form) {
-      return null;
-    }
+  // Función unificada para renderizar cualquier tipo de campo
+  const renderFieldByType = (field: Field, onChange: (value: any) => void) => {
+    if (!field.form) return null;
 
     const fieldValue = field.value || "";
-
-    const handleChange = (value: any) => {
-      handleHeaderFieldChange(fieldIndex, value);
-    };
 
     switch (field.type) {
       case "list":
@@ -121,7 +131,7 @@ export function SectionStep({
           <ListFieldEditor
             field={field}
             value={listValue}
-            onChange={handleChange}
+            onChange={onChange}
           />
         );
 
@@ -130,7 +140,7 @@ export function SectionStep({
           <TextInput
             field={field}
             value={fieldValue as string}
-            onChange={handleChange}
+            onChange={onChange}
           />
         );
 
@@ -139,7 +149,7 @@ export function SectionStep({
           <NumberInput
             field={field}
             value={fieldValue as number}
-            onChange={handleChange}
+            onChange={onChange}
           />
         );
 
@@ -148,25 +158,16 @@ export function SectionStep({
           <DateInput
             field={field}
             value={fieldValue as string}
-            onChange={handleChange}
+            onChange={onChange}
           />
         );
 
       case "date_range":
-        const headerDateRangeValue =
-          typeof fieldValue === "object" &&
-          fieldValue !== null &&
-          !Array.isArray(fieldValue)
-            ? (fieldValue as unknown as {
-                start_date: string;
-                end_date: string;
-              })
-            : { start_date: "", end_date: "" };
         return (
           <DateRangeInput
             field={field}
-            value={headerDateRangeValue}
-            onChange={handleChange}
+            value={normalizeDateRangeValue(fieldValue)}
+            onChange={onChange}
           />
         );
 
@@ -175,7 +176,16 @@ export function SectionStep({
           <SelectInput
             field={field}
             value={fieldValue as string}
-            onChange={handleChange}
+            onChange={onChange}
+          />
+        );
+
+      case "searchable":
+        return (
+          <SearchableInput
+            field={field}
+            value={fieldValue as string}
+            onChange={onChange}
           />
         );
 
@@ -184,7 +194,7 @@ export function SectionStep({
           <SelectBackgroundField
             field={field}
             value={fieldValue as string}
-            onChange={handleChange}
+            onChange={onChange}
           />
         );
 
@@ -193,21 +203,16 @@ export function SectionStep({
           <TextWithIconInput
             field={field}
             value={fieldValue as string}
-            onChange={handleChange}
+            onChange={onChange}
           />
         );
 
       case "card":
-        const headerCardValue = Array.isArray(fieldValue)
-          ? fieldValue.map((item: any) =>
-              typeof item === "string" ? item : item.cardId || item._id || item
-            )
-          : [];
         return (
           <CardFieldInput
             field={field}
-            value={headerCardValue}
-            onChange={handleChange}
+            value={normalizeCardValue(fieldValue)}
+            onChange={onChange}
             currentPageIndex={currentPageIndex}
             onPageChange={onPageChange}
           />
@@ -218,7 +223,7 @@ export function SectionStep({
           <input
             type="text"
             value={fieldValue as string}
-            onChange={(e) => handleChange(e.target.value)}
+            onChange={(e) => onChange(e.target.value)}
             placeholder={field.description || field.label}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#283618]"
           />
@@ -226,133 +231,20 @@ export function SectionStep({
     }
   };
 
+  const renderHeaderField = (field: Field, fieldIndex: number) => {
+    return renderFieldByType(field, (value) =>
+      handleHeaderFieldChange(fieldIndex, value)
+    );
+  };
+
   const renderField = (
     field: Field,
     blockIndex: number,
     fieldIndex: number
   ) => {
-    // Solo renderizar si form es true
-    if (!field.form) {
-      return null;
-    }
-
-    const fieldValue = field.value || "";
-
-    const handleChange = (value: any) => {
-      handleFieldChange(blockIndex, fieldIndex, value);
-    };
-
-    switch (field.type) {
-      case "list":
-        // Para campos de tipo lista, usar el editor especializado
-        const listValue = Array.isArray(fieldValue) ? fieldValue : [];
-        return (
-          <ListFieldEditor
-            field={field}
-            value={listValue}
-            onChange={handleChange}
-          />
-        );
-
-      case "text":
-        return (
-          <TextInput
-            field={field}
-            value={fieldValue as string}
-            onChange={handleChange}
-          />
-        );
-
-      case "number":
-        return (
-          <NumberInput
-            field={field}
-            value={fieldValue as number}
-            onChange={handleChange}
-          />
-        );
-
-      case "date":
-        return (
-          <DateInput
-            field={field}
-            value={fieldValue as string}
-            onChange={handleChange}
-          />
-        );
-
-      case "date_range":
-        const blockDateRangeValue =
-          typeof fieldValue === "object" &&
-          fieldValue !== null &&
-          !Array.isArray(fieldValue)
-            ? (fieldValue as unknown as {
-                start_date: string;
-                end_date: string;
-              })
-            : { start_date: "", end_date: "" };
-        return (
-          <DateRangeInput
-            field={field}
-            value={blockDateRangeValue}
-            onChange={handleChange}
-          />
-        );
-
-      case "select":
-        return (
-          <SelectInput
-            field={field}
-            value={fieldValue as string}
-            onChange={handleChange}
-          />
-        );
-
-      case "select_background":
-        return (
-          <SelectBackgroundField
-            field={field}
-            value={fieldValue as string}
-            onChange={handleChange}
-          />
-        );
-
-      case "text_with_icon":
-        return (
-          <TextWithIconInput
-            field={field}
-            value={fieldValue as string}
-            onChange={handleChange}
-          />
-        );
-
-      case "card":
-        const cardValue = Array.isArray(fieldValue)
-          ? fieldValue.map((item: any) =>
-              typeof item === "string" ? item : item.cardId || item._id || item
-            )
-          : [];
-        return (
-          <CardFieldInput
-            field={field}
-            value={cardValue}
-            onChange={handleChange}
-            currentPageIndex={currentPageIndex}
-            onPageChange={onPageChange}
-          />
-        );
-
-      default:
-        return (
-          <input
-            type="text"
-            value={fieldValue as string}
-            onChange={(e) => handleChange(e.target.value)}
-            placeholder={field.description || field.label}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#283618]"
-          />
-        );
-    }
+    return renderFieldByType(field, (value) =>
+      handleFieldChange(blockIndex, fieldIndex, value)
+    );
   };
 
   return (

@@ -5,17 +5,23 @@ import { useTranslations } from "next-intl";
 import { BaseFieldTypeConfigProps } from "./BaseFieldTypeConfig";
 import { Plus } from "lucide-react";
 import {
-  btnOutlinePrimary,
   btnOutlineSecondary,
+  inputXsClass,
+  labelClass,
+  labelXsClass,
+  helpTextClass,
+  checkboxClass,
+  iconContainerClass,
 } from "@/app/[locale]/components/ui";
 import { VisualResourceSelector } from "../VisualResourceSelector";
-import Image from "next/image";
+
+const IMAGE_ERROR_SRC = "/assets/img/imageNotFound.png";
 
 interface SelectWithIconsFieldConfig {
   options: string[];
   icons_url: string[];
   allow_multiple?: boolean;
-  show_label?: boolean; // Si se muestra el label al lado del icono
+  show_label?: boolean;
 }
 
 export const SelectWithIconsFieldTypeConfig: React.FC<
@@ -29,100 +35,128 @@ export const SelectWithIconsFieldTypeConfig: React.FC<
 }) => {
   const t = useTranslations("CreateTemplate.fieldEditor");
 
+  // Helper para obtener config tipada
   const config =
     (currentField.field_config as SelectWithIconsFieldConfig) || {};
   const options = config.options || [];
   const iconsUrl = config.icons_url || [];
 
-  // Estado para el selector de iconos
   const [showIconSelectorForIndex, setShowIconSelectorForIndex] = useState<
     number | null
   >(null);
 
-  const updateOptions = (newOptions: string[]) => {
-    updateFieldConfig({
-      options: newOptions,
-      // Si hay menos opciones que iconos, recortar iconos
-      icons_url: iconsUrl.slice(0, newOptions.length),
-    });
-  };
-
-  const updateIconsUrl = (newIconsUrl: string[]) => {
-    updateFieldConfig({ icons_url: newIconsUrl });
-  };
-
+  // Handlers simplificados
   const addOption = () => {
-    const newOptions = [...options, ""];
-    const newIconsUrl = [...iconsUrl, ""];
     updateFieldConfig({
-      options: newOptions,
-      icons_url: newIconsUrl,
+      options: [...options, ""],
+      icons_url: [...iconsUrl, ""],
     });
   };
 
   const removeOption = (index: number) => {
-    const newOptions = options.filter((_, i) => i !== index);
-    const newIconsUrl = iconsUrl.filter((_, i) => i !== index);
     updateFieldConfig({
-      options: newOptions,
-      icons_url: newIconsUrl,
+      options: options.filter((_, i) => i !== index),
+      icons_url: iconsUrl.filter((_, i) => i !== index),
     });
   };
 
   const updateOption = (index: number, value: string) => {
     const newOptions = [...options];
     newOptions[index] = value;
-    updateOptions(newOptions);
+    updateFieldConfig({
+      options: newOptions,
+      icons_url: iconsUrl.slice(0, newOptions.length),
+    });
   };
 
   const updateIcon = (index: number, value: string) => {
     const newIconsUrl = [...iconsUrl];
     newIconsUrl[index] = value;
-    updateIconsUrl(newIconsUrl);
+    updateFieldConfig({ icons_url: newIconsUrl });
   };
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.src = IMAGE_ERROR_SRC;
+  };
+
+  // Componente para checkbox con help text
+  const CheckboxOption = ({
+    checked,
+    onChange,
+    label,
+    helpText,
+  }: {
+    checked: boolean;
+    onChange: (checked: boolean) => void;
+    label: string;
+    helpText: string;
+  }) => (
+    <div>
+      <label className="flex items-center text-sm">
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+          className={checkboxClass}
+        />
+        {label}
+      </label>
+      <p className={helpTextClass}>{helpText}</p>
+    </div>
+  );
+
+  // Componente para mostrar icono seleccionado
+  const SelectedIconDisplay = ({
+    iconUrl,
+    index,
+    onChangeClick,
+  }: {
+    iconUrl: string;
+    index: number;
+    onChangeClick: () => void;
+  }) => (
+    <div className={`${iconContainerClass} bg-green-50 border-green-200`}>
+      <img
+        src={iconUrl}
+        alt={`${t("selectWithIconsConfig.optionLabel")} ${index + 1}`}
+        className="w-6 h-6 object-contain"
+        onError={handleImageError}
+      />
+      <span className="text-xs text-green-700 flex-1 truncate">
+        {t("selectWithIconsConfig.iconSelected")}
+      </span>
+      <button
+        type="button"
+        onClick={onChangeClick}
+        className="text-xs text-blue-600 hover:text-blue-800"
+      >
+        {t("selectWithIconsConfig.changeIcon")}
+      </button>
+    </div>
+  );
 
   return (
     <div className="space-y-4">
       {/* Permitir selección múltiple */}
-      <div>
-        <label className="flex items-center text-sm">
-          <input
-            type="checkbox"
-            checked={config.allow_multiple || false}
-            onChange={(e) =>
-              updateFieldConfig({ allow_multiple: e.target.checked })
-            }
-            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
-          />
-          {t("selectWithIconsConfig.allowMultiple")}
-        </label>
-        <p className="text-xs text-gray-500 mt-1">
-          {t("selectWithIconsConfig.allowMultipleHelp")}
-        </p>
-      </div>
+      <CheckboxOption
+        checked={config.allow_multiple || false}
+        onChange={(checked) => updateFieldConfig({ allow_multiple: checked })}
+        label={t("selectWithIconsConfig.allowMultiple")}
+        helpText={t("selectWithIconsConfig.allowMultipleHelp")}
+      />
 
       {/* Mostrar label junto al icono */}
-      <div>
-        <label className="flex items-center text-sm">
-          <input
-            type="checkbox"
-            checked={config.show_label !== false} // Por defecto true
-            onChange={(e) =>
-              updateFieldConfig({ show_label: e.target.checked })
-            }
-            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
-          />
-          {t("selectWithIconsConfig.showLabel")}
-        </label>
-        <p className="text-xs text-gray-500 mt-1">
-          {t("selectWithIconsConfig.showLabelHelp")}
-        </p>
-      </div>
+      <CheckboxOption
+        checked={config.show_label !== false}
+        onChange={(checked) => updateFieldConfig({ show_label: checked })}
+        label={t("selectWithIconsConfig.showLabel")}
+        helpText={t("selectWithIconsConfig.showLabelHelp")}
+      />
 
       {/* Opciones e iconos */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <label className="block text-sm font-medium text-[#283618]/70">
+          <label className={labelClass}>
             {t("selectWithIconsConfig.optionsAndIcons")}
           </label>
           <button
@@ -142,53 +176,37 @@ export const SelectWithIconsFieldTypeConfig: React.FC<
             >
               {/* Opción */}
               <div className="col-span-5">
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label className={labelXsClass}>
                   {t("selectWithIconsConfig.optionLabel")} {index + 1}
                 </label>
                 <input
                   type="text"
                   value={option}
                   onChange={(e) => updateOption(index, e.target.value)}
-                  className="block w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                  className={inputXsClass}
                   placeholder={t("selectWithIconsConfig.optionPlaceholder")}
                 />
               </div>
 
               {/* Selector de icono */}
               <div className="col-span-5">
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label className={labelXsClass}>
                   {t("selectWithIconsConfig.iconUrl")}
                 </label>
                 <div className="flex items-center space-x-2">
                   {iconsUrl[index] ? (
-                    <div className="flex items-center space-x-2 p-2 bg-green-50 rounded border border-green-200 flex-1">
-                      <img
-                        src={iconsUrl[index]}
-                        alt={`Icono ${index + 1}`}
-                        className="w-6 h-6 object-contain"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src =
-                            "/assets/img/imageNotFound.png";
-                        }}
-                      />
-                      <span className="text-xs text-green-700 flex-1 truncate">
-                        Icono seleccionado
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setShowIconSelectorForIndex(index)}
-                        className="text-xs text-blue-600 hover:text-blue-800"
-                      >
-                        Cambiar
-                      </button>
-                    </div>
+                    <SelectedIconDisplay
+                      iconUrl={iconsUrl[index]}
+                      index={index}
+                      onChangeClick={() => setShowIconSelectorForIndex(index)}
+                    />
                   ) : (
                     <button
                       type="button"
                       onClick={() => setShowIconSelectorForIndex(index)}
                       className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50 text-left text-gray-500"
                     >
-                      Seleccionar icono
+                      {t("selectWithIconsConfig.selectIcon")}
                     </button>
                   )}
                 </div>
@@ -199,12 +217,11 @@ export const SelectWithIconsFieldTypeConfig: React.FC<
                 {iconsUrl[index] && (
                   <img
                     src={iconsUrl[index]}
-                    alt={`Icono ${index + 1}`}
+                    alt={`${t("selectWithIconsConfig.optionLabel")} ${
+                      index + 1
+                    }`}
                     className="w-6 h-6 object-contain"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src =
-                        "/assets/img/imageNotFound.png";
-                    }}
+                    onError={handleImageError}
                   />
                 )}
               </div>
@@ -216,6 +233,7 @@ export const SelectWithIconsFieldTypeConfig: React.FC<
                   onClick={() => removeOption(index)}
                   className="text-red-500 hover:text-red-700 p-1"
                   disabled={options.length <= 1}
+                  title={t("actions.remove")}
                 >
                   ✕
                 </button>
@@ -231,55 +249,6 @@ export const SelectWithIconsFieldTypeConfig: React.FC<
         </div>
       </div>
 
-      {/* Vista previa */}
-      {options.length > 0 && (
-        <div>
-          <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-            {t("preview.title")}
-          </label>
-          <div className="p-3 border border-gray-200 rounded-md bg-white">
-            <div className="space-y-2">
-              {options.map((option, index) => (
-                <div
-                  key={index}
-                  className="flex items-center space-x-3 p-2 border border-gray-100 rounded hover:bg-gray-50"
-                >
-                  {iconsUrl[index] && (
-                    <img
-                      src={iconsUrl[index]}
-                      alt={option}
-                      className="w-5 h-5 object-contain"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src =
-                          'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><text y="15" font-size="12">❓</text></svg>';
-                      }}
-                    />
-                  )}
-                  {(config.show_label !== false) && (
-                    <span className="text-sm">
-                      {option ||
-                        `${t("selectWithIconsConfig.optionLabel")} ${index + 1}`}
-                    </span>
-                  )}
-                  {config.allow_multiple && (
-                    <input type="checkbox" className="ml-auto" disabled />
-                  )}
-                  {!config.allow_multiple && (
-                    <input
-                      type="radio"
-                      name="preview"
-                      className="ml-auto"
-                      disabled
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Modal del selector de iconos */}
       <VisualResourceSelector
         isOpen={showIconSelectorForIndex !== null}
@@ -289,7 +258,7 @@ export const SelectWithIconsFieldTypeConfig: React.FC<
             updateIcon(showIconSelectorForIndex, url);
           }
         }}
-        title={`Seleccionar Icono para Opción ${
+        title={`${t("selectWithIconsConfig.selectIconFor")} ${
           (showIconSelectorForIndex ?? 0) + 1
         }`}
         resourceType="icon"

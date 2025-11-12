@@ -1,20 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import {
-  X,
-  Download,
-  Loader2,
-  CheckCircle,
-  AlertCircle,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { X, Download, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { CreateTemplateData } from "@/types/template";
 import { TemplatePreview } from "@/app/[locale]/templates/create/TemplatePreview";
 import { ContentService } from "@/services/contentService";
 import { ContentType, NormalizedContent } from "@/types/content";
 import * as ui from "@/app/[locale]/components/ui";
+import { useTranslations } from "next-intl";
 
 // Tipos para la configuración de exportación
 export type DownloadFormat = "png" | "jpg" | "pdf";
@@ -81,6 +74,7 @@ export function ExportModal({
   contentType,
   templateData: externalTemplateData,
 }: ExportModalProps) {
+  const t = useTranslations("CreateBulletin.exportModal");
   // Estado para contenido cargado dinámicamente
   const [loadedContent, setLoadedContent] = useState<NormalizedContent | null>(
     null
@@ -244,7 +238,7 @@ export function ExportModal({
     setProgress({
       current: 0,
       total: 100,
-      message: "Iniciando exportación...",
+      message: t("startingExport"),
     });
 
     try {
@@ -259,7 +253,7 @@ export function ExportModal({
       setProgress({
         current: 100,
         total: 100,
-        message: "¡Exportación completada!",
+        message: t("exportComplete"),
       });
 
       // Cerrar modal después de 2 segundos
@@ -307,29 +301,6 @@ export function ExportModal({
     }
   };
 
-  // Navegación del preview
-  const handlePreviousSection = () => {
-    const sections =
-      config.selectedSections.length > 0
-        ? config.selectedSections
-        : allSections;
-    const currentIndex = sections.indexOf(currentPreviewSection);
-    if (currentIndex > 0) {
-      setCurrentPreviewSection(sections[currentIndex - 1]);
-    }
-  };
-
-  const handleNextSection = () => {
-    const sections =
-      config.selectedSections.length > 0
-        ? config.selectedSections
-        : allSections;
-    const currentIndex = sections.indexOf(currentPreviewSection);
-    if (currentIndex < sections.length - 1) {
-      setCurrentPreviewSection(sections[currentIndex + 1]);
-    }
-  };
-
   if (!isOpen) return null;
 
   const sectionsToExport =
@@ -341,9 +312,7 @@ export function ExportModal({
         {/* Header - Fixed (no hace scroll) */}
         <div className="flex-shrink-0 bg-white border-b border-[#283618]/10 p-6 flex items-center justify-between rounded-t-xl">
           <div>
-            <h2 className="text-2xl font-bold text-[#283618]">
-              Exportar Contenido
-            </h2>
+            <h2 className="text-2xl font-bold text-[#283618]">{t("title")}</h2>
             <p className="text-sm text-[#283618]/60 mt-1">{contentName}</p>
             {contentId && (
               <p className="text-xs text-[#283618]/40 mt-0.5 font-mono">
@@ -364,7 +333,7 @@ export function ExportModal({
         {loadingContent && (
           <div className="flex-1 flex flex-col items-center justify-center py-12">
             <Loader2 className="w-12 h-12 animate-spin text-[#ffaf68] mb-4" />
-            <p className="text-[#283618] font-medium">Cargando contenido...</p>
+            <p className="text-[#283618] font-medium">{t("loading")}</p>
           </div>
         )}
 
@@ -374,7 +343,9 @@ export function ExportModal({
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
               <AlertCircle className="w-8 h-8 text-red-600" />
             </div>
-            <h3 className="text-xl font-bold text-[#283618] mb-2">Error</h3>
+            <h3 className="text-xl font-bold text-[#283618] mb-2">
+              {t("loadError")}
+            </h3>
             <p className="text-[#283618]/70 text-center">{loadError}</p>
           </div>
         )}
@@ -386,7 +357,7 @@ export function ExportModal({
               {/* Formato */}
               <div>
                 <label className="block text-sm font-semibold text-[#283618] mb-3">
-                  Formato de Archivo
+                  {t("format")}
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {(["jpg", "pdf"] as DownloadFormat[]).map((format) => (
@@ -409,7 +380,7 @@ export function ExportModal({
               {/* Calidad */}
               <div>
                 <label className="block text-sm font-semibold text-[#283618] mb-3">
-                  Calidad de Imagen
+                  {t("quality")}
                 </label>
                 <div className="grid grid-cols-4 gap-2">
                   {(["low", "medium", "high", "ultra"] as QualityOption[]).map(
@@ -441,13 +412,13 @@ export function ExportModal({
               {config.format === "pdf" && (
                 <div className="border-2 border-[#283618]/10 rounded-lg p-4 space-y-4">
                   <h3 className="font-semibold text-[#283618]">
-                    Configuración PDF
+                    {t("pdfConfig")}
                   </h3>
 
                   {/* Tamaño de página */}
                   <div>
                     <label className="block text-sm text-[#283618]/80 mb-2">
-                      Tamaño de Página
+                      {t("pageSize")}
                     </label>
                     <div className="grid grid-cols-4 gap-2">
                       {(["auto", "a4", "letter", "legal"] as PageSize[]).map(
@@ -472,7 +443,7 @@ export function ExportModal({
                   {/* Secciones por página */}
                   <div>
                     <label className="block text-sm text-[#283618]/80 mb-2">
-                      Secciones por Página: {config.sectionsPerPage}
+                      {t("sectionsPerPage")}: {config.sectionsPerPage}
                     </label>
                     <input
                       type="range"
@@ -486,8 +457,8 @@ export function ExportModal({
                       className="w-full accent-[#ffaf68]"
                     />
                     <div className="flex justify-between text-xs text-[#283618]/60 mt-1">
-                      <span>1 (una por página)</span>
-                      <span>6 (grid 2x3)</span>
+                      <span>{t("sectionsPerPageRange")}</span>
+                      <span>{t("sectionsPerPageMax")}</span>
                     </div>
                   </div>
                 </div>
@@ -497,14 +468,14 @@ export function ExportModal({
               <div className="border-2 border-[#283618]/10 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-semibold text-[#283618]">
-                    Secciones a Exportar
+                    {t("sectionsToExport")}
                   </h3>
                   <button
                     onClick={handleSelectAllToggle}
                     disabled={isExporting}
                     className="text-sm text-[#ffaf68] hover:text-[#ff9d4d] font-medium disabled:opacity-50"
                   >
-                    {selectAll ? "Deseleccionar todas" : "Seleccionar todas"}
+                    {selectAll ? t("deselectAll") : t("selectAll")}
                   </button>
                 </div>
 
@@ -513,7 +484,7 @@ export function ExportModal({
                     const section =
                       templateData?.version.content.sections[index];
                     const sectionName =
-                      section?.display_name || `Sección ${index + 1}`;
+                      section?.display_name || `${t("section")} ${index + 1}`;
 
                     return (
                       <button
@@ -537,12 +508,6 @@ export function ExportModal({
                     );
                   })}
                 </div>
-
-                <p className="text-xs text-[#283618]/60 mt-3">
-                  {sectionsToExport.length === totalSections
-                    ? `Todas las secciones (${totalSections})`
-                    : `${sectionsToExport.length} de ${totalSections} secciones seleccionadas`}
-                </p>
               </div>
 
               {/* Preview fuera de vista para exportación con Puppeteer */}
@@ -585,9 +550,9 @@ export function ExportModal({
         {!loadingContent && !loadError && (
           <div className="flex-shrink-0 bg-white border-t border-[#283618]/10 p-6 flex items-center justify-between rounded-b-xl">
             <div className="text-sm text-[#283618]/60">
-              Formato:{" "}
+              {t("formatLabel")}:{" "}
               <span className="font-semibold uppercase">{config.format}</span> |
-              Secciones:{" "}
+              {t("sectionsLabel")}:{" "}
               <span className="font-semibold">{sectionsToExport.length}</span>
             </div>
             <div className="flex gap-3">
@@ -596,7 +561,7 @@ export function ExportModal({
                 disabled={isExporting}
                 className={`${ui.btnCancel} disabled:opacity-50`}
               >
-                Cancelar
+                {t("cancel")}
               </button>
               <button
                 onClick={handleExport}
@@ -604,7 +569,7 @@ export function ExportModal({
                 className={`${ui.btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 <Download className="w-5 h-5" />
-                {isExporting ? "Exportando..." : "Exportar"}
+                {isExporting ? t("exporting") : t("export")}
               </button>
             </div>
           </div>
@@ -627,7 +592,7 @@ export function ExportModal({
                 />
               </div>
               <p className="text-xs text-[#283618]/60 mt-2">
-                {Math.round(progress.current)}% completado
+                {Math.round(progress.current)}% {t("completed")}
               </p>
             </div>
           </div>
@@ -640,10 +605,10 @@ export function ExportModal({
               <div className="flex flex-col items-center text-center">
                 <CheckCircle className="w-16 h-16 text-green-600 mb-4" />
                 <h3 className="text-2xl font-bold text-green-900 mb-2">
-                  ¡Exportación exitosa!
+                  {t("exportSuccess")}
                 </h3>
                 <p className="text-base text-green-700">
-                  El archivo se descargó correctamente.
+                  {t("exportSuccessMessage")}
                 </p>
               </div>
             </div>
@@ -657,7 +622,7 @@ export function ExportModal({
               <div className="flex flex-col items-center text-center">
                 <AlertCircle className="w-16 h-16 text-red-600 mb-4" />
                 <h3 className="text-2xl font-bold text-red-900 mb-2">
-                  Error en la exportación
+                  {t("exportError")}
                 </h3>
                 <p className="text-base text-red-700">{errorMessage}</p>
               </div>

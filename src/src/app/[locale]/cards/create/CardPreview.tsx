@@ -2,7 +2,11 @@
 
 import React, { useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { CreateCardData, CARD_TYPES } from "../../../../types/card";
+import {
+  CreateCardData,
+  getCardTypeIcon,
+  hasCardTypeTranslation,
+} from "../../../../types/card";
 import { CreateTemplateData, Section } from "../../../../types/template";
 import { TemplatePreview } from "../../templates/create/TemplatePreview";
 
@@ -12,10 +16,22 @@ interface CardPreviewProps {
 
 export function CardPreview({ data }: CardPreviewProps) {
   const t = useTranslations("CreateCard.preview");
+  const tCards = useTranslations("Cards");
 
-  // Convertir CardData a TemplateData para reutilizar TemplatePreview
+  const getCardTypeLabel = (cardType: string): string => {
+    return hasCardTypeTranslation(cardType)
+      ? tCards(`cardTypes.${cardType}`)
+      : cardType;
+  };
+
   const templateData = useMemo((): CreateTemplateData => {
-    // Crear una sección a partir del contenido de la card
+    const defaultLog = {
+      created_at: new Date().toISOString(),
+      creator_user_id: "",
+      creator_first_name: null,
+      creator_last_name: null,
+    };
+
     const section: Section = {
       section_id: "card_section",
       display_name: data.card_name || t("untitled"),
@@ -28,7 +44,6 @@ export function CardPreview({ data }: CardPreviewProps) {
       style_config: {
         background_color: data.content.background_color,
         background_image: data.content.background_url,
-        // Aplicar padding y gap del content style_config
         padding: data.content.style_config?.padding,
         gap: data.content.style_config?.gap,
       },
@@ -38,28 +53,18 @@ export function CardPreview({ data }: CardPreviewProps) {
 
     return {
       master: {
-        template_name: `${CARD_TYPES[data.card_type]?.icon} ${
+        template_name: `${getCardTypeIcon(data.card_type)} ${
           data.card_name || t("untitled")
         }`,
-        description: `Card de tipo: ${CARD_TYPES[data.card_type]?.label}`,
+        description: `${t("cardType")}: ${getCardTypeLabel(data.card_type)}`,
         status: data.status || "active",
-        log: data.log || {
-          created_at: new Date().toISOString(),
-          creator_user_id: "",
-          creator_first_name: null,
-          creator_last_name: null,
-        },
+        log: data.log || defaultLog,
         access_config: data.access_config,
       },
       version: {
         version_num: 1,
         commit_message: "Card preview",
-        log: data.log || {
-          created_at: new Date().toISOString(),
-          creator_user_id: "",
-          creator_first_name: null,
-          creator_last_name: null,
-        },
+        log: data.log || defaultLog,
         content: {
           style_config: {
             font: "Arial",
@@ -71,8 +76,14 @@ export function CardPreview({ data }: CardPreviewProps) {
         },
       },
     };
-  }, [data, t]);
+  }, [data, t, getCardTypeLabel]);
 
-  // Reutilizar el TemplatePreview con los datos convertidos
-  return <TemplatePreview data={templateData} selectedSectionIndex={0} moreInfo={true} description={true} />;
+  return (
+    <TemplatePreview
+      data={templateData}
+      selectedSectionIndex={0}
+      moreInfo={true}
+      description={true}
+    />
+  );
 }

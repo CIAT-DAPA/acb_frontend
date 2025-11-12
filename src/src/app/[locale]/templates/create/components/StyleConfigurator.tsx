@@ -19,26 +19,6 @@ const AVAILABLE_FONTS = [
   "Montserrat",
 ];
 
-// Opciones de peso de fuente
-const FONT_WEIGHT_OPTIONS = [
-  { value: "100", label: "Thin (100)" },
-  { value: "200", label: "Extra Light (200)" },
-  { value: "300", label: "Light (300)" },
-  { value: "400", label: "Normal (400)" },
-  { value: "500", label: "Medium (500)" },
-  { value: "600", label: "Semi Bold (600)" },
-  { value: "700", label: "Bold (700)" },
-  { value: "800", label: "Extra Bold (800)" },
-  { value: "900", label: "Black (900)" },
-];
-
-// Opciones de decoración de texto
-const TEXT_DECORATION_OPTIONS = [
-  { value: "none", label: "Ninguna" },
-  { value: "underline", label: "Subrayado" },
-  { value: "line-through", label: "Tachado" },
-];
-
 export interface StyleConfiguratorProps {
   styleConfig: StyleConfig;
   onStyleChange: (updates: Partial<StyleConfig>) => void;
@@ -115,17 +95,67 @@ export function StyleConfigurator({
   // Estado para el selector de recursos visuales
   const [showImageSelector, setShowImageSelector] = useState(false);
 
+  // Constantes reutilizables
+  const IMAGE_FALLBACK = "/assets/img/imageNotFound.png";
+  const INPUT_BASE_CLASS =
+    "block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
+  const LABEL_CLASS = "block text-sm font-medium text-[#283618]/70 mb-2";
+  const INHERITED_TEXT_CLASS = "text-xs text-[#283618]/50 mt-1";
+
   // Helper para construir URL completa de imagen
   const getBackgroundImageUrl = (imageUrl: string) => {
-    // Si ya es una URL completa, devolverla tal como está
     if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
       return imageUrl;
     }
-
-    // Si es una ruta relativa, construir URL completa
     const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
     const cleanUrl = imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`;
     return `${baseUrl}${cleanUrl}`;
+  };
+
+  // Helper para manejar cambios en border_sides
+  const handleBorderSideChange = (side: string, checked: boolean) => {
+    const currentSides = styleConfig.border_sides || "all";
+
+    if (currentSides === "all") {
+      const otherSides = ["top", "bottom", "left", "right"].filter(
+        (s) => s !== side
+      );
+      onStyleChange({ border_sides: checked ? "all" : otherSides.join(",") });
+      return;
+    }
+
+    const sides = currentSides
+      .split(",")
+      .map((s) => s.trim())
+      .filter((s) => s);
+
+    if (checked) {
+      if (!sides.includes(side)) sides.push(side);
+    } else {
+      const index = sides.indexOf(side);
+      if (index > -1) sides.splice(index, 1);
+    }
+
+    const hasAll = ["top", "bottom", "left", "right"].every((s) =>
+      sides.includes(s)
+    );
+
+    if (hasAll && sides.length === 4) {
+      onStyleChange({ border_sides: "all" });
+    } else if (sides.length > 0) {
+      onStyleChange({ border_sides: sides.join(",") });
+    } else {
+      onStyleChange({ border_sides: undefined });
+    }
+  };
+
+  // Helper para verificar si un lado del borde está activo
+  const isBorderSideActive = (side: string) => {
+    return (
+      !styleConfig.border_sides ||
+      styleConfig.border_sides === "all" ||
+      styleConfig.border_sides.includes(side)
+    );
   };
 
   const renderColorField = (
@@ -134,29 +164,26 @@ export function StyleConfigurator({
     placeholder: string = "#000000"
   ) => (
     <div>
-      <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-        {label}
-      </label>
+      <label className={LABEL_CLASS}>{label}</label>
       <div className="flex gap-2 items-center">
         <input
           type="color"
           value={(styleConfig[key] as string) || placeholder}
           onChange={(e) => onStyleChange({ [key]: e.target.value })}
           className="block w-12 h-12 min-w-[48px] border border-gray-300 rounded-md cursor-pointer flex-shrink-0"
-          title="Selector de color"
+          title={t("colorPickerTitle")}
         />
         <input
           type="text"
           value={(styleConfig[key] as string) || placeholder}
           onChange={(e) => onStyleChange({ [key]: e.target.value })}
-          className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm
-                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           placeholder={placeholder}
         />
       </div>
       {inheritedStyles?.[key] && (
-        <p className="text-xs text-[#283618]/50 mt-1">
-          Heredado: {inheritedStyles[key]}
+        <p className={INHERITED_TEXT_CLASS}>
+          {t("inherited")}: {inheritedStyles[key]}
         </p>
       )}
     </div>
@@ -170,9 +197,7 @@ export function StyleConfigurator({
     placeholder?: string | number
   ) => (
     <div>
-      <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-        {label}
-      </label>
+      <label className={LABEL_CLASS}>{label}</label>
       <input
         type="number"
         min={min}
@@ -181,13 +206,12 @@ export function StyleConfigurator({
         onChange={(e) =>
           onStyleChange({ [key]: parseInt(e.target.value) || undefined })
         }
-        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
-                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        className={INPUT_BASE_CLASS}
         placeholder={placeholder?.toString()}
       />
       {inheritedStyles?.[key] && (
-        <p className="text-xs text-[#283618]/50 mt-1">
-          Heredado: {inheritedStyles[key]}
+        <p className={INHERITED_TEXT_CLASS}>
+          {t("inherited")}: {inheritedStyles[key]}
         </p>
       )}
     </div>
@@ -196,7 +220,7 @@ export function StyleConfigurator({
   const renderBackgroundImageField = () => (
     <div>
       <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-        {getLabel("backgroundImage", "Imagen de Fondo")}
+        {getLabel("backgroundImage")}
       </label>
 
       {/* Preview actual */}
@@ -205,17 +229,17 @@ export function StyleConfigurator({
           <div className="relative w-full h-20 bg-gray-100 rounded-md overflow-hidden border">
             <Image
               src={styleConfig.background_image}
-              alt="Background preview"
+              alt={t("backgroundImagePreviewAlt")}
               fill
               className="object-contain"
               onError={(e) => {
-                e.currentTarget.src = "/assets/img/imageNotFound.png";
+                e.currentTarget.src = IMAGE_FALLBACK;
               }}
             />
             <button
               onClick={() => onStyleChange({ background_image: undefined })}
               className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-              title="Quitar imagen"
+              title={t("removeImage")}
             >
               <X className="h-3 w-3" />
             </button>
@@ -223,7 +247,7 @@ export function StyleConfigurator({
         ) : (
           <div className="w-full h-20 bg-gray-100 rounded-md border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-500">
             <ImageIcon className="h-6 w-6 mr-2" />
-            <span className="text-sm">Sin imagen de fondo</span>
+            <span className="text-sm">{t("noBackgroundImage")}</span>
           </div>
         )}
       </div>
@@ -235,7 +259,7 @@ export function StyleConfigurator({
         className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
       >
         <ImageIcon className="h-4 w-4 inline mr-2" />
-        {styleConfig.background_image ? "Cambiar imagen" : "Seleccionar imagen"}
+        {styleConfig.background_image ? t("changeImage") : t("selectImage")}
       </button>
 
       {/* Modal selector de imágenes */}
@@ -243,14 +267,14 @@ export function StyleConfigurator({
         isOpen={showImageSelector}
         onClose={() => setShowImageSelector(false)}
         onSelect={(url) => onStyleChange({ background_image: url })}
-        title="Seleccionar Imagen de Fondo"
+        title={t("selectBackgroundImageTitle")}
         resourceType="image"
         selectedUrl={styleConfig.background_image}
       />
 
       {inheritedStyles?.background_image && (
-        <p className="text-xs text-[#283618]/50 mt-1">
-          Heredado: {inheritedStyles.background_image}
+        <p className={INHERITED_TEXT_CLASS}>
+          {t("inherited")}: {inheritedStyles.background_image}
         </p>
       )}
     </div>
@@ -262,20 +286,17 @@ export function StyleConfigurator({
     placeholder?: string
   ) => (
     <div>
-      <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-        {label}
-      </label>
+      <label className={LABEL_CLASS}>{label}</label>
       <input
         type="text"
         value={(styleConfig[key] as string) || ""}
         onChange={(e) => onStyleChange({ [key]: e.target.value || undefined })}
-        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
-                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        className={INPUT_BASE_CLASS}
         placeholder={placeholder}
       />
       {inheritedStyles?.[key] && (
-        <p className="text-xs text-[#283618]/50 mt-1">
-          Heredado: {inheritedStyles[key]}
+        <p className={INHERITED_TEXT_CLASS}>
+          {t("inherited")}: {inheritedStyles[key]}
         </p>
       )}
     </div>
@@ -288,14 +309,11 @@ export function StyleConfigurator({
     defaultValue?: string
   ) => (
     <div>
-      <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-        {label}
-      </label>
+      <label className={LABEL_CLASS}>{label}</label>
       <select
         value={(styleConfig[key] as string) || defaultValue || ""}
         onChange={(e) => onStyleChange({ [key]: e.target.value || undefined })}
-        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
-                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        className={INPUT_BASE_CLASS}
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
@@ -304,8 +322,8 @@ export function StyleConfigurator({
         ))}
       </select>
       {inheritedStyles?.[key] && (
-        <p className="text-xs text-[#283618]/50 mt-1">
-          Heredado: {inheritedStyles[key]}
+        <p className={INHERITED_TEXT_CLASS}>
+          {t("inherited")}: {inheritedStyles[key]}
         </p>
       )}
     </div>
@@ -327,14 +345,11 @@ export function StyleConfigurator({
         {/* Configuración de Fuente */}
         {enabledFields.font && (
           <div>
-            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-              {getLabel("font", "Fuente")}
-            </label>
+            <label className={LABEL_CLASS}>{getLabel("font")}</label>
             <select
               value={styleConfig.font || "Arial"}
               onChange={(e) => onStyleChange({ font: e.target.value })}
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
-                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className={INPUT_BASE_CLASS}
             >
               {AVAILABLE_FONTS.map((font) => (
                 <option key={font} value={font} style={{ fontFamily: font }}>
@@ -343,8 +358,8 @@ export function StyleConfigurator({
               ))}
             </select>
             {inheritedStyles?.font && (
-              <p className="text-xs text-[#283618]/50 mt-1">
-                Heredado: {inheritedStyles.font}
+              <p className={INHERITED_TEXT_CLASS}>
+                {t("inherited")}: {inheritedStyles.font}
               </p>
             )}
           </div>
@@ -352,53 +367,33 @@ export function StyleConfigurator({
 
         {/* Colores */}
         {enabledFields.primaryColor &&
-          renderColorField(
-            "primary_color",
-            getLabel("color", "Color Primario"),
-            "#000000"
-          )}
+          renderColorField("primary_color", getLabel("color"), "#000000")}
 
         {enabledFields.secondaryColor &&
           renderColorField(
             "secondary_color",
-            getLabel("secondaryColor", "Color Secundario"),
+            getLabel("secondaryColor"),
             "#666666"
           )}
 
         {enabledFields.backgroundColor &&
           renderColorField(
             "background_color",
-            getLabel("backgroundColor", "Color de Fondo"),
+            getLabel("backgroundColor"),
             "#ffffff"
           )}
 
         {enabledFields.backgroundImage && renderBackgroundImageField()}
 
         {enabledFields.borderColor &&
-          renderColorField(
-            "border_color",
-            getLabel("borderColor", "Color del Borde"),
-            "#000000"
-          )}
+          renderColorField("border_color", getLabel("borderColor"), "#000000")}
 
         {/* Configuración de texto */}
         {enabledFields.fontSize &&
-          renderNumberField(
-            "font_size",
-            getLabel("fontSize", "Tamaño de Fuente (px)"),
-            8,
-            72,
-            16
-          )}
+          renderNumberField("font_size", getLabel("fontSize"), 8, 72, 16)}
 
         {enabledFields.iconSize &&
-          renderNumberField(
-            "icon_size",
-            getLabel("iconSize", "Tamaño de Iconos (px)"),
-            8,
-            128,
-            24
-          )}
+          renderNumberField("icon_size", getLabel("iconSize"), 8, 128, 24)}
 
         {enabledFields.iconUseOriginalColor && (
           <div>
@@ -411,20 +406,14 @@ export function StyleConfigurator({
                 }
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
               />
-              {getLabel(
-                "iconUseOriginalColor",
-                "Mantener color original del icono"
-              )}
+              {getLabel("iconUseOriginalColor")}
             </label>
             <p className="text-xs text-[#283618]/50 mt-1">
-              {getLabel(
-                "iconUseOriginalColorHelp",
-                "Si está desactivado, el icono usará el color primario del contexto"
-              )}
+              {getLabel("iconUseOriginalColorHelp")}
             </p>
             {inheritedStyles?.icon_use_original_color !== undefined && (
-              <p className="text-xs text-[#283618]/50 mt-1">
-                Heredado:{" "}
+              <p className={INHERITED_TEXT_CLASS}>
+                {t("inherited")}:{" "}
                 {inheritedStyles.icon_use_original_color ? "Sí" : "No"}
               </p>
             )}
@@ -433,24 +422,25 @@ export function StyleConfigurator({
 
         {enabledFields.fontWeight && (
           <div>
-            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-              {getLabel("fontWeight", "Grosor del Texto")}
-            </label>
+            <label className={LABEL_CLASS}>{getLabel("fontWeight")}</label>
             <select
               value={styleConfig.font_weight || "400"}
               onChange={(e) => onStyleChange({ font_weight: e.target.value })}
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
-                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className={INPUT_BASE_CLASS}
             >
-              {FONT_WEIGHT_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
+              <option value="100">{t("fontWeightOptions.thin")}</option>
+              <option value="200">{t("fontWeightOptions.extraLight")}</option>
+              <option value="300">{t("fontWeightOptions.light")}</option>
+              <option value="400">{t("fontWeightOptions.normal")}</option>
+              <option value="500">{t("fontWeightOptions.medium")}</option>
+              <option value="600">{t("fontWeightOptions.semiBold")}</option>
+              <option value="700">{t("fontWeightOptions.bold")}</option>
+              <option value="800">{t("fontWeightOptions.extraBold")}</option>
+              <option value="900">{t("fontWeightOptions.black")}</option>
             </select>
             {inheritedStyles?.font_weight && (
-              <p className="text-xs text-[#283618]/50 mt-1">
-                Heredado: {inheritedStyles.font_weight}
+              <p className={INHERITED_TEXT_CLASS}>
+                {t("inherited")}: {inheritedStyles.font_weight}
               </p>
             )}
           </div>
@@ -459,10 +449,10 @@ export function StyleConfigurator({
         {enabledFields.fontStyle &&
           renderSelectField(
             "font_style",
-            getLabel("fontStyle", "Estilo del Texto"),
+            getLabel("fontStyle"),
             [
-              { value: "normal", label: "Normal" },
-              { value: "italic", label: "Cursiva" },
+              { value: "normal", label: t("fontStyleOptions.normal") },
+              { value: "italic", label: t("fontStyleOptions.italic") },
             ],
             "normal"
           )}
@@ -470,275 +460,81 @@ export function StyleConfigurator({
         {enabledFields.textDecoration &&
           renderSelectField(
             "text_decoration",
-            getLabel("textDecoration", "Decoración del Texto"),
-            TEXT_DECORATION_OPTIONS,
+            getLabel("textDecoration"),
+            [
+              { value: "none", label: t("textDecorationOptions.none") },
+              {
+                value: "underline",
+                label: t("textDecorationOptions.underline"),
+              },
+              {
+                value: "line-through",
+                label: t("textDecorationOptions.lineThrough"),
+              },
+            ],
             "none"
           )}
 
         {enabledFields.textAlign &&
           renderSelectField(
             "text_align",
-            getLabel("textAlign", "Alineación del Texto"),
+            getLabel("textAlign"),
             [
-              {
-                value: "left",
-                label: getLabel("alignOptions.left", "Izquierda"),
-              },
-              {
-                value: "center",
-                label: getLabel("alignOptions.center", "Centro"),
-              },
-              {
-                value: "right",
-                label: getLabel("alignOptions.right", "Derecha"),
-              },
+              { value: "left", label: t("alignOptions.left") },
+              { value: "center", label: t("alignOptions.center") },
+              { value: "right", label: t("alignOptions.right") },
             ],
             "left"
           )}
 
         {/* Espaciado y bordes */}
         {enabledFields.padding &&
-          renderTextField(
-            "padding",
-            getLabel("padding", "Padding (CSS)"),
-            "16px"
-          )}
+          renderTextField("padding", getLabel("padding"), "16px")}
 
         {enabledFields.margin &&
-          renderTextField("margin", getLabel("margin", "Margin (CSS)"), "8px")}
+          renderTextField("margin", getLabel("margin"), "8px")}
 
-        {enabledFields.gap &&
-          renderTextField(
-            "gap",
-            getLabel("gap", "Espaciado entre Campos"),
-            "8px"
-          )}
+        {enabledFields.gap && renderTextField("gap", getLabel("gap"), "8px")}
 
         {enabledFields.borderWidth &&
-          renderTextField(
-            "border_width",
-            getLabel("borderWidth", "Grosor del Borde"),
-            "1px"
-          )}
+          renderTextField("border_width", getLabel("borderWidth"), "1px")}
 
         {enabledFields.borderRadius &&
-          renderTextField(
-            "border_radius",
-            getLabel("borderRadius", "Redondeado"),
-            "4px"
-          )}
+          renderTextField("border_radius", getLabel("borderRadius"), "4px")}
 
         {/* Lados del borde */}
         {enabledFields.borderSides && (
           <div>
-            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-              {getLabel("borderSides", "Lados del Borde")}
-            </label>
+            <label className={LABEL_CLASS}>{getLabel("borderSides")}</label>
             <div className="space-y-2">
               {/* Checkboxes para cada lado */}
               <div className="grid grid-cols-2 gap-2">
-                <label className="flex items-center text-sm">
-                  <input
-                    type="checkbox"
-                    checked={
-                      !styleConfig.border_sides ||
-                      styleConfig.border_sides === "all" ||
-                      styleConfig.border_sides.includes("top")
-                    }
-                    onChange={(e) => {
-                      const currentSides = styleConfig.border_sides || "all";
-                      if (currentSides === "all") {
-                        // Si está en "all" y se desmarca uno, crear lista sin ese lado
-                        onStyleChange({
-                          border_sides: e.target.checked
-                            ? "all"
-                            : "bottom,left,right",
-                        });
-                      } else {
-                        // Agregar o quitar "top" de la lista
-                        const sides = currentSides
-                          .split(",")
-                          .map((s) => s.trim())
-                          .filter((s) => s);
-                        if (e.target.checked) {
-                          if (!sides.includes("top")) sides.push("top");
-                        } else {
-                          const index = sides.indexOf("top");
-                          if (index > -1) sides.splice(index, 1);
-                        }
-                        // Solo cambiar a "all" si explícitamente los 4 lados están presentes
-                        const hasAll =
-                          sides.includes("top") &&
-                          sides.includes("bottom") &&
-                          sides.includes("left") &&
-                          sides.includes("right");
-
-                        if (hasAll && sides.length === 4) {
-                          onStyleChange({ border_sides: "all" });
-                        } else if (sides.length > 0) {
-                          onStyleChange({ border_sides: sides.join(",") });
-                        } else {
-                          onStyleChange({ border_sides: undefined });
-                        }
+                {[
+                  { side: "top", label: getLabel("borderTop") },
+                  { side: "bottom", label: getLabel("borderBottom") },
+                  { side: "left", label: getLabel("borderLeft") },
+                  { side: "right", label: getLabel("borderRight") },
+                ].map(({ side, label }) => (
+                  <label key={side} className="flex items-center text-sm">
+                    <input
+                      type="checkbox"
+                      checked={isBorderSideActive(side)}
+                      onChange={(e) =>
+                        handleBorderSideChange(side, e.target.checked)
                       }
-                    }}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
-                  />
-                  {getLabel("borderTop", "Superior")}
-                </label>
-
-                <label className="flex items-center text-sm">
-                  <input
-                    type="checkbox"
-                    checked={
-                      !styleConfig.border_sides ||
-                      styleConfig.border_sides === "all" ||
-                      styleConfig.border_sides.includes("bottom")
-                    }
-                    onChange={(e) => {
-                      const currentSides = styleConfig.border_sides || "all";
-                      if (currentSides === "all") {
-                        const newValue = e.target.checked
-                          ? "all"
-                          : "top,left,right";
-                        onStyleChange({
-                          border_sides: newValue,
-                        });
-                      } else {
-                        const sides = currentSides
-                          .split(",")
-                          .map((s) => s.trim())
-                          .filter((s) => s);
-                        if (e.target.checked) {
-                          if (!sides.includes("bottom")) sides.push("bottom");
-                        } else {
-                          const index = sides.indexOf("bottom");
-                          if (index > -1) sides.splice(index, 1);
-                        }
-                        const hasAll =
-                          sides.includes("top") &&
-                          sides.includes("bottom") &&
-                          sides.includes("left") &&
-                          sides.includes("right");
-
-                        if (hasAll && sides.length === 4) {
-                          onStyleChange({ border_sides: "all" });
-                        } else if (sides.length > 0) {
-                          onStyleChange({ border_sides: sides.join(",") });
-                        } else {
-                          onStyleChange({ border_sides: undefined });
-                        }
-                      }
-                    }}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
-                  />
-                  {getLabel("borderBottom", "Inferior")}
-                </label>
-
-                <label className="flex items-center text-sm">
-                  <input
-                    type="checkbox"
-                    checked={
-                      !styleConfig.border_sides ||
-                      styleConfig.border_sides === "all" ||
-                      styleConfig.border_sides.includes("left")
-                    }
-                    onChange={(e) => {
-                      const currentSides = styleConfig.border_sides || "all";
-                      if (currentSides === "all") {
-                        onStyleChange({
-                          border_sides: e.target.checked
-                            ? "all"
-                            : "top,bottom,right",
-                        });
-                      } else {
-                        const sides = currentSides
-                          .split(",")
-                          .map((s) => s.trim())
-                          .filter((s) => s);
-                        if (e.target.checked) {
-                          if (!sides.includes("left")) sides.push("left");
-                        } else {
-                          const index = sides.indexOf("left");
-                          if (index > -1) sides.splice(index, 1);
-                        }
-                        const hasAll =
-                          sides.includes("top") &&
-                          sides.includes("bottom") &&
-                          sides.includes("left") &&
-                          sides.includes("right");
-
-                        if (hasAll && sides.length === 4) {
-                          onStyleChange({ border_sides: "all" });
-                        } else if (sides.length > 0) {
-                          onStyleChange({ border_sides: sides.join(",") });
-                        } else {
-                          onStyleChange({ border_sides: undefined });
-                        }
-                      }
-                    }}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
-                  />
-                  {getLabel("borderLeft", "Izquierda")}
-                </label>
-
-                <label className="flex items-center text-sm">
-                  <input
-                    type="checkbox"
-                    checked={
-                      !styleConfig.border_sides ||
-                      styleConfig.border_sides === "all" ||
-                      styleConfig.border_sides.includes("right")
-                    }
-                    onChange={(e) => {
-                      const currentSides = styleConfig.border_sides || "all";
-                      if (currentSides === "all") {
-                        onStyleChange({
-                          border_sides: e.target.checked
-                            ? "all"
-                            : "top,bottom,left",
-                        });
-                      } else {
-                        const sides = currentSides
-                          .split(",")
-                          .map((s) => s.trim())
-                          .filter((s) => s);
-                        if (e.target.checked) {
-                          if (!sides.includes("right")) sides.push("right");
-                        } else {
-                          const index = sides.indexOf("right");
-                          if (index > -1) sides.splice(index, 1);
-                        }
-                        const hasAll =
-                          sides.includes("top") &&
-                          sides.includes("bottom") &&
-                          sides.includes("left") &&
-                          sides.includes("right");
-
-                        if (hasAll && sides.length === 4) {
-                          onStyleChange({ border_sides: "all" });
-                        } else if (sides.length > 0) {
-                          onStyleChange({ border_sides: sides.join(",") });
-                        } else {
-                          onStyleChange({ border_sides: undefined });
-                        }
-                      }
-                    }}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
-                  />
-                  {getLabel("borderRight", "Derecha")}
-                </label>
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+                    />
+                    {label}
+                  </label>
+                ))}
               </div>
             </div>
             <p className="text-xs text-[#283618]/50 mt-1">
-              {getLabel(
-                "borderSidesHelp",
-                "Selecciona los lados donde quieres mostrar el borde"
-              )}
+              {getLabel("borderSidesHelp")}
             </p>
             {inheritedStyles?.border_sides && (
-              <p className="text-xs text-[#283618]/50 mt-1">
-                Heredado: {inheritedStyles.border_sides}
+              <p className={INHERITED_TEXT_CLASS}>
+                {t("inherited")}: {inheritedStyles.border_sides}
               </p>
             )}
           </div>
@@ -748,7 +544,7 @@ export function StyleConfigurator({
         {enabledFields.bulletinWidth &&
           renderNumberField(
             "bulletin_width",
-            "Ancho del Boletín (px)",
+            t("bulletinWidth"),
             200,
             1200,
             366
@@ -757,7 +553,7 @@ export function StyleConfigurator({
         {enabledFields.bulletinHeight &&
           renderNumberField(
             "bulletin_height",
-            "Alto del Boletín (px)",
+            t("bulletinHeight"),
             200,
             1200,
             638
@@ -767,10 +563,10 @@ export function StyleConfigurator({
         {enabledFields.fieldsLayout &&
           renderSelectField(
             "fields_layout",
-            "Organización de Campos",
+            t("fieldsLayout"),
             [
-              { value: "horizontal", label: "Horizontal (lado a lado)" },
-              { value: "vertical", label: "Vertical (uno debajo del otro)" },
+              { value: "horizontal", label: t("layoutOptions.horizontal") },
+              { value: "vertical", label: t("layoutOptions.vertical") },
             ],
             "vertical"
           )}
@@ -779,13 +575,13 @@ export function StyleConfigurator({
         {enabledFields.listStyleType &&
           renderSelectField(
             "list_style_type",
-            "Estilo de Lista",
+            t("listStyleType"),
             [
-              { value: "disc", label: "• Círculo relleno" },
-              { value: "circle", label: "○ Círculo vacío" },
-              { value: "square", label: "■ Cuadrado" },
-              { value: "decimal", label: "1. Numerado" },
-              { value: "none", label: "Sin viñetas" },
+              { value: "disc", label: t("listStyleOptions.disc") },
+              { value: "circle", label: t("listStyleOptions.circle") },
+              { value: "square", label: t("listStyleOptions.square") },
+              { value: "decimal", label: t("listStyleOptions.decimal") },
+              { value: "none", label: t("listStyleOptions.none") },
             ],
             "disc"
           )}
@@ -794,12 +590,12 @@ export function StyleConfigurator({
         {enabledFields.listItemsLayout &&
           renderSelectField(
             "list_items_layout",
-            "Layout de Items de Lista",
+            t("listItemsLayout"),
             [
-              { value: "vertical", label: "Vertical" },
-              { value: "horizontal", label: "Horizontal" },
-              { value: "grid-2", label: "Grid 2 columnas" },
-              { value: "grid-3", label: "Grid 3 columnas" },
+              { value: "vertical", label: t("listLayoutOptions.vertical") },
+              { value: "horizontal", label: t("listLayoutOptions.horizontal") },
+              { value: "grid-2", label: t("listLayoutOptions.grid2") },
+              { value: "grid-3", label: t("listLayoutOptions.grid3") },
             ],
             "vertical"
           )}
@@ -809,7 +605,7 @@ export function StyleConfigurator({
       {showPreview && (
         <div className="mt-6">
           <h4 className="text-md font-medium text-[#283618] mb-3">
-            Vista Previa
+            {t("previewTitle")}
           </h4>
           <div
             className="p-6 border rounded-lg"
@@ -847,23 +643,20 @@ export function StyleConfigurator({
               className="text-xl font-bold mb-2"
               style={{ color: styleConfig.primary_color }}
             >
-              Título Principal
+              {t("previewMainTitle")}
             </h4>
             <h5
               className="text-lg font-semibold mb-2"
               style={{ color: styleConfig.secondary_color }}
             >
-              Subtítulo de Ejemplo
+              {t("previewSubtitle")}
             </h5>
-            <p className="mb-2">
-              Este es un texto de ejemplo que muestra cómo se verán los estilos
-              aplicados.
-            </p>
+            <p className="mb-2">{t("previewText")}</p>
             <p
               className="text-sm"
               style={{ color: styleConfig.secondary_color }}
             >
-              Texto pequeño para detalles adicionales.
+              {t("previewSmallText")}
             </p>
           </div>
         </div>

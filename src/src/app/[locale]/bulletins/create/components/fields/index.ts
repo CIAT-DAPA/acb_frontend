@@ -5,6 +5,7 @@ export { NumberInput } from "./NumberInput";
 export { DateInput } from "./DateInput";
 export { DateRangeInput } from "./DateRangeInput";
 export { SelectInput } from "./SelectInput";
+export { SearchableInput } from "./SearchableInput";
 
 // Aliases for backward compatibility (all point to unified components)
 export { TextInput as TextField } from "./TextInput";

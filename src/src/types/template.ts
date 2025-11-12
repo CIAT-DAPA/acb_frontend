@@ -46,6 +46,10 @@ export interface SelectFieldConfig {
   allow_multiple?: boolean;
 }
 
+export interface SearchableFieldConfig {
+  options: string[]; // Opciones predefinidas disponibles para seleccionar
+}
+
 export interface SelectWithIconsFieldConfig extends SelectFieldConfig {
   icons_url: string[];
   show_label?: boolean; // Si se muestra el label al lado del icono
@@ -106,6 +110,7 @@ export interface FieldBase {
     | "climate_data_puntual"
     | "list"
     | "select"
+    | "searchable"
     | "select_with_icons"
     | "select_background"
     | "number"
@@ -129,6 +134,7 @@ export interface FieldBase {
     | ClimateDataFieldConfig
     | ListFieldConfig
     | SelectFieldConfig
+    | SearchableFieldConfig
     | SelectWithIconsFieldConfig
     | SelectBackgroundFieldConfig
     | DateFieldConfig
@@ -173,6 +179,11 @@ export interface ListField extends FieldBase {
 export interface SelectField extends FieldBase {
   type: "select";
   field_config: SelectFieldConfig;
+}
+
+export interface SearchableField extends FieldBase {
+  type: "searchable";
+  field_config: SearchableFieldConfig;
 }
 
 export interface SelectWithIconsField extends FieldBase {
@@ -231,6 +242,7 @@ export type Field =
   | ClimateDataField
   | ListField
   | SelectField
+  | SearchableField
   | SelectWithIconsField
   | SelectBackgroundField
   | NumberField
@@ -326,6 +338,7 @@ export const FIELD_TYPES = [
   "climate_data_puntual",
   "list",
   "select",
+  "searchable",
   "select_with_icons",
   "select_background",
   "number",

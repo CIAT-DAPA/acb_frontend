@@ -4,7 +4,18 @@ import React, { useState } from "react";
 import { useTranslations } from "next-intl";
 import { BaseFieldTypeConfigProps } from "./BaseFieldTypeConfig";
 import { Plus, Trash2 } from "lucide-react";
-import { btnOutlineSecondary } from "@/app/[locale]/components/ui";
+import {
+  btnOutlineSecondary,
+  labelClass,
+  helpTextClass,
+  infoBoxClass,
+  imageCardClass,
+  imageItemClass,
+  imagePreviewClass,
+  imagePreviewLargeClass,
+  emptyStateClass,
+  btnDangerIconClass,
+} from "@/app/[locale]/components/ui";
 import { VisualResourceSelector } from "../VisualResourceSelector";
 
 interface ImageFieldConfig {
@@ -18,7 +29,7 @@ export const ImageFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
   updateValidation,
   t: fieldT,
 }) => {
-  const t = useTranslations("CreateTemplate.fieldEditor");
+  const t = useTranslations("CreateTemplate.fieldEditor.imageConfig");
 
   const config = (currentField.field_config as ImageFieldConfig) || {};
   const images = config.images || [];
@@ -55,22 +66,17 @@ export const ImageFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
     <div className="space-y-4">
       {/* Cuando form es false, mostrar selector de value */}
       {!currentField.form && (
-        <div className="p-4 bg-blue-50 border border-blue-200 rounded-md">
-          <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-            Imagen Predefinida (Value)
-          </label>
-          <p className="text-xs text-[#283618]/50 mb-3">
-            Como este campo no se muestra en el formulario (form = false), debes
-            especificar la imagen que se mostrará directamente en el boletín
-          </p>
+        <div className={infoBoxClass}>
+          <label className={labelClass}>{t("predefinedImageLabel")}</label>
+          <p className={helpTextClass}>{t("predefinedImageHelp")}</p>
 
           {currentField.value ? (
-            <div className="flex items-center gap-3 p-3 border border-gray-200 rounded-md bg-white">
+            <div className={imageCardClass}>
               {/* Preview de la imagen */}
-              <div className="flex-shrink-0 w-20 h-20 bg-white border border-gray-200 rounded overflow-hidden flex items-center justify-center">
+              <div className={imagePreviewLargeClass}>
                 <img
                   src={currentField.value as string}
-                  alt="Imagen predefinida"
+                  alt={t("predefinedImageAlt")}
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src =
@@ -87,9 +93,9 @@ export const ImageFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowValueSelector(true)}
-                  className="text-xs text-blue-600 hover:text-blue-800 font-medium mt-1"
+                  className={`${btnOutlineSecondary} mt-1`}
                 >
-                  Cambiar imagen
+                  {t("changeImage")}
                 </button>
               </div>
 
@@ -97,8 +103,8 @@ export const ImageFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
               <button
                 type="button"
                 onClick={() => updateField({ value: undefined })}
-                className="flex-shrink-0 text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded transition-colors"
-                title="Eliminar valor predefinido"
+                className={btnDangerIconClass}
+                title={t("deleteValue")}
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -107,9 +113,9 @@ export const ImageFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
             <button
               type="button"
               onClick={() => setShowValueSelector(true)}
-              className="w-full px-4 py-3 text-sm border-2 border-dashed border-gray-300 rounded hover:bg-white hover:border-blue-400 text-gray-600 hover:text-blue-600 transition-colors"
+              className={btnOutlineSecondary}
             >
-              + Seleccionar imagen predefinida
+              + {t("selectPredefinedImage")}
             </button>
           )}
         </div>
@@ -119,34 +125,27 @@ export const ImageFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
       {currentField.form && (
         <div>
           <div className="flex items-center justify-between mb-3">
-            <label className="block text-sm font-medium text-[#283618]/70">
-              Imágenes Disponibles
-            </label>
+            <label className={labelClass}>{t("availableImagesLabel")}</label>
             <button
               type="button"
               onClick={addImage}
               className={`${btnOutlineSecondary} text-sm flex items-center`}
             >
-              <Plus className="w-4 h-4 mr-1" /> Agregar Imagen
+              <Plus className="w-4 h-4 mr-1" /> {t("addImage")}
             </button>
           </div>
 
-          <p className="text-xs text-[#283618]/50 mb-3">
-            Agrega las imágenes que el usuario podrá seleccionar para este campo
-          </p>
+          <p className={helpTextClass}>{t("availableImagesHelp")}</p>
 
           <div className="space-y-3">
             {images.map((imageUrl, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-3 p-3 border border-gray-200 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors"
-              >
+              <div key={index} className={imageItemClass}>
                 {/* Preview de la imagen */}
-                <div className="flex-shrink-0 w-16 h-16 bg-white border border-gray-200 rounded overflow-hidden flex items-center justify-center">
+                <div className={imagePreviewClass}>
                   {imageUrl ? (
                     <img
                       src={imageUrl}
-                      alt={`Imagen ${index + 1}`}
+                      alt={t("imageNumber", { number: index + 1 })}
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         (e.target as HTMLImageElement).src =
@@ -154,14 +153,16 @@ export const ImageFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                       }}
                     />
                   ) : (
-                    <span className="text-gray-400 text-xs">Sin imagen</span>
+                    <span className="text-gray-400 text-xs">
+                      {t("noImage")}
+                    </span>
                   )}
                 </div>
 
                 {/* Información y botones */}
                 <div className="flex-1 min-w-0">
                   <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Imagen {index + 1}
+                    {t("imageNumber", { number: index + 1 })}
                   </label>
                   {imageUrl ? (
                     <div className="flex items-center space-x-2">
@@ -171,9 +172,9 @@ export const ImageFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                       <button
                         type="button"
                         onClick={() => setShowImageSelectorForIndex(index)}
-                        className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                        className={`${btnOutlineSecondary} text-sm`}
                       >
-                        Cambiar
+                        {t("change")}
                       </button>
                     </div>
                   ) : (
@@ -182,7 +183,7 @@ export const ImageFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                       onClick={() => setShowImageSelectorForIndex(index)}
                       className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded hover:bg-white text-left text-gray-500"
                     >
-                      Seleccionar imagen
+                      {t("selectImage")}
                     </button>
                   )}
                 </div>
@@ -191,8 +192,8 @@ export const ImageFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                 <button
                   type="button"
                   onClick={() => removeImage(index)}
-                  className="flex-shrink-0 text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded transition-colors"
-                  title="Eliminar imagen"
+                  className={btnDangerIconClass}
+                  title={t("deleteImage")}
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -200,51 +201,11 @@ export const ImageFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
             ))}
 
             {images.length === 0 && (
-              <div className="text-center py-8 text-gray-500 text-sm border border-gray-200 rounded-md bg-gray-50">
-                <p className="mb-2">No hay imágenes configuradas</p>
-                <p className="text-xs">
-                  Haz clic en "Agregar Imagen" para comenzar
-                </p>
+              <div className={emptyStateClass}>
+                <p className="mb-2">{t("noImagesConfigured")}</p>
+                <p className="text-xs">{t("clickAddImage")}</p>
               </div>
             )}
-          </div>
-        </div>
-      )}
-
-      {/* Vista previa de galería (solo cuando form es true) */}
-      {currentField.form && images.length > 0 && (
-        <div>
-          <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-            Vista Previa de la Galería
-          </label>
-          <div className="p-4 border border-gray-200 rounded-md bg-white">
-            <div className="grid grid-cols-3 gap-3">
-              {images.map((imageUrl, index) => (
-                <div
-                  key={index}
-                  className="aspect-square border border-gray-200 rounded overflow-hidden hover:border-[#bc6c25] transition-colors cursor-pointer"
-                >
-                  {imageUrl ? (
-                    <img
-                      src={imageUrl}
-                      alt={`Preview ${index + 1}`}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src =
-                          "/assets/img/imageNotFound.png";
-                      }}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                      <span className="text-gray-400 text-xs">Sin imagen</span>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-            <p className="text-xs text-[#283618]/50 mt-3 text-center">
-              El usuario podrá seleccionar una de estas imágenes
-            </p>
           </div>
         </div>
       )}
@@ -258,7 +219,9 @@ export const ImageFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
             updateImage(showImageSelectorForIndex, url);
           }
         }}
-        title={`Seleccionar Imagen ${(showImageSelectorForIndex ?? 0) + 1}`}
+        title={t("selectImageTitle", {
+          number: (showImageSelectorForIndex ?? 0) + 1,
+        })}
         resourceType="image"
         selectedUrl={
           showImageSelectorForIndex !== null
@@ -275,7 +238,7 @@ export const ImageFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
           updateField({ value: url });
           setShowValueSelector(false);
         }}
-        title="Seleccionar Imagen Predefinida"
+        title={t("selectPredefinedImageTitle")}
         resourceType="image"
         selectedUrl={currentField.value as string | undefined}
       />

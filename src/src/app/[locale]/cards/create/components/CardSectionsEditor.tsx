@@ -165,61 +165,57 @@ function BlockConfiguration({
 }: BlockConfigurationProps) {
   const [expandedField, setExpandedField] = useState<number | null>(null);
 
+  const t = useTranslations("CreateCard.content");
+
   const addField = () => {
     const newField: TextField = {
       field_id: `field_${Date.now()}`,
-      display_name: "Nuevo Campo",
+      display_name: t("newField"),
       type: "text",
       form: true,
       bulletin: true,
       field_config: getFieldConfigDefaults("text"),
     };
 
-    const updatedFields = [...block.fields, newField];
-    onUpdateBlock(blockIndex, { fields: updatedFields });
+    onUpdateBlock(blockIndex, { fields: [...block.fields, newField] });
   };
 
   const removeField = (fieldIndex: number) => {
-    const updatedFields = block.fields.filter(
-      (_, index) => index !== fieldIndex
-    );
-    onUpdateBlock(blockIndex, { fields: updatedFields });
+    onUpdateBlock(blockIndex, {
+      fields: block.fields.filter((_, index) => index !== fieldIndex),
+    });
   };
 
   return (
     <div className="p-4 bg-gray-50 space-y-4">
       <div>
         <h5 className="text-md font-medium text-[#283618] mb-4">
-          Configuración del Bloque
+          {t("blockConfiguration")}
         </h5>
 
         {/* Block name */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-[#283618] mb-1">
-            Nombre del bloque
+            {t("blockName")}
           </label>
           <input
             type="text"
             value={block.display_name}
             onChange={(e) =>
-              onUpdateBlock(blockIndex, {
-                display_name: e.target.value,
-              })
+              onUpdateBlock(blockIndex, { display_name: e.target.value })
             }
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm
                        focus:outline-none focus:ring-2 focus:ring-[#bc6c25] focus:border-[#bc6c25]"
-            placeholder="Ingrese el nombre del bloque"
+            placeholder={t("blockNameInputPlaceholder")}
           />
-          <p className="text-xs text-[#283618]/50 mt-1">
-            Este nombre ayuda a identificar el bloque en la configuración
-          </p>
+          <p className="text-xs text-[#283618]/50 mt-1">{t("blockNameHelp")}</p>
         </div>
 
         {/* Block styles */}
         <div className="mb-4">
           <h6 className="text-sm font-medium text-[#283618] mb-2 flex items-center gap-2">
             <Palette className="w-4 h-4" />
-            Estilos del Bloque
+            {t("blockStyles")}
           </h6>
           <StyleConfigurator
             styleConfig={block.style_config || {}}
@@ -240,8 +236,8 @@ function BlockConfiguration({
               gap: true,
               fieldsLayout: true,
             }}
-            title="Estilos del Bloque"
-            description="Los estilos del bloque se aplicarán al contenedor que agrupa los campos. Usa 'Padding' para el espacio interno del bloque y 'Gap' para el espacio entre los campos dentro del bloque."
+            title={t("blockStyles")}
+            description={t("blockStylesDescription")}
             showPreview={false}
           />
         </div>
@@ -251,14 +247,14 @@ function BlockConfiguration({
       <div>
         <div className="flex justify-between items-center mb-4">
           <h6 className="text-sm font-medium text-[#283618]">
-            Campos del Bloque ({block.fields.length})
+            {t("blockFieldsTitle", { count: block.fields.length })}
           </h6>
           <button
             onClick={addField}
             className={`${btnOutlineSecondary} text-sm`}
           >
             <Plus className="w-3 h-3 mr-1" />
-            Agregar Campo
+            {t("addField")}
           </button>
         </div>
 
@@ -266,9 +262,9 @@ function BlockConfiguration({
           <div className="text-center py-8 bg-gray-100 rounded-lg border border-gray-200">
             <div className="text-[#283618]/70">
               <Edit3 className="w-8 h-8 mx-auto mb-2" />
-              <p className="text-sm">No hay campos configurados</p>
+              <p className="text-sm">{t("noFieldsConfigured")}</p>
               <p className="text-xs text-[#283618]/50 mt-1">
-                Los campos definen qué información se recopiará en este bloque
+                {t("noFieldsHelp")}
               </p>
             </div>
           </div>
@@ -282,6 +278,7 @@ function BlockConfiguration({
                 onDragEnd={onFieldDragEnd}
                 onDragOver={onFieldDragOver}
                 onDrop={() => onFieldDrop(blockIndex, fieldIndex)}
+                title={t("dragToReorder")}
               >
                 <FieldConfiguration
                   field={field}
@@ -342,21 +339,19 @@ export function CardSectionsEditor({
           ...prevData.content.blocks,
           {
             block_id: `block_${Date.now()}`,
-            display_name: `Bloque ${prevData.content.blocks.length + 1}`,
+            display_name: `${t("blocks")} ${
+              prevData.content.blocks.length + 1
+            }`,
             fields: [],
           },
         ],
       },
     }));
 
-    // Clear blocks errors
     if (errors.blocks) {
-      onErrorsChange({
-        ...errors,
-        blocks: [],
-      });
+      onErrorsChange({ ...errors, blocks: [] });
     }
-  }, [onDataChange, errors, onErrorsChange]);
+  }, [onDataChange, errors, onErrorsChange, t]);
 
   const handleRemoveBlock = useCallback(
     (blockIndex: number) => {
@@ -646,13 +641,13 @@ export function CardSectionsEditor({
             <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
               <h3 className="text-sm font-medium text-[#283618] flex items-center gap-2">
                 <ImageIcon className="h-4 w-4" />
-                Fondo del Card
+                {t("cardBackground")}
               </h3>
 
               {/* Background Image */}
               <div>
                 <label className="block text-sm font-medium text-[#283618] mb-2">
-                  Imagen de Fondo
+                  {t("backgroundImage")}
                 </label>
                 <div className="flex gap-2">
                   <input
@@ -660,7 +655,7 @@ export function CardSectionsEditor({
                     value={data.content.background_url || ""}
                     readOnly
                     className="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-[#283618]/70"
-                    placeholder="Ninguna imagen seleccionada"
+                    placeholder={t("noImageSelected")}
                   />
                   <button
                     type="button"
@@ -668,7 +663,7 @@ export function CardSectionsEditor({
                     className={btnOutlineSecondary}
                   >
                     <ImageIcon className="h-4 w-4" />
-                    Seleccionar
+                    {t("selectButton")}
                   </button>
                   {data.content.background_url && (
                     <button
@@ -689,8 +684,7 @@ export function CardSectionsEditor({
                   )}
                 </div>
                 <p className="text-xs text-[#283618]/60 mt-1">
-                  Selecciona una imagen de los recursos visuales para usar como
-                  fondo
+                  {t("backgroundImageHelp")}
                 </p>
               </div>
 
@@ -700,7 +694,7 @@ export function CardSectionsEditor({
                   htmlFor="background_color"
                   className="block text-sm font-medium text-[#283618] mb-2"
                 >
-                  Color de Fondo
+                  {t("backgroundColor")}
                 </label>
                 <div className="flex gap-2">
                   <input
@@ -752,7 +746,7 @@ export function CardSectionsEditor({
                   )}
                 </div>
                 <p className="text-xs text-[#283618]/60 mt-1">
-                  El color se aplicará si no hay imagen de fondo seleccionada
+                  {t("backgroundColorHelp")}
                 </p>
               </div>
 
@@ -762,7 +756,7 @@ export function CardSectionsEditor({
                   htmlFor="content_padding"
                   className="block text-sm font-medium text-[#283618] mb-2"
                 >
-                  Padding (Espacio Interno)
+                  {t("padding")}
                 </label>
                 <input
                   type="text"
@@ -781,10 +775,10 @@ export function CardSectionsEditor({
                     }))
                   }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#606c38] focus:border-transparent"
-                  placeholder="Ej: 16px, 1rem, 10px 20px"
+                  placeholder={t("paddingPlaceholder")}
                 />
                 <p className="text-xs text-[#283618]/60 mt-1">
-                  Espacio interno entre el borde del card y su contenido
+                  {t("paddingHelp")}
                 </p>
               </div>
 
@@ -794,7 +788,7 @@ export function CardSectionsEditor({
                   htmlFor="content_gap"
                   className="block text-sm font-medium text-[#283618] mb-2"
                 >
-                  Gap (Espacio entre Bloques)
+                  {t("gap")}
                 </label>
                 <input
                   type="text"
@@ -813,11 +807,9 @@ export function CardSectionsEditor({
                     }))
                   }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#606c38] focus:border-transparent"
-                  placeholder="Ej: 16px, 1rem, 20px"
+                  placeholder={t("gapPlaceholder")}
                 />
-                <p className="text-xs text-[#283618]/60 mt-1">
-                  Espacio entre los bloques del card
-                </p>
+                <p className="text-xs text-[#283618]/60 mt-1">{t("gapHelp")}</p>
               </div>
             </div>
 
@@ -861,11 +853,13 @@ export function CardSectionsEditor({
                           <GripVertical className="h-5 w-5 text-gray-400 cursor-move" />
                           <div>
                             <h4 className="font-medium text-[#283618]">
-                              {block.display_name || "Sin nombre"}
+                              {block.display_name || t("untitled")}
                             </h4>
                             <p className="text-xs text-[#283618]/60">
-                              ID: {block.block_id} • {block.fields.length}{" "}
-                              campo(s)
+                              {t("blockId", {
+                                id: block.block_id,
+                                count: block.fields.length,
+                              })}
                             </p>
                           </div>
                         </div>
@@ -883,8 +877,8 @@ export function CardSectionsEditor({
                             }`}
                             title={
                               expandedBlock === blockIndex
-                                ? "Contraer configuración"
-                                : "Expandir configuración"
+                                ? t("collapseConfiguration")
+                                : t("expandConfiguration")
                             }
                           >
                             <Settings className="h-4 w-4" />

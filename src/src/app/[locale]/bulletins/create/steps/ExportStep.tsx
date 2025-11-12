@@ -105,9 +105,9 @@ export function ExportStep({ previewData, bulletinName }: ExportStepProps) {
 
           onProgressUpdate(
             imageCounter,
-            `Generando sección ${sectionIndex + 1}, página ${
-              pageIndex + 1
-            }/${totalPages}...`
+            `${t("sectionGenerating", { current: sectionIndex + 1 })}, ${t(
+              "sectionPage"
+            )} ${pageIndex + 1}/${totalPages}...`
           );
 
           // Pequeño delay para asegurar que la sección esté renderizada
@@ -225,7 +225,7 @@ export function ExportStep({ previewData, bulletinName }: ExportStepProps) {
 
       // Si el formato es PDF, convertir las imágenes a PDF
       if (finalFormat === "pdf") {
-        onProgressUpdate(sectionsToExport.length, "Convirtiendo a PDF...");
+        onProgressUpdate(sectionsToExport.length, t("toPdf"));
 
         // Importar jsPDF dinámicamente
         const { jsPDF } = await import("jspdf");
@@ -298,7 +298,7 @@ export function ExportStep({ previewData, bulletinName }: ExportStepProps) {
         pdf.save(`${bulletinName}.pdf`);
       } else {
         // Generar el archivo ZIP para imágenes
-        onProgressUpdate(sectionsToExport.length, "Generando archivo ZIP...");
+        onProgressUpdate(sectionsToExport.length, t("toZip"));
 
         const zipBlob = await zip.generateAsync({ type: "blob" });
 
@@ -313,7 +313,7 @@ export function ExportStep({ previewData, bulletinName }: ExportStepProps) {
         URL.revokeObjectURL(url);
       }
 
-      onProgressUpdate(sectionsToExport.length, "¡Exportación completada!");
+      onProgressUpdate(sectionsToExport.length, t("exportComplete"));
     } catch (error) {
       console.error("❌ Error al exportar:", error);
       throw error;

@@ -4,6 +4,17 @@ import React from "react";
 import { useTranslations } from "next-intl";
 import { DateFieldConfig } from "../../../../../../types/template";
 import { BaseFieldTypeConfigProps } from "./BaseFieldTypeConfig";
+import { labelClass, selectClass } from "@/app/[locale]/components/ui";
+
+// Date format options
+const DATE_FORMATS = [
+  "YYYY-MM-DD",
+  "DD/MM/YYYY",
+  "MM/DD/YYYY",
+  "DD-MM-YYYY",
+  "dddd, DD - MM",
+  "DD, MMMM YYYY",
+] as const;
 
 export const DateFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
   currentField,
@@ -12,27 +23,23 @@ export const DateFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
   updateValidation,
   t: fieldT,
 }) => {
-  const t = useTranslations("CreateTemplate.fieldEditor");
+  const t = useTranslations("CreateTemplate.fieldEditor.dateConfig");
+
+  const config = (currentField.field_config as DateFieldConfig) || {};
 
   return (
     <div>
-      <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-        {t("dateConfig.format")}
-      </label>
+      <label className={labelClass}>{t("format")}</label>
       <select
-        value={
-          (currentField.field_config as DateFieldConfig)?.date_format ||
-          "YYYY-MM-DD"
-        }
+        value={config.date_format || "YYYY-MM-DD"}
         onChange={(e) => updateFieldConfig({ date_format: e.target.value })}
-        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+        className={selectClass}
       >
-        <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-        <option value="DD/MM/YYYY">DD/MM/YYYY</option>
-        <option value="MM/DD/YYYY">MM/DD/YYYY</option>
-        <option value="DD-MM-YYYY">DD-MM-YYYY</option>
-        <option value="dddd, DD - MM">dddd, DD - MM</option>
-        <option value="DD, MMMM YYYY">DD, MMMM YYYY</option>
+        {DATE_FORMATS.map((format) => (
+          <option key={format} value={format}>
+            {format}
+          </option>
+        ))}
       </select>
     </div>
   );

@@ -93,33 +93,25 @@ export default function UploadVisualResource() {
     }
   };
 
-  // Validar tipo de archivo
   const isValidFileType = (file: File): boolean => {
-    const validImageTypes = [
-      "image/jpeg",
-      "image/png",
-      "image/gif",
-      "image/webp",
-      "image/svg+xml",
-    ];
-    const validIconTypes = ["image/svg+xml", "image/png", "image/ico"];
-
-    if (fileType === "image") {
-      return validImageTypes.includes(file.type);
-    } else if (fileType === "icon") {
-      return validIconTypes.includes(file.type);
-    }
-
-    return false;
+    const validTypes = {
+      image: [
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+        "image/svg+xml",
+      ],
+      icon: ["image/svg+xml", "image/png", "image/ico"],
+    };
+    return validTypes[fileType].includes(file.type);
   };
 
-  // Validar tamaño del archivo
   const isValidFileSize = (file: File): boolean => {
-    const maxSize = fileType === "image" ? 10 * 1024 * 1024 : 2 * 1024 * 1024; // 10MB para imágenes, 2MB para iconos
+    const maxSize = fileType === "image" ? 10 * 1024 * 1024 : 2 * 1024 * 1024;
     return file.size <= maxSize;
   };
 
-  // Manejar archivos seleccionados
   const handleFileSelect = useCallback(
     (files: FileList) => {
       const fileArray = Array.from(files);
@@ -142,19 +134,17 @@ export default function UploadVisualResource() {
           return;
         }
 
-        // Crear preview para imágenes y agregar ID único
         const fileWithPreview: FileWithPreview = {
-          file: file, // El archivo original sin modificar
+          file: file,
           id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           customName: "",
           name: file.name,
           size: file.size,
           type: file.type,
+          preview: file.type.startsWith("image/")
+            ? URL.createObjectURL(file)
+            : undefined,
         };
-
-        if (file.type.startsWith("image/")) {
-          fileWithPreview.preview = URL.createObjectURL(file);
-        }
 
         validFiles.push(fileWithPreview);
       });
@@ -201,48 +191,43 @@ export default function UploadVisualResource() {
     [handleFileSelect]
   );
 
-  // Remover archivo de la lista
   const removeFile = (fileId: string) => {
-    setSelectedFiles((prev) => {
-      return prev.filter((file) => {
+    setSelectedFiles((prev) =>
+      prev.filter((file) => {
         if (file.id === fileId) {
-          // Limpiar preview URL
-          if (file.preview) {
-            URL.revokeObjectURL(file.preview);
-          }
+          if (file.preview) URL.revokeObjectURL(file.preview);
           return false;
         }
         return true;
-      });
-    });
+      })
+    );
   };
 
-  // Actualizar nombre personalizado de un archivo específico
   const updateCustomFileName = (fileId: string, customName: string) => {
     setSelectedFiles((prev) =>
       prev.map((file) => (file.id === fileId ? { ...file, customName } : file))
     );
   };
 
-  // Subir archivos
   const handleUpload = async () => {
-    if (selectedFiles.length === 0) {
-      showToast("Selecciona al menos un archivo para subir", "error", 4000);
-      return;
-    }
-
-    if (accessType === "group" && !selectedGroup) {
-      showToast("Selecciona un grupo para el acceso por grupo", "error", 4000);
-      return;
-    }
+    if (selectedFiles.length === 0)
+      return showToast(
+        "Selecciona al menos un archivo para subir",
+        "error",
+        4000
+      );
+    if (accessType === "group" && !selectedGroup)
+      return showToast(
+        "Selecciona un grupo para el acceso por grupo",
+        "error",
+        4000
+      );
 
     setIsUploading(true);
     setError(null);
 
     const results: { [key: string]: "success" | "error" | "pending" } = {};
-    selectedFiles.forEach((file) => {
-      results[file.id] = "pending";
-    });
+    selectedFiles.forEach((file) => (results[file.id] = "pending"));
     setUploadResults(results);
 
     let successCount = 0;

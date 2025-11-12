@@ -4,11 +4,13 @@ import React, { useCallback, useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import {
   CreateCardData,
-  CARD_TYPES,
   CardType,
+  getCardTypeIcon,
+  hasCardTypeTranslation,
 } from "../../../../../types/card";
 import { ACCESS_TYPES } from "../../../../../types/core";
 import { GroupAPIService } from "../../../../../services/groupService";
+import { EnumAPIService, EnumValue } from "../../../../../services/enumService";
 import { Group } from "../../../../../types/groups";
 import { Loader2 } from "lucide-react";
 import GroupSelector from "../../../components/GroupSelector";
@@ -27,8 +29,37 @@ export function BasicInfoStep({
   onErrorsChange,
 }: BasicInfoStepProps) {
   const t = useTranslations("CreateCard.basicInfo");
+  const tCards = useTranslations("Cards");
   const [groups, setGroups] = useState<Group[]>([]);
   const [loadingGroups, setLoadingGroups] = useState(false);
+  const [cardTypes, setCardTypes] = useState<EnumValue[]>([]);
+  const [loadingTypes, setLoadingTypes] = useState(true);
+
+  // Cargar tipos de cards al montar
+  useEffect(() => {
+    const loadCardTypes = async () => {
+      setLoadingTypes(true);
+      try {
+        const types = await EnumAPIService.getCardTypes();
+        setCardTypes(types);
+      } catch (error) {
+        console.error("Error loading card types:", error);
+        setCardTypes([]);
+      } finally {
+        setLoadingTypes(false);
+      }
+    };
+
+    loadCardTypes();
+  }, []);
+
+  // Función helper para obtener el label traducido
+  const getCardTypeLabel = (cardType: string): string => {
+    if (hasCardTypeTranslation(cardType)) {
+      return tCards(`cardTypes.${cardType}`);
+    }
+    return cardType;
+  };
 
   const handleNameChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -148,22 +179,31 @@ export function BasicInfoStep({
           >
             {t("type")} <span className="text-red-500">*</span>
           </label>
-          <select
-            id="card_type"
-            value={data.card_type}
-            onChange={handleTypeChange}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#606c38] focus:border-transparent ${
-              errors.card_type && errors.card_type.length > 0
-                ? "border-red-500"
-                : "border-gray-300"
-            }`}
-          >
-            {Object.entries(CARD_TYPES).map(([type, { label, icon }]) => (
-              <option key={type} value={type}>
-                {icon} {label}
-              </option>
-            ))}
-          </select>
+          {loadingTypes ? (
+            <div className="flex items-center justify-center py-4 border border-gray-300 rounded-lg">
+              <Loader2 className="h-5 w-5 animate-spin text-[#606c38]" />
+              <span className="ml-2 text-sm text-[#283618]/60">
+                Cargando tipos...
+              </span>
+            </div>
+          ) : (
+            <select
+              id="card_type"
+              value={data.card_type}
+              onChange={handleTypeChange}
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#606c38] focus:border-transparent ${
+                errors.card_type && errors.card_type.length > 0
+                  ? "border-red-500"
+                  : "border-gray-300"
+              }`}
+            >
+              {cardTypes.map((type) => (
+                <option key={type.value} value={type.value}>
+                  {getCardTypeIcon(type.value)} {getCardTypeLabel(type.value)}
+                </option>
+              ))}
+            </select>
+          )}
           {errors.card_type && errors.card_type.length > 0 && (
             <p className="text-red-500 text-sm mt-1">{errors.card_type[0]}</p>
           )}

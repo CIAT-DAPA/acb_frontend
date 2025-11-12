@@ -3,6 +3,7 @@
 import React from "react";
 import { useTranslations } from "next-intl";
 import { BaseFieldTypeConfigProps } from "./BaseFieldTypeConfig";
+import { labelClass, inputClass } from "@/app/[locale]/components/ui";
 
 export const NumberFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
   currentField,
@@ -11,14 +12,12 @@ export const NumberFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
   updateValidation,
   t: fieldT,
 }) => {
-  const t = useTranslations("CreateTemplate.fieldEditor");
+  const t = useTranslations("CreateTemplate.fieldEditor.numberConfig");
 
   return (
     <div className="grid grid-cols-2 gap-4">
       <div>
-        <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-          {t("numberConfig.minValue")}
-        </label>
+        <label className={labelClass}>{t("minValue")}</label>
         <input
           type="number"
           value={currentField.validation?.min_value || ""}
@@ -27,13 +26,11 @@ export const NumberFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
               min_value: parseFloat(e.target.value) || undefined,
             })
           }
-          className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          className={inputClass}
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-          {t("numberConfig.maxValue")}
-        </label>
+        <label className={labelClass}>{t("maxValue")}</label>
         <input
           type="number"
           value={currentField.validation?.max_value || ""}
@@ -42,13 +39,11 @@ export const NumberFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
               max_value: parseFloat(e.target.value) || undefined,
             })
           }
-          className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          className={inputClass}
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-[#283618]/70 mb-2">
-          {t("numberConfig.decimalPlaces")}
-        </label>
+        <label className={labelClass}>{t("decimalPlaces")}</label>
         <input
           type="number"
           min="0"
@@ -59,7 +54,7 @@ export const NumberFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
               decimal_places: parseInt(e.target.value) || undefined,
             })
           }
-          className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          className={inputClass}
           placeholder="2"
         />
       </div>

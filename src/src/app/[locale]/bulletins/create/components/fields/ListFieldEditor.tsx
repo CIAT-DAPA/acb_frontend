@@ -8,6 +8,7 @@ import {
   NumberField,
   DateField,
   SelectField,
+  SearchableInput,
   SelectWithIconsField,
   ClimateDataField,
 } from "./index";
@@ -177,6 +178,16 @@ export function ListFieldEditor({
             value={fieldValue as string}
             onChange={handleChange}
             options={options}
+          />
+        );
+
+      case "searchable":
+        const searchableOptions = fieldDef.field_config?.options || [];
+        return (
+          <SearchableInput
+            value={fieldValue as string}
+            onChange={handleChange}
+            options={searchableOptions}
           />
         );
 
