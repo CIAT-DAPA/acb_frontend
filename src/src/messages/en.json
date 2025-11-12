@@ -192,6 +192,8 @@
   "CreateBulletin": {
     "title": "Create Bulletin",
     "subtitle": "Create a new agroclimatic bulletin using a template",
+    "titleEdit":"Edit Bulletin",
+    "subtitleEdit":"Update and modify your agroclimatic bulletin",
     "backToBulletins": "Back to Bulletins",
     "success": "Bulletin created successfully",
     "updateSuccess": "Bulletin updated successfully",
@@ -289,7 +291,12 @@
       "title": "Export Bulletin",
       "description": "Review all sections and export your bulletin as images",
       "exportButton": "Export Bulletin",
-      "exporting": "Exporting..."
+      "exporting": "Exporting...",
+      "sectionGenerating": "Generating section {current}",
+      "sectionPage": "Page",
+      "toPdf":"Converting to PDF...",
+      "toZip":"Generating ZIP file...",
+      "exportComplete": "Export completed!"
     },
     "exportModal": {
       "title": "Export Content",
@@ -298,8 +305,8 @@
       "pdfConfig": "PDF Configuration",
       "pageSize": "Page Size",
       "sectionsPerPage": "Sections per Page",
-      "sectionsPerPageRange": "{count} (one per page)",
-      "sectionsPerPageMax": "{count} (2x3 grid)",
+      "sectionsPerPageRange": "1 (one per page)",
+      "sectionsPerPageMax": "6 (2x3 grid)",
       "sectionsToExport": "Sections to Export",
       "selectAll": "Select all",
       "deselectAll": "Deselect all",
@@ -317,8 +324,9 @@
       "exportSuccessMessage": "The file was downloaded successfully.",
       "exportError": "Export error",
       "contentLabel": "Content",
-      "formatLabel": "Format: {format}",
-      "sectionsLabel": "Sections: {count}"
+      "formatLabel": "Format",
+      "sectionsLabel": "Sections",
+      "completed": "completed"
     }
   },
   "Authentication": {

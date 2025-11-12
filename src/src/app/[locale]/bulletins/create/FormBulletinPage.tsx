@@ -566,10 +566,10 @@ export default function FormBulletinPage({
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-[#283618]">
-            {isEditMode ? "Editar Boletín" : t("title")}
+            {isEditMode ? t("titleEdit") : t("title")}
           </h1>
           <p className="text-[#606c38] mt-2">
-            {isEditMode ? "Edita la información del boletín" : t("subtitle")}
+            {isEditMode ? t("subtitleEdit") : t("subtitle")}
           </p>
         </div>
 

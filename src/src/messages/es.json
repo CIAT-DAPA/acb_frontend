@@ -192,6 +192,8 @@
   "CreateBulletin": {
     "title": "Crear Boletín",
     "subtitle": "Crea un nuevo boletín agroclimático utilizando una plantilla",
+    "titleEdit":"Editar Boletín",
+    "subtitleEdit":"Actualiza y modifica tu boletín agroclimático",
     "backToBulletins": "Volver a Boletines",
     "success": "Boletín creado exitosamente",
     "updateSuccess": "Boletín actualizado exitosamente",
@@ -289,7 +291,12 @@
       "title": "Exportar Boletín",
       "description": "Revisa todas las secciones y exporta tu boletín como imágenes",
       "exportButton": "Exportar Boletín",
-      "exporting": "Exportando..."
+      "exporting": "Exportando...",
+      "sectionGenerating": "Generando sección {current}",
+      "sectionPage": "Página",
+      "toPdf":"Convirtiendo a PDF...",
+      "toZip":"Generando archivo ZIP...",
+      "exportComplete": "¡Exportación completada!"
     },
     "exportModal": {
       "title": "Exportar Contenido",
@@ -298,8 +305,8 @@
       "pdfConfig": "Configuración PDF",
       "pageSize": "Tamaño de Página",
       "sectionsPerPage": "Secciones por Página",
-      "sectionsPerPageRange": "{count} (una por página)",
-      "sectionsPerPageMax": "{count} (grid 2x3)",
+      "sectionsPerPageRange": "1 (una por página)",
+      "sectionsPerPageMax": "6 (grid 2x3)",
       "sectionsToExport": "Secciones a Exportar",
       "selectAll": "Seleccionar todas",
       "deselectAll": "Deseleccionar todas",
@@ -317,8 +324,9 @@
       "exportSuccessMessage": "El archivo se descargó correctamente.",
       "exportError": "Error en la exportación",
       "contentLabel": "Contenido",
-      "formatLabel": "Formato: {format}",
-      "sectionsLabel": "Secciones: {count}"
+      "formatLabel": "Formato",
+      "sectionsLabel": "Secciones",
+      "completed": "completado"
     }
   },
   "Authentication": {
