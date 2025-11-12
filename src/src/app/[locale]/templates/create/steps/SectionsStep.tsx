@@ -34,6 +34,10 @@ import { VisualResourcesService } from "@/services/visualResourcesService";
 import { VisualResource } from "@/types/visualResource";
 import Image from "next/image";
 
+// Constantes reutilizables
+const ICON_BUTTON_CLASS = "text-[#283618]/50 hover:text-[#283618] p-1 rounded";
+const DELETE_BUTTON_CLASS = "text-[#283618]/50 hover:text-red-600 p-1 rounded";
+
 interface SectionsStepProps {
   data: CreateTemplateData;
   errors: Record<string, string[]>;
@@ -102,127 +106,114 @@ function FieldConfiguration({
     fieldIndex: number
   ) => void;
 }) {
-  const t = useTranslations("CreateTemplate.headerFooter");
+  const t = useTranslations("CreateTemplate.sections");
+  const tFields = useTranslations("CreateTemplate.headerFooter.fields");
+
+  const renderBooleanBadge = (value: boolean, label: string) => (
+    <div>
+      {label}:
+      <span className={value ? "text-green-600" : "text-[#283618]/50"}>
+        {value ? ` ${t("yes")}` : ` ${t("no")}`}
+      </span>
+    </div>
+  );
 
   return (
     <div className="border rounded-lg p-4 transition-all duration-200 border-gray-200 bg-gray-50 hover:shadow-md hover:border-gray-300">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center space-x-3">
-          {/* Icono de arrastre */}
           <div
             className="text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing p-1 rounded hover:bg-gray-200 transition-colors"
-            title="Arrastra para reordenar"
+            title={t("dragToReorder")}
           >
             <GripVertical className="w-4 h-4" />
           </div>
           <div>
             <h4 className="font-medium text-[#283618]">{field.display_name}</h4>
             <p className="text-sm text-[#283618]/50">
-              {t("fields.type")}: {field.type}
+              {tFields("type")}: {field.type}
             </p>
           </div>
         </div>
         <div className="flex space-x-2">
           <button
             onClick={() => onEditField(sectionIndex, blockIndex, fieldIndex)}
-            className="text-[#283618]/50 hover:text-[#283618] cursor-pointer"
+            className={ICON_BUTTON_CLASS}
+            title={t("configureField")}
           >
             <Settings className="w-4 h-4" />
           </button>
           <button
             onClick={() => onRemoveField(fieldIndex)}
-            className="text-[#283618]/50 hover:text-red-600 cursor-pointer"
+            className={DELETE_BUTTON_CLASS}
+            title={t("deleteField")}
           >
             <Trash2 className="w-4 h-4" />
           </button>
         </div>
       </div>
       <div className="text-sm text-[#283618] grid grid-cols-2 gap-2">
-        <div>
-          {t("fields.form")}:
-          <span className={field.form ? "text-green-600" : "text-[#283618]/50"}>
-            {field.form ? " Sí" : " No"}
-          </span>
-        </div>
-        <div>
-          {t("fields.bulletin")}:
-          <span
-            className={field.bulletin ? "text-green-600" : "text-[#283618]/50"}
-          >
-            {field.bulletin ? " Sí" : " No"}
-          </span>
-        </div>
+        {renderBooleanBadge(field.form, tFields("form"))}
+        {renderBooleanBadge(field.bulletin, tFields("bulletin"))}
       </div>
     </div>
   );
 }
 
-// Tipos de campo disponibles con sus configuraciones
-const FIELD_TYPES = [
-  {
-    value: "text",
-    label: "Texto",
-    description: "Campo de texto corto o largo",
-  },
-  {
-    value: "text_with_icon",
-    label: "Texto con Icono",
-    description: "Texto que incluye selección de icono",
-  },
-  { value: "number", label: "Número", description: "Campo numérico" },
-  { value: "date", label: "Fecha", description: "Selector de fecha" },
-  {
-    value: "date_range",
-    label: "Rango de Fechas",
-    description: "Selección de fecha inicial y final",
-  },
-  {
-    value: "select",
-    label: "Selección",
-    description: "Lista desplegable de opciones",
-  },
-  {
-    value: "select_with_icons",
-    label: "Selección con Iconos",
-    description: "Lista con iconos para cada opción",
-  },
-  {
-    value: "select_background",
-    label: "Selección de Fondo",
-    description: "Lista con imágenes de fondo",
-  },
-  {
-    value: "image_upload",
-    label: "Subir Imagen",
-    description: "Campo para cargar imágenes",
-  },
-  {
-    value: "list",
-    label: "Lista",
-    description: "Lista de elementos dinámicos",
-  },
-  {
-    value: "climate_data_puntual",
-    label: "Datos Climáticos",
-    description: "Datos climáticos puntuales",
-  },
-  {
-    value: "algorithm",
-    label: "Algoritmo",
-    description: "Selección de algoritmo",
-  },
-  {
-    value: "page_number",
-    label: "Número de Página",
-    description: "Numeración automática de páginas",
-  },
-  { value: "card", label: "Tarjeta", description: "Elemento tipo tarjeta" },
-  {
-    value: "image",
-    label: "Imagen",
-    description: "Selector de imagen de fondo",
-  },
-];
+// Helper para obtener configuraciones por defecto según tipo de campo
+const getFieldConfigDefaults = (fieldType: string): any => {
+  const configs: Record<string, any> = {
+    text: { subtype: "short" },
+    text_with_icon: { subtype: "short", icon_options: [] },
+    select: { options: [], allow_multiple: false },
+    searchable: { options: [] },
+    select_with_icons: { options: [], allow_multiple: false, icons_url: [] },
+    select_background: {
+      options: [],
+      allow_multiple: false,
+      backgrounds_url: [],
+    },
+    date: { date_format: "DD/MM/YYYY" },
+    date_range: {
+      date_format: "DD/MM/YYYY",
+      start_date_label: "Fecha inicio",
+      start_date_description: "Seleccione la fecha de inicio",
+      end_date_label: "Fecha fin",
+      end_date_description: "Seleccione la fecha de fin",
+    },
+    image_upload: {
+      max_file_size: "5MB",
+      allowed_formats: ["jpg", "jpeg", "png"],
+    },
+    list: {
+      max_items: 10,
+      min_items: 1,
+      item_schema: {
+        item_name: {
+          field_id: "item_name",
+          display_name: "Nombre del elemento",
+          type: "text",
+          form: true,
+          bulletin: true,
+        },
+        item_description: {
+          field_id: "item_description",
+          display_name: "Descripción",
+          type: "text",
+          form: true,
+          bulletin: false,
+        },
+      },
+    },
+    climate_data_puntual: { available_parameters: {} },
+    algorithm: { options: [] },
+    page_number: { format: "Página {page} de {total}", is_autogenerated: true },
+    card: { available_cards: [] },
+    image: { images: [] },
+  };
+
+  return configs[fieldType] || {};
+};
 
 function BlockConfiguration({
   block,
@@ -235,12 +226,13 @@ function BlockConfiguration({
   onFieldDragOver,
   onFieldDrop,
 }: BlockConfigurationProps) {
+  const t = useTranslations("CreateTemplate.sections");
   const [expandedField, setExpandedField] = useState<number | null>(null);
 
   const addField = () => {
     const newField: Field = {
       field_id: `field_${Date.now()}`,
-      display_name: "Nuevo Campo",
+      display_name: t("newField"),
       type: "text",
       form: true,
       bulletin: true,
@@ -267,80 +259,17 @@ function BlockConfiguration({
     onUpdateBlock(sectionIndex, blockIndex, { fields: updatedFields });
   };
 
-  const getFieldConfigDefaults = (fieldType: string) => {
-    switch (fieldType) {
-      case "text":
-        return { subtype: "short" };
-      case "text_with_icon":
-        return { subtype: "short", icon_options: [] };
-      case "select":
-        return { options: [], allow_multiple: false };
-      case "select_with_icons":
-        return { options: [], allow_multiple: false, icons_url: [] };
-      case "select_background":
-        return { options: [], allow_multiple: false, backgrounds_url: [] };
-      case "date":
-        return { date_format: "DD/MM/YYYY" };
-      case "date_range":
-        return {
-          date_format: "DD/MM/YYYY",
-          start_date_label: "Fecha inicio",
-          start_date_description: "Seleccione la fecha de inicio",
-          end_date_label: "Fecha fin",
-          end_date_description: "Seleccione la fecha de fin",
-        };
-      case "image_upload":
-        return {
-          max_file_size: "5MB",
-          allowed_formats: ["jpg", "jpeg", "png"],
-        };
-      case "list":
-        return {
-          max_items: 10,
-          min_items: 1,
-          item_schema: {
-            item_name: {
-              field_id: "item_name",
-              display_name: "Nombre del elemento",
-              type: "text",
-              form: true,
-              bulletin: true,
-            },
-            item_description: {
-              field_id: "item_description",
-              display_name: "Descripción",
-              type: "text",
-              form: true,
-              bulletin: false,
-            },
-          },
-        };
-      case "climate_data_puntual":
-        return { available_parameters: {} };
-      case "algorithm":
-        return { options: [] };
-      case "page_number":
-        return { format: "Página {page} de {total}", is_autogenerated: true };
-      case "card":
-        return { available_cards: [] };
-      case "image":
-        return { images: [] };
-      default:
-        return {};
-    }
-  };
-
   return (
     <div className="p-4 bg-gray-50 space-y-4">
       <div>
         <h5 className="text-md font-medium text-[#283618] mb-4">
-          Configuración del Bloque
+          {t("block.configuration")}
         </h5>
 
         {/* Nombre del bloque */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-[#283618] mb-1">
-            Nombre del bloque
+            {t("block.nameLabel")}
           </label>
           <input
             type="text"
@@ -352,10 +281,10 @@ function BlockConfiguration({
             }
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm
                        focus:outline-none focus:ring-2 focus:ring-[#bc6c25] focus:border-[#bc6c25]"
-            placeholder="Ingrese el nombre del bloque"
+            placeholder={t("block.namePlaceholder")}
           />
           <p className="text-xs text-[#283618]/50 mt-1">
-            Este nombre ayuda a identificar el bloque en la configuración
+            {t("block.nameHelp")}
           </p>
         </div>
 
@@ -363,7 +292,7 @@ function BlockConfiguration({
         <div className="mb-4">
           <h6 className="text-sm font-medium text-[#283618] mb-2 flex items-center gap-2">
             <Palette className="w-4 h-4" />
-            Estilos del Bloque
+            {t("block.styles")}
           </h6>
           <StyleConfigurator
             styleConfig={block.style_config || {}}
@@ -384,8 +313,8 @@ function BlockConfiguration({
               gap: true,
               fieldsLayout: true,
             }}
-            title="Estilos del Bloque"
-            description="Los estilos del bloque se aplicarán al contenedor que agrupa los campos"
+            title={t("block.styles")}
+            description={t("block.stylesDescription")}
             showPreview={false}
           />
         </div>
@@ -395,14 +324,14 @@ function BlockConfiguration({
       <div>
         <div className="flex justify-between items-center mb-4">
           <h6 className="text-sm font-medium text-[#283618]">
-            Campos del Bloque ({block.fields.length})
+            {t("block.fieldsTitle")} ({block.fields.length})
           </h6>
           <button
             onClick={addField}
             className={`${btnOutlineSecondary} text-sm`}
           >
             <Plus className="w-3 h-3 mr-1" />
-            Agregar Campo
+            {t("block.addFieldButton")}
           </button>
         </div>
 
@@ -410,9 +339,9 @@ function BlockConfiguration({
           <div className="text-center py-8 bg-gray-100 rounded-lg border border-gray-200">
             <div className="text-[#283618]/70">
               <Edit3 className="w-8 h-8 mx-auto mb-2" />
-              <p className="text-sm">No hay campos configurados</p>
+              <p className="text-sm">{t("block.noFieldsConfigured")}</p>
               <p className="text-xs text-[#283618]/50 mt-1">
-                Los campos definen qué información se recopiará en este bloque
+                {t("block.fieldsHelp")}
               </p>
             </div>
           </div>
@@ -527,7 +456,7 @@ export function SectionsStep({
   const addSection = useCallback(() => {
     const newSection: Section = {
       section_id: `section_${Date.now()}`,
-      display_name: "Nueva Sección",
+      display_name: t("newSection"),
       background_url: [],
       order: data.version.content.sections.length + 1,
       icon_url: "",
@@ -544,7 +473,7 @@ export function SectionsStep({
         },
       },
     }));
-  }, [data.version.content.sections.length, onDataChange]);
+  }, [data.version.content.sections.length, onDataChange, t]);
 
   const updateSection = useCallback(
     (sectionIndex: number, updates: Partial<Section>) => {
@@ -657,7 +586,9 @@ export function SectionsStep({
       const duplicatedSection: Section = {
         ...sectionToDuplicate,
         section_id: `${sectionToDuplicate.section_id}_copy_${Date.now()}`,
-        display_name: `${sectionToDuplicate.display_name} (Copia)`,
+        display_name: `${sectionToDuplicate.display_name} (${t(
+          "section.duplicate"
+        )})`,
         order: data.version.content.sections.length + 1,
       };
 
@@ -672,7 +603,7 @@ export function SectionsStep({
         },
       }));
     },
-    [data.version.content.sections, onDataChange]
+    [data.version.content.sections, onDataChange, t]
   );
 
   // Funciones para drag and drop de campos
@@ -797,7 +728,7 @@ export function SectionsStep({
     (sectionIndex: number) => {
       const newBlock: Block = {
         block_id: `block_${Date.now()}`,
-        display_name: "Nuevo Bloque",
+        display_name: t("newBlock"),
         fields: [],
       };
 
@@ -808,7 +739,7 @@ export function SectionsStep({
         ],
       });
     },
-    [data.version.content.sections, updateSection]
+    [data.version.content.sections, updateSection, t]
   );
 
   const updateBlock = useCallback(
@@ -865,7 +796,8 @@ export function SectionsStep({
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center space-x-2">
                 <span className="text-sm font-medium text-[#283618]">
-                  Secciones ({data.version.content.sections.length})
+                  {t("navigation.sections")} (
+                  {data.version.content.sections.length})
                 </span>
               </div>
               <button
@@ -873,7 +805,7 @@ export function SectionsStep({
                 className={`${btnOutlineSecondary} py-1 px-2 text-sm`}
               >
                 <Plus className="w-3 h-3 mr-1" />
-                Agregar Sección
+                {t("navigation.addSection")}
               </button>
             </div>
             <nav className="-mb-px flex space-x-8 overflow-x-auto">
@@ -919,27 +851,27 @@ export function SectionsStep({
                             color="#283618"
                           />
                         )}
-                        {currentSection.display_name || "Sin nombre"}
+                        {currentSection.display_name || t("overview.noName")}
                       </h3>
                     </div>
                     <div className="text-sm text-[#283618]/70 mt-1">
-                      Página {currentSection.order} •{" "}
-                      {currentSection.blocks.length} bloques • ID:{" "}
-                      {currentSection.section_id}
+                      {t("overview.page")} {currentSection.order} •{" "}
+                      {currentSection.blocks.length} {t("overview.blocks")} •{" "}
+                      {t("overview.id")}: {currentSection.section_id}
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => duplicateSection(selectedSectionIndex)}
                       className="text-[#283618]/50 hover:text-blue-600 p-1 rounded"
-                      title="Duplicar sección"
+                      title={t("overview.duplicateSection")}
                     >
                       <Copy className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => removeSection(selectedSectionIndex)}
                       className="text-[#283618]/50 hover:text-red-600 p-1 rounded"
-                      title="Eliminar sección"
+                      title={t("overview.deleteSection")}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -961,7 +893,7 @@ export function SectionsStep({
                     >
                       <div className="flex items-center space-x-2">
                         <FileText className="w-4 h-4" />
-                        <span>General</span>
+                        <span>{t("tabs.general")}</span>
                       </div>
                     </button>
                     <button
@@ -974,7 +906,9 @@ export function SectionsStep({
                     >
                       <div className="flex items-center space-x-2">
                         <Layout className="w-4 h-4" />
-                        <span>Bloques ({currentSection.blocks.length})</span>
+                        <span>
+                          {t("tabs.blocks")} ({currentSection.blocks.length})
+                        </span>
                       </div>
                     </button>
                     <button
@@ -987,7 +921,7 @@ export function SectionsStep({
                     >
                       <div className="flex items-center space-x-2">
                         <Layout className="w-4 h-4" />
-                        <span>Header</span>
+                        <span>{t("tabs.header")}</span>
                       </div>
                     </button>
                     <button
@@ -1000,7 +934,7 @@ export function SectionsStep({
                     >
                       <div className="flex items-center space-x-2">
                         <Layout className="w-4 h-4" />
-                        <span>Footer</span>
+                        <span>{t("tabs.footer")}</span>
                       </div>
                     </button>
                   </nav>
@@ -1015,14 +949,14 @@ export function SectionsStep({
                     <div>
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-medium text-[#283618]">
-                          Configuración General
+                          {t("overview.title")}
                         </h3>
                       </div>
 
                       {/* Nombre de la sección */}
                       <div className="mb-6">
                         <label className="block text-sm font-medium text-[#283618] mb-1">
-                          Nombre de la sección
+                          {t("overview.sectionName")}
                         </label>
                         <input
                           type="text"
@@ -1034,17 +968,17 @@ export function SectionsStep({
                           }
                           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm
                                      focus:outline-none focus:ring-2 focus:ring-[#bc6c25] focus:border-[#bc6c25]"
-                          placeholder="Ingrese el nombre de la sección"
+                          placeholder={t("overview.sectionNamePlaceholder")}
                         />
                         <p className="text-xs text-[#283618]/50 mt-1">
-                          Este nombre aparecerá en la navegación.
+                          {t("overview.sectionNameHelp")}
                         </p>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-[#283618] mb-1">
-                            Orden de página
+                            {t("overview.pageOrder")}
                           </label>
                           <input
                             type="number"
@@ -1059,12 +993,12 @@ export function SectionsStep({
                                        focus:outline-none focus:ring-2 focus:ring-[#bc6c25] focus:border-[#bc6c25]"
                           />
                           <p className="text-xs text-[#283618]/50 mt-1">
-                            Define el orden de esta página en el boletín final
+                            {t("overview.pageOrderHelp")}
                           </p>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-[#283618] mb-1">
-                            Icono de la Sección
+                            {t("overview.sectionIcon")}
                           </label>
 
                           {/* Preview del icono seleccionado */}
@@ -1073,13 +1007,13 @@ export function SectionsStep({
                               <div className="flex items-center space-x-3">
                                 <Image
                                   src={currentSection.icon_url}
-                                  alt="Selected icon"
+                                  alt={t("overview.selectedIcon")}
                                   width={32}
                                   height={32}
                                   className="object-contain"
                                 />
                                 <span className="text-sm text-gray-600">
-                                  Icono seleccionado
+                                  {t("overview.selectedIcon")}
                                 </span>
                               </div>
                               <button
@@ -1091,7 +1025,7 @@ export function SectionsStep({
                                 }
                                 className="text-red-600 hover:text-red-800 text-sm"
                               >
-                                Quitar
+                                {t("overview.removeIcon")}
                               </button>
                             </div>
                           )}
@@ -1106,20 +1040,19 @@ export function SectionsStep({
                             {loadingIcons ? (
                               <>
                                 <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
-                                Cargando iconos...
+                                {t("overview.loadingIcons")}
                               </>
                             ) : (
                               <>
                                 {currentSection.icon_url
-                                  ? "Cambiar icono"
-                                  : "Seleccionar icono"}
+                                  ? t("overview.changeIcon")
+                                  : t("overview.selectIcon")}
                               </>
                             )}
                           </button>
 
                           <p className="text-xs text-[#283618]/50 mt-1">
-                            Icono opcional que aparecerá junto al nombre de la
-                            sección
+                            {t("overview.iconHelp")}
                           </p>
                         </div>
                       </div>
@@ -1154,8 +1087,8 @@ export function SectionsStep({
                           borderWidth: true,
                           borderRadius: true,
                         }}
-                        title="Estilos de la Sección"
-                        description="Estos estilos se aplicarán a todos los bloques y campos de esta sección, a menos que sean sobrescritos."
+                        title={t("overview.sectionStyles")}
+                        description={t("overview.sectionStylesDescription")}
                         showPreview={false}
                         isFieldStyle={false}
                       />
@@ -1167,22 +1100,20 @@ export function SectionsStep({
                   <div className="space-y-6">
                     <div className="flex justify-between items-center">
                       <h3 className="text-lg font-medium text-[#283618]">
-                        Bloques de Contenido
+                        {t("blocksTab.title")}
                       </h3>
                       <button
                         onClick={() => addBlock(selectedSectionIndex)}
                         className={`${btnOutlineSecondary} py-1 px-2 text-sm`}
                       >
                         <Plus className="w-4 h-4 mr-2" />
-                        Agregar Bloque
+                        {t("blocksTab.addBlock")}
                       </button>
                     </div>
 
                     <div className="bg-[#bc6c25]/10 border border-[#bc6c25] rounded-lg p-3">
                       <p className="text-[#bc6c25] text-sm">
-                        Los bloques organizan el contenido dentro de cada
-                        página. Cada bloque puede contener múltiples campos con
-                        diferentes tipos de información.
+                        {t("blocksTab.infoMessage")}
                       </p>
                     </div>
 
@@ -1191,18 +1122,17 @@ export function SectionsStep({
                         <div className="text-[#283618]/70">
                           <div className="text-4xl mb-4">📦</div>
                           <h4 className="text-md font-medium mb-2">
-                            No hay bloques
+                            {t("blocksTab.noBlocks")}
                           </h4>
                           <p className="text-sm mb-4">
-                            Los bloques organizan el contenido dentro de cada
-                            página.
+                            {t("blocksTab.noBlocksDescription")}
                           </p>
                           <button
                             onClick={() => addBlock(selectedSectionIndex)}
                             className={btnOutlineSecondary}
                           >
                             <Plus className="w-4 h-4 mr-2" />
-                            Agregar Primer Bloque
+                            {t("blocksTab.addFirstBlock")}
                           </button>
                         </div>
                       </div>
@@ -1221,12 +1151,14 @@ export function SectionsStep({
                                 <div className="flex-1">
                                   <div className="flex items-center space-x-2">
                                     <h4 className="text-lg font-medium text-[#283618]">
-                                      {block.display_name || "Sin nombre"}
+                                      {block.display_name ||
+                                        t("overview.noName")}
                                     </h4>
                                   </div>
                                   <div className="text-sm text-[#283618]/70">
-                                    ID: {block.block_id} • {block.fields.length}{" "}
-                                    campos
+                                    {t("overview.id")}: {block.block_id} •{" "}
+                                    {block.fields.length}{" "}
+                                    {t("blocksTab.fields")}
                                   </div>
                                 </div>
                               </div>
@@ -1246,8 +1178,8 @@ export function SectionsStep({
                                   }`}
                                   title={
                                     expandedBlock === blockIndex
-                                      ? "Cerrar configuración"
-                                      : "Configurar bloque"
+                                      ? t("block.closeConfiguration")
+                                      : t("block.configureBlock")
                                   }
                                 >
                                   <Settings className="w-4 h-4" />
@@ -1260,7 +1192,7 @@ export function SectionsStep({
                                     )
                                   }
                                   className="text-[#283618]/50 hover:text-red-600 p-1 rounded"
-                                  title="Eliminar bloque"
+                                  title={t("block.deleteBlock")}
                                 >
                                   <Trash2 className="w-4 h-4" />
                                 </button>
@@ -1297,12 +1229,10 @@ export function SectionsStep({
                   <div className="space-y-6">
                     <div>
                       <h3 className="text-lg font-medium text-[#283618] mb-2">
-                        Header de Sección
+                        {t("headerTab.title")}
                       </h3>
                       <p className="text-sm text-[#283618]/70 mb-4">
-                        Configura un header específico para esta sección. Este
-                        header reemplazará al header global únicamente en esta
-                        página.
+                        {t("headerTab.description")}
                       </p>
                     </div>
 
@@ -1323,10 +1253,8 @@ export function SectionsStep({
                         </div>
                         <div className="flex-1">
                           <p className="text-[#bc6c25] text-sm">
-                            <strong>Prioridad:</strong> Si configuras un header
-                            aquí, tendrá prioridad sobre el header global del
-                            template. Si no configuras nada, se usará el header
-                            global automáticamente.
+                            <strong>{t("headerTab.priorityTitle")}</strong>{" "}
+                            {t("headerTab.priorityMessage")}
                           </p>
                         </div>
                       </div>
@@ -1338,7 +1266,7 @@ export function SectionsStep({
                         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                           <div className="flex items-center justify-between mb-3">
                             <h4 className="text-sm font-medium text-[#283618]">
-                              Usando Header Global
+                              {t("headerTab.usingGlobal")}
                             </h4>
                             <button
                               onClick={() => {
@@ -1360,13 +1288,11 @@ export function SectionsStep({
                               }}
                               className={`${btnOutlineSecondary} text-sm`}
                             >
-                              Personalizar para esta sección
+                              {t("headerTab.customizeButton")}
                             </button>
                           </div>
                           <p className="text-xs text-[#283618]/60">
-                            Esta sección está usando el header global. Haz clic
-                            en "Personalizar" para crear una versión específica
-                            que puedes modificar independientemente.
+                            {t("headerTab.usingGlobalHelp")}
                           </p>
                         </div>
                       </div>
@@ -1376,11 +1302,7 @@ export function SectionsStep({
                         <div className="flex justify-end">
                           <button
                             onClick={() => {
-                              if (
-                                confirm(
-                                  "¿Estás seguro de eliminar la personalización y volver al header global?"
-                                )
-                              ) {
+                              if (confirm(t("headerTab.confirmRestore"))) {
                                 updateSection(selectedSectionIndex, {
                                   header_config: undefined,
                                 });
@@ -1388,7 +1310,7 @@ export function SectionsStep({
                             }}
                             className="px-3 py-1.5 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors"
                           >
-                            Restaurar al global
+                            {t("headerTab.restoreGlobal")}
                           </button>
                         </div>
 
@@ -1413,12 +1335,10 @@ export function SectionsStep({
                   <div className="space-y-6">
                     <div>
                       <h3 className="text-lg font-medium text-[#283618] mb-2">
-                        Footer de Sección
+                        {t("footerTab.title")}
                       </h3>
                       <p className="text-sm text-[#283618]/70 mb-4">
-                        Configura un footer específico para esta sección. Este
-                        footer reemplazará al footer global únicamente en esta
-                        página.
+                        {t("footerTab.description")}
                       </p>
                     </div>
 
@@ -1439,10 +1359,8 @@ export function SectionsStep({
                         </div>
                         <div className="flex-1">
                           <p className="text-[#bc6c25] text-sm">
-                            <strong>Prioridad:</strong> Si configuras un footer
-                            aquí, tendrá prioridad sobre el footer global del
-                            template. Si no configuras nada, se usará el footer
-                            global automáticamente.
+                            <strong>{t("footerTab.priorityTitle")}</strong>{" "}
+                            {t("footerTab.priorityMessage")}
                           </p>
                         </div>
                       </div>
@@ -1454,7 +1372,7 @@ export function SectionsStep({
                         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                           <div className="flex items-center justify-between mb-3">
                             <h4 className="text-sm font-medium text-[#283618]">
-                              Usando Footer Global
+                              {t("footerTab.usingGlobal")}
                             </h4>
                             <button
                               onClick={() => {
@@ -1476,13 +1394,11 @@ export function SectionsStep({
                               }}
                               className={`${btnOutlineSecondary} text-sm`}
                             >
-                              Personalizar para esta sección
+                              {t("footerTab.customizeButton")}
                             </button>
                           </div>
                           <p className="text-xs text-[#283618]/60">
-                            Esta sección está usando el footer global. Haz clic
-                            en "Personalizar" para crear una versión específica
-                            que puedes modificar independientemente.
+                            {t("footerTab.usingGlobalHelp")}
                           </p>
                         </div>
                       </div>
@@ -1492,11 +1408,7 @@ export function SectionsStep({
                         <div className="flex justify-end">
                           <button
                             onClick={() => {
-                              if (
-                                confirm(
-                                  "¿Estás seguro de eliminar la personalización y volver al footer global?"
-                                )
-                              ) {
+                              if (confirm(t("footerTab.confirmRestore"))) {
                                 updateSection(selectedSectionIndex, {
                                   footer_config: undefined,
                                 });
@@ -1504,7 +1416,7 @@ export function SectionsStep({
                             }}
                             className="px-3 py-1.5 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors"
                           >
-                            Restaurar al global
+                            {t("footerTab.restoreGlobal")}
                           </button>
                         </div>
 
@@ -1542,7 +1454,7 @@ export function SectionsStep({
           >
             <div className="flex items-center justify-between p-4 border-b">
               <h3 className="text-lg font-medium text-[#283618]">
-                Seleccionar Icono para la Sección
+                {t("iconSelector.title")}
               </h3>
               <button
                 onClick={() => setShowIconSelector(false)}
@@ -1556,7 +1468,7 @@ export function SectionsStep({
               {loadingIcons ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-8 w-8 animate-spin text-[#bc6c25]" />
-                  <span className="ml-2">Cargando iconos...</span>
+                  <span className="ml-2">{t("iconSelector.loading")}</span>
                 </div>
               ) : availableIcons.length > 0 ? (
                 <div className="grid grid-cols-4 gap-4">
@@ -1592,10 +1504,8 @@ export function SectionsStep({
                 </div>
               ) : (
                 <div className="text-center py-8 text-gray-500">
-                  <p className="mb-2">No hay iconos disponibles</p>
-                  <p className="text-sm">
-                    Sube iconos en la sección de Recursos Visuales
-                  </p>
+                  <p className="mb-2">{t("iconSelector.noIcons")}</p>
+                  <p className="text-sm">{t("iconSelector.uploadPrompt")}</p>
                 </div>
               )}
             </div>
@@ -1615,7 +1525,7 @@ export function SectionsStep({
           >
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-[#283618]">
-                Configurar Campo -{" "}
+                {t("fieldEditor.title")} -{" "}
                 {
                   data.version.content.sections[editingField.sectionIndex]
                     ?.blocks[editingField.blockIndex]?.fields[
@@ -1626,7 +1536,7 @@ export function SectionsStep({
               <button
                 onClick={() => setEditingField(null)}
                 className="text-[#283618]/60 hover:text-[#283618] text-2xl leading-none"
-                title="Cerrar editor"
+                title={t("fieldEditor.closeEditor")}
               >
                 ×
               </button>

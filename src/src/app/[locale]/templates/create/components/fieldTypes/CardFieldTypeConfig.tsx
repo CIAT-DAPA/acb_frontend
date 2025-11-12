@@ -4,7 +4,14 @@ import React, { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { BaseFieldTypeConfigProps } from "./BaseFieldTypeConfig";
 import { Plus, Trash2, Search } from "lucide-react";
-import { btnOutlineSecondary } from "@/app/[locale]/components/ui";
+import {
+  btnOutlineSecondary,
+  labelClass,
+  helpTextClass,
+  btnDangerIconClass,
+  emptyStateClass,
+  infoBoxClass,
+} from "@/app/[locale]/components/ui";
 import { CardAPIService } from "../../../../../../services/cardService";
 import { Card } from "../../../../../../types/card";
 
@@ -13,6 +20,25 @@ interface CardFieldConfig {
   available_cards: string[];
 }
 
+// CSS Constants
+const CARD_ITEM_CLASS =
+  "flex items-center gap-3 p-3 border border-gray-200 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors";
+const THUMBNAIL_CLASS =
+  "flex-shrink-0 w-16 h-16 bg-white border border-gray-200 rounded overflow-hidden flex items-center justify-center";
+const THUMBNAIL_IMAGE_CLASS = "w-full h-full object-cover";
+const CARD_TITLE_CLASS = "font-medium text-[#283618] truncate";
+const CARD_META_CLASS = "text-xs text-[#283618]/50";
+const MODAL_OVERLAY_CLASS =
+  "fixed inset-0 bg-black/75 flex items-center justify-center z-50";
+const MODAL_CONTENT_CLASS =
+  "bg-white rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col shadow-2xl";
+const SEARCH_INPUT_CLASS =
+  "w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#bc6c25] focus:border-[#bc6c25]";
+const MODAL_CARD_BUTTON_CLASS =
+  "w-full flex items-center gap-3 p-3 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors text-left";
+const MODAL_THUMBNAIL_CLASS =
+  "flex-shrink-0 w-12 h-12 bg-white border border-gray-200 rounded overflow-hidden flex items-center justify-center";
+
 export const CardFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
   currentField,
   updateField,
@@ -20,18 +46,16 @@ export const CardFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
   updateValidation,
   t: fieldT,
 }) => {
-  const t = useTranslations("CreateTemplate.fieldEditor");
+  const t = useTranslations("CreateTemplate.fieldEditor.cardConfig");
 
   const config = (currentField.field_config as CardFieldConfig) || {};
   const availableCards = config.available_cards || [];
 
-  // Estado para las cards disponibles
   const [allCards, setAllCards] = useState<Card[]>([]);
   const [isLoadingCards, setIsLoadingCards] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showCardSelector, setShowCardSelector] = useState(false);
 
-  // Cargar todas las cards disponibles
   useEffect(() => {
     loadCards();
   }, []);
@@ -41,7 +65,6 @@ export const CardFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
     try {
       const response = await CardAPIService.getCards();
       if (response.success) {
-        // Filtrar solo las cards con status "active"
         const activeCards = response.data.filter(
           (card) => card.status === "active"
         );
@@ -70,43 +93,58 @@ export const CardFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
     updateAvailableCards(availableCards.filter((id) => id !== cardId));
   };
 
-  // Obtener información de una card por su ID
   const getCardById = (cardId: string) => {
     return allCards.find((card) => card._id === cardId);
   };
 
-  // Filtrar cards disponibles para agregar (que no estén ya seleccionadas)
   const availableCardsToAdd = allCards.filter(
     (card) => !availableCards.includes(card._id!)
   );
 
-  // Filtrar por término de búsqueda
   const filteredCards = availableCardsToAdd.filter((card) =>
     card.card_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const closeModal = () => {
+    setShowCardSelector(false);
+    setSearchTerm("");
+  };
+
+  const renderThumbnail = (card: Card, className: string) => (
+    <div className={className}>
+      {card.thumbnail_images && card.thumbnail_images.length > 0 ? (
+        <img
+          src={card.thumbnail_images[0]}
+          alt={card.card_name}
+          className={THUMBNAIL_IMAGE_CLASS}
+          onError={(e) => {
+            (e.target as HTMLImageElement).src =
+              "/assets/img/imageNotFound.png";
+          }}
+        />
+      ) : (
+        <span className="text-gray-400 text-xs">{t("noPreview")}</span>
+      )}
+    </div>
+  );
+
   return (
     <div className="space-y-4">
-      {/* Lista de cards seleccionadas */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <label className="block text-sm font-medium text-[#283618]/70">
-            Cards Disponibles para Selección
-          </label>
+          <label className={labelClass}>{t("availableCards")}</label>
           <button
             type="button"
             onClick={() => setShowCardSelector(true)}
             className={`${btnOutlineSecondary} text-sm flex items-center`}
             disabled={isLoadingCards}
           >
-            <Plus className="w-4 h-4 mr-1" />{" "}
-            {isLoadingCards ? "Cargando..." : "Agregar Card"}
+            <Plus className="w-4 h-4 mr-1" />
+            {isLoadingCards ? t("loading") : t("addCard")}
           </button>
         </div>
 
-        <p className="text-xs text-[#283618]/50 mb-3">
-          Selecciona las cards que el usuario podrá elegir para este campo
-        </p>
+        <p className={helpTextClass}>{t("help")}</p>
 
         <div className="space-y-3">
           {availableCards.map((cardId) => {
@@ -114,44 +152,22 @@ export const CardFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
             if (!card) return null;
 
             return (
-              <div
-                key={cardId}
-                className="flex items-center gap-3 p-3 border border-gray-200 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors"
-              >
-                {/* Thumbnail de la card */}
-                <div className="flex-shrink-0 w-16 h-16 bg-white border border-gray-200 rounded overflow-hidden flex items-center justify-center">
-                  {card.thumbnail_images && card.thumbnail_images.length > 0 ? (
-                    <img
-                      src={card.thumbnail_images[0]}
-                      alt={card.card_name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src =
-                          "/assets/img/imageNotFound.png";
-                      }}
-                    />
-                  ) : (
-                    <span className="text-gray-400 text-xs">Sin preview</span>
-                  )}
-                </div>
+              <div key={cardId} className={CARD_ITEM_CLASS}>
+                {renderThumbnail(card, THUMBNAIL_CLASS)}
 
-                {/* Información de la card */}
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-[#283618] truncate">
-                    {card.card_name}
-                  </h4>
-                  <p className="text-xs text-[#283618]/50">
-                    Tipo: {card.card_type}
+                  <h4 className={CARD_TITLE_CLASS}>{card.card_name}</h4>
+                  <p className={CARD_META_CLASS}>
+                    {t("type")}: {card.card_type}
                   </p>
-                  <p className="text-xs text-[#283618]/50">ID: {card._id}</p>
+                  <p className={CARD_META_CLASS}>ID: {card._id}</p>
                 </div>
 
-                {/* Botón eliminar */}
                 <button
                   type="button"
                   onClick={() => removeCard(cardId)}
-                  className="flex-shrink-0 text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded transition-colors"
-                  title="Eliminar card"
+                  className={btnDangerIconClass}
+                  title={t("remove")}
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -160,37 +176,30 @@ export const CardFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
           })}
 
           {availableCards.length === 0 && (
-            <div className="text-center py-8 text-gray-500 text-sm border border-gray-200 rounded-md bg-gray-50">
-              <p className="mb-2">No hay cards seleccionadas</p>
-              <p className="text-xs">
-                Haz clic en "Agregar Card" para comenzar
-              </p>
+            <div className={emptyStateClass}>
+              <p className="mb-2">{t("noCardsSelected")}</p>
+              <p className="text-xs">{t("noCardsHelp")}</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Modal selector de cards */}
       {showCardSelector && (
-        <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col shadow-2xl">
+        <div className={MODAL_OVERLAY_CLASS}>
+          <div className={MODAL_CONTENT_CLASS}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-medium text-gray-900">
-                Seleccionar Card
+                {t("modalTitle")}
               </h3>
               <button
                 type="button"
-                onClick={() => {
-                  setShowCardSelector(false);
-                  setSearchTerm("");
-                }}
+                onClick={closeModal}
                 className="text-gray-400 hover:text-gray-600"
               >
                 ✕
               </button>
             </div>
 
-            {/* Buscador */}
             <div className="mb-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -198,23 +207,18 @@ export const CardFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Buscar card por nombre..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#bc6c25] focus:border-[#bc6c25]"
+                  placeholder={t("searchPlaceholder")}
+                  className={SEARCH_INPUT_CLASS}
                 />
               </div>
             </div>
 
-            {/* Lista de cards disponibles */}
             <div className="flex-1 overflow-y-auto space-y-2">
               {isLoadingCards ? (
-                <div className="text-center py-8 text-gray-500">
-                  Cargando cards...
-                </div>
+                <div className={emptyStateClass}>{t("loadingCards")}</div>
               ) : filteredCards.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  {searchTerm
-                    ? "No se encontraron cards con ese nombre"
-                    : "No hay más cards disponibles"}
+                <div className={emptyStateClass}>
+                  {searchTerm ? t("noResults") : t("noMoreCards")}
                 </div>
               ) : (
                 filteredCards.map((card) => (
@@ -222,35 +226,14 @@ export const CardFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                     key={card._id}
                     type="button"
                     onClick={() => addCard(card._id!)}
-                    className="w-full flex items-center gap-3 p-3 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors text-left"
+                    className={MODAL_CARD_BUTTON_CLASS}
                   >
-                    {/* Thumbnail */}
-                    <div className="flex-shrink-0 w-12 h-12 bg-white border border-gray-200 rounded overflow-hidden flex items-center justify-center">
-                      {card.thumbnail_images &&
-                      card.thumbnail_images.length > 0 ? (
-                        <img
-                          src={card.thumbnail_images[0]}
-                          alt={card.card_name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src =
-                              "/assets/img/imageNotFound.png";
-                          }}
-                        />
-                      ) : (
-                        <span className="text-gray-400 text-xs">
-                          Sin preview
-                        </span>
-                      )}
-                    </div>
+                    {renderThumbnail(card, MODAL_THUMBNAIL_CLASS)}
 
-                    {/* Info */}
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-[#283618] truncate">
-                        {card.card_name}
-                      </h4>
-                      <p className="text-xs text-[#283618]/50">
-                        Tipo: {card.card_type}
+                      <h4 className={CARD_TITLE_CLASS}>{card.card_name}</h4>
+                      <p className={CARD_META_CLASS}>
+                        {t("type")}: {card.card_type}
                       </p>
                     </div>
                   </button>
@@ -261,13 +244,15 @@ export const CardFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
         </div>
       )}
 
-      {/* Vista previa de cantidad */}
       {availableCards.length > 0 && (
-        <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+        <div className={infoBoxClass}>
           <p className="text-sm text-blue-800">
-            <strong>{availableCards.length}</strong> card
-            {availableCards.length !== 1 ? "s" : ""} disponible
-            {availableCards.length !== 1 ? "s" : ""} para selección
+            <strong>
+              {t("cardsCount", {
+                count: availableCards.length,
+                plural: availableCards.length !== 1 ? "s" : "",
+              })}
+            </strong>
           </p>
         </div>
       )}

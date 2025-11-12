@@ -3,46 +3,68 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Menu, X, Cloud, User, LogOut, ChevronDown } from "lucide-react";
-import { container, brand, brandIcon, btnOutlinePrimary } from "./ui";
+import { Menu, X, LogOut, ChevronDown } from "lucide-react";
+import { container, brand, btnOutlinePrimary, btnPrimary } from "./ui";
 import { LanguageSelector } from "./LanguageSelector";
 import { useAuth } from "../../../hooks/useAuth";
 import usePermissions from "../../../hooks/usePermissions";
 import { MODULES } from "../../../types/core";
+import Image from "next/image";
 
 // Clases simples con colores corregidos
 const NAV_BASE = "py-2 px-3 transition-colors duration-200 relative";
-const NAV_ACTIVE =
-  "text-[#ffaf68] font-semibold after:content-[''] after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-[#ffaf68]";
 const NAV_INACTIVE =
   "text-[#fefae0]/80 hover:text-[#ffaf68] hover:after:content-[''] hover:after:absolute hover:after:bottom-0 hover:after:left-3 hover:after:right-3 hover:after:h-0.5 hover:after:bg-[#ffaf68]";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [showAccessMenu, setShowAccessMenu] = useState(false);
-  const pathname = usePathname();
+  const [showConfigMenu, setShowConfigMenu] = useState(false);
+  const [showWorkspacesMenu, setShowWorkspacesMenu] = useState(false);
   const t = useTranslations("Navbar");
   const { can, isAdminAnywhere, isSuperadmin } = usePermissions();
 
   // Hook de autenticación
   const { authenticated, loading, userInfo, token, login, logout } = useAuth();
 
-  // Navegación condicional - solo mostrar rutas que requieren auth si está autenticado
-  const ALL_NAV_ITEMS = [
-    { name: t("templates"), path: "/templates", requiresAuth: true, module: MODULES.TEMPLATE_MANAGEMENT },
-    { name: t("cards"), path: "/cards", requiresAuth: true, module: MODULES.CARD_MANAGEMENT },
-    { name: t("bulletins"), path: "/bulletins", requiresAuth: true, module: MODULES.BULLETINS_COMPOSER },
+  // Items de configuración
+  const CONFIG_ITEMS = [
+    {
+      name: t("templates"),
+      path: "/templates",
+      requiresAuth: true,
+      module: MODULES.TEMPLATE_MANAGEMENT,
+    },
+    {
+      name: t("cards"),
+      path: "/cards",
+      requiresAuth: true,
+      module: MODULES.CARD_MANAGEMENT,
+    },
+    {
+      name: t("visualResources"),
+      path: "/templates/visual-resources",
+      requiresAuth: true,
+      module: MODULES.TEMPLATE_MANAGEMENT, // Usar el mismo módulo que templates
+    },
   ];
 
-  // Filtrar items según autenticación
-  const NAV_ITEMS = ALL_NAV_ITEMS.filter(
+  // Filtrar items de configuración según permisos
+  const VISIBLE_CONFIG_ITEMS = CONFIG_ITEMS.filter(
     (item) => !item.requiresAuth || (authenticated && can("r", item.module))
   );
 
+  // Verificar si el usuario puede ver bulletins
+  const canSeeBulletins = authenticated && can("r", MODULES.BULLETINS_COMPOSER);
+
   // Función para toggle del menú móvil
   const toggleMenu = () => setIsOpen(!isOpen);
+
+  // Items de administración
+  const ADMIN_ITEMS = [
+    ...(isSuperadmin ? [{ name: t("roles"), path: "/roles" as const }] : []),
+    { name: t("groups"), path: "/groups" as const },
+  ];
 
   const getInitials = (firstName?: string, lastName?: string) => {
     const initials = [];
@@ -57,6 +79,94 @@ export function Navbar() {
     return initials.join("") || "U";
   };
 
+  // Componente reutilizable para dropdowns (escritorio)
+  const DropdownMenu = ({
+    label,
+    isOpen,
+    onToggle,
+    items,
+    onItemClick,
+  }: {
+    label: string;
+    isOpen: boolean;
+    onToggle: () => void;
+    items: { name: string; path: string }[];
+    onItemClick: (path: string) => void;
+  }) => (
+    <li className="relative">
+      <button
+        onClick={onToggle}
+        className={`${NAV_BASE} ${NAV_INACTIVE} flex items-center gap-1 cursor-pointer`}
+      >
+        {label}
+        <ChevronDown
+          size={16}
+          className={`transition-transform ${isOpen ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+          {items.map((item) => (
+            <Link
+              key={item.path}
+              href={item.path}
+              onClick={() => onItemClick(item.path)}
+              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              {item.name}
+            </Link>
+          ))}
+        </div>
+      )}
+    </li>
+  );
+
+  // Componente reutilizable para dropdowns (móvil)
+  const MobileDropdownMenu = ({
+    label,
+    isOpen,
+    onToggle,
+    items,
+  }: {
+    label: string;
+    isOpen: boolean;
+    onToggle: () => void;
+    items: { name: string; path: string }[];
+  }) => (
+    <li>
+      <button
+        onClick={onToggle}
+        className="flex items-center gap-1 text-[#fefae0]/80 hover:text-[#ffaf68] transition-colors w-full"
+      >
+        {label}
+        <ChevronDown
+          size={16}
+          className={`transition-transform ${isOpen ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {isOpen && (
+        <ul className="pl-4 mt-2 space-y-2">
+          {items.map((item) => (
+            <li key={item.path}>
+              <Link
+                href={item.path}
+                onClick={() => {
+                  onToggle();
+                  setIsOpen(false);
+                }}
+                className="block text-[#fefae0]/70 hover:text-[#ffaf68] transition-colors text-sm"
+              >
+                {item.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </li>
+  );
+
   return (
     <nav className="bg-[#283618] border-b border-[#283618]/80 sticky top-0 z-50">
       <div
@@ -67,7 +177,12 @@ export function Navbar() {
           href="/"
           className={`${brand} text-2xl font-bold py-2 hover:text-[#ffaf68] transition-colors`}
         >
-          <Cloud className={brandIcon} />
+          <Image
+            src="/assets/img/bulletinLogo.png"
+            alt="logo del bulletin builder"
+            width={34}
+            height={37}
+          />
           <span className="font-headers">Bulletin Builder</span>
         </Link>
 
@@ -88,58 +203,35 @@ export function Navbar() {
         <div className="hidden lg:flex items-center space-x-4">
           {/* Links de navegación */}
           <ul className="flex font-medium space-x-1 items-center">
-            {NAV_ITEMS.map(({ name, path }) => {
-              const active = pathname === path;
-              return (
-                <li key={path}>
-                  <Link
-                    href={path}
-                    className={`${NAV_BASE} ${
-                      active ? NAV_ACTIVE : NAV_INACTIVE
-                    }`}
-                  >
-                    {name}
-                  </Link>
-                </li>
-              );
-            })}
-
-            {/* Dropdown de Acceso */}
-            {authenticated && isAdminAnywhere && (
-              <li className="relative">
-                <button
-                  onClick={() => setShowAccessMenu(!showAccessMenu)}
-                  className={`${NAV_BASE} ${NAV_INACTIVE} flex items-center gap-1 cursor-pointer`}
-                >
-                  {t("access")}
-                  <ChevronDown
-                    size={16}
-                    className={`transition-transform ${
-                      showAccessMenu ? "rotate-180" : ""
-                    }`}
-                  />
-                </button>
-
-                {showAccessMenu && (
-                  <div className="absolute left-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-                    { isSuperadmin && (
-                      <Link
-                        href="/roles"
-                        onClick={() => setShowAccessMenu(false)}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                      >
-                        {t("roles")}
-                    </Link>)}
-                    <Link
-                      href="/groups"
-                      onClick={() => setShowAccessMenu(false)}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                      {t("groups")}
-                    </Link>
-                  </div>
-                )}
+            {/* Botón de Bulletins destacado - PRIMERO */}
+            {canSeeBulletins && (
+              <li>
+                <Link href="/bulletins" className={btnPrimary}>
+                  {t("bulletins")}
+                </Link>
               </li>
+            )}
+
+            {/* Dropdown de Content */}
+            {authenticated && VISIBLE_CONFIG_ITEMS.length > 0 && (
+              <DropdownMenu
+                label={t("content")}
+                isOpen={showConfigMenu}
+                onToggle={() => setShowConfigMenu(!showConfigMenu)}
+                items={VISIBLE_CONFIG_ITEMS}
+                onItemClick={() => setShowConfigMenu(false)}
+              />
+            )}
+
+            {/* Dropdown de Administration */}
+            {authenticated && isAdminAnywhere && (
+              <DropdownMenu
+                label={t("administration")}
+                isOpen={showWorkspacesMenu}
+                onToggle={() => setShowWorkspacesMenu(!showWorkspacesMenu)}
+                items={ADMIN_ITEMS}
+                onItemClick={() => setShowWorkspacesMenu(false)}
+              />
             )}
           </ul>
 
@@ -199,71 +291,37 @@ export function Navbar() {
       {isOpen && (
         <div className="lg:hidden bg-[#283618] px-6 sm:px-8 md:px-12 py-4 space-y-3">
           <ul className="flex flex-col space-y-3">
-            {NAV_ITEMS.map(({ name, path }) => {
-              const active = pathname === path;
-              return (
-                <li key={path}>
-                  <Link
-                    href={path}
-                    className={`block transition-colors duration-200 ${
-                      active
-                        ? "text-[#ffaf68] font-semibold"
-                        : "text-[#fefae0]/80 hover:text-[#ffaf68]"
-                    }`}
-                    onClick={() => setIsOpen(false)}
-                  >
-                    {name}
-                  </Link>
-                </li>
-              );
-            })}
-
-            {/* Dropdown de Acceso - Móvil */}
-            {authenticated && isAdminAnywhere && (
+            {/* Botón de Bulletins destacado - Móvil - PRIMERO */}
+            {canSeeBulletins && (
               <li>
-                <button
-                  onClick={() => setShowAccessMenu(!showAccessMenu)}
-                  className="flex items-center gap-1 text-[#fefae0]/80 hover:text-[#ffaf68] transition-colors w-full"
+                <Link
+                  href="/bulletins"
+                  onClick={() => setIsOpen(false)}
+                  className={`${btnPrimary} justify-center text-center`}
                 >
-                  {t("access")}
-                  <ChevronDown
-                    size={16}
-                    className={`transition-transform ${
-                      showAccessMenu ? "rotate-180" : ""
-                    }`}
-                  />
-                </button>
-
-                {showAccessMenu && (
-                  <ul className="pl-4 mt-2 space-y-2">
-                    <li>
-                      { isAdminAnywhere && (
-                        <Link
-                        href="/roles"
-                        onClick={() => {
-                          setShowAccessMenu(false);
-                          setIsOpen(false);
-                        }}
-                        className="block text-[#fefae0]/70 hover:text-[#ffaf68] transition-colors text-sm"
-                      >
-                        {t("roles")}
-                      </Link>)}
-                    </li>
-                    <li>
-                      <Link
-                        href="/groups"
-                        onClick={() => {
-                          setShowAccessMenu(false);
-                          setIsOpen(false);
-                        }}
-                        className="block text-[#fefae0]/70 hover:text-[#ffaf68] transition-colors text-sm"
-                      >
-                        {t("groups")}
-                      </Link>
-                    </li>
-                  </ul>
-                )}
+                  {t("bulletins")}
+                </Link>
               </li>
+            )}
+
+            {/* Dropdown de Content - Móvil */}
+            {authenticated && VISIBLE_CONFIG_ITEMS.length > 0 && (
+              <MobileDropdownMenu
+                label={t("content")}
+                isOpen={showConfigMenu}
+                onToggle={() => setShowConfigMenu(!showConfigMenu)}
+                items={VISIBLE_CONFIG_ITEMS}
+              />
+            )}
+
+            {/* Dropdown de Administration - Móvil */}
+            {authenticated && isAdminAnywhere && (
+              <MobileDropdownMenu
+                label={t("administration")}
+                isOpen={showWorkspacesMenu}
+                onToggle={() => setShowWorkspacesMenu(!showWorkspacesMenu)}
+                items={ADMIN_ITEMS}
+              />
             )}
           </ul>
 

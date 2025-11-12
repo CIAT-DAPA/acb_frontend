@@ -28,6 +28,11 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: "Bulletin builder",
   description: "App to create agroclimatic bulletins",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
 };
 
 export default async function RootLayout({ children, params }: Props) {
@@ -36,6 +41,9 @@ export default async function RootLayout({ children, params }: Props) {
 
   return (
     <html lang={locale}>
+      <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+      </head>
       <body className={`${sintony.variable} ${poppins.variable} antialiased`}>
         <AuthProviderWrapper>
           <NextIntlClientProvider messages={messages}>

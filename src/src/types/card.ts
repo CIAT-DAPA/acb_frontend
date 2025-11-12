@@ -10,13 +10,9 @@ import { Field, Block } from "./template";
 
 /**
  * Tipos de cards disponibles para categorización
+ * Los tipos reales se obtienen dinámicamente desde la API
  */
-export type CardType =
-  | "pest_or_disease"
-  | "crop_info"
-  | "recommendation"
-  | "weather_alert"
-  | "general";
+export type CardType = string;
 
 /**
  * Contenido de una card con estructura flexible
@@ -187,41 +183,67 @@ export interface CardOptions {
 // ============================================
 
 /**
- * Tipos de cards disponibles con sus labels
+ * Iconos predeterminados para tipos de cards comunes
+ * Se puede extender con más tipos según se agreguen en la API
  */
-export const CARD_TYPES: Record<CardType, { label: string; icon: string }> = {
-  pest_or_disease: {
-    label: "Plaga o Enfermedad",
-    icon: "🐛",
-  },
-  crop_info: {
-    label: "Información de Cultivo",
-    icon: "🌾",
-  },
-  recommendation: {
-    label: "Recomendación",
-    icon: "💡",
-  },
-  weather_alert: {
-    label: "Alerta Climática",
-    icon: "⚠️",
-  },
-  general: {
-    label: "General",
-    icon: "📄",
-  },
+export const CARD_TYPE_ICONS: Record<string, string> = {
+  pest_or_disease: "🐛",
+  pest: "🐛",
+  crop_info: "🌾",
+  crop: "🌾",
+  crops: "🌾",
+  recommendation: "💡",
+  weather_alert: "⚠️",
+  alert: "⚠️",
+  general: "📄",
 };
 
 /**
- * Array de tipos de cards para selectores
+ * Orden preferido para mostrar los tipos de cards
+ * Los tipos no listados se mostrarán al final alfabéticamente
  */
-export const CARD_TYPE_OPTIONS: CardType[] = [
-  "pest_or_disease",
+export const CARD_TYPE_DISPLAY_ORDER: string[] = [
   "crop_info",
+  "crop",
+  "crops",
+  "pest_or_disease",
+  "pest",
   "recommendation",
-  "weather_alert",
   "general",
 ];
+
+/**
+ * Obtener el icono para un tipo de card
+ * @param cardType - Tipo de card
+ * @returns Emoji del icono o icono por defecto
+ */
+export const getCardTypeIcon = (cardType: string): string => {
+  return CARD_TYPE_ICONS[cardType.toLowerCase()] || "📄";
+};
+
+/**
+ * Tipos de cards que tienen traducciones disponibles
+ */
+export const TRANSLATABLE_CARD_TYPES = [
+  "pest_or_disease",
+  "pest",
+  "crop_info",
+  "crop",
+  "crops",
+  "recommendation",
+  "weather_alert",
+  "alert",
+  "general",
+];
+
+/**
+ * Verificar si un tipo de card tiene traducción disponible
+ * @param cardType - Tipo de card
+ * @returns true si tiene traducción, false si no
+ */
+export const hasCardTypeTranslation = (cardType: string): boolean => {
+  return TRANSLATABLE_CARD_TYPES.includes(cardType.toLowerCase());
+};
 
 // ============================================
 // CARD CREATION WIZARD TYPES

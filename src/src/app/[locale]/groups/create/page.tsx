@@ -9,12 +9,10 @@ import {
   Save,
   AlertCircle,
   Info,
-  Globe,
   Plus,
   Trash2,
   UserCheck,
   Shield,
-  Loader2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { ProtectedRoute } from "../../../../components/ProtectedRoute";
@@ -27,6 +25,9 @@ import {
   pageSubtitle,
   inputField,
 } from "../../components/ui";
+import SearchableSelect, {
+  SearchableSelectOption,
+} from "../../components/SearchableSelect";
 import { GroupAPIService } from "@/services/groupService";
 import { RoleAPIService } from "@/services/roleService";
 import { UserService } from "@/services/userService";
@@ -51,6 +52,19 @@ export default function CreateGroupPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loadingRoles, setLoadingRoles] = useState(true);
   const [loadingUsers, setLoadingUsers] = useState(true);
+
+  // Convertir datos a opciones para el SearchableSelect
+  const userOptions: SearchableSelectOption[] = users.map((user) => ({
+    id: user.id,
+    label: `${user.first_name} ${user.last_name}`,
+    description: user.ext_id,
+  }));
+
+  const roleOptions: SearchableSelectOption[] = roles.map((role) => ({
+    id: role._id || "",
+    label: role.role_name,
+    description: role.description,
+  }));
 
   // Estados de UI
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -103,52 +117,42 @@ export default function CreateGroupPage() {
     }
   };
 
-  // Validar formulario
   const validateForm = (): boolean => {
     const newErrors: typeof errors = {};
+    const trimmed = {
+      name: groupName.trim(),
+      country: country.trim(),
+      desc: description.trim(),
+    };
 
-    if (!groupName.trim()) {
-      newErrors.groupName = t("groupNameRequired");
-    } else if (groupName.length < 3) {
+    if (!trimmed.name) newErrors.groupName = t("groupNameRequired");
+    else if (trimmed.name.length < 3)
       newErrors.groupName = t("groupNameMinLength");
-    }
 
-    if (!country.trim()) {
-      newErrors.country = t("countryRequired");
-    } else if (country.length !== 2) {
+    if (!trimmed.country) newErrors.country = t("countryRequired");
+    else if (trimmed.country.length !== 2)
       newErrors.country = t("countryInvalid");
-    }
 
-    if (!description.trim()) {
-      newErrors.description = t("descriptionRequired");
-    } else if (description.length < 10) {
+    if (!trimmed.desc) newErrors.description = t("descriptionRequired");
+    else if (trimmed.desc.length < 10)
       newErrors.description = t("descriptionMinLength");
-    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Agregar un usuario al grupo
-  const addUser = () => {
+  const addUser = () =>
     setUsersAccess([...usersAccess, { user_id: "", role_id: "" }]);
-  };
-
-  // Remover un usuario del grupo
-  const removeUser = (index: number) => {
-    const newUsers = usersAccess.filter((_, i) => i !== index);
-    setUsersAccess(newUsers);
-  };
-
-  // Actualizar datos de un usuario
+  const removeUser = (index: number) =>
+    setUsersAccess(usersAccess.filter((_, i) => i !== index));
   const updateUser = (
     index: number,
     field: "user_id" | "role_id",
     value: string
   ) => {
-    const newUsers = [...usersAccess];
-    newUsers[index][field] = value;
-    setUsersAccess(newUsers);
+    const updated = [...usersAccess];
+    updated[index][field] = value;
+    setUsersAccess(updated);
   };
 
   // Función para obtener código de bandera del país
@@ -165,36 +169,29 @@ export default function CreateGroupPage() {
     }
   };
 
-  // Manejar submit del formulario
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!validateForm()) {
-      showToast(t("validationError"), "error", 4000);
-      return;
-    }
+    if (!validateForm()) return showToast(t("validationError"), "error", 4000);
 
     setIsSubmitting(true);
-
     try {
-      // Filtrar usuarios con IDs vacíos
-      const validUsers = usersAccess.filter(
-        (user) => user.user_id.trim() && user.role_id.trim()
-      );
-
       const response = await GroupAPIService.createGroup({
         group_name: groupName.trim(),
         country: country.trim().toUpperCase(),
         description: description.trim(),
-        users_access: validUsers
+        users_access: usersAccess.filter(
+          (u) => u.user_id.trim() && u.role_id.trim()
+        ),
       });
 
-      if (response.success) {
-        showToast(t("createSuccess"), "success", 4000);
-        router.push("/groups");
-      } else {
-        showToast(response.message || t("createError"), "error", 4000);
-      }
+      showToast(
+        response.success
+          ? t("createSuccess")
+          : response.message || t("createError"),
+        response.success ? "success" : "error",
+        4000
+      );
+      if (response.success) router.push("/groups");
     } catch (error) {
       console.error("Error creating group:", error);
       showToast(t("connectionError"), "error", 4000);
@@ -204,7 +201,12 @@ export default function CreateGroupPage() {
   };
 
   return (
-    <ProtectedRoute requiredPermission={{ action: PERMISSION_ACTIONS.Create, module: MODULES.ACCESS_CONTROL }}>
+    <ProtectedRoute
+      requiredPermission={{
+        action: PERMISSION_ACTIONS.Create,
+        module: MODULES.ACCESS_CONTROL,
+      }}
+    >
       <main>
         <section className="bg-white py-10">
           <div className={container}>
@@ -366,31 +368,19 @@ export default function CreateGroupPage() {
                           <label className="block text-xs font-medium text-[#283618] mb-1">
                             {t("userId")}
                           </label>
-                          <div className="flex items-center gap-2">
-                            <UserCheck className="h-4 w-4 text-[#606c38] flex-shrink-0" />
-                            {loadingUsers ? (
-                              <div className="flex items-center gap-2 text-sm text-[#283618]/60">
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                                <span>Cargando usuarios...</span>
-                              </div>
-                            ) : (
-                              <select
-                                value={user.user_id}
-                                onChange={(e) =>
-                                  updateUser(index, "user_id", e.target.value)
-                                }
-                                className={`${inputField} text-sm`}
-                                disabled={isSubmitting}
-                              >
-                                <option value="">{t("selectUser")}</option>
-                                {users.map((u) => (
-                                  <option key={u.id} value={u.id}>
-                                    {u.first_name} {u.last_name}
-                                  </option>
-                                ))}
-                              </select>
-                            )}
-                          </div>
+                          <SearchableSelect
+                            options={userOptions}
+                            value={user.user_id}
+                            onChange={(value) =>
+                              updateUser(index, "user_id", value)
+                            }
+                            placeholder={t("selectUser")}
+                            loading={loadingUsers}
+                            loadingText="Cargando usuarios..."
+                            noResultsText={t("noUsersFound")}
+                            disabled={isSubmitting}
+                            icon={<UserCheck className="h-4 w-4" />}
+                          />
                         </div>
 
                         {/* Role Select */}
@@ -398,31 +388,19 @@ export default function CreateGroupPage() {
                           <label className="block text-xs font-medium text-[#283618] mb-1">
                             {t("roleId")}
                           </label>
-                          <div className="flex items-center gap-2">
-                            <Shield className="h-4 w-4 text-[#606c38] flex-shrink-0" />
-                            {loadingRoles ? (
-                              <div className="flex items-center gap-2 text-sm text-[#283618]/60">
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                                <span>Cargando roles...</span>
-                              </div>
-                            ) : (
-                              <select
-                                value={user.role_id}
-                                onChange={(e) =>
-                                  updateUser(index, "role_id", e.target.value)
-                                }
-                                className={`${inputField} text-sm`}
-                                disabled={isSubmitting}
-                              >
-                                <option value="">{t("selectRole")}</option>
-                                {roles.map((role) => (
-                                  <option key={role._id} value={role._id || ""}>
-                                    {role.role_name}
-                                  </option>
-                                ))}
-                              </select>
-                            )}
-                          </div>
+                          <SearchableSelect
+                            options={roleOptions}
+                            value={user.role_id}
+                            onChange={(value) =>
+                              updateUser(index, "role_id", value)
+                            }
+                            placeholder={t("selectRole")}
+                            loading={loadingRoles}
+                            loadingText="Cargando roles..."
+                            noResultsText={t("noRolesFound")}
+                            disabled={isSubmitting}
+                            icon={<Shield className="h-4 w-4" />}
+                          />
                         </div>
 
                         {/* Remove Button */}

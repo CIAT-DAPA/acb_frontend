@@ -3,7 +3,9 @@
     "templates": "Plantillas",
     "bulletins": "Boletines",
     "cards": "Tarjetas",
-    "access": "Acceso",
+    "visualResources": "Recursos Visuales",
+    "content": "Contenido",
+    "administration": "Administración",
     "roles": "Roles",
     "groups": "Grupos",
     "login": "Iniciar sesión",
@@ -12,7 +14,7 @@
   "Hero": {
     "title": "Crea boletines con",
     "subtitle": "",
-    "description": "Plataforma para crear, revisar y distribuir boletines agroclimáticos profesionales de manera colaborativa.",
+    "description": "Plataforma para crear, revisar y exportar boletines agroclimáticos profesionales de manera colaborativa.",
     "cta": "Comenzar a crear",
     "stats": {
       "countries": "Boletines de 2 paises",
@@ -45,6 +47,7 @@
     "edit": "Editar",
     "download": "Descargar",
     "delete": "Eliminar",
+    "duplicate": "Duplicar",
     "editSuccess": "Recurso visual actualizado exitosamente",
     "editError": "Error al actualizar el recurso visual",
     "deleteSuccess": "Recurso visual eliminado exitosamente",
@@ -122,10 +125,8 @@
     "brand": "Bulletin builder",
     "description": "Herramienta gratuita para crear boletines agroclimáticos de forma colaborativa.",
     "links": "Enlaces",
-    "contact": "Contacto",
-    "copyright": "© 2025 Bulletin Builder.",
-    "email": "test@example.com",
-    "phone": "+1 (555) 123-4567"
+    "partner": "Socios",
+    "copyright": "© 2025 Bulletin Builder."
   },
   "Templates": {
     "title": "Crea nuevas plantillas totalmente personalizables",
@@ -151,6 +152,12 @@
     "loading": "Cargando plantillas...",
     "retry": "Reintentar",
     "createFirst": "Crear tu primera plantilla",
+    "loadError": "Error al cargar las plantillas",
+    "connectionError": "Error de conexión al cargar las plantillas",
+    "unknownError": "Error desconocido",
+    "page": "página",
+    "pages": "páginas",
+    "section": "Sección",
     "Create": {
       "title": "Nueva Plantilla",
       "subtitle": "Crea una nueva plantilla de boletín agroclimático",
@@ -185,11 +192,21 @@
   "CreateBulletin": {
     "title": "Crear Boletín",
     "subtitle": "Crea un nuevo boletín agroclimático utilizando una plantilla",
+    "titleEdit":"Editar Boletín",
+    "subtitleEdit":"Actualiza y modifica tu boletín agroclimático",
     "backToBulletins": "Volver a Boletines",
     "success": "Boletín creado exitosamente",
     "updateSuccess": "Boletín actualizado exitosamente",
     "error": "Error al crear el boletín",
     "errorLoadingTemplate": "Error al cargar la plantilla",
+    "editBulletin": {
+      "loading": "Cargando boletín...",
+      "errorTitle": "Error al cargar el boletín",
+      "errorInvalidId": "ID de boletín no válido",
+      "errorNoData": "No se pudo cargar la información del boletín",
+      "errorNoVersion": "La versión del boletín no tiene datos válidos",
+      "errorGeneric": "Error al cargar los datos del boletín"
+    },
     "selectTemplate": {
       "title": "Seleccionar Plantilla",
       "description": "Elige la plantilla que deseas utilizar para tu boletín",
@@ -224,7 +241,8 @@
       "description": "Llena la información de esta sección",
       "selectOption": "Selecciona una opción...",
       "noFields": "Esta sección no tiene campos configurables",
-      "headerFields": "Campos del Encabezado"
+      "headerFields": "Campos del Encabezado",
+      "notFound": "Sección no encontrada"
     },
     "fillData": {
       "sectionProgress": "Sección {current} de {total}",
@@ -241,11 +259,74 @@
       "subtitle": "Visualiza cómo se verá tu boletín",
       "selectTemplate": "Selecciona una plantilla para ver la vista previa"
     },
+    "bulletinPreview": {
+      "loading": "Cargando template...",
+      "loadingWithId": "ID: {id}",
+      "errorTitle": "Error al cargar template",
+      "errorMessage": "No se pudo cargar el template",
+      "errorId": "ID: {id}",
+      "backToTemplates": "Volver a Templates",
+      "backButton": "Volver a Templates",
+      "title": "Vista de Preview",
+      "description": "Cambia entre los diferentes modos de visualización usando el toggle",
+      "orientation": "Orientación:",
+      "vertical": "Vertical",
+      "horizontal": "Horizontal",
+      "size": "Tamaño:",
+      "columns": "Columnas:",
+      "sectionCount": "{count} {plural}",
+      "section": "sección",
+      "sections": "secciones",
+      "exportButton": "Exportar",
+      "exportTitle": "Exportar template",
+      "templateId": "ID del Template",
+      "status": "Estado",
+      "previewTitle": "Vista de Preview",
+      "descriptionLabel": "Descripción",
+      "noDescription": "Sin descripción",
+      "version": "Versión",
+      "access": "Acceso"
+    },
     "export": {
       "title": "Exportar Boletín",
       "description": "Revisa todas las secciones y exporta tu boletín como imágenes",
       "exportButton": "Exportar Boletín",
-      "exporting": "Exportando..."
+      "exporting": "Exportando...",
+      "sectionGenerating": "Generando sección {current}",
+      "sectionPage": "Página",
+      "toPdf":"Convirtiendo a PDF...",
+      "toZip":"Generando archivo ZIP...",
+      "exportComplete": "¡Exportación completada!"
+    },
+    "exportModal": {
+      "title": "Exportar Contenido",
+      "format": "Formato de Archivo",
+      "quality": "Calidad de Imagen",
+      "pdfConfig": "Configuración PDF",
+      "pageSize": "Tamaño de Página",
+      "sectionsPerPage": "Secciones por Página",
+      "sectionsPerPageRange": "1 (una por página)",
+      "sectionsPerPageMax": "6 (grid 2x3)",
+      "sectionsToExport": "Secciones a Exportar",
+      "selectAll": "Seleccionar todas",
+      "deselectAll": "Deseleccionar todas",
+      "section": "Sección",
+      "allSections": "Todas las secciones ({total})",
+      "selectedSections": "{selected} de {total} secciones seleccionadas",
+      "loading": "Cargando contenido...",
+      "loadError": "Error",
+      "cancel": "Cancelar",
+      "export": "Exportar",
+      "exporting": "Exportando...",
+      "startingExport": "Iniciando exportación...",
+      "exportComplete": "¡Exportación completada!",
+      "exportSuccess": "¡Exportación exitosa!",
+      "exportSuccessMessage": "El archivo se descargó correctamente.",
+      "exportError": "Error en la exportación",
+      "contentLabel": "Contenido",
+      "formatLabel": "Formato",
+      "sectionsLabel": "Secciones",
+      "completed": "completado"
     }
   },
   "Authentication": {
@@ -343,16 +424,76 @@
       },
       "dimensions": {
         "title": "Dimensiones del Boletín",
+        "preset": {
+          "label": "Formato Predefinido",
+          "help": "Selecciona un formato predefinido o elige Personalizado para definir tus propias dimensiones."
+        },
         "width": {
           "label": "Ancho (px)"
         },
         "height": {
           "label": "Alto (px)"
         },
-        "help": "Define el tamaño del boletín. Los valores por defecto son 638x366 píxeles."
+        "help": "Puedes modificar las dimensiones manualmente en cualquier momento."
       },
       "styles": {
         "title": "Estilos Globales",
+        "colorPickerTitle": "Selector de color",
+        "inherited": "Heredado",
+        "backgroundImagePreviewAlt": "Vista previa de fondo",
+        "removeImage": "Quitar imagen",
+        "noBackgroundImage": "Sin imagen de fondo",
+        "changeImage": "Cambiar imagen",
+        "selectImage": "Seleccionar imagen",
+        "selectBackgroundImageTitle": "Seleccionar Imagen de Fondo",
+        "previewTitle": "Vista Previa",
+        "previewMainTitle": "Título Principal",
+        "previewSubtitle": "Subtítulo de Ejemplo",
+        "previewText": "Este es un texto de ejemplo que muestra cómo se verán los estilos aplicados.",
+        "previewSmallText": "Texto pequeño para detalles adicionales.",
+        "fieldsLayout":"Organización de Campos",
+        "alignOptions": {
+          "left": "Izquierda",
+          "center": "Centro",
+          "right": "Derecha"
+        },
+        "fontWeightOptions": {
+          "thin": "Thin (100)",
+          "extraLight": "Extra Light (200)",
+          "light": "Light (300)",
+          "normal": "Normal (400)",
+          "medium": "Medium (500)",
+          "semiBold": "Semi Bold (600)",
+          "bold": "Bold (700)",
+          "extraBold": "Extra Bold (800)",
+          "black": "Black (900)"
+        },
+        "fontStyleOptions": {
+          "normal": "Normal",
+          "italic": "Cursiva"
+        },
+        "textDecorationOptions": {
+          "none": "Ninguna",
+          "underline": "Subrayado",
+          "lineThrough": "Tachado"
+        },
+        "layoutOptions": {
+          "horizontal": "Horizontal (lado a lado)",
+          "vertical": "Vertical (uno debajo del otro)"
+        },
+        "listStyleOptions": {
+          "disc": "• Círculo relleno",
+          "circle": "○ Círculo vacío",
+          "square": "■ Cuadrado",
+          "decimal": "1. Numerado",
+          "none": "Sin viñetas"
+        },
+        "listLayoutOptions": {
+          "vertical": "Vertical",
+          "horizontal": "Horizontal",
+          "grid2": "Grid 2 columnas",
+          "grid3": "Grid 3 columnas"
+        },
         "font": {
           "label": "Fuente"
         },
@@ -425,6 +566,8 @@
         "title": "Estilos Globales",
         "font": "Fuente",
         "color": "Color del Texto",
+        "colorPickerTitle": "Selector de color",
+        "inherited": "Heredado",
         "secondaryColor": "Color Secundario",
         "backgroundColor": "Color de Fondo",
         "fontSize": "Tamaño de Fuente (px)",
@@ -437,6 +580,12 @@
         "textAlign": "Alineación del Texto",
         "borderColor": "Color del Borde",
         "backgroundImage": "Imagen de Fondo",
+        "backgroundImagePreviewAlt": "Vista previa de fondo",
+        "removeImage": "Quitar imagen",
+        "noBackgroundImage": "Sin imagen de fondo",
+        "changeImage": "Cambiar imagen",
+        "selectImage": "Seleccionar imagen",
+        "selectBackgroundImageTitle": "Seleccionar Imagen de Fondo",
         "borderWidth": "Grosor del Borde",
         "borderRadius": "Redondeado",
         "borderSides": "Lados del Borde",
@@ -448,12 +597,59 @@
         "padding": "Espaciado Interno",
         "margin": "Espaciado Externo",
         "gap": "Espaciado entre Campos",
-        "help": "Estos estilos se aplicarán a todo el componente. Los estilos individuales de los campos pueden sobrescribir estos valores.",
+        "bulletinWidth": "Ancho del Boletín (px)",
+        "bulletinHeight": "Alto del Boletín (px)",
+        "fieldsLayout": "Organización de Campos",
+        "listStyleType": "Estilo de Lista",
+        "listItemsLayout": "Layout de Items de Lista",
+        "layoutOptions": {
+          "horizontal": "Horizontal (lado a lado)",
+          "vertical": "Vertical (uno debajo del otro)"
+        },
+        "listStyleOptions": {
+          "disc": "• Círculo relleno",
+          "circle": "○ Círculo vacío",
+          "square": "■ Cuadrado",
+          "decimal": "1. Numerado",
+          "none": "Sin viñetas"
+        },
+        "listLayoutOptions": {
+          "vertical": "Vertical",
+          "horizontal": "Horizontal",
+          "grid2": "Grid 2 columnas",
+          "grid3": "Grid 3 columnas"
+        },
         "alignOptions": {
           "left": "Izquierda",
           "center": "Centro",
           "right": "Derecha"
-        }
+        },
+        "fontWeightOptions": {
+          "thin": "Thin (100)",
+          "extraLight": "Extra Light (200)",
+          "light": "Light (300)",
+          "normal": "Normal (400)",
+          "medium": "Medium (500)",
+          "semiBold": "Semi Bold (600)",
+          "bold": "Bold (700)",
+          "extraBold": "Extra Bold (800)",
+          "black": "Black (900)"
+        },
+        "fontStyleOptions": {
+          "normal": "Normal",
+          "italic": "Cursiva"
+        },
+        "textDecorationOptions": {
+          "none": "Ninguna",
+          "underline": "Subrayado",
+          "lineThrough": "Tachado"
+        },
+        "previewTitle": "Vista Previa",
+        "previewMainTitle": "Título Principal",
+        "previewSubtitle": "Subtítulo de Ejemplo",
+        "previewText": "Este es un texto de ejemplo que muestra cómo se verán los estilos aplicados.",
+        "previewSmallText": "Texto pequeño para detalles adicionales.",
+        "help": "Estos estilos se aplicarán a todo el componente. Los estilos individuales de los campos pueden sobrescribir estos valores."
       },
       "layout": {
         "title": "Disposición de Campos",
@@ -472,6 +668,12 @@
       "description": "Diseña las secciones principales del contenido de tu plantilla",
       "addSection": "Agregar Sección",
       "info": "Total de secciones",
+      "dragToReorder": "Arrastrar para reordenar",
+      "configureField": "Configurar campo",
+      "deleteField": "Eliminar campo",
+      "newField": "Nuevo Campo",
+      "yes": "Sí",
+      "no": "No",
       "noSections": {
         "title": "Aún no hay secciones",
         "description": "Las secciones son los bloques principales de tu plantilla. Cada sección puede contener múltiples bloques de contenido.",
@@ -499,8 +701,97 @@
         "addField": "Agregar Campo",
         "remove": "Eliminar Bloque",
         "fields": "Campos",
-        "noFields": "No hay campos en este bloque"
-      }
+        "noFields": "No hay campos en este bloque",
+        "configuration": "Configuración del Bloque",
+        "nameLabel": "Nombre del bloque",
+        "namePlaceholder": "Ingrese el nombre del bloque",
+        "nameHelp": "Este nombre ayuda a identificar el bloque en la configuración",
+        "styles": "Estilos del Bloque",
+        "stylesDescription": "Los estilos del bloque se aplicarán al contenedor que agrupa los campos",
+        "fieldsTitle": "Campos del Bloque",
+        "addFieldButton": "Agregar Campo",
+        "noFieldsConfigured": "No hay campos configurados",
+        "fieldsHelp": "Los campos definen qué información se recopiará en este bloque",
+        "configureBlock": "Configurar bloque",
+        "closeConfiguration": "Cerrar configuración",
+        "deleteBlock": "Eliminar bloque"
+      },
+      "navigation": {
+        "sections": "Secciones",
+        "addSection": "Agregar Sección"
+      },
+      "tabs": {
+        "general": "General",
+        "blocks": "Bloques",
+        "header": "Header",
+        "footer": "Footer"
+      },
+      "overview": {
+        "title": "Configuración General",
+        "sectionName": "Nombre de la sección",
+        "sectionNamePlaceholder": "Ingrese el nombre de la sección",
+        "sectionNameHelp": "Este nombre aparecerá en la navegación.",
+        "pageOrder": "Orden de página",
+        "pageOrderHelp": "Define el orden de esta página en el boletín final",
+        "sectionIcon": "Icono de la Sección",
+        "selectedIcon": "Icono seleccionado",
+        "removeIcon": "Quitar",
+        "selectIcon": "Seleccionar icono",
+        "changeIcon": "Cambiar icono",
+        "loadingIcons": "Cargando iconos...",
+        "iconHelp": "Icono opcional que aparecerá junto al nombre de la sección",
+        "sectionStyles": "Estilos de la Sección",
+        "sectionStylesDescription": "Estos estilos se aplicarán a todos los bloques y campos de esta sección, a menos que sean sobrescritos.",
+        "noName": "Sin nombre",
+        "page": "Página",
+        "blocks": "bloques",
+        "id": "ID",
+        "duplicateSection": "Duplicar sección",
+        "deleteSection": "Eliminar sección"
+      },
+      "blocksTab": {
+        "title": "Bloques de Contenido",
+        "addBlock": "Agregar Bloque",
+        "infoMessage": "Los bloques organizan el contenido dentro de cada página. Cada bloque puede contener múltiples campos con diferentes tipos de información.",
+        "noBlocks": "No hay bloques",
+        "noBlocksDescription": "Los bloques organizan el contenido dentro de cada página.",
+        "addFirstBlock": "Agregar Primer Bloque",
+        "fields": "campos"
+      },
+      "headerTab": {
+        "title": "Header de Sección",
+        "description": "Configura un header específico para esta sección. Este header reemplazará al header global únicamente en esta página.",
+        "priorityTitle": "Prioridad:",
+        "priorityMessage": "Si configuras un header aquí, tendrá prioridad sobre el header global del template. Si no configuras nada, se usará el header global automáticamente.",
+        "usingGlobal": "Usando Header Global",
+        "customizeButton": "Personalizar para esta sección",
+        "usingGlobalHelp": "Esta sección está usando el header global. Haz clic en \"Personalizar\" para crear una versión específica que puedes modificar independientemente.",
+        "restoreGlobal": "Restaurar al global",
+        "confirmRestore": "¿Estás seguro de eliminar la personalización y volver al header global?"
+      },
+      "footerTab": {
+        "title": "Footer de Sección",
+        "description": "Configura un footer específico para esta sección. Este footer reemplazará al footer global únicamente en esta página.",
+        "priorityTitle": "Prioridad:",
+        "priorityMessage": "Si configuras un footer aquí, tendrá prioridad sobre el footer global del template. Si no configuras nada, se usará el footer global automáticamente.",
+        "usingGlobal": "Usando Footer Global",
+        "customizeButton": "Personalizar para esta sección",
+        "usingGlobalHelp": "Esta sección está usando el footer global. Haz clic en \"Personalizar\" para crear una versión específica que puedes modificar independientemente.",
+        "restoreGlobal": "Restaurar al global",
+        "confirmRestore": "¿Estás seguro de eliminar la personalización y volver al footer global?"
+      },
+      "iconSelector": {
+        "title": "Seleccionar Icono para la Sección",
+        "loading": "Cargando iconos...",
+        "noIcons": "No hay iconos disponibles",
+        "uploadPrompt": "Sube iconos en la sección de Recursos Visuales"
+      },
+      "fieldEditor": {
+        "title": "Configurar Campo",
+        "closeEditor": "Cerrar editor"
+      },
+      "newSection": "Nueva Sección",
+      "newBlock": "Nuevo Bloque"
     },
     "fieldEditor": {
       "title": "Editor de Campos",
@@ -576,6 +867,7 @@
         "climate_data_puntual": "Datos Climáticos",
         "list": "Lista",
         "select": "Selección",
+        "searchable": "Selección Buscable",
         "select_with_icons": "Selección con Iconos",
         "select_background": "Selección con Fondo",
         "number": "Número",
@@ -591,20 +883,23 @@
         "subtype": "Tipo de Texto",
         "short": "Corto",
         "long": "Largo",
-        "placeholder": {
-          "label": "Texto de Ejemplo"
-        },
-        "maxLength": {
-          "label": "Longitud Máxima"
-        },
-        "minLength": {
-          "label": "Longitud Mínima"
-        }
+        "subtypeHelp": "Corto: una línea de texto. Largo: área de texto multilínea.",
+        "validationsHelp": "Estas validaciones se aplicarán cuando el usuario llene el formulario."
       },
       "textWithIconConfig": {
         "iconOptions": "Opciones de Iconos",
+        "iconOptionsHelp": "Estas son las opciones de iconos que el usuario podrá elegir cuando llene el formulario.",
         "addIcon": "Agregar Icono",
-        "iconUrlPlaceholder": "https://ejemplo.com/icono.svg"
+        "iconUrlPlaceholder": "https://ejemplo.com/icono.svg",
+        "noIconSelected": "Sin icono seleccionado",
+        "changeIcon": "Cambiar",
+        "selectIcon": "Seleccionar",
+        "iconSelectorTitle": "Seleccionar Icono para Opción",
+        "showLabelForm": "Mostrar label en el formulario",
+        "showLabelPreview": "Mostrar label en el preview",
+        "showLabelFormHelp": "Si está activo, se mostrará \"label: valor\" en el boletín",
+        "showLabelPreviewHelp": "Si está activo, se mostrará el label junto al valor en el boletín",
+        "validationsHelp": "Estas validaciones se aplicarán cuando el usuario llene el formulario."
       },
       "numberConfig": {
         "subtype": {
@@ -651,6 +946,66 @@
         "formatLabel": "Formato configurado:",
         "previewHelp": "Esta es una vista previa. Los números de página se generarán automáticamente."
       },
+      "listConfig": {
+        "changeImage": "Cambiar",
+        "selectImage": "Seleccionar Imagen",
+        "selectTitle": "Seleccionar",
+        "enterValue": "Ingresa",
+        "dragToReorder": "Arrastra para reordenar",
+        "type": "Tipo",
+        "configureField": "Configurar campo",
+        "deleteField": "Eliminar campo",
+        "form": "Form",
+        "bulletin": "Bulletin",
+        "yes": "Sí",
+        "no": "No",
+        "configureFieldTitle": "Configurar Campo",
+        "minItems": "Elementos mínimos",
+        "maxItems": "Elementos máximos",
+        "itemsPerPage": "Elementos por página (opcional)",
+        "itemsPerPagePlaceholder": "Dejar vacío para mostrar todos",
+        "itemsPerPageHelp": "Si se especifica, la lista se dividirá en páginas con este número de elementos",
+        "schemaTitle": "Esquema de Elementos de la Lista",
+        "schemaDescription": "Define los campos que tendrá cada elemento de la lista",
+        "newField": "Nuevo Campo",
+        "addField": "Agregar Campo",
+        "noFieldsMessage": "No hay campos definidos. Haz clic en 'Agregar Campo' para comenzar.",
+        "itemsTitle": "Items de la Lista",
+        "itemsDescription": "Define los items que se mostrarán en el boletín",
+        "addItem": "Agregar Item",
+        "itemNumber": "Item",
+        "deleteItem": "Eliminar item",
+        "noItemsMessage": "No hay items. Haz clic en 'Agregar Item' para comenzar.",
+        "defineSchemaFirst": "Primero define el esquema de elementos arriba"
+      },
+      "imageConfig": {
+        "predefinedImageLabel": "Imagen Predefinida (Value)",
+        "predefinedImageHelp": "Como este campo no se muestra en el formulario (form = false), debes especificar la imagen que se mostrará directamente en el boletín",
+        "predefinedImageAlt": "Imagen predefinida",
+        "changeImage": "Cambiar imagen",
+        "deleteValue": "Eliminar valor predefinido",
+        "selectPredefinedImage": "Seleccionar imagen predefinida",
+        "selectPredefinedImageTitle": "Seleccionar Imagen Predefinida",
+        "availableImagesLabel": "Imágenes Disponibles",
+        "addImage": "Agregar Imagen",
+        "availableImagesHelp": "Agrega las imágenes que el usuario podrá seleccionar para este campo",
+        "imageNumber": "Imagen {number}",
+        "noImage": "Sin imagen",
+        "change": "Cambiar",
+        "selectImage": "Seleccionar imagen",
+        "deleteImage": "Eliminar imagen",
+        "noImagesConfigured": "No hay imágenes configuradas",
+        "clickAddImage": "Haz clic en \"Agregar Imagen\" para comenzar",
+        "galleryPreviewLabel": "Vista Previa de la Galería",
+        "previewNumber": "Preview {number}",
+        "galleryPreviewHelp": "El usuario podrá seleccionar una de estas imágenes",
+        "selectImageTitle": "Seleccionar Imagen {number}"
+      },
+      "defaultConfig": {
+        "title": "Configuración de tipo \"{type}\"",
+        "message": "Este tipo de campo aún no tiene configuración específica implementada.",
+        "helpText": "Las propiedades generales (nombre, descripción, estilos) están disponibles en las otras secciones del editor."
+      },
       "selectWithIconsConfig": {
         "allowMultiple": "Permitir selección múltiple",
         "allowMultipleHelp": "Si está activado, los usuarios podrán seleccionar múltiples opciones",
@@ -660,8 +1015,31 @@
         "optionLabel": "Opción",
         "optionPlaceholder": "Texto de la opción",
         "noOptionsMessage": "No hay opciones definidas. Haz clic en 'Agregar Opción' para comenzar.",
-        "iconUrl": "URL del Icono",
-        "iconUrlPlaceholder": "https://ejemplo.com/icono.png"
+        "iconUrl": "Icono",
+        "iconSelected": "Icono seleccionado",
+        "changeIcon": "Cambiar",
+        "selectIcon": "Seleccionar icono",
+        "selectIconFor": "Seleccionar Icono para Opción"
+      },
+      "searchableConfig": {
+        "options": "Opciones Disponibles",
+        "addOption": "Agregar Opción",
+        "optionPlaceholder": "Nombre de la opción",
+        "noOptionsMessage": "No hay opciones definidas. Haz clic en 'Agregar Opción' para comenzar.",
+        "help": "Los usuarios podrán buscar entre estas opciones o crear una nueva si no existe",
+        "removeOption": "Eliminar opción"
+      },
+      "selectBackgroundConfig": {
+        "optionsAndBackgrounds": "Opciones y Fondos",
+        "optionLabel": "Opción",
+        "optionPlaceholder": "Ej: Fondo claro",
+        "backgroundImage": "Imagen de Fondo",
+        "backgroundLabel": "Fondo",
+        "noImage": "Sin imagen",
+        "change": "Cambiar",
+        "select": "Seleccionar",
+        "selectBackgroundFor": "Seleccionar Imagen de Fondo",
+        "noOptionsMessage": "No hay opciones definidas. Haz clic en 'Agregar Opción' para comenzar."
       },
       "climateDataConfig": {
         "availableParameters": "Parámetros Climáticos Disponibles",
@@ -686,7 +1064,26 @@
           "colNameExample": "Ej: temp_max, precip",
           "keyExample": "Ej: t_max, precip"
         },
-        "previewExampleValue": "Valor ejemplo"
+        "previewExampleValue": "Valor ejemplo",
+        "showNameInPreview": "Mostrar nombre en preview",
+        "parameterStyles": "Estilos del parámetro"
+      },
+      "cardConfig": {
+        "availableCards": "Cards Disponibles para Selección",
+        "addCard": "Agregar Card",
+        "loading": "Cargando...",
+        "help": "Selecciona las cards que el usuario podrá elegir para este campo",
+        "noPreview": "Sin preview",
+        "type": "Tipo",
+        "remove": "Eliminar card",
+        "noCardsSelected": "No hay cards seleccionadas",
+        "noCardsHelp": "Haz clic en \"Agregar Card\" para comenzar",
+        "modalTitle": "Seleccionar Card",
+        "searchPlaceholder": "Buscar card por nombre...",
+        "loadingCards": "Cargando cards...",
+        "noResults": "No se encontraron cards con ese nombre",
+        "noMoreCards": "No hay más cards disponibles",
+        "cardsCount": "{count} card{plural} disponible{plural} para selección"
       },
       "value": {
         "title": "Valor del Campo",
@@ -704,6 +1101,9 @@
       "styleConfig": {
         "title": "Estilos del Campo",
         "color": "Color del Texto",
+        "colorPickerTitle": "Selector de color",
+        "inherited": "Heredado",
+        "font": "Fuente",
         "fontSize": "Tamaño de Fuente (px)",
         "iconSize": "Tamaño de Iconos (px)",
         "iconUseOriginalColor": "Mantener color original del icono",
@@ -712,9 +1112,11 @@
         "fontStyle": "Estilo del Texto",
         "textDecoration": "Decoración del Texto",
         "textAlign": "Alineación del Texto",
+        "secondaryColor": "Color Secundario",
+        "backgroundColor": "Color de Fondo",
         "borderColor": "Color del Borde",
-        "borderWidth": "Grosor del Borde (px)",
-        "borderRadius": "Redondeado (px)",
+        "borderWidth": "Grosor del Borde",
+        "borderRadius": "Redondeado",
         "borderSides": "Lados del Borde",
         "borderSidesHelp": "Selecciona los lados donde quieres mostrar el borde",
         "borderTop": "Superior",
@@ -723,8 +1125,36 @@
         "borderRight": "Derecha",
         "padding": "Padding (CSS)",
         "margin": "Margin (CSS)",
-        "gap": "Espaciado entre Campos (px)",
+        "gap": "Espaciado entre Campos",
         "backgroundImage": "Imagen de Fondo",
+        "backgroundImagePreviewAlt": "Vista previa de fondo",
+        "removeImage": "Quitar imagen",
+        "noBackgroundImage": "Sin imagen de fondo",
+        "changeImage": "Cambiar imagen",
+        "selectImage": "Seleccionar imagen",
+        "selectBackgroundImageTitle": "Seleccionar Imagen de Fondo",
+        "bulletinWidth": "Ancho del Boletín (px)",
+        "bulletinHeight": "Alto del Boletín (px)",
+        "fieldsLayout": "Organización de Campos",
+        "listStyleType": "Estilo de Lista",
+        "listItemsLayout": "Layout de Items de Lista",
+        "layoutOptions": {
+          "horizontal": "Horizontal (lado a lado)",
+          "vertical": "Vertical (uno debajo del otro)"
+        },
+        "listStyleOptions": {
+          "disc": "• Círculo relleno",
+          "circle": "○ Círculo vacío",
+          "square": "■ Cuadrado",
+          "decimal": "1. Numerado",
+          "none": "Sin viñetas"
+        },
+        "listLayoutOptions": {
+          "vertical": "Vertical",
+          "horizontal": "Horizontal",
+          "grid2": "Grid 2 columnas",
+          "grid3": "Grid 3 columnas"
+        },
         "alignOptions": {
           "left": "Izquierda",
           "center": "Centro",
@@ -749,7 +1179,12 @@
           "none": "Ninguna",
           "underline": "Subrayado",
           "lineThrough": "Tachado"
-        }
+        },
+        "previewTitle": "Vista Previa",
+        "previewMainTitle": "Título Principal",
+        "previewSubtitle": "Subtítulo de Ejemplo",
+        "previewText": "Este es un texto de ejemplo que muestra cómo se verán los estilos aplicados.",
+        "previewSmallText": "Texto pequeño para detalles adicionales."
       },
       "preview": {
         "title": "Vista Previa"
@@ -757,6 +1192,8 @@
     },
     "preview": {
       "title": "Vista Previa",
+      "status": "Estado:",
+      "access": "Acceso:",
       "subtitle": "Así es como se verá tu plantilla",
       "untitled": "Plantilla Sin Título",
       "noDescription": "Sin descripción",
@@ -765,6 +1202,15 @@
       "noSections": "No hay secciones configuradas",
       "emptySection": "Sección vacía",
       "emptyBlock": "Bloque vacío",
+      "invalidDate": "Fecha inválida",
+      "noImage": "Sin imagen",
+      "noCardsAvailable": "No hay cards disponibles",
+      "selectCard": "Seleccione una card",
+      "loadingCard": "Cargando card...",
+      "pageFormat": "Página {page} de {total}",
+      "previousPage": "← Página Anterior",
+      "nextPage": "Página Siguiente →",
+      "pageOf": "Página {current} de {total}",
       "sampleData": {
         "textField": "Texto de ejemplo",
         "dateField": "Fecha: {date}",
@@ -979,9 +1425,11 @@
     "userId": "Usuario",
     "userIdPlaceholder": "ej. 507f1f77bcf86cd799439011",
     "selectUser": "Selecciona un usuario",
+    "noUsersFound": "No se encontraron usuarios",
     "roleId": "Rol",
     "roleIdPlaceholder": "ej. 507f191e810c19729de860ea",
     "selectRole": "Selecciona un rol",
+    "noRolesFound": "No se encontraron roles",
     "noUsers": "No hay usuarios asignados aún",
     "usersNote": "Nota: Los usuarios agregados tendrán acceso al grupo con los roles especificados. Asegúrate de que los IDs sean válidos.",
     "cancel": "Cancelar",
@@ -1009,7 +1457,6 @@
     "by": "por",
     "updatedBy": "Actualizado por",
     "lastModified": "Última modificación",
-    "view": "Ver",
     "edit": "Editar",
     "duplicate": "Duplicar",
     "delete": "Eliminar",
@@ -1033,11 +1480,20 @@
     "loading": "Cargando cards...",
     "retry": "Reintentar",
     "createFirst": "Crear tu primera card",
+    "page": "página",
+    "pages": "páginas",
+    "section": "Sección",
+    "preview": "Vista Previa",
+    "download": "Descargar",
     "cardTypes": {
       "pest_or_disease": "Plaga o Enfermedad",
+      "pest": "Plaga",
       "crop_info": "Información de Cultivo",
+      "crop": "Cultivo",
+      "crops": "Cultivos",
       "recommendation": "Recomendación",
       "weather_alert": "Alerta Climática",
+      "alert": "Alerta",
       "general": "General"
     },
     "filterByType": "Filtrar por tipo",
@@ -1067,7 +1523,11 @@
       "createSuccess": "Card creada exitosamente",
       "updateSuccess": "Card actualizada exitosamente",
       "saveError": "Error al guardar la card: {error}",
-      "duplicateCardName": "Ya existe una card con este nombre. Por favor, elige un nombre diferente."
+      "duplicateCardName": "Ya existe una card con este nombre. Por favor, elige un nombre diferente.",
+      "loading": "Cargando card...",
+      "loadError": "Error al cargar la card",
+      "loadErrorMessage": "No se pudieron cargar los datos de la card",
+      "invalidId": "ID de card no válido"
     },
     "basicInfo": {
       "title": "Información Básica",
@@ -1104,19 +1564,10 @@
       "backgroundUrl": "URL de Fondo",
       "backgroundUrlPlaceholder": "https://ejemplo.com/fondo.jpg",
       "backgroundUrlHelp": "URL de la imagen de fondo para la card",
-      "iconUrl": "URL del Ícono",
-      "iconUrlPlaceholder": "https://ejemplo.com/icono.svg",
-      "iconUrlHelp": "URL del ícono que representa la card",
       "blocks": "Bloques",
       "addBlock": "Agregar Bloque",
       "removeBlock": "Eliminar Bloque",
       "blockNamePlaceholder": "Nombre del bloque",
-      "blockType": "Tipo de Bloque",
-      "blockTypes": {
-        "text": "Texto",
-        "image": "Imagen",
-        "mixed": "Mixto"
-      },
       "fields": "Campos",
       "addField": "Agregar Campo",
       "editField": "Editar Campo",
@@ -1124,6 +1575,34 @@
       "edit": "Editar",
       "noBlocks": "No hay bloques aún. Agrega el primer bloque para comenzar.",
       "noFields": "Este bloque no tiene campos aún",
+      "dragToReorder": "Arrastra para reordenar",
+      "newField": "Nuevo Campo",
+      "blockConfiguration": "Configuración del Bloque",
+      "blockName": "Nombre del bloque",
+      "blockNameInputPlaceholder": "Ingrese el nombre del bloque",
+      "blockNameHelp": "Este nombre ayuda a identificar el bloque en la configuración",
+      "blockStyles": "Estilos del Bloque",
+      "blockStylesDescription": "Los estilos del bloque se aplicarán al contenedor que agrupa los campos. Usa 'Padding' para el espacio interno del bloque y 'Gap' para el espacio entre los campos dentro del bloque.",
+      "blockFieldsTitle": "Campos del Bloque ({count})",
+      "noFieldsConfigured": "No hay campos configurados",
+      "noFieldsHelp": "Los campos definen qué información se recopiará en este bloque",
+      "cardBackground": "Fondo del Card",
+      "backgroundImage": "Imagen de Fondo",
+      "noImageSelected": "Ninguna imagen seleccionada",
+      "selectButton": "Seleccionar",
+      "backgroundImageHelp": "Selecciona una imagen de los recursos visuales para usar como fondo",
+      "backgroundColor": "Color de Fondo",
+      "backgroundColorHelp": "El color se aplicará si no hay imagen de fondo seleccionada",
+      "padding": "Padding (Espacio Interno)",
+      "paddingPlaceholder": "Ej: 16px, 1rem, 10px 20px",
+      "paddingHelp": "Espacio interno entre el borde del card y su contenido",
+      "gap": "Gap (Espacio entre Bloques)",
+      "gapPlaceholder": "Ej: 16px, 1rem, 20px",
+      "gapHelp": "Espacio entre los bloques del card",
+      "blockId": "ID: {id} • {count} campo(s)",
+      "expandConfiguration": "Expandir configuración",
+      "collapseConfiguration": "Contraer configuración",
+      "untitled": "Sin nombre",
       "errors": {
         "blocksRequired": "Debes agregar al menos un bloque"
       }
@@ -1165,5 +1644,23 @@
     "deleting": "Archivando...",
     "deleteSuccess": "{name} archivado exitosamente",
     "deleteError": "Error al archivar {name}: {error}"
+  },
+  "PreviewModal": {
+    "section": "Sección",
+    "of": "de",
+    "loading": "Cargando",
+    "loadingEllipsis": "Cargando...",
+    "errorTitle": "Error",
+    "edit": "Editar",
+    "clone": "Clonar",
+    "publish": "Publicar",
+    "sendToReview": "Enviar a revisión",
+    "downloadPDF": "Descargar PDF",
+    "delete": "Eliminar"
+  },
+  "TemplateModal": {
+    "closeModal": "Cerrar modal",
+    "previous": "Anterior",
+    "next": "Siguiente"
   }
 }

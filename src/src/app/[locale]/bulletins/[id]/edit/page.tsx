@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Loader2 } from "lucide-react";
 import FormBulletinPage from "../../create/FormBulletinPage";
 import { BulletinAPIService } from "../../../../../services/bulletinService";
@@ -13,6 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 export default function EditBulletinPage() {
   const params = useParams();
   const router = useRouter();
+  const t = useTranslations("CreateBulletin");
   const bulletinId = params.id as string;
   const { userInfo } = useAuth();
 
@@ -28,7 +30,7 @@ export default function EditBulletinPage() {
 
   const loadBulletinData = async () => {
     if (!bulletinId) {
-      setError("ID de boletín no válido");
+      setError(t("editBulletin.errorInvalidId"));
       setLoading(false);
       return;
     }
@@ -37,11 +39,10 @@ export default function EditBulletinPage() {
       setLoading(true);
       setError(null);
 
-      // Obtener la versión actual del bulletin con todo su contenido
       const response = await BulletinAPIService.getCurrentVersion(bulletinId);
 
       if (!response.success || !response.data) {
-        setError("No se pudo cargar la información del boletín");
+        setError(t("editBulletin.errorNoData"));
         return;
       }
 
@@ -51,16 +52,14 @@ export default function EditBulletinPage() {
         currentVersion,
       });
 
-      // Verificar que existe el data
       if (!currentVersion || !currentVersion.data) {
         console.warn(
           "La versión actual no tiene data, usando valores por defecto"
         );
-        setError("La versión del boletín no tiene datos válidos");
+        setError(t("editBulletin.errorNoVersion"));
         return;
       }
 
-      // Transformar los datos del bulletin al formato CreateBulletinData
       const bulletinData: CreateBulletinData = {
         master: {
           bulletin_name: master.bulletin_name,
@@ -71,7 +70,7 @@ export default function EditBulletinPage() {
           access_config: master.access_config,
         },
         version: {
-          version_num: currentVersion.version_num + 1, // Incrementar para la nueva versión
+          version_num: currentVersion.version_num + 1,
           commit_message: "Versión actualizada",
           log: {
             created_at: new Date().toISOString(),
@@ -91,9 +90,7 @@ export default function EditBulletinPage() {
     } catch (err) {
       console.error("Error loading bulletin:", err);
       setError(
-        err instanceof Error
-          ? err.message
-          : "Error al cargar los datos del boletín"
+        err instanceof Error ? err.message : t("editBulletin.errorGeneric")
       );
     } finally {
       setLoading(false);
@@ -120,16 +117,16 @@ export default function EditBulletinPage() {
           <div className="text-center max-w-md mx-auto px-4">
             <div className="bg-red-50 border border-red-200 rounded-lg p-6">
               <h2 className="text-xl font-semibold text-red-800 mb-2">
-                Error al cargar el boletín
+                {t("editBulletin.errorTitle")}
               </h2>
               <p className="text-red-600 mb-4">
-                {error || "No se pudieron cargar los datos del boletín"}
+                {error || t("editBulletin.errorNoData")}
               </p>
               <button
                 onClick={() => router.push("/bulletins")}
                 className="bg-[#283618] hover:bg-[#606c38] text-white px-6 py-2 rounded-lg font-medium transition-colors"
               >
-                Volver a Boletines
+                {t("backToBulletins")}
               </button>
             </div>
           </div>

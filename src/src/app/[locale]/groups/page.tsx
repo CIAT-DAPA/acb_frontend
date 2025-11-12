@@ -41,16 +41,11 @@ export default function GroupsPage() {
   const [error, setError] = useState<string | null>(null);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
-  // Función para alternar expansión de un grupo
   const toggleGroupExpansion = (groupId: string) => {
     setExpandedGroups((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(groupId)) {
-        newSet.delete(groupId);
-      } else {
-        newSet.add(groupId);
-      }
-      return newSet;
+      const updated = new Set(prev);
+      updated.has(groupId) ? updated.delete(groupId) : updated.add(groupId);
+      return updated;
     });
   };
 
@@ -59,16 +54,12 @@ export default function GroupsPage() {
     loadGroups();
   }, []);
 
-  // Función para cargar grupos desde la API
   const loadGroups = async () => {
     setLoading(true);
     setError(null);
-
     try {
       const response = await GroupAPIService.getGroups({ include_users: true });
-
       if (response.success) {
-        console.log("Fetched groups:", response);
         setGroups(response.data);
         setFilteredGroups(response.data);
       } else {
@@ -82,31 +73,22 @@ export default function GroupsPage() {
     }
   };
 
-  // Filtrar grupos cuando cambia el término de búsqueda
   useEffect(() => {
-    if (searchTerm.trim() === "") {
-      setFilteredGroups(groups);
-    } else {
-      const filtered = groups.filter(
-        (group) =>
-          group.group_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          group.country.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          group.description.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredGroups(filtered);
-    }
+    const term = searchTerm.trim().toLowerCase();
+    setFilteredGroups(
+      term === ""
+        ? groups
+        : groups.filter((g) =>
+            [g.group_name, g.country, g.description].some((field) =>
+              field.toLowerCase().includes(term)
+            )
+          )
+    );
   }, [searchTerm, groups]);
 
-  // Función para contar usuarios en un grupo
-  const countUsers = (group: Group): number => {
-    return group.users_access.length;
-  };
-
-  // Función para contar roles únicos en un grupo
-  const countUniqueRoles = (group: Group): number => {
-    const uniqueRoles = new Set(group.users_access.map((ua) => ua.role_id));
-    return uniqueRoles.size;
-  };
+  const countUsers = (group: Group) => group.users_access.length;
+  const countUniqueRoles = (group: Group) =>
+    new Set(group.users_access.map((ua) => ua.role_id)).size;
 
   // Función para obtener código de bandera del país
   const getCountryFlag = (countryCode: string): string => {
@@ -118,7 +100,12 @@ export default function GroupsPage() {
   };
 
   return (
-    <ProtectedRoute requiredPermission={{ action: PERMISSION_ACTIONS.Read, module: MODULES.ACCESS_CONTROL }}>
+    <ProtectedRoute
+      requiredPermission={{
+        action: PERMISSION_ACTIONS.Read,
+        module: MODULES.ACCESS_CONTROL,
+      }}
+    >
       <main>
         <section className="desk-texture desk-texture-strong bg-[#fefae0] py-10">
           <div className={container}>
@@ -155,12 +142,16 @@ export default function GroupsPage() {
             </div>
 
             {/* Botón Crear (condicionado) */}
-            {isSuperadmin && can(PERMISSION_ACTIONS.Create, MODULES.ACCESS_CONTROL ) && (
-              <Link href="/groups/create" className={`${btnPrimary} whitespace-nowrap`}>
-                <Plus className="h-5 w-5" />
-                <span>{t("createNew")}</span>
-              </Link>
-            )}
+            {isSuperadmin &&
+              can(PERMISSION_ACTIONS.Create, MODULES.ACCESS_CONTROL) && (
+                <Link
+                  href="/groups/create"
+                  className={`${btnPrimary} whitespace-nowrap`}
+                >
+                  <Plus className="h-5 w-5" />
+                  <span>{t("createNew")}</span>
+                </Link>
+              )}
           </div>
 
           {/* Loading State */}
@@ -267,7 +258,11 @@ export default function GroupsPage() {
 
                             {/* Botones de acciones */}
                             <div className="flex-shrink-0 flex items-center gap-2">
-                              {can(PERMISSION_ACTIONS.Update, MODULES.ACCESS_CONTROL, [groupId]) && (
+                              {can(
+                                PERMISSION_ACTIONS.Update,
+                                MODULES.ACCESS_CONTROL,
+                                [groupId]
+                              ) && (
                                 <Link
                                   href={`/groups/${groupId}/edit`}
                                   className={btnOutlineSecondary}
@@ -335,7 +330,9 @@ export default function GroupsPage() {
                                                 <UserCheck className="h-4 w-4 text-[#606c38]" />
                                               </div>
                                               <span className="font-mono text-xs text-[#283618]/70">
-                                                {userAccess.user_first_name ? `${userAccess.user_first_name} ${userAccess.user_last_name}` : userAccess.user_id}
+                                                {userAccess.user_first_name
+                                                  ? `${userAccess.user_first_name} ${userAccess.user_last_name}`
+                                                  : userAccess.user_id}
                                               </span>
                                             </div>
                                           </td>
@@ -343,7 +340,8 @@ export default function GroupsPage() {
                                             <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-[#606c38]/10 text-[#283618]">
                                               <Shield className="h-3 w-3 mr-1" />
                                               <span className="font-mono">
-                                                {userAccess.role_name || userAccess.role_id}
+                                                {userAccess.role_name ||
+                                                  userAccess.role_id}
                                               </span>
                                             </span>
                                           </td>

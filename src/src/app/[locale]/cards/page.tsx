@@ -31,7 +31,14 @@ import {
   pageTitle,
   pageSubtitle,
 } from "../components/ui";
-import { Card, CardType, CARD_TYPES } from "@/types/card";
+import {
+  Card,
+  CardType,
+  getCardTypeIcon,
+  CARD_TYPE_DISPLAY_ORDER,
+  hasCardTypeTranslation,
+} from "@/types/card";
+import { EnumAPIService, EnumValue } from "@/services/enumService";
 import usePermissions from "@/hooks/usePermissions";
 import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
 
@@ -53,10 +60,60 @@ export default function CardsPage() {
   const [isDuplicating, setIsDuplicating] = useState(false);
   const [duplicateCardName, setDuplicateCardName] = useState("");
 
-  // Cargar cards al montar el componente
+  // Estados para tipos de cards dinámicos
+  const [cardTypes, setCardTypes] = useState<EnumValue[]>([]);
+  const [loadingTypes, setLoadingTypes] = useState(true);
+
+  // Cargar cards y tipos al montar el componente
   useEffect(() => {
     loadCards();
+    loadCardTypes();
   }, []);
+
+  // Función helper para obtener el label traducido de un tipo de card
+  const getCardTypeLabel = (cardType: string): string => {
+    // Si el tipo tiene traducción disponible, usarla
+    if (hasCardTypeTranslation(cardType)) {
+      return t(`cardTypes.${cardType}`);
+    }
+    // Si no, mostrar el valor tal como viene de la API
+    return cardType;
+  };
+
+  // Función para cargar los tipos de cards desde la API
+  const loadCardTypes = async () => {
+    setLoadingTypes(true);
+    try {
+      const types = await EnumAPIService.getCardTypes();
+
+      // Ordenar tipos según el orden preferido
+      const sortedTypes = types.sort((a, b) => {
+        const indexA = CARD_TYPE_DISPLAY_ORDER.indexOf(a.value);
+        const indexB = CARD_TYPE_DISPLAY_ORDER.indexOf(b.value);
+
+        // Si ambos están en el orden preferido, usar ese orden
+        if (indexA !== -1 && indexB !== -1) {
+          return indexA - indexB;
+        }
+
+        // Si solo uno está en el orden preferido, ese va primero
+        if (indexA !== -1) return -1;
+        if (indexB !== -1) return 1;
+
+        // Si ninguno está en el orden preferido, ordenar alfabéticamente
+        return a.label.localeCompare(b.label);
+      });
+
+      setCardTypes(sortedTypes);
+    } catch (error) {
+      console.error("Error loading card types:", error);
+      showToast("Error al cargar los tipos de cards", "error", 4000);
+      // En caso de error, usar un array vacío
+      setCardTypes([]);
+    } finally {
+      setLoadingTypes(false);
+    }
+  };
 
   // Función para cargar cards desde la API
   const loadCards = async () => {
@@ -67,8 +124,6 @@ export default function CardsPage() {
       const response = await CardAPIService.getCards();
 
       if (response.success) {
-        console.log("Fetched cards:", response);
-        // Filtrar solo las cards activas
         const activeCards = response.data.filter(
           (card) => card.status === "active"
         );
@@ -87,25 +142,21 @@ export default function CardsPage() {
 
   // Filtrar cards cuando cambia el término de búsqueda o el tipo seleccionado
   useEffect(() => {
-    let filtered = cards;
+    const term = searchTerm.trim().toLowerCase();
 
-    // Filtrar por tipo
-    if (selectedType !== "all") {
-      filtered = filtered.filter((card) => card.card_type === selectedType);
-    }
+    const filtered = cards.filter((card) => {
+      const matchesType =
+        selectedType === "all" || card.card_type === selectedType;
+      const matchesSearch =
+        !term ||
+        card.card_name.toLowerCase().includes(term) ||
+        getCardTypeLabel(card.card_type).toLowerCase().includes(term);
 
-    // Filtrar por búsqueda
-    if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(
-        (card) =>
-          card.card_name.toLowerCase().includes(term) ||
-          t(`cardTypes.${card.card_type}`).toLowerCase().includes(term)
-      );
-    }
+      return matchesType && matchesSearch;
+    });
 
     setFilteredCards(filtered);
-  }, [searchTerm, selectedType, cards, t]);
+  }, [searchTerm, selectedType, cards, cardTypes, t]);
 
   // Efecto para cerrar el modal con la tecla Escape
   useEffect(() => {
@@ -146,12 +197,11 @@ export default function CardsPage() {
 
   // Función para confirmar la eliminación (cambiar status a archived)
   const handleConfirmDelete = async () => {
-    if (!cardToDelete || !cardToDelete._id) return;
+    if (!cardToDelete?._id) return;
 
     setIsDeleting(true);
 
     try {
-      // Actualizar el card cambiando su status a archived
       const response = await CardAPIService.updateCard(cardToDelete._id, {
         ...cardToDelete,
         status: "archived",
@@ -163,8 +213,6 @@ export default function CardsPage() {
           "success",
           3000
         );
-
-        // Recargar la lista de cards
         loadCards();
         handleCloseDeleteModal();
       } else {
@@ -201,7 +249,7 @@ export default function CardsPage() {
 
   // Función para confirmar la duplicación
   const handleConfirmDuplicate = async () => {
-    if (!cardToDuplicate || !cardToDuplicate._id) return;
+    if (!cardToDuplicate?._id) return;
 
     setIsDuplicating(true);
 
@@ -216,8 +264,6 @@ export default function CardsPage() {
           "success",
           3000
         );
-
-        // Recargar la lista de cards
         loadCards();
         handleCloseDuplicateModal();
       } else {
@@ -235,18 +281,6 @@ export default function CardsPage() {
       );
       setIsDuplicating(false);
     }
-  };
-
-  // Función para obtener el icono del tipo de card
-  const getCardTypeIcon = (cardType: CardType) => {
-    const icons = {
-      pest_or_disease: "🐛",
-      crop_info: "🌾",
-      recommendation: "💡",
-      weather_alert: "⚠️",
-      general: "📄",
-    };
-    return icons[cardType] || "📄";
   };
 
   return (
@@ -321,20 +355,29 @@ export default function CardsPage() {
               >
                 {t("allTypes")}
               </button>
-              {Object.entries(CARD_TYPES).map(([type, { label, icon }]) => (
-                <button
-                  key={type}
-                  onClick={() => setSelectedType(type as CardType)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap flex items-center gap-2 cursor-pointer ${
-                    selectedType === type
-                      ? "bg-[#606c38] text-white"
-                      : "bg-white text-[#283618] border border-gray-200 hover:bg-gray-50"
-                  }`}
-                >
-                  <span>{icon}</span>
-                  <span>{t(`cardTypes.${type}`)}</span>
-                </button>
-              ))}
+              {loadingTypes ? (
+                <div className="flex items-center gap-2 px-4 py-2">
+                  <Loader2 className="h-4 w-4 animate-spin text-[#606c38]" />
+                  <span className="text-sm text-[#283618]/60">
+                    {t("loading")}
+                  </span>
+                </div>
+              ) : (
+                cardTypes.map((type) => (
+                  <button
+                    key={type.value}
+                    onClick={() => setSelectedType(type.value)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap flex items-center gap-2 cursor-pointer ${
+                      selectedType === type.value
+                        ? "bg-[#606c38] text-white"
+                        : "bg-white text-[#283618] border border-gray-200 hover:bg-gray-50"
+                    }`}
+                  >
+                    <span>{getCardTypeIcon(type.value)}</span>
+                    <span>{getCardTypeLabel(type.value)}</span>
+                  </button>
+                ))
+              )}
             </div>
           </div>
 
@@ -387,7 +430,7 @@ export default function CardsPage() {
                     badge={
                       <div className="flex items-center gap-1 text-xs">
                         <span>{getCardTypeIcon(card.card_type)}</span>
-                        <span>{t(`cardTypes.${card.card_type}`)}</span>
+                        <span>{getCardTypeLabel(card.card_type)}</span>
                       </div>
                     }
                     metadata={
