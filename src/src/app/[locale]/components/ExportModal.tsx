@@ -253,7 +253,7 @@ export function ExportModal({
       setProgress({
         current: 100,
         total: 100,
-        message: t("exportCompleted"),
+        message: t("exportComplete"),
       });
 
       // Cerrar modal después de 2 segundos
