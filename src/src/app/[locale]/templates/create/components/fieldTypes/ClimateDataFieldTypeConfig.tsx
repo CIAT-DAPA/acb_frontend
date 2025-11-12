@@ -8,27 +8,22 @@ import {
   btnCancel,
   btnOutlineSecondary,
   btnPrimary,
+  labelClass,
+  labelXsClass,
+  inputClass,
+  inputDisabledClass,
+  parameterCardClass,
+  newParameterCardClass,
+  helpBoxClass,
+  emptyStateClass,
+  btnDangerClass,
+  checkboxClass,
+  selectClass,
+  inputXsClass,
+  selectXsClass,
 } from "@/app/[locale]/components/ui";
 import { StyleConfig } from "@/types/core";
 import { StyleConfigurator } from "../StyleConfigurator";
-
-// CSS Constants
-const LABEL_CLASS = "block text-sm font-medium text-[#283618]/70";
-const LABEL_SMALL_CLASS = "block text-xs font-medium text-gray-700 mb-1";
-const INPUT_CLASS =
-  "block w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500";
-const INPUT_DISABLED_CLASS =
-  "block w-full px-2 py-1.5 text-sm bg-gray-100 border border-gray-300 rounded cursor-not-allowed";
-const PARAMETER_CARD_CLASS = "p-4 border border-gray-200 rounded-md bg-gray-50";
-const NEW_PARAMETER_CARD_CLASS =
-  "p-4 border-2 border-blue-200 rounded-md bg-blue-50";
-const HELP_BOX_CLASS = "bg-blue-50 border border-blue-200 rounded-md p-3";
-const EMPTY_STATE_CLASS =
-  "text-center py-4 text-gray-500 text-sm border border-gray-200 rounded-md bg-gray-50";
-const REMOVE_BUTTON_CLASS =
-  "px-3 py-1.5 text-sm text-red-600 border border-red-300 rounded-md hover:bg-red-50";
-const CHECKBOX_CLASS =
-  "w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500";
 
 interface ClimateParameter {
   label: string;
@@ -139,7 +134,7 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
       {/* Parámetros climáticos */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <label className={LABEL_CLASS}>{t("availableParameters")}</label>
+          <label className={labelClass}>{t("availableParameters")}</label>
           <button
             type="button"
             onClick={() => setIsAddingParameter(true)}
@@ -154,31 +149,29 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
           {parameterKeys.map((paramKey) => {
             const param = availableParameters[paramKey];
             return (
-              <div key={paramKey} className={PARAMETER_CARD_CLASS}>
+              <div key={paramKey} className={parameterCardClass}>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   {/* Clave del parámetro */}
                   <div>
-                    <label className={LABEL_SMALL_CLASS}>
-                      {t("parameterKey")}
-                    </label>
+                    <label className={labelXsClass}>{t("parameterKey")}</label>
                     <input
                       type="text"
                       value={paramKey}
                       disabled
-                      className={INPUT_DISABLED_CLASS}
+                      className={inputDisabledClass}
                     />
                   </div>
 
                   {/* Etiqueta */}
                   <div>
-                    <label className={LABEL_SMALL_CLASS}>{t("label")}</label>
+                    <label className={labelXsClass}>{t("label")}</label>
                     <input
                       type="text"
                       value={param.label}
                       onChange={(e) =>
                         updateParameter(paramKey, "label", e.target.value)
                       }
-                      className={INPUT_CLASS}
+                      className={inputXsClass}
                       placeholder={t("placeholders.labelExample")}
                     />
                   </div>
@@ -186,14 +179,14 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                   {/* Unidad - Solo para tipo number */}
                   {param.type === "number" && (
                     <div>
-                      <label className={LABEL_SMALL_CLASS}>{t("unit")}</label>
+                      <label className={labelXsClass}>{t("unit")}</label>
                       <input
                         type="text"
                         value={param.unit}
                         onChange={(e) =>
                           updateParameter(paramKey, "unit", e.target.value)
                         }
-                        className={INPUT_CLASS}
+                        className={inputXsClass}
                         placeholder={t("placeholders.unitExample")}
                       />
                     </div>
@@ -201,7 +194,7 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
 
                   {/* Tipo */}
                   <div>
-                    <label className={LABEL_SMALL_CLASS}>{t("type")}</label>
+                    <label className={labelXsClass}>{t("type")}</label>
                     <select
                       value={param.type}
                       onChange={(e) =>
@@ -211,7 +204,7 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                           e.target.value as "number" | "text"
                         )
                       }
-                      className={INPUT_CLASS}
+                      className={selectXsClass}
                     >
                       <option value="number">{t("typeNumber")}</option>
                       <option value="text">{t("typeText")}</option>
@@ -220,14 +213,14 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
 
                   {/* Nombre de columna */}
                   <div>
-                    <label className={LABEL_SMALL_CLASS}>{t("colName")}</label>
+                    <label className={labelXsClass}>{t("colName")}</label>
                     <input
                       type="text"
                       value={param.col_name}
                       onChange={(e) =>
                         updateParameter(paramKey, "col_name", e.target.value)
                       }
-                      className={INPUT_CLASS}
+                      className={inputXsClass}
                       placeholder={t("placeholders.colNameExample")}
                     />
                   </div>
@@ -245,7 +238,7 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                             e.target.checked
                           )
                         }
-                        className={CHECKBOX_CLASS}
+                        className={checkboxClass}
                       />
                       <span className="text-xs text-gray-700">
                         {t("showNameInPreview")}
@@ -258,7 +251,7 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                     <button
                       type="button"
                       onClick={() => removeParameter(paramKey)}
-                      className={REMOVE_BUTTON_CLASS}
+                      className={btnDangerClass}
                     >
                       {fieldT("actions.remove")}
                     </button>
@@ -305,15 +298,13 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
 
           {/* Formulario para agregar nuevo parámetro */}
           {isAddingParameter && (
-            <div className={NEW_PARAMETER_CARD_CLASS}>
+            <div className={newParameterCardClass}>
               <h4 className="text-sm font-medium text-blue-900 mb-3">
                 {t("addNewParameter")}
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 <div>
-                  <label className={LABEL_SMALL_CLASS}>
-                    {t("parameterKey")} *
-                  </label>
+                  <label className={labelXsClass}>{t("parameterKey")} *</label>
                   <input
                     type="text"
                     value={newParameter.key}
@@ -323,13 +314,13 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                         key: e.target.value,
                       })
                     }
-                    className={INPUT_CLASS}
+                    className={inputXsClass}
                     placeholder={t("placeholders.keyExample")}
                   />
                 </div>
 
                 <div>
-                  <label className={LABEL_SMALL_CLASS}>{t("label")} *</label>
+                  <label className={labelXsClass}>{t("label")} *</label>
                   <input
                     type="text"
                     value={newParameter.label}
@@ -339,7 +330,7 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                         label: e.target.value,
                       })
                     }
-                    className={INPUT_CLASS}
+                    className={inputXsClass}
                     placeholder={t("placeholders.labelExample")}
                   />
                 </div>
@@ -347,7 +338,7 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                 {/* Unidad - Solo para tipo number */}
                 {newParameter.type === "number" && (
                   <div>
-                    <label className={LABEL_SMALL_CLASS}>{t("unit")}</label>
+                    <label className={labelXsClass}>{t("unit")}</label>
                     <input
                       type="text"
                       value={newParameter.unit}
@@ -357,14 +348,14 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                           unit: e.target.value,
                         })
                       }
-                      className={INPUT_CLASS}
+                      className={inputXsClass}
                       placeholder={t("placeholders.unitExample")}
                     />
                   </div>
                 )}
 
                 <div>
-                  <label className={LABEL_SMALL_CLASS}>{t("type")}</label>
+                  <label className={labelXsClass}>{t("type")}</label>
                   <select
                     value={newParameter.type}
                     onChange={(e) => {
@@ -376,7 +367,7 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                         unit: newType === "text" ? "" : newParameter.unit,
                       });
                     }}
-                    className={INPUT_CLASS}
+                    className={selectXsClass}
                   >
                     <option value="number">{t("typeNumber")}</option>
                     <option value="text">{t("typeText")}</option>
@@ -384,7 +375,7 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                 </div>
 
                 <div>
-                  <label className={LABEL_SMALL_CLASS}>{t("colName")}</label>
+                  <label className={labelXsClass}>{t("colName")}</label>
                   <input
                     type="text"
                     value={newParameter.col_name}
@@ -394,7 +385,7 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                         col_name: e.target.value,
                       })
                     }
-                    className={INPUT_CLASS}
+                    className={inputXsClass}
                     placeholder={t("placeholders.colNameExample")}
                   />
                 </div>
@@ -411,7 +402,7 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                           showName: e.target.checked,
                         })
                       }
-                      className={CHECKBOX_CLASS}
+                      className={checkboxClass}
                     />
                     <span className="text-xs text-gray-700">
                       {t("showNameInPreview")}
@@ -450,13 +441,13 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
           )}
 
           {parameterKeys.length === 0 && !isAddingParameter && (
-            <div className={EMPTY_STATE_CLASS}>{t("noParameters")}</div>
+            <div className={emptyStateClass}>{t("noParameters")}</div>
           )}
         </div>
       </div>
 
       {/* Información de ayuda */}
-      <div className={HELP_BOX_CLASS}>
+      <div className={helpBoxClass}>
         <h4 className="text-sm font-medium text-blue-900 mb-2">
           {t("helpTitle")}
         </h4>

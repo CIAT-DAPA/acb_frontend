@@ -4,7 +4,14 @@ import React, { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { BaseFieldTypeConfigProps } from "./BaseFieldTypeConfig";
 import { Plus, Trash2, Search } from "lucide-react";
-import { btnOutlineSecondary } from "@/app/[locale]/components/ui";
+import {
+  btnOutlineSecondary,
+  labelClass,
+  helpTextClass,
+  btnDangerIconClass,
+  emptyStateClass,
+  infoBoxClass,
+} from "@/app/[locale]/components/ui";
 import { CardAPIService } from "../../../../../../services/cardService";
 import { Card } from "../../../../../../types/card";
 
@@ -14,8 +21,6 @@ interface CardFieldConfig {
 }
 
 // CSS Constants
-const LABEL_CLASS = "block text-sm font-medium text-[#283618]/70";
-const HELP_TEXT_CLASS = "text-xs text-[#283618]/50 mb-3";
 const CARD_ITEM_CLASS =
   "flex items-center gap-3 p-3 border border-gray-200 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors";
 const THUMBNAIL_CLASS =
@@ -23,10 +28,6 @@ const THUMBNAIL_CLASS =
 const THUMBNAIL_IMAGE_CLASS = "w-full h-full object-cover";
 const CARD_TITLE_CLASS = "font-medium text-[#283618] truncate";
 const CARD_META_CLASS = "text-xs text-[#283618]/50";
-const REMOVE_BUTTON_CLASS =
-  "flex-shrink-0 text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded transition-colors";
-const EMPTY_STATE_CLASS =
-  "text-center py-8 text-gray-500 text-sm border border-gray-200 rounded-md bg-gray-50";
 const MODAL_OVERLAY_CLASS =
   "fixed inset-0 bg-black/75 flex items-center justify-center z-50";
 const MODAL_CONTENT_CLASS =
@@ -37,7 +38,6 @@ const MODAL_CARD_BUTTON_CLASS =
   "w-full flex items-center gap-3 p-3 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors text-left";
 const MODAL_THUMBNAIL_CLASS =
   "flex-shrink-0 w-12 h-12 bg-white border border-gray-200 rounded overflow-hidden flex items-center justify-center";
-const INFO_BOX_CLASS = "p-3 bg-blue-50 border border-blue-200 rounded-md";
 
 export const CardFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
   currentField,
@@ -132,7 +132,7 @@ export const CardFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
     <div className="space-y-4">
       <div>
         <div className="flex items-center justify-between mb-3">
-          <label className={LABEL_CLASS}>{t("availableCards")}</label>
+          <label className={labelClass}>{t("availableCards")}</label>
           <button
             type="button"
             onClick={() => setShowCardSelector(true)}
@@ -144,7 +144,7 @@ export const CardFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
           </button>
         </div>
 
-        <p className={HELP_TEXT_CLASS}>{t("help")}</p>
+        <p className={helpTextClass}>{t("help")}</p>
 
         <div className="space-y-3">
           {availableCards.map((cardId) => {
@@ -166,7 +166,7 @@ export const CardFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                 <button
                   type="button"
                   onClick={() => removeCard(cardId)}
-                  className={REMOVE_BUTTON_CLASS}
+                  className={btnDangerIconClass}
                   title={t("remove")}
                 >
                   <Trash2 className="w-4 h-4" />
@@ -176,7 +176,7 @@ export const CardFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
           })}
 
           {availableCards.length === 0 && (
-            <div className={EMPTY_STATE_CLASS}>
+            <div className={emptyStateClass}>
               <p className="mb-2">{t("noCardsSelected")}</p>
               <p className="text-xs">{t("noCardsHelp")}</p>
             </div>
@@ -215,9 +215,9 @@ export const CardFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
 
             <div className="flex-1 overflow-y-auto space-y-2">
               {isLoadingCards ? (
-                <div className={EMPTY_STATE_CLASS}>{t("loadingCards")}</div>
+                <div className={emptyStateClass}>{t("loadingCards")}</div>
               ) : filteredCards.length === 0 ? (
-                <div className={EMPTY_STATE_CLASS}>
+                <div className={emptyStateClass}>
                   {searchTerm ? t("noResults") : t("noMoreCards")}
                 </div>
               ) : (
@@ -245,7 +245,7 @@ export const CardFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
       )}
 
       {availableCards.length > 0 && (
-        <div className={INFO_BOX_CLASS}>
+        <div className={infoBoxClass}>
           <p className="text-sm text-blue-800">
             <strong>
               {t("cardsCount", {

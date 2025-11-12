@@ -34,3 +34,46 @@ export const btnCancel =
   "inline-flex items-center gap-2 rounded px-4 py-3 border-2 border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer";
 export const pageTitle = "text-4xl font-bold text-[#283618] mb-4";
 export const pageSubtitle = "text-[#283618] text-lg max-w-2xl";
+
+// Clases para field config components
+
+export const sectionTitleDark = "text-sm font-semibold text-[#283618] mb-3";
+export const inputClass =
+  "block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500";
+export const inputXsClass =
+  "block w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500";
+export const labelClass = "block text-sm font-medium text-[#283618]/70 mb-2";
+export const labelXsClass = "block text-xs font-medium text-[#283618]/70 mb-1";
+export const selectClass =
+  "block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500";
+export const selectXsClass =
+  "block w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500";
+export const helpTextClass = "text-xs text-[#283618]/50";
+export const iconContainerClass =
+  "flex items-center space-x-2 p-2 rounded border";
+export const cardClass = "border rounded-lg p-4 bg-gray-50";
+export const checkboxClass =
+  "rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2";
+export const btnDangerClass =
+  "px-3 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors";
+export const btnIconClass =
+  "text-[#283618]/50 hover:text-[#283618] cursor-pointer";
+export const btnDangerIconClass =
+  "text-[#283618]/50 hover:text-red-600 cursor-pointer";
+export const infoBoxClass = "p-4 bg-blue-50 border border-blue-200 rounded-md";
+export const imageCardClass =
+  "flex items-center gap-3 p-3 border border-gray-200 rounded-md bg-white";
+export const imageItemClass =
+  "flex items-center gap-3 p-3 border border-gray-200 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors";
+export const imagePreviewClass =
+  "flex-shrink-0 w-16 h-16 bg-white border border-gray-200 rounded overflow-hidden flex items-center justify-center";
+export const imagePreviewLargeClass =
+  "flex-shrink-0 w-20 h-20 bg-white border border-gray-200 rounded overflow-hidden flex items-center justify-center";
+export const emptyStateClass =
+  "text-center py-8 text-gray-500 text-sm border border-gray-200 rounded-md bg-gray-50";
+export const inputDisabledClass =
+  "block w-full px-2 py-1.5 text-sm bg-gray-100 border border-gray-300 rounded cursor-not-allowed";
+export const parameterCardClass = "p-4 border border-gray-200 rounded-md bg-gray-50";
+export const newParameterCardClass =
+  "p-4 border-2 border-blue-200 rounded-md bg-blue-50";
+export const helpBoxClass = "bg-blue-50 border border-blue-200 rounded-md p-3";

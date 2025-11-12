@@ -4,29 +4,19 @@ import React, { useState } from "react";
 import { useTranslations } from "next-intl";
 import { BaseFieldTypeConfigProps } from "./BaseFieldTypeConfig";
 import { Plus, Trash2 } from "lucide-react";
-import { btnOutlineSecondary } from "@/app/[locale]/components/ui";
+import {
+  btnOutlineSecondary,
+  labelClass,
+  helpTextClass,
+  infoBoxClass,
+  imageCardClass,
+  imageItemClass,
+  imagePreviewClass,
+  imagePreviewLargeClass,
+  emptyStateClass,
+  btnDangerIconClass,
+} from "@/app/[locale]/components/ui";
 import { VisualResourceSelector } from "../VisualResourceSelector";
-
-// CSS Constants
-const LABEL_CLASS = "block text-sm font-medium text-[#283618]/70 mb-2";
-const HELP_TEXT_CLASS = "text-xs text-[#283618]/50 mb-3";
-const INFO_BOX_CLASS = "p-4 bg-blue-50 border border-blue-200 rounded-md";
-const IMAGE_CARD_CLASS =
-  "flex items-center gap-3 p-3 border border-gray-200 rounded-md bg-white";
-const IMAGE_ITEM_CLASS =
-  "flex items-center gap-3 p-3 border border-gray-200 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors";
-const IMAGE_PREVIEW_CLASS =
-  "flex-shrink-0 w-16 h-16 bg-white border border-gray-200 rounded overflow-hidden flex items-center justify-center";
-const IMAGE_PREVIEW_LARGE_CLASS =
-  "flex-shrink-0 w-20 h-20 bg-white border border-gray-200 rounded overflow-hidden flex items-center justify-center";
-const BUTTON_CHANGE_CLASS =
-  "text-xs text-blue-600 hover:text-blue-800 font-medium";
-const BUTTON_DELETE_CLASS =
-  "flex-shrink-0 text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded transition-colors";
-const BUTTON_SELECT_CLASS =
-  "w-full px-4 py-3 text-sm border-2 border-dashed border-gray-300 rounded hover:bg-white hover:border-blue-400 text-gray-600 hover:text-blue-600 transition-colors";
-const EMPTY_STATE_CLASS =
-  "text-center py-8 text-gray-500 text-sm border border-gray-200 rounded-md bg-gray-50";
 
 interface ImageFieldConfig {
   images: string[];
@@ -76,14 +66,14 @@ export const ImageFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
     <div className="space-y-4">
       {/* Cuando form es false, mostrar selector de value */}
       {!currentField.form && (
-        <div className={INFO_BOX_CLASS}>
-          <label className={LABEL_CLASS}>{t("predefinedImageLabel")}</label>
-          <p className={HELP_TEXT_CLASS}>{t("predefinedImageHelp")}</p>
+        <div className={infoBoxClass}>
+          <label className={labelClass}>{t("predefinedImageLabel")}</label>
+          <p className={helpTextClass}>{t("predefinedImageHelp")}</p>
 
           {currentField.value ? (
-            <div className={IMAGE_CARD_CLASS}>
+            <div className={imageCardClass}>
               {/* Preview de la imagen */}
-              <div className={IMAGE_PREVIEW_LARGE_CLASS}>
+              <div className={imagePreviewLargeClass}>
                 <img
                   src={currentField.value as string}
                   alt={t("predefinedImageAlt")}
@@ -103,7 +93,7 @@ export const ImageFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowValueSelector(true)}
-                  className={`${BUTTON_CHANGE_CLASS} mt-1`}
+                  className={`${btnOutlineSecondary} mt-1`}
                 >
                   {t("changeImage")}
                 </button>
@@ -113,7 +103,7 @@ export const ImageFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
               <button
                 type="button"
                 onClick={() => updateField({ value: undefined })}
-                className={BUTTON_DELETE_CLASS}
+                className={btnDangerIconClass}
                 title={t("deleteValue")}
               >
                 <Trash2 className="w-4 h-4" />
@@ -123,7 +113,7 @@ export const ImageFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
             <button
               type="button"
               onClick={() => setShowValueSelector(true)}
-              className={BUTTON_SELECT_CLASS}
+              className={btnOutlineSecondary}
             >
               + {t("selectPredefinedImage")}
             </button>
@@ -135,7 +125,7 @@ export const ImageFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
       {currentField.form && (
         <div>
           <div className="flex items-center justify-between mb-3">
-            <label className={LABEL_CLASS}>{t("availableImagesLabel")}</label>
+            <label className={labelClass}>{t("availableImagesLabel")}</label>
             <button
               type="button"
               onClick={addImage}
@@ -145,13 +135,13 @@ export const ImageFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
             </button>
           </div>
 
-          <p className={HELP_TEXT_CLASS}>{t("availableImagesHelp")}</p>
+          <p className={helpTextClass}>{t("availableImagesHelp")}</p>
 
           <div className="space-y-3">
             {images.map((imageUrl, index) => (
-              <div key={index} className={IMAGE_ITEM_CLASS}>
+              <div key={index} className={imageItemClass}>
                 {/* Preview de la imagen */}
-                <div className={IMAGE_PREVIEW_CLASS}>
+                <div className={imagePreviewClass}>
                   {imageUrl ? (
                     <img
                       src={imageUrl}
@@ -182,7 +172,7 @@ export const ImageFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                       <button
                         type="button"
                         onClick={() => setShowImageSelectorForIndex(index)}
-                        className={BUTTON_CHANGE_CLASS}
+                        className={`${btnOutlineSecondary} text-sm`}
                       >
                         {t("change")}
                       </button>
@@ -202,7 +192,7 @@ export const ImageFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                 <button
                   type="button"
                   onClick={() => removeImage(index)}
-                  className={BUTTON_DELETE_CLASS}
+                  className={btnDangerIconClass}
                   title={t("deleteImage")}
                 >
                   <Trash2 className="w-4 h-4" />
@@ -211,49 +201,11 @@ export const ImageFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
             ))}
 
             {images.length === 0 && (
-              <div className={EMPTY_STATE_CLASS}>
+              <div className={emptyStateClass}>
                 <p className="mb-2">{t("noImagesConfigured")}</p>
                 <p className="text-xs">{t("clickAddImage")}</p>
               </div>
             )}
-          </div>
-        </div>
-      )}
-
-      {/* Vista previa de galería (solo cuando form es true) */}
-      {currentField.form && images.length > 0 && (
-        <div>
-          <label className={LABEL_CLASS}>{t("galleryPreviewLabel")}</label>
-          <div className="p-4 border border-gray-200 rounded-md bg-white">
-            <div className="grid grid-cols-3 gap-3">
-              {images.map((imageUrl, index) => (
-                <div
-                  key={index}
-                  className="aspect-square border border-gray-200 rounded overflow-hidden hover:border-[#bc6c25] transition-colors cursor-pointer"
-                >
-                  {imageUrl ? (
-                    <img
-                      src={imageUrl}
-                      alt={t("previewNumber", { number: index + 1 })}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src =
-                          "/assets/img/imageNotFound.png";
-                      }}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                      <span className="text-gray-400 text-xs">
-                        {t("noImage")}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-            <p className="text-xs text-[#283618]/50 mt-3 text-center">
-              {t("galleryPreviewHelp")}
-            </p>
           </div>
         </div>
       )}

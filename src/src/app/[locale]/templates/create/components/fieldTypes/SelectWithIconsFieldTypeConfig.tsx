@@ -4,19 +4,17 @@ import React, { useState } from "react";
 import { useTranslations } from "next-intl";
 import { BaseFieldTypeConfigProps } from "./BaseFieldTypeConfig";
 import { Plus } from "lucide-react";
-import { btnOutlineSecondary } from "@/app/[locale]/components/ui";
+import {
+  btnOutlineSecondary,
+  inputXsClass,
+  labelClass,
+  labelXsClass,
+  helpTextClass,
+  checkboxClass,
+  iconContainerClass,
+} from "@/app/[locale]/components/ui";
 import { VisualResourceSelector } from "../VisualResourceSelector";
 
-// Constantes CSS reutilizables
-const INPUT_CLASS =
-  "block w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500";
-const LABEL_CLASS = "block text-sm font-medium text-[#283618]/70";
-const LABEL_XS_CLASS = "block text-xs font-medium text-gray-700 mb-1";
-const HELP_TEXT_CLASS = "text-xs text-gray-500 mt-1";
-const CHECKBOX_CLASS =
-  "rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2";
-const ICON_CONTAINER_CLASS =
-  "flex items-center space-x-2 p-2 rounded border flex-1";
 const IMAGE_ERROR_SRC = "/assets/img/imageNotFound.png";
 
 interface SelectWithIconsFieldConfig {
@@ -99,11 +97,11 @@ export const SelectWithIconsFieldTypeConfig: React.FC<
           type="checkbox"
           checked={checked}
           onChange={(e) => onChange(e.target.checked)}
-          className={CHECKBOX_CLASS}
+          className={checkboxClass}
         />
         {label}
       </label>
-      <p className={HELP_TEXT_CLASS}>{helpText}</p>
+      <p className={helpTextClass}>{helpText}</p>
     </div>
   );
 
@@ -117,7 +115,7 @@ export const SelectWithIconsFieldTypeConfig: React.FC<
     index: number;
     onChangeClick: () => void;
   }) => (
-    <div className={`${ICON_CONTAINER_CLASS} bg-green-50 border-green-200`}>
+    <div className={`${iconContainerClass} bg-green-50 border-green-200`}>
       <img
         src={iconUrl}
         alt={`${t("selectWithIconsConfig.optionLabel")} ${index + 1}`}
@@ -158,7 +156,7 @@ export const SelectWithIconsFieldTypeConfig: React.FC<
       {/* Opciones e iconos */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <label className={LABEL_CLASS}>
+          <label className={labelClass}>
             {t("selectWithIconsConfig.optionsAndIcons")}
           </label>
           <button
@@ -178,21 +176,21 @@ export const SelectWithIconsFieldTypeConfig: React.FC<
             >
               {/* Opción */}
               <div className="col-span-5">
-                <label className={LABEL_XS_CLASS}>
+                <label className={labelXsClass}>
                   {t("selectWithIconsConfig.optionLabel")} {index + 1}
                 </label>
                 <input
                   type="text"
                   value={option}
                   onChange={(e) => updateOption(index, e.target.value)}
-                  className={INPUT_CLASS}
+                  className={inputXsClass}
                   placeholder={t("selectWithIconsConfig.optionPlaceholder")}
                 />
               </div>
 
               {/* Selector de icono */}
               <div className="col-span-5">
-                <label className={LABEL_XS_CLASS}>
+                <label className={labelXsClass}>
                   {t("selectWithIconsConfig.iconUrl")}
                 </label>
                 <div className="flex items-center space-x-2">

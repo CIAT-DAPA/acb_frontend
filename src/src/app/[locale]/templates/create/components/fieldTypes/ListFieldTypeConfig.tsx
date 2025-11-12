@@ -5,21 +5,18 @@ import { useTranslations } from "next-intl";
 import { ListFieldConfig, Field } from "../../../../../../types/template";
 import { BaseFieldTypeConfigProps } from "./BaseFieldTypeConfig";
 import { FieldEditor } from "../FieldEditor";
-import { btnOutlineSecondary } from "@/app/[locale]/components/ui";
+import {
+  btnOutlineSecondary,
+  inputClass,
+  labelClass,
+  labelXsClass,
+  helpTextClass,
+  cardClass,
+  btnIconClass,
+  btnDangerIconClass,
+} from "@/app/[locale]/components/ui";
 import { Plus, Settings, Trash2, GripVertical } from "lucide-react";
 import { VisualResourceSelector } from "../VisualResourceSelector";
-
-// Constantes CSS reutilizables
-const INPUT_CLASS =
-  "block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm";
-const LABEL_CLASS = "block text-sm font-medium text-[#283618]/70 mb-2";
-const LABEL_SM_CLASS = "block text-sm font-medium text-[#283618]/70 mb-1";
-const HELP_TEXT_CLASS = "mt-1 text-xs text-[#283618]/50";
-const CARD_CLASS = "border rounded-lg p-4 bg-gray-50";
-const BUTTON_ICON_CLASS =
-  "text-[#283618]/50 hover:text-[#283618] cursor-pointer";
-const BUTTON_DANGER_ICON_CLASS =
-  "text-[#283618]/50 hover:text-red-600 cursor-pointer";
 
 // Componente para renderizar el input apropiado según el tipo de campo
 interface ItemFieldInputProps {
@@ -91,7 +88,7 @@ const ItemFieldInput: React.FC<ItemFieldInputProps> = ({
       type="text"
       value={value || ""}
       onChange={(e) => onChange(e.target.value)}
-      className={INPUT_CLASS}
+      className={inputClass}
       placeholder={`${t("enterValue")} ${fieldDef.label || fieldId}`}
     />
   );
@@ -154,7 +151,7 @@ const ItemSchemaField: React.FC<ItemSchemaFieldProps> = ({
           <button
             type="button"
             onClick={() => setShowFieldEditor(true)}
-            className={BUTTON_ICON_CLASS}
+            className={btnIconClass}
             title={t("configureField")}
           >
             <Settings className="w-4 h-4" />
@@ -162,7 +159,7 @@ const ItemSchemaField: React.FC<ItemSchemaFieldProps> = ({
           <button
             type="button"
             onClick={onDelete}
-            className={BUTTON_DANGER_ICON_CLASS}
+            className={btnDangerIconClass}
             title={t("deleteField")}
           >
             <Trash2 className="w-4 h-4" />
@@ -247,7 +244,7 @@ export const ListFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
       {isFormMode && (
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={LABEL_CLASS}>{t("minItems")}</label>
+            <label className={labelClass}>{t("minItems")}</label>
             <input
               type="number"
               min="0"
@@ -257,12 +254,12 @@ export const ListFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                   min_items: parseInt(e.target.value) || 0,
                 })
               }
-              className={INPUT_CLASS}
+              className={inputClass}
               placeholder="0"
             />
           </div>
           <div>
-            <label className={LABEL_CLASS}>{t("maxItems")}</label>
+            <label className={labelClass}>{t("maxItems")}</label>
             <input
               type="number"
               min="1"
@@ -272,7 +269,7 @@ export const ListFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                   max_items: parseInt(e.target.value) || 10,
                 })
               }
-              className={INPUT_CLASS}
+              className={inputClass}
               placeholder="10"
             />
           </div>
@@ -280,7 +277,7 @@ export const ListFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
       )}
 
       <div>
-        <label className={LABEL_CLASS}>{t("itemsPerPage")}</label>
+        <label className={labelClass}>{t("itemsPerPage")}</label>
         <input
           type="number"
           min="1"
@@ -292,10 +289,10 @@ export const ListFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                 : undefined,
             })
           }
-          className={INPUT_CLASS}
+          className={inputClass}
           placeholder={t("itemsPerPagePlaceholder")}
         />
-        <p className={HELP_TEXT_CLASS}>{t("itemsPerPageHelp")}</p>
+        <p className={helpTextClass}>{t("itemsPerPageHelp")}</p>
       </div>
 
       {/* Configuración del esquema de elementos */}
@@ -304,7 +301,7 @@ export const ListFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
           {t("schemaTitle")}
         </h4>
 
-        <div className={`${CARD_CLASS} border`}>
+        <div className={`${cardClass} border`}>
           <div className="flex items-center justify-between mb-4 space-x-2">
             <p className="text-sm text-gray-700">{t("schemaDescription")}</p>
             <button
@@ -434,7 +431,7 @@ export const ListFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                             value: newItems,
                           });
                         }}
-                        className={BUTTON_DANGER_ICON_CLASS}
+                        className={btnDangerIconClass}
                         title={t("deleteItem")}
                       >
                         <Trash2 className="w-4 h-4" />
@@ -446,7 +443,7 @@ export const ListFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                       {Object.entries(fieldConfig?.item_schema || {}).map(
                         ([fieldId, fieldDef]: [string, any]) => (
                           <div key={fieldId}>
-                            <label className={LABEL_SM_CLASS}>
+                            <label className={labelXsClass}>
                               {fieldDef.label || fieldId}
                             </label>
                             <ItemFieldInput

@@ -4,11 +4,7 @@ import React from "react";
 import { useTranslations } from "next-intl";
 import { DateFieldConfig } from "../../../../../../types/template";
 import { BaseFieldTypeConfigProps } from "./BaseFieldTypeConfig";
-
-// CSS Constants
-const LABEL_CLASS = "block text-sm font-medium text-[#283618]/70 mb-2";
-const SELECT_CLASS =
-  "block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500";
+import { labelClass, selectClass } from "@/app/[locale]/components/ui";
 
 // Date format options
 const DATE_FORMATS = [
@@ -33,11 +29,11 @@ export const DateFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
 
   return (
     <div>
-      <label className={LABEL_CLASS}>{t("format")}</label>
+      <label className={labelClass}>{t("format")}</label>
       <select
         value={config.date_format || "YYYY-MM-DD"}
         onChange={(e) => updateFieldConfig({ date_format: e.target.value })}
-        className={SELECT_CLASS}
+        className={selectClass}
       >
         {DATE_FORMATS.map((format) => (
           <option key={format} value={format}>

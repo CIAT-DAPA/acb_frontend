@@ -4,17 +4,15 @@ import React, { useState } from "react";
 import { useTranslations } from "next-intl";
 import { BaseFieldTypeConfigProps } from "./BaseFieldTypeConfig";
 import { Plus, Trash2 } from "lucide-react";
-import { btnOutlineSecondary } from "@/app/[locale]/components/ui";
+import {
+  btnOutlineSecondary,
+  labelClass,
+  labelXsClass,
+  btnDangerClass,
+  inputXsClass,
+} from "@/app/[locale]/components/ui";
 import { VisualResourceSelector } from "../VisualResourceSelector";
 import Image from "next/image";
-
-// Constantes CSS reutilizables
-const INPUT_CLASS =
-  "block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm";
-const LABEL_CLASS = "block text-sm font-medium text-[#283618]/70";
-const LABEL_XS_CLASS = "block text-xs font-medium text-gray-700 mb-1";
-const BUTTON_DANGER_CLASS =
-  "px-3 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors";
 
 interface SelectBackgroundFieldConfig {
   options: string[];
@@ -106,7 +104,7 @@ export const SelectBackgroundFieldTypeConfig: React.FC<
       {/* Opciones e imágenes de fondo */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <label className={LABEL_CLASS}>
+          <label className={labelClass}>
             {t("selectBackgroundConfig.optionsAndBackgrounds")}
           </label>
           <button
@@ -126,21 +124,21 @@ export const SelectBackgroundFieldTypeConfig: React.FC<
             >
               {/* Label de la opción */}
               <div className="col-span-4">
-                <label className={LABEL_XS_CLASS}>
+                <label className={labelXsClass}>
                   {t("selectBackgroundConfig.optionLabel")} {index + 1}
                 </label>
                 <input
                   type="text"
                   value={option}
                   onChange={(e) => updateOption(index, e.target.value)}
-                  className={INPUT_CLASS}
+                  className={inputXsClass}
                   placeholder={t("selectBackgroundConfig.optionPlaceholder")}
                 />
               </div>
 
               {/* Vista previa del fondo */}
               <div className="col-span-4">
-                <label className={LABEL_XS_CLASS}>
+                <label className={labelXsClass}>
                   {t("selectBackgroundConfig.backgroundImage")}
                 </label>
                 <BackgroundPreview
@@ -163,7 +161,7 @@ export const SelectBackgroundFieldTypeConfig: React.FC<
                 <button
                   type="button"
                   onClick={() => removeOption(index)}
-                  className={BUTTON_DANGER_CLASS}
+                  className={btnDangerClass}
                   title={t("actions.remove")}
                 >
                   <Trash2 className="w-4 h-4" />

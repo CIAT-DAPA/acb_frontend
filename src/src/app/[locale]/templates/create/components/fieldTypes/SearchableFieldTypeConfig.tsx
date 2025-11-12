@@ -6,11 +6,22 @@ import { BaseFieldTypeConfigProps } from "./BaseFieldTypeConfig";
 import { Plus, X } from "lucide-react";
 import {
   btnOutlineSecondary,
+  labelClass,
+  helpTextClass,
+  inputClass,
+  btnDangerIconClass,
+  emptyStateClass,
+  checkboxClass,
 } from "@/app/[locale]/components/ui";
 
 interface SearchableFieldConfig {
   options: string[];
 }
+
+// CSS Constants
+const OPTION_ITEM_CLASS =
+  "flex items-center gap-2 p-2 border border-gray-200 rounded-md bg-gray-50";
+const OPTION_NUMBER_CLASS = "text-sm text-gray-500 font-medium w-8";
 
 export const SearchableFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
   currentField,
@@ -19,7 +30,7 @@ export const SearchableFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
   updateValidation,
   t: fieldT,
 }) => {
-  const t = useTranslations("CreateTemplate.fieldEditor");
+  const t = useTranslations("CreateTemplate.fieldEditor.searchableConfig");
 
   const config = (currentField.field_config as SearchableFieldConfig) || {};
   const options = config.options || [];
@@ -46,42 +57,36 @@ export const SearchableFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Opciones */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <label className="block text-sm font-medium text-[#283618]/70">
-            {t("searchableConfig.options")}
-          </label>
+          <label className={labelClass}>{t("options")}</label>
           <button
             type="button"
             onClick={addOption}
             className={`${btnOutlineSecondary} text-sm flex items-center`}
           >
-            <Plus className="w-4 h-4 mr-1" /> {t("searchableConfig.addOption")}
+            <Plus className="w-4 h-4 mr-1" /> {t("addOption")}
           </button>
         </div>
 
+        <p className={helpTextClass}>{t("help")}</p>
+
         <div className="space-y-2">
           {options.map((option, index) => (
-            <div
-              key={index}
-              className="flex items-center gap-2 p-2 border border-gray-200 rounded-md bg-gray-50"
-            >
-              <span className="text-sm text-gray-500 font-medium w-8">
-                {index + 1}.
-              </span>
+            <div key={index} className={OPTION_ITEM_CLASS}>
+              <span className={OPTION_NUMBER_CLASS}>{index + 1}.</span>
               <input
                 type="text"
                 value={option}
                 onChange={(e) => updateOption(index, e.target.value)}
-                className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                placeholder={t("searchableConfig.optionPlaceholder")}
+                className={inputClass}
+                placeholder={t("optionPlaceholder")}
               />
               <button
                 type="button"
                 onClick={() => removeOption(index)}
-                className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded transition-colors"
-                title={t("searchableConfig.removeOption")}
+                className={btnDangerIconClass}
+                title={t("removeOption")}
               >
                 <X className="w-4 h-4" />
               </button>
@@ -89,23 +94,20 @@ export const SearchableFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
           ))}
 
           {options.length === 0 && (
-            <div className="text-center py-6 text-gray-500 text-sm border border-gray-200 rounded-md bg-gray-50">
-              {t("searchableConfig.noOptionsMessage")}
-            </div>
+            <div className={emptyStateClass}>{t("noOptionsMessage")}</div>
           )}
         </div>
       </div>
 
-      {/* Campo requerido */}
       <div>
         <label className="flex items-center text-sm">
           <input
             type="checkbox"
             checked={currentField.validation?.required || false}
             onChange={(e) => updateValidation({ required: e.target.checked })}
-            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+            className={checkboxClass}
           />
-          {t("validation.required")}
+          {fieldT("validation.required")}
         </label>
       </div>
     </div>
