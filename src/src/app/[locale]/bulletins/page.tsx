@@ -30,6 +30,9 @@ export default function Bulletins() {
     []
   );
   const [templatesMap, setTemplatesMap] = useState<Record<string, string>>({});
+  const [templateThumbnailsMap, setTemplateThumbnailsMap] = useState<
+    Record<string, string[]>
+  >({});
   const { can } = usePermissions();
 
   // Cargar bulletins al montar el componente
@@ -50,7 +53,7 @@ export default function Bulletins() {
         setBulletins(response.data);
         setFilteredBulletins(response.data);
 
-        // Obtener los nombres de los templates base
+        // Obtener los nombres y thumbnails de los templates base
         const templateIds = [
           ...new Set(response.data.map((b) => b.base_template_master_id)),
         ];
@@ -61,12 +64,16 @@ export default function Bulletins() {
         );
 
         const newTemplatesMap: Record<string, string> = {};
+        const newThumbnailsMap: Record<string, string[]> = {};
         templatesResponse.forEach((res) => {
           if (res?.success && res.data) {
-            newTemplatesMap[res.data._id!] = res.data.template_name;
+            const template = res.data as any;
+            newTemplatesMap[template._id!] = template.template_name;
+            newThumbnailsMap[template._id!] = template.thumbnail_images || [];
           }
         });
         setTemplatesMap(newTemplatesMap);
+        setTemplateThumbnailsMap(newThumbnailsMap);
       } else {
         setError(response.message || "Error al cargar los boletines");
       }
@@ -215,6 +222,11 @@ export default function Bulletins() {
                         templatesMap[bulletin.base_template_master_id]
                       }
                       status={bulletin.status}
+                      thumbnailImages={
+                        templateThumbnailsMap[
+                          bulletin.base_template_master_id
+                        ] || []
+                      }
                       editBtn={canEdit}
                       onEdit={() =>
                         (window.location.href = `/bulletins/${bulletin._id}/edit`)
