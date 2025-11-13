@@ -105,10 +105,22 @@ export function Footer() {
           {/* Socios */}
           <div className="space-y-4">
             <h3 className={sectionTitle}>{t("partner")}</h3>
-            <div className="d-flex">
+            <div className="flex flex-wrap gap-4 items-center">
               <Image
                 src="/assets/img/AllianceLogo.png"
-                alt="logo del bulletin builder"
+                alt="logo de la alianza"
+                width={200}
+                height={37}
+              />
+              <Image
+                src="/assets/img/ICCLogo.png"
+                alt="logo del ICC"
+                width={200}
+                height={37}
+              />
+              <Image
+                src="/assets/img/magaLogo.png"
+                alt="logo del MAGA"
                 width={200}
                 height={37}
               />
