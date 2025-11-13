@@ -15,9 +15,10 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { BulletinMaster } from "@/types/bulletin";
 import BulletinAPIService from "@/services/bulletinService";
+import { TemplateAPIService } from "@/services/templateService";
 import ItemCard from "../components/ItemCard";
 import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
-import { usePermissions } from "@/hooks/usePermissions";  
+import { usePermissions } from "@/hooks/usePermissions";
 
 export default function Bulletins() {
   const t = useTranslations("Bulletins");
@@ -25,6 +26,10 @@ export default function Bulletins() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [bulletins, setBulletins] = useState<BulletinMaster[]>([]);
+  const [filteredBulletins, setFilteredBulletins] = useState<BulletinMaster[]>(
+    []
+  );
+  const [templatesMap, setTemplatesMap] = useState<Record<string, string>>({});
   const { can } = usePermissions();
 
   // Cargar bulletins al montar el componente
@@ -32,8 +37,8 @@ export default function Bulletins() {
     loadBulletins();
   }, []);
 
-  // Función para cargar templates desde la API
-  const loadBulletins = async (search?: string) => {
+  // Función para cargar boletines desde la API
+  const loadBulletins = async () => {
     setLoading(true);
     setError(null);
 
@@ -43,6 +48,25 @@ export default function Bulletins() {
       if (response.success) {
         console.log("Fetched bulletins:", response);
         setBulletins(response.data);
+        setFilteredBulletins(response.data);
+
+        // Obtener los nombres de los templates base
+        const templateIds = [
+          ...new Set(response.data.map((b) => b.base_template_master_id)),
+        ];
+        const templatesResponse = await Promise.all(
+          templateIds.map((id) =>
+            TemplateAPIService.getTemplateById(id).catch(() => null)
+          )
+        );
+
+        const newTemplatesMap: Record<string, string> = {};
+        templatesResponse.forEach((res) => {
+          if (res?.success && res.data) {
+            newTemplatesMap[res.data._id!] = res.data.template_name;
+          }
+        });
+        setTemplatesMap(newTemplatesMap);
       } else {
         setError(response.message || "Error al cargar los boletines");
       }
@@ -53,17 +77,32 @@ export default function Bulletins() {
     }
   };
 
-  // Ejecutar búsqueda con debounce
+  // Filtrar boletines cuando cambia el término de búsqueda
   useEffect(() => {
-    const debounceTimer = setTimeout(() => {
-      loadBulletins(searchTerm);
-    }, 500);
+    const term = searchTerm.trim().toLowerCase();
 
-    return () => clearTimeout(debounceTimer);
-  }, [searchTerm]);
+    const filtered = bulletins.filter((bulletin) => {
+      const matchesSearch =
+        !term ||
+        bulletin.bulletin_name.toLowerCase().includes(term) ||
+        (templatesMap[bulletin.base_template_master_id] &&
+          templatesMap[bulletin.base_template_master_id]
+            .toLowerCase()
+            .includes(term));
+
+      return matchesSearch;
+    });
+
+    setFilteredBulletins(filtered);
+  }, [searchTerm, bulletins, templatesMap]);
 
   return (
-    <ProtectedRoute requiredPermission={{ action: PERMISSION_ACTIONS.Read, module: MODULES.BULLETINS_COMPOSER }}>
+    <ProtectedRoute
+      requiredPermission={{
+        action: PERMISSION_ACTIONS.Read,
+        module: MODULES.BULLETINS_COMPOSER,
+      }}
+    >
       <main>
         <section className="desk-texture desk-texture-strong bg-[#fefae0] py-10">
           <div className={container}>
@@ -101,7 +140,7 @@ export default function Bulletins() {
               />
             </div>
             {/* Botón Crear */}
-            { can(PERMISSION_ACTIONS.Create, MODULES.BULLETINS_COMPOSER) && (
+            {can(PERMISSION_ACTIONS.Create, MODULES.BULLETINS_COMPOSER) && (
               <Link
                 href="/bulletins/create"
                 className={`${btnPrimary} whitespace-nowrap`}
@@ -124,10 +163,7 @@ export default function Bulletins() {
           {error && (
             <div className="text-center py-12">
               <p className="text-red-600 mb-4">{error}</p>
-              <button
-                onClick={() => loadBulletins(searchTerm)}
-                className={btnPrimary}
-              >
+              <button onClick={() => loadBulletins()} className={btnPrimary}>
                 {t("retry")}
               </button>
             </div>
@@ -136,7 +172,7 @@ export default function Bulletins() {
           {/* Bulletins Grid */}
           {!loading && !error && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {bulletins
+              {filteredBulletins
                 .filter((bulletin, index, array) => {
                   // Filter out bulletins without valid _id and remove duplicates
                   return (
@@ -145,39 +181,61 @@ export default function Bulletins() {
                   );
                 })
                 .map((bulletin, index) => {
+                  const allowedGroups =
+                    bulletin.access_config?.allowed_groups || [];
+                  const canEdit = can(
+                    PERMISSION_ACTIONS.Update,
+                    MODULES.TEMPLATE_MANAGEMENT,
+                    allowedGroups
+                  );
+                  const canDelete = can(
+                    PERMISSION_ACTIONS.Delete,
+                    MODULES.TEMPLATE_MANAGEMENT,
+                    allowedGroups
+                  );
+                  const creatorName =
+                    bulletin.log.creator_first_name &&
+                    bulletin.log.creator_last_name
+                      ? `${bulletin.log.creator_first_name} ${bulletin.log.creator_last_name}`
+                      : bulletin.log.creator_first_name ||
+                        bulletin.log.creator_last_name ||
+                        bulletin.log.creator_user_id;
 
-                  const allowedGroups = bulletin.access_config?.allowed_groups || [];
-                  const canEdit = can(PERMISSION_ACTIONS.Update, MODULES.TEMPLATE_MANAGEMENT, allowedGroups);
-                  const canDelete = can(PERMISSION_ACTIONS.Delete, MODULES.TEMPLATE_MANAGEMENT, allowedGroups);
                   return (
                     <ItemCard
                       key={bulletin._id || `bulletin-${index}`}
                       type="template"
-                    id={bulletin._id!}
-                    name={bulletin.bulletin_name}
-                    author={bulletin.log.creator_user_id}
-                    lastModified={new Date(
-                      bulletin.log.updated_at!
-                    ).toLocaleDateString()}
-                    editBtn={canEdit}
-                    onEdit={() =>
-                      (window.location.href = `/bulletins/${bulletin._id}/edit`)
-                    }
-                  />)
-                })
-              }
+                      id={bulletin._id!}
+                      name={bulletin.bulletin_name}
+                      author={creatorName}
+                      lastModified={new Date(
+                        bulletin.log.updated_at!
+                      ).toLocaleDateString()}
+                      templateBaseName={
+                        templatesMap[bulletin.base_template_master_id]
+                      }
+                      editBtn={canEdit}
+                      onEdit={() =>
+                        (window.location.href = `/bulletins/${bulletin._id}/edit`)
+                      }
+                    />
+                  );
+                })}
             </div>
           )}
 
           {/* Empty State */}
-          {!loading && !error && bulletins.length === 0 && (
+          {!loading && !error && filteredBulletins.length === 0 && (
             <div className="text-center py-12">
-              <p className="text-[#283618]/60 mb-4">{t("noResults")}</p>
-              {can(PERMISSION_ACTIONS.Create, MODULES.BULLETINS_COMPOSER) && (
-                <Link href="/bulletins/create" className={btnPrimary}>
-                  {t("createFirst")}
-                </Link>
-              )}
+              <p className="text-[#283618]/60 mb-4">
+                {searchTerm ? t("noResults") : t("noResults")}
+              </p>
+              {!searchTerm &&
+                can(PERMISSION_ACTIONS.Create, MODULES.BULLETINS_COMPOSER) && (
+                  <Link href="/bulletins/create" className={btnPrimary}>
+                    {t("createFirst")}
+                  </Link>
+                )}
             </div>
           )}
         </div>

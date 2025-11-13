@@ -103,7 +103,7 @@
   "Features": {
     "title": "Everything you need to create",
     "titleHighlight": "exceptional bulletins",
-    "description": "A collaborative tool that simplifies the process of creating, reviewing and distributing agroclimatic bulletins.",
+    "description": "A collaborative tool that simplifies the process of creating, reviewing and exporting agroclimatic bulletins.",
     "feature1": {
       "title": "Bulletin Generation",
       "description": "Create professional agroclimatic bulletins with an intuitive editor designed specifically for each country."
@@ -134,7 +134,8 @@
     "createNew": "Create New",
     "visualResources": "Visual Resources",
     "searchPlaceholder": "Search templates...",
-    "by": "by",
+    "by": "By",
+    "basedOn": "Based on",
     "lastModified": "Last modified",
     "view": "View",
     "preview": "Preview",
@@ -178,7 +179,7 @@
   },
   "Bulletins": {
     "title": "Manage and create agroclimatic bulletins",
-    "subtitle": "Create, review and distribute agroclimatic bulletins using customizable templates.",
+    "subtitle": "Create, review and export agroclimatic bulletins using customizable templates.",
     "searchPlaceholder": "Search bulletins...",
     "createNew": "Create New",
     "noResults": "No bulletins found",
@@ -192,8 +193,8 @@
   "CreateBulletin": {
     "title": "Create Bulletin",
     "subtitle": "Create a new agroclimatic bulletin using a template",
-    "titleEdit":"Edit Bulletin",
-    "subtitleEdit":"Update and modify your agroclimatic bulletin",
+    "titleEdit": "Edit Bulletin",
+    "subtitleEdit": "Update and modify your agroclimatic bulletin",
     "backToBulletins": "Back to Bulletins",
     "success": "Bulletin created successfully",
     "updateSuccess": "Bulletin updated successfully",
@@ -294,8 +295,8 @@
       "exporting": "Exporting...",
       "sectionGenerating": "Generating section {current}",
       "sectionPage": "Page",
-      "toPdf":"Converting to PDF...",
-      "toZip":"Generating ZIP file...",
+      "toPdf": "Converting to PDF...",
+      "toZip": "Generating ZIP file...",
       "exportComplete": "Export completed!"
     },
     "exportModal": {
@@ -451,7 +452,7 @@
         "previewSubtitle": "Example Subtitle",
         "previewText": "This is sample text that shows how the applied styles will look.",
         "previewSmallText": "Small text for additional details.",
-        "fieldsLayout":"Fields Layout",
+        "fieldsLayout": "Fields Layout",
         "alignOptions": {
           "left": "Left",
           "center": "Center",
