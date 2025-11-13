@@ -134,7 +134,8 @@
     "createNew": "Crear Nueva",
     "visualResources": "Recursos Visuales",
     "searchPlaceholder": "Buscar plantillas...",
-    "by": "por",
+    "by": "Por",
+    "basedOn": "Basado en",
     "lastModified": "Última modificación",
     "view": "Ver",
     "preview": "Vista Previa",
@@ -192,8 +193,8 @@
   "CreateBulletin": {
     "title": "Crear Boletín",
     "subtitle": "Crea un nuevo boletín agroclimático utilizando una plantilla",
-    "titleEdit":"Editar Boletín",
-    "subtitleEdit":"Actualiza y modifica tu boletín agroclimático",
+    "titleEdit": "Editar Boletín",
+    "subtitleEdit": "Actualiza y modifica tu boletín agroclimático",
     "backToBulletins": "Volver a Boletines",
     "success": "Boletín creado exitosamente",
     "updateSuccess": "Boletín actualizado exitosamente",
@@ -294,8 +295,8 @@
       "exporting": "Exportando...",
       "sectionGenerating": "Generando sección {current}",
       "sectionPage": "Página",
-      "toPdf":"Convirtiendo a PDF...",
-      "toZip":"Generando archivo ZIP...",
+      "toPdf": "Convirtiendo a PDF...",
+      "toZip": "Generando archivo ZIP...",
       "exportComplete": "¡Exportación completada!"
     },
     "exportModal": {
@@ -451,7 +452,7 @@
         "previewSubtitle": "Subtítulo de Ejemplo",
         "previewText": "Este es un texto de ejemplo que muestra cómo se verán los estilos aplicados.",
         "previewSmallText": "Texto pequeño para detalles adicionales.",
-        "fieldsLayout":"Organización de Campos",
+        "fieldsLayout": "Organización de Campos",
         "alignOptions": {
           "left": "Izquierda",
           "center": "Centro",

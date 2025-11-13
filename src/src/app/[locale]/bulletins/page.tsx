@@ -15,9 +15,10 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { BulletinMaster } from "@/types/bulletin";
 import BulletinAPIService from "@/services/bulletinService";
+import { TemplateAPIService } from "@/services/templateService";
 import ItemCard from "../components/ItemCard";
 import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
-import { usePermissions } from "@/hooks/usePermissions";  
+import { usePermissions } from "@/hooks/usePermissions";
 
 export default function Bulletins() {
   const t = useTranslations("Bulletins");
@@ -25,6 +26,7 @@ export default function Bulletins() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [bulletins, setBulletins] = useState<BulletinMaster[]>([]);
+  const [templatesMap, setTemplatesMap] = useState<Record<string, string>>({});
   const { can } = usePermissions();
 
   // Cargar bulletins al montar el componente
@@ -43,6 +45,24 @@ export default function Bulletins() {
       if (response.success) {
         console.log("Fetched bulletins:", response);
         setBulletins(response.data);
+
+        // Obtener los nombres de los templates base
+        const templateIds = [
+          ...new Set(response.data.map((b) => b.base_template_master_id)),
+        ];
+        const templatesResponse = await Promise.all(
+          templateIds.map((id) =>
+            TemplateAPIService.getTemplateById(id).catch(() => null)
+          )
+        );
+
+        const newTemplatesMap: Record<string, string> = {};
+        templatesResponse.forEach((res) => {
+          if (res?.success && res.data) {
+            newTemplatesMap[res.data._id!] = res.data.template_name;
+          }
+        });
+        setTemplatesMap(newTemplatesMap);
       } else {
         setError(response.message || "Error al cargar los boletines");
       }
@@ -63,7 +83,12 @@ export default function Bulletins() {
   }, [searchTerm]);
 
   return (
-    <ProtectedRoute requiredPermission={{ action: PERMISSION_ACTIONS.Read, module: MODULES.BULLETINS_COMPOSER }}>
+    <ProtectedRoute
+      requiredPermission={{
+        action: PERMISSION_ACTIONS.Read,
+        module: MODULES.BULLETINS_COMPOSER,
+      }}
+    >
       <main>
         <section className="desk-texture desk-texture-strong bg-[#fefae0] py-10">
           <div className={container}>
@@ -101,7 +126,7 @@ export default function Bulletins() {
               />
             </div>
             {/* Botón Crear */}
-            { can(PERMISSION_ACTIONS.Create, MODULES.BULLETINS_COMPOSER) && (
+            {can(PERMISSION_ACTIONS.Create, MODULES.BULLETINS_COMPOSER) && (
               <Link
                 href="/bulletins/create"
                 className={`${btnPrimary} whitespace-nowrap`}
@@ -145,27 +170,46 @@ export default function Bulletins() {
                   );
                 })
                 .map((bulletin, index) => {
+                  const allowedGroups =
+                    bulletin.access_config?.allowed_groups || [];
+                  const canEdit = can(
+                    PERMISSION_ACTIONS.Update,
+                    MODULES.TEMPLATE_MANAGEMENT,
+                    allowedGroups
+                  );
+                  const canDelete = can(
+                    PERMISSION_ACTIONS.Delete,
+                    MODULES.TEMPLATE_MANAGEMENT,
+                    allowedGroups
+                  );
+                  const creatorName =
+                    bulletin.log.creator_first_name &&
+                    bulletin.log.creator_last_name
+                      ? `${bulletin.log.creator_first_name} ${bulletin.log.creator_last_name}`
+                      : bulletin.log.creator_first_name ||
+                        bulletin.log.creator_last_name ||
+                        bulletin.log.creator_user_id;
 
-                  const allowedGroups = bulletin.access_config?.allowed_groups || [];
-                  const canEdit = can(PERMISSION_ACTIONS.Update, MODULES.TEMPLATE_MANAGEMENT, allowedGroups);
-                  const canDelete = can(PERMISSION_ACTIONS.Delete, MODULES.TEMPLATE_MANAGEMENT, allowedGroups);
                   return (
                     <ItemCard
                       key={bulletin._id || `bulletin-${index}`}
                       type="template"
-                    id={bulletin._id!}
-                    name={bulletin.bulletin_name}
-                    author={bulletin.log.creator_user_id}
-                    lastModified={new Date(
-                      bulletin.log.updated_at!
-                    ).toLocaleDateString()}
-                    editBtn={canEdit}
-                    onEdit={() =>
-                      (window.location.href = `/bulletins/${bulletin._id}/edit`)
-                    }
-                  />)
-                })
-              }
+                      id={bulletin._id!}
+                      name={bulletin.bulletin_name}
+                      author={creatorName}
+                      lastModified={new Date(
+                        bulletin.log.updated_at!
+                      ).toLocaleDateString()}
+                      templateBaseName={
+                        templatesMap[bulletin.base_template_master_id]
+                      }
+                      editBtn={canEdit}
+                      onEdit={() =>
+                        (window.location.href = `/bulletins/${bulletin._id}/edit`)
+                      }
+                    />
+                  );
+                })}
             </div>
           )}
 

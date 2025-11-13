@@ -47,6 +47,7 @@ export interface TemplateCardProps extends BaseItemCardProps {
   lastModified: string;
   thumbnailImages?: string[]; // Array de thumbnails de las secciones (máximo 3)
   totalSections?: number; // Número real total de secciones del template
+  templateBaseName?: string; // Nombre del template base (solo para boletines)
 }
 
 // Props específicas para visual resources
@@ -266,6 +267,14 @@ export default function ItemCard(props: ItemCardProps) {
               {t("lastModified")}: {props.lastModified}
             </span>
           </div>
+          {props.templateBaseName && (
+            <div className="flex items-center gap-1 text-xs text-[#283618]/60 mt-1">
+              <Tag className="h-3 w-3" />
+              <span>
+                {t("basedOn")}: {props.templateBaseName}
+              </span>
+            </div>
+          )}
         </div>
       </div>
     );
