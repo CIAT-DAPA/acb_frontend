@@ -41,6 +41,9 @@ export default function Templates() {
   const locale = params.locale as string;
   const [searchTerm, setSearchTerm] = useState("");
   const [templates, setTemplates] = useState<TemplateMaster[]>([]);
+  const [filteredTemplates, setFilteredTemplates] = useState<TemplateMaster[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -65,7 +68,7 @@ export default function Templates() {
   }, []);
 
   // Función para cargar templates desde la API
-  const loadTemplates = async (search?: string) => {
+  const loadTemplates = async () => {
     setLoading(true);
     setError(null);
 
@@ -77,6 +80,7 @@ export default function Templates() {
 
       if (response.success) {
         setTemplates(templatesActive);
+        setFilteredTemplates(templatesActive);
       } else {
         setError(response.message || t("loadError"));
       }
@@ -87,14 +91,21 @@ export default function Templates() {
     }
   };
 
-  // Ejecutar búsqueda con debounce
+  // Filtrar templates cuando cambia el término de búsqueda
   useEffect(() => {
-    const debounceTimer = setTimeout(() => {
-      loadTemplates(searchTerm);
-    }, 500);
+    const term = searchTerm.trim().toLowerCase();
 
-    return () => clearTimeout(debounceTimer);
-  }, [searchTerm]);
+    const filtered = templates.filter((template) => {
+      const matchesSearch =
+        !term ||
+        template.template_name.toLowerCase().includes(term) ||
+        getAuthorName(template.log).toLowerCase().includes(term);
+
+      return matchesSearch;
+    });
+
+    setFilteredTemplates(filtered);
+  }, [searchTerm, templates]);
 
   // Efecto para cerrar el modal con la tecla Escape
   useEffect(() => {
@@ -150,7 +161,7 @@ export default function Templates() {
         "success",
         3000
       );
-      loadTemplates(searchTerm);
+      loadTemplates();
       handleCloseDeleteModal();
     } catch (error) {
       console.error("Error archiving template:", error);
@@ -247,10 +258,7 @@ export default function Templates() {
           {error && (
             <div className="text-center py-12">
               <p className="text-red-600 mb-4">{error}</p>
-              <button
-                onClick={() => loadTemplates(searchTerm)}
-                className={btnPrimary}
-              >
+              <button onClick={() => loadTemplates()} className={btnPrimary}>
                 {t("retry")}
               </button>
             </div>
@@ -259,7 +267,7 @@ export default function Templates() {
           {/* Templates Grid */}
           {!loading && !error && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {templates
+              {filteredTemplates
                 .filter((template, index, array) => {
                   // Filter out templates without valid _id and remove duplicates
                   return (
@@ -318,14 +326,15 @@ export default function Templates() {
           )}
 
           {/* Empty State */}
-          {!loading && !error && templates.length === 0 && (
+          {!loading && !error && filteredTemplates.length === 0 && (
             <div className="text-center py-12">
               <p className="text-[#283618]/60 mb-4">{t("noResults")}</p>
-              {can(PERMISSION_ACTIONS.Create, MODULES.TEMPLATE_MANAGEMENT) && (
-                <Link href="/templates/create" className={btnPrimary}>
-                  {t("createFirst")}
-                </Link>
-              )}
+              {!searchTerm &&
+                can(PERMISSION_ACTIONS.Create, MODULES.TEMPLATE_MANAGEMENT) && (
+                  <Link href="/templates/create" className={btnPrimary}>
+                    {t("createFirst")}
+                  </Link>
+                )}
             </div>
           )}
         </div>
