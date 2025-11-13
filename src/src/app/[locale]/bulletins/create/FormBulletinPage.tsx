@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo, useEffect } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../../../hooks/useAuth";
@@ -31,6 +31,7 @@ import {
   CheckCircle,
   Copy,
   Check,
+  Download,
 } from "lucide-react";
 import { TemplateAPIService } from "../../../../services/templateService";
 import { BulletinAPIService } from "../../../../services/bulletinService";
@@ -841,7 +842,7 @@ export default function FormBulletinPage({
                   }}
                   className={`${btnPrimary} inline-flex items-center gap-2`}
                 >
-                  <ArrowRight className="w-4 h-4" />
+                  <Download className="w-4 h-4" />
                   {t("navigation.export")}
                 </button>
               </div>
