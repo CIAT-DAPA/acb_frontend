@@ -159,6 +159,8 @@
     "page": "página",
     "pages": "páginas",
     "section": "Sección",
+    "statusDraft": "Borrador",
+    "statusPublished": "Publicado",
     "Create": {
       "title": "Nueva Plantilla",
       "subtitle": "Crea una nueva plantilla de boletín agroclimático",
@@ -198,6 +200,7 @@
     "backToBulletins": "Volver a Boletines",
     "success": "Boletín creado exitosamente",
     "updateSuccess": "Boletín actualizado exitosamente",
+    "savedAsDraft": "Boletín guardado como borrador",
     "error": "Error al crear el boletín",
     "errorLoadingTemplate": "Error al cargar la plantilla",
     "editBulletin": {
@@ -253,7 +256,21 @@
       "next": "Siguiente",
       "previous": "Anterior",
       "finish": "Crear Boletín",
-      "creating": "Creando..."
+      "creating": "Creando...",
+      "save": "Guardar Borrador",
+      "saving": "Guardando...",
+      "publish": "Publicar",
+      "publishing": "Publicando...",
+      "export": "Exportar"
+    },
+    "publishModal": {
+      "title": "¡Boletín Publicado!",
+      "message": "Tu boletín ha sido publicado exitosamente y ya está disponible.",
+      "urlLabel": "URL del boletín:",
+      "copyUrl": "Copiar",
+      "copied": "Copiado",
+      "viewLink": "Ver boletín publicado",
+      "close": "Cerrar"
     },
     "preview": {
       "title": "Vista Previa",

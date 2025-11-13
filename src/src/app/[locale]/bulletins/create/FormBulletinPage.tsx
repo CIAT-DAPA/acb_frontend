@@ -24,7 +24,14 @@ import { ExportStep } from "./steps/ExportStep";
 import { TemplatePreview } from "../../templates/create/TemplatePreview";
 import { CreateTemplateData } from "../../../../types/template";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Save,
+  CheckCircle,
+  Copy,
+  Check,
+} from "lucide-react";
 import { TemplateAPIService } from "../../../../services/templateService";
 import { BulletinAPIService } from "../../../../services/bulletinService";
 import { useToast } from "../../../../components/Toast";
@@ -46,6 +53,11 @@ export default function FormBulletinPage({
   const router = useRouter();
   const { showToast } = useToast();
   const isEditMode = mode === "edit";
+  const [showPublishModal, setShowPublishModal] = useState(false);
+  const [publishedBulletinId, setPublishedBulletinId] = useState<string | null>(
+    null
+  );
+  const [urlCopied, setUrlCopied] = useState(false);
 
   // Estado de paginación del preview (para sincronizar con CardFieldInput)
   const [previewPageIndex, setPreviewPageIndex] = useState(0);
@@ -451,6 +463,194 @@ export default function FormBulletinPage({
     bulletinId,
   ]);
 
+  // Función para guardar como borrador
+  const handleSave = useCallback(async () => {
+    if (isLoading) return;
+
+    setIsLoading(true);
+    try {
+      // Asegurarse de que el estado sea draft
+      const draftData = {
+        ...creationState.data,
+        master: {
+          ...creationState.data.master,
+          status: "draft",
+        },
+      };
+
+      if (isEditMode && bulletinId) {
+        // MODO EDICIÓN: Actualizar el boletín existente
+        const { log: masterLog, ...masterDataWithoutLog } = draftData.master;
+
+        // 1. Actualizar bulletin master con status draft
+        const masterResponse = await BulletinAPIService.updateBulletin(
+          bulletinId,
+          masterDataWithoutLog
+        );
+
+        if (!masterResponse.success) {
+          throw new Error(
+            masterResponse.message || "Error al actualizar el boletín"
+          );
+        }
+
+        const { log: versionLog, ...versionDataWithoutLog } = draftData.version;
+
+        // 2. Crear nueva versión con los cambios
+        const versionResponse = await BulletinAPIService.createBulletinVersion(
+          bulletinId,
+          versionDataWithoutLog
+        );
+
+        if (!versionResponse.success) {
+          throw new Error(
+            versionResponse.message || "Error al crear la versión del boletín"
+          );
+        }
+
+        showToast(t("savedAsDraft") || t("success"), "success");
+      } else {
+        // MODO CREACIÓN: Crear nuevo bulletin
+        const { log: masterLog, ...masterDataWithoutLog } = draftData.master;
+
+        const masterResponse = await BulletinAPIService.createBulletin(
+          masterDataWithoutLog
+        );
+
+        if (!masterResponse.success || !masterResponse.data) {
+          throw new Error(
+            masterResponse.message || "Error al crear el boletín"
+          );
+        }
+
+        const newBulletinId =
+          (masterResponse.data as any).id || masterResponse.data._id;
+
+        const { log: versionLog, ...versionDataWithoutLog } = draftData.version;
+
+        const versionResponse = await BulletinAPIService.createBulletinVersion(
+          newBulletinId,
+          versionDataWithoutLog
+        );
+
+        if (!versionResponse.success) {
+          throw new Error(
+            versionResponse.message || "Error al crear la versión del boletín"
+          );
+        }
+
+        showToast(t("savedAsDraft") || t("success"), "success");
+      }
+
+      router.push("/bulletins");
+    } catch (error) {
+      console.error("Error saving draft:", error);
+      showToast(error instanceof Error ? error.message : t("error"), "error");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [
+    isLoading,
+    creationState.data,
+    isEditMode,
+    bulletinId,
+    showToast,
+    t,
+    router,
+  ]);
+
+  // Función para publicar
+  const handlePublish = useCallback(async () => {
+    if (isLoading) return;
+
+    setIsLoading(true);
+    try {
+      // Asegurarse de que el estado sea published
+      const publishedData = {
+        ...creationState.data,
+        master: {
+          ...creationState.data.master,
+          status: "published",
+        },
+      };
+
+      if (isEditMode && bulletinId) {
+        // MODO EDICIÓN: Actualizar el boletín existente
+        const { log: masterLog, ...masterDataWithoutLog } =
+          publishedData.master;
+
+        // 1. Actualizar bulletin master con status published
+        const masterResponse = await BulletinAPIService.updateBulletin(
+          bulletinId,
+          masterDataWithoutLog
+        );
+
+        if (!masterResponse.success) {
+          throw new Error(
+            masterResponse.message || "Error al publicar el boletín"
+          );
+        }
+
+        const { log: versionLog, ...versionDataWithoutLog } =
+          publishedData.version;
+
+        // 2. Crear nueva versión con los cambios
+        const versionResponse = await BulletinAPIService.createBulletinVersion(
+          bulletinId,
+          versionDataWithoutLog
+        );
+
+        if (!versionResponse.success) {
+          throw new Error(
+            versionResponse.message || "Error al crear la versión del boletín"
+          );
+        }
+
+        setPublishedBulletinId(bulletinId);
+        setShowPublishModal(true);
+      } else {
+        // MODO CREACIÓN: Crear nuevo bulletin
+        const { log: masterLog, ...masterDataWithoutLog } =
+          publishedData.master;
+
+        const masterResponse = await BulletinAPIService.createBulletin(
+          masterDataWithoutLog
+        );
+
+        if (!masterResponse.success || !masterResponse.data) {
+          throw new Error(
+            masterResponse.message || "Error al crear el boletín"
+          );
+        }
+
+        const newBulletinId =
+          (masterResponse.data as any).id || masterResponse.data._id;
+
+        const { log: versionLog, ...versionDataWithoutLog } =
+          publishedData.version;
+
+        const versionResponse = await BulletinAPIService.createBulletinVersion(
+          newBulletinId,
+          versionDataWithoutLog
+        );
+
+        if (!versionResponse.success) {
+          throw new Error(
+            versionResponse.message || "Error al crear la versión del boletín"
+          );
+        }
+
+        setPublishedBulletinId(newBulletinId);
+        setShowPublishModal(true);
+      }
+    } catch (error) {
+      console.error("Error publishing bulletin:", error);
+      showToast(error instanceof Error ? error.message : t("error"), "error");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isLoading, creationState.data, isEditMode, bulletinId, showToast, t]);
+
   // Convertir bulletinData a CreateTemplateData para el preview
   const previewData = useMemo((): CreateTemplateData | null => {
     const headerFields = creationState.data.version.data.header_config?.fields;
@@ -525,6 +725,9 @@ export default function FormBulletinPage({
           <ExportStep
             previewData={previewData!}
             bulletinName={creationState.data.master.bulletin_name}
+            onExport={() => {
+              // Handler se configura internamente en ExportStep
+            }}
           />
         );
 
@@ -608,13 +811,40 @@ export default function FormBulletinPage({
                 {t("navigation.previous")}
               </button>
 
-              <button
-                onClick={handleFinish}
-                disabled={!isCurrentStepValid || isLoading}
-                className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed`}
-              >
-                {isLoading ? t("navigation.creating") : t("navigation.finish")}
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleSave}
+                  disabled={isLoading}
+                  className={`${btnOutlineSecondary} disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2`}
+                >
+                  <Save className="w-4 h-4" />
+                  {isLoading ? t("navigation.saving") : t("navigation.save")}
+                </button>
+                <button
+                  onClick={handlePublish}
+                  disabled={isLoading}
+                  className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2`}
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  {isLoading
+                    ? t("navigation.publishing")
+                    : t("navigation.publish")}
+                </button>
+                <button
+                  onClick={() => {
+                    if (
+                      typeof window !== "undefined" &&
+                      (window as any).__bulletinExportHandler
+                    ) {
+                      (window as any).__bulletinExportHandler();
+                    }
+                  }}
+                  className={`${btnPrimary} inline-flex items-center gap-2`}
+                >
+                  <ArrowRight className="w-4 h-4" />
+                  {t("navigation.export")}
+                </button>
+              </div>
             </div>
           </div>
         ) : (
@@ -697,6 +927,76 @@ export default function FormBulletinPage({
           </div>
         )}
       </div>
+
+      {/* Modal de publicación exitosa */}
+      {showPublishModal && publishedBulletinId && (
+        <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full">
+            <h2 className="text-2xl font-bold text-[#283618] mb-4">
+              {t("publishModal.title")}
+            </h2>
+            <p className="text-[#606c38] mb-6">{t("publishModal.message")}</p>
+
+            {/* URL Section */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-[#283618] mb-2">
+                {t("publishModal.urlLabel")}
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={`${window.location.origin}/bulletins/preview/${publishedBulletinId}`}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-[#283618] text-sm"
+                  onClick={(e) => e.currentTarget.select()}
+                />
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      `${window.location.origin}/bulletins/preview/${publishedBulletinId}`
+                    );
+                    setUrlCopied(true);
+                    setTimeout(() => setUrlCopied(false), 2000);
+                  }}
+                  className={`${btnOutlineSecondary}`}
+                >
+                  {urlCopied ? (
+                    <>
+                      <Check className="w-4 h-4" />
+                      {t("publishModal.copied")}
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" />
+                      {t("publishModal.copyUrl")}
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col justify-between sm:flex-row gap-3">
+              <button
+                onClick={() => {
+                  setShowPublishModal(false);
+                  setUrlCopied(false);
+                  router.push("/bulletins");
+                }}
+                className={`${btnOutlineSecondary} `}
+              >
+                {t("publishModal.close")}
+              </button>
+              <Link
+                href={`/bulletins/preview/${publishedBulletinId}`}
+                className={`${btnPrimary}`}
+              >
+                {t("publishModal.viewLink")}
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

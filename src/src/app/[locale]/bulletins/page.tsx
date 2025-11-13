@@ -214,6 +214,7 @@ export default function Bulletins() {
                       templateBaseName={
                         templatesMap[bulletin.base_template_master_id]
                       }
+                      status={bulletin.status}
                       editBtn={canEdit}
                       onEdit={() =>
                         (window.location.href = `/bulletins/${bulletin._id}/edit`)
