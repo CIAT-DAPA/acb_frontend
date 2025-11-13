@@ -103,7 +103,7 @@
   "Features": {
     "title": "Everything you need to create",
     "titleHighlight": "exceptional bulletins",
-    "description": "A collaborative tool that simplifies the process of creating, reviewing and distributing agroclimatic bulletins.",
+    "description": "A collaborative tool that simplifies the process of creating, reviewing and exporting agroclimatic bulletins.",
     "feature1": {
       "title": "Bulletin Generation",
       "description": "Create professional agroclimatic bulletins with an intuitive editor designed specifically for each country."
@@ -178,7 +178,7 @@
   },
   "Bulletins": {
     "title": "Manage and create agroclimatic bulletins",
-    "subtitle": "Create, review and distribute agroclimatic bulletins using customizable templates.",
+    "subtitle": "Create, review and export agroclimatic bulletins using customizable templates.",
     "searchPlaceholder": "Search bulletins...",
     "createNew": "Create New",
     "noResults": "No bulletins found",

@@ -103,7 +103,7 @@
   "Features": {
     "title": "Todo lo que necesitas para crear",
     "titleHighlight": "boletines excepcionales",
-    "description": "Una herramienta colaborativa que simplifica el proceso de creación, revisión y distribución de boletines agroclimáticos.",
+    "description": "Una herramienta colaborativa que simplifica el proceso de creación, revisión y exportación de boletines agroclimáticos.",
     "feature1": {
       "title": "Generación de Boletines",
       "description": "Crea boletines agroclimáticos profesionales con un editor intuitivo diseñado específicamente para cada país."
@@ -178,7 +178,7 @@
   },
   "Bulletins": {
     "title": "Gestiona y crea boletines agroclimáticos fácilmente",
-    "subtitle": "Crea, revisa y distribuye boletines profesionales con un flujo de trabajo colaborativo.",
+    "subtitle": "Crea, revisa y exporta boletines profesionales con un flujo de trabajo colaborativo.",
     "searchPlaceholder": "Buscar boletines...",
     "createNew": "Crear Nuevo",
     "noResults": "No se encontraron boletines",
