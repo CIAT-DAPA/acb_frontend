@@ -15,6 +15,25 @@ import { SmartIcon } from "../../components/AdaptiveSvgIcon";
 import { Card } from "../../../../types/card";
 import { CardAPIService } from "../../../../services/cardService";
 
+// Mapeo de fuentes a variables CSS de Next.js
+const FONT_CSS_VARS: Record<string, string> = {
+  Roboto: "var(--font-roboto)",
+  "Open Sans": "var(--font-open-sans)",
+  Lato: "var(--font-lato)",
+  Montserrat: "var(--font-montserrat)",
+  "Archivo Narrow": "var(--font-archivo-narrow)",
+  Arial: "Arial, sans-serif",
+  Helvetica: "Helvetica, sans-serif",
+  "Times New Roman": "'Times New Roman', serif",
+  Georgia: "Georgia, serif",
+};
+
+// Helper para obtener el fontFamily correcto
+function getFontFamily(font?: string): string {
+  if (!font) return "Arial";
+  return FONT_CSS_VARS[font] || font;
+}
+
 /**
  * Helper function para generar estilos de borde según los lados seleccionados
  */
@@ -146,7 +165,7 @@ export function TemplatePreview({
 
   // Estilos globales aplicados
   const globalStyles = {
-    fontFamily: styleConfig?.font || "Arial",
+    fontFamily: getFontFamily(styleConfig?.font),
     color: styleConfig?.primary_color || "#000000",
     fontSize: `${styleConfig?.font_size || 16}px`,
     backgroundColor: styleConfig?.background_color || "#ffffff",
@@ -620,7 +639,9 @@ export function TemplatePreview({
           textAlign:
             (effectiveStyles.text_align as "left" | "center" | "right") ||
             undefined,
-          fontFamily: effectiveStyles.font || undefined,
+          fontFamily: effectiveStyles.font
+            ? getFontFamily(effectiveStyles.font)
+            : undefined,
         };
 
         // Obtener el array de items del valor del campo
@@ -1184,10 +1205,10 @@ export function TemplatePreview({
             {data.master.description ||
               t("noDescription", { default: "Sin descripción" })}
           </p>
-            <div className="text-xs text-[#bc6c25] mt-2">
+          <div className="text-xs text-[#bc6c25] mt-2">
             {t("status")}: {data.master.status} | {t("access")}:{" "}
             {data.master.access_config.access_type}
-            </div>
+          </div>
         </div>
       )}
 
@@ -1321,8 +1342,9 @@ export function TemplatePreview({
 
                   // Estilos aplicados a la sección completa
                   const sectionStyles = {
-                    fontFamily:
-                      section.style_config?.font || globalStyles.fontFamily,
+                    fontFamily: section.style_config?.font
+                      ? getFontFamily(section.style_config.font)
+                      : globalStyles.fontFamily,
                     color:
                       section.style_config?.primary_color || globalStyles.color,
                     fontSize: section.style_config?.font_size

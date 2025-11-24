@@ -1,7 +1,15 @@
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
-import { Sintony, Poppins } from "next/font/google";
+import {
+  Sintony,
+  Poppins,
+  Montserrat,
+  Roboto,
+  Open_Sans,
+  Lato,
+  Archivo_Narrow,
+} from "next/font/google";
 import "./globals.css";
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
@@ -25,6 +33,36 @@ const poppins = Poppins({
   weight: ["300", "400", "500", "600", "700"],
 });
 
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
+});
+
+const roboto = Roboto({
+  variable: "--font-roboto",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "700", "900"],
+});
+
+const openSans = Open_Sans({
+  variable: "--font-open-sans",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+});
+
+const lato = Lato({
+  variable: "--font-lato",
+  subsets: ["latin"],
+  weight: ["300", "400", "700", "900"],
+});
+
+const archivoNarrow = Archivo_Narrow({
+  variable: "--font-archivo-narrow",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
 export const metadata: Metadata = {
   title: "Bulletin builder",
   description: "App to create agroclimatic bulletins",
@@ -44,7 +82,9 @@ export default async function RootLayout({ children, params }: Props) {
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
       </head>
-      <body className={`${sintony.variable} ${poppins.variable} antialiased`}>
+      <body
+        className={`${sintony.variable} ${poppins.variable} ${montserrat.variable} ${roboto.variable} ${openSans.variable} ${lato.variable} ${archivoNarrow.variable} antialiased`}
+      >
         <AuthProviderWrapper>
           <NextIntlClientProvider messages={messages}>
             <ToastProvider>

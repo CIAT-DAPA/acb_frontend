@@ -17,7 +17,21 @@ const AVAILABLE_FONTS = [
   "Open Sans",
   "Lato",
   "Montserrat",
+  "Archivo Narrow",
 ];
+
+// Mapeo de fuentes a variables CSS de Next.js
+const FONT_CSS_VARS: Record<string, string> = {
+  Roboto: "var(--font-roboto)",
+  "Open Sans": "var(--font-open-sans)",
+  Lato: "var(--font-lato)",
+  Montserrat: "var(--font-montserrat)",
+  "Archivo Narrow": "var(--font-archivo-narrow)",
+  Arial: "Arial, sans-serif",
+  Helvetica: "Helvetica, sans-serif",
+  "Times New Roman": "'Times New Roman', serif",
+  Georgia: "Georgia, serif",
+};
 
 export interface StyleConfiguratorProps {
   styleConfig: StyleConfig;
@@ -610,7 +624,9 @@ export function StyleConfigurator({
           <div
             className="p-6 border rounded-lg"
             style={{
-              fontFamily: styleConfig.font || "Arial",
+              fontFamily: styleConfig.font
+                ? FONT_CSS_VARS[styleConfig.font] || styleConfig.font
+                : "Arial",
               color: styleConfig.primary_color || "#000000",
               backgroundColor: styleConfig.background_color || "#ffffff",
               backgroundImage: styleConfig.background_image
@@ -641,13 +657,23 @@ export function StyleConfigurator({
           >
             <h4
               className="text-xl font-bold mb-2"
-              style={{ color: styleConfig.primary_color }}
+              style={{
+                color: styleConfig.primary_color,
+                fontFamily: styleConfig.font
+                  ? FONT_CSS_VARS[styleConfig.font] || styleConfig.font
+                  : "Arial",
+              }}
             >
               {t("previewMainTitle")}
             </h4>
             <h5
               className="text-lg font-semibold mb-2"
-              style={{ color: styleConfig.secondary_color }}
+              style={{
+                color: styleConfig.secondary_color,
+                fontFamily: styleConfig.font
+                  ? FONT_CSS_VARS[styleConfig.font] || styleConfig.font
+                  : "Arial",
+              }}
             >
               {t("previewSubtitle")}
             </h5>
