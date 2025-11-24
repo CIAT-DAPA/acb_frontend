@@ -5,10 +5,10 @@ pipeline {
     agent any
 
     environment {
-        //user = credentials('lamaar_user')
-        //host = credentials('lamaar_host')
-        //name = credentials('lamaar_host')
-       // ssh_key = credentials('lamaar_key')
+        user = credentials('lamaar_user')
+        host = credentials('lamaar_host')
+        name = credentials('lamaar_host')
+        ssh_key = credentials('lamaar_key')
     }
 
     stages {
