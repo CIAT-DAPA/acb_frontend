@@ -126,12 +126,7 @@ export function ScrollView({
       {showMiniNav && !isNavOpen && (
         <button
           onClick={() => setIsNavOpen(true)}
-          className="
-            md:hidden fixed bottom-4 left-4 z-20
-            bg-[#bc6c25] text-[#fefae0] hover:bg-[#bc6c25]/90
-            p-2.5 rounded-full shadow-lg
-            transition-all
-          "
+          className="md:hidden fixed bottom-21 right-6 w-14 h-14 bg-[#ffaf68] text-white rounded-full shadow-lg hover:bg-[#ff9d4d] transition-all hover:scale-110 flex items-center justify-center z-40"
           aria-label="Abrir navegador de secciones"
         >
           <List className="w-5 h-5" />
@@ -268,7 +263,7 @@ export function ScrollView({
             // Modo expandido: mostrar todas las páginas de la sección
             <div
               key={sectionIndex}
-              className="flex gap-4"
+              className={`flex gap-4 ${isVertical ? "flex-col" : ""}`}
               data-section-index={sectionIndex}
             >
               {Array.from({ length: pageCount }).map((_, pageIndex) => (
