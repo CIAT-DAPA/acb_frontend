@@ -633,7 +633,7 @@ export function TemplatePreview({
         const itemsContainerClass =
           listItemsLayout === "horizontal"
             ? "flex flex-wrap gap-4 items-start"
-            : "space-y-2";
+            : "";
 
         return (
           <div key={key}>
