@@ -159,6 +159,8 @@
     "page": "page",
     "pages": "pages",
     "section": "Section",
+    "statusDraft": "Draft",
+    "statusPublished": "Published",
     "Create": {
       "title": "New Template",
       "subtitle": "Create a new agroclimatic bulletin template",
@@ -198,6 +200,7 @@
     "backToBulletins": "Back to Bulletins",
     "success": "Bulletin created successfully",
     "updateSuccess": "Bulletin updated successfully",
+    "savedAsDraft": "Bulletin saved as draft",
     "error": "Error creating bulletin",
     "errorLoadingTemplate": "Error loading template",
     "editBulletin": {
@@ -253,7 +256,21 @@
       "next": "Next",
       "previous": "Previous",
       "finish": "Create Bulletin",
-      "creating": "Creating..."
+      "creating": "Creating...",
+      "save": "Save Draft",
+      "saving": "Saving...",
+      "publish": "Publish",
+      "publishing": "Publishing...",
+      "export": "Export"
+    },
+    "publishModal": {
+      "title": "Bulletin Published!",
+      "message": "Your bulletin has been published successfully and is now available.",
+      "urlLabel": "Bulletin URL:",
+      "copyUrl": "Copy",
+      "copied": "Copied",
+      "viewLink": "View published bulletin",
+      "close": "Close"
     },
     "preview": {
       "title": "Preview",

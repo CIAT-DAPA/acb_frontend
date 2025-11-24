@@ -48,6 +48,7 @@ export interface TemplateCardProps extends BaseItemCardProps {
   thumbnailImages?: string[]; // Array de thumbnails de las secciones (máximo 3)
   totalSections?: number; // Número real total de secciones del template
   templateBaseName?: string; // Nombre del template base (solo para boletines)
+  status?: string; // Estado del boletín (draft, published, etc.)
 }
 
 // Props específicas para visual resources
@@ -100,6 +101,36 @@ export default function ItemCard(props: ItemCardProps) {
   ) {
     displayImage = props.thumbnailImages[0];
   }
+
+  // Función para obtener el estilo del badge según el status
+  const getStatusBadgeClass = (status?: string) => {
+    if (!status) return "";
+
+    const baseClass = "px-2 py-1 rounded-full text-xs font-medium";
+
+    switch (status.toLowerCase()) {
+      case "draft":
+        return `${baseClass} bg-gray-200 text-gray-700`;
+      case "published":
+        return `${baseClass} bg-green-100 text-green-700`;
+      default:
+        return `${baseClass} bg-blue-100 text-blue-700`;
+    }
+  };
+
+  // Función para obtener el texto traducido del status
+  const getStatusText = (status?: string) => {
+    if (!status) return "";
+
+    switch (status.toLowerCase()) {
+      case "draft":
+        return t("statusDraft") || "Borrador";
+      case "published":
+        return t("statusPublished") || "Publicado";
+      default:
+        return status;
+    }
+  };
 
   // Para cards, usar el primer thumbnail si existe (background_url)
   if (
@@ -253,6 +284,13 @@ export default function ItemCard(props: ItemCardProps) {
               <span className="text-xs text-[#283618]/60 ml-2 whitespace-nowrap">
                 {totalSections} {totalSections === 1 ? t("page") : t("pages")}
               </span>
+            )}
+            {props.status && (
+              <div>
+                <span className={getStatusBadgeClass(props.status)}>
+                  {getStatusText(props.status)}
+                </span>
+              </div>
             )}
           </div>
           <div className="flex items-center gap-1 text-xs text-[#283618]/80 mb-1">

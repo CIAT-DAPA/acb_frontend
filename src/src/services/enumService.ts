@@ -93,6 +93,15 @@ export class EnumAPIService extends BaseAPIService {
   }
 
   /**
+   * Obtener los estados de boletín disponibles (sin labels, solo valores)
+   * Valores esperados: "draft", "published"
+   * @returns Array de estados de boletín con value = label
+   */
+  static async getBulletinStatuses(): Promise<EnumValue[]> {
+    return this.getEnum("StatusBulletin", false);
+  }
+
+  /**
    * Obtener múltiples enums en una sola llamada
    * @param enumNames - Array de nombres de enums a obtener
    * @param includeLabels - Si se deben incluir labels legibles
