@@ -14,11 +14,22 @@ import * as ui from "@/app/[locale]/components/ui";
 interface ExportStepProps {
   previewData: CreateTemplateData;
   bulletinName: string;
+  onExport: () => void;
 }
 
-export function ExportStep({ previewData, bulletinName }: ExportStepProps) {
+export function ExportStep({
+  previewData,
+  bulletinName,
+  onExport,
+}: ExportStepProps) {
   const t = useTranslations("CreateBulletin.export");
   const [isModalOpen, setIsModalOpen] = React.useState(false);
+
+  // Exponer la función handleExport para que pueda ser llamada desde el padre
+  React.useEffect(() => {
+    // Guardar la función de exportación en una referencia global
+    (window as any).__bulletinExportHandler = () => setIsModalOpen(true);
+  }, []);
 
   // Función helper para calcular el número total de páginas de una sección
   const getSectionTotalPages = (section: any): number => {
@@ -328,14 +339,6 @@ export function ExportStep({ previewData, bulletinName }: ExportStepProps) {
           {t("title")}
         </h2>
         <p className="text-[#606c38] text-sm">{t("description")}</p>
-      </div>
-
-      {/* Botón de exportación */}
-      <div className="flex justify-center mb-4">
-        <button onClick={() => setIsModalOpen(true)} className={ui.btnPrimary}>
-          <Download className="w-5 h-5" />
-          {t("exportButton")}
-        </button>
       </div>
 
       {/* Preview completo en modo scroll horizontal con páginas expandidas */}

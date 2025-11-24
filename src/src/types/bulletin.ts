@@ -6,7 +6,9 @@ import { LogObject, StyleConfig, AccessConfig } from "./core";
 import type { Field } from "./template";
 
 // Tipo de estado del boletín
-export type BulletinStatus = "draft" | "published";
+// Los valores posibles vienen de la API (StatusBulletin enum)
+// Valores esperados: "draft" | "published"
+export type BulletinStatus = string;
 
 // ============================================
 // BULLETIN DATA STRUCTURES (Similar a Template pero con valores)
@@ -147,7 +149,8 @@ export interface TemplateToBlankBulletinTransform {
   creatorUserId: string;
 }
 
-// Constantes para estados de boletín
+// Constantes para estados de boletín (LEGACY - usar EnumAPIService.getBulletinStatuses())
+// Se mantiene para compatibilidad pero los valores reales deben obtenerse de la API
 export const BULLETIN_STATUSES = ["draft", "published"] as const;
 
 export type BulletinStatusType = (typeof BULLETIN_STATUSES)[number];
