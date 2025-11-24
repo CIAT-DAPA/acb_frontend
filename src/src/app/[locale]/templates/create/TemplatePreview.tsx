@@ -182,6 +182,7 @@ export function TemplatePreview({
     fontFamily: getFontFamily(styleConfig?.font),
     color: styleConfig?.primary_color || "#000000",
     fontSize: `${styleConfig?.font_size || 16}px`,
+    lineHeight: styleConfig?.line_height || "normal",
     backgroundColor: styleConfig?.background_color || "#ffffff",
     textAlign:
       (styleConfig?.text_align as "left" | "center" | "right") || "left",
@@ -305,6 +306,8 @@ export function TemplatePreview({
         ? `${effectiveStyles.font_size}px`
         : globalStyles.fontSize,
       fontWeight: effectiveStyles.font_weight || "400",
+      lineHeight:
+        effectiveStyles.line_height || globalStyles.lineHeight || "normal",
       fontStyle: effectiveStyles.font_style || "normal",
       textDecoration: effectiveStyles.text_decoration || "none",
       textAlign:
@@ -660,6 +663,7 @@ export function TemplatePreview({
             ? `${effectiveStyles.font_size}px`
             : undefined,
           fontWeight: effectiveStyles.font_weight || undefined,
+          lineHeight: effectiveStyles.line_height || undefined,
           fontStyle: effectiveStyles.font_style || undefined,
           textDecoration: effectiveStyles.text_decoration || undefined,
           textAlign:
@@ -1015,6 +1019,7 @@ export function TemplatePreview({
                 padding: effectiveBlockStyles.padding || undefined,
                 backgroundColor:
                   effectiveBlockStyles.background_color || "transparent",
+                boxSizing: "border-box",
                 ...getBorderStyles(block.style_config),
                 ...(effectiveBlockStyles.background_image && {
                   backgroundImage: `url(${getBackgroundImageUrl(
@@ -1294,6 +1299,8 @@ export function TemplatePreview({
                     ? `${headerConfig.style_config.font_size}px`
                     : globalStyles.fontSize,
                   fontWeight: headerConfig.style_config?.font_weight || "400",
+                  lineHeight:
+                    headerConfig.style_config?.line_height || undefined,
                   fontStyle: headerConfig.style_config?.font_style || "normal",
                   textDecoration:
                     headerConfig.style_config?.text_decoration || "none",
@@ -1552,6 +1559,9 @@ export function TemplatePreview({
                             fontWeight:
                               activeHeaderConfig.style_config?.font_weight ||
                               "400",
+                            lineHeight:
+                              activeHeaderConfig.style_config?.line_height ||
+                              undefined,
                             fontStyle:
                               activeHeaderConfig.style_config?.font_style ||
                               "normal",
@@ -1646,6 +1656,7 @@ export function TemplatePreview({
                                   block.style_config?.gap !== undefined
                                     ? block.style_config.gap
                                     : "8px",
+                                boxSizing: "border-box",
                                 ...getBorderStyles(block.style_config),
                                 // Si tiene un card field, ocupar todo el espacio disponible
                                 ...(hasCardField && {
@@ -1663,13 +1674,47 @@ export function TemplatePreview({
                                   ? "flex flex-wrap"
                                   : "flex flex-col";
 
+                              // Calcular ancho considerando el margin
+                              const marginValue =
+                                block.style_config?.margin || "0";
+                              let widthStyle = {};
+                              if (
+                                marginValue &&
+                                marginValue !== "0" &&
+                                marginValue !== "0px"
+                              ) {
+                                // Parsear margin que puede tener múltiples valores
+                                const marginParts = marginValue
+                                  .trim()
+                                  .split(/\s+/);
+                                let marginLeft = "0";
+                                let marginRight = "0";
+
+                                if (marginParts.length === 1) {
+                                  // margin: 10px (todos los lados)
+                                  marginLeft = marginRight = marginParts[0];
+                                } else if (marginParts.length === 2) {
+                                  // margin: 10px 20px (vertical horizontal)
+                                  marginLeft = marginRight = marginParts[1];
+                                } else if (marginParts.length === 3) {
+                                  // margin: 10px 20px 30px (top horizontal bottom)
+                                  marginLeft = marginRight = marginParts[1];
+                                } else if (marginParts.length === 4) {
+                                  // margin: 10px 20px 30px 40px (top right bottom left)
+                                  marginRight = marginParts[1];
+                                  marginLeft = marginParts[3];
+                                }
+
+                                widthStyle = {
+                                  width: `calc(100% - ${marginLeft} - ${marginRight})`,
+                                };
+                              }
+
                               return (
                                 <div
                                   key={`preview-block-${sectionIndex}-${blockIndex}`}
-                                  className={`w-full ${
-                                    hasCardField ? "flex-1" : ""
-                                  }`}
-                                  style={blockStyles}
+                                  className={hasCardField ? "flex-1" : ""}
+                                  style={{ ...blockStyles, ...widthStyle }}
                                 >
                                   {/* Campos del bloque */}
                                   <div
@@ -1744,6 +1789,9 @@ export function TemplatePreview({
                             fontWeight:
                               activeFooterConfig.style_config?.font_weight ||
                               "400",
+                            lineHeight:
+                              activeFooterConfig.style_config?.line_height ||
+                              undefined,
                             fontStyle:
                               activeFooterConfig.style_config?.font_style ||
                               "normal",
@@ -1827,6 +1875,8 @@ export function TemplatePreview({
                     ? `${footerConfig.style_config.font_size}px`
                     : globalStyles.fontSize,
                   fontWeight: footerConfig.style_config?.font_weight || "400",
+                  lineHeight:
+                    footerConfig.style_config?.line_height || undefined,
                   fontStyle: footerConfig.style_config?.font_style || "normal",
                   textDecoration:
                     footerConfig.style_config?.text_decoration || "none",

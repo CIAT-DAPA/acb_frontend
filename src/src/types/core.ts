@@ -24,6 +24,7 @@ export interface StyleConfig {
   background_image?: string; // URL de la imagen de fondo
   font_size?: number;
   font_weight?: string;
+  line_height?: string;
   font_style?: "normal" | "italic";
   text_decoration?: "none" | "underline" | "line-through";
   text_align?: "left" | "center" | "right";

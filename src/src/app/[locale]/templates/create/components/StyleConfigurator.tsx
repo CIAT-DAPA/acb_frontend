@@ -50,6 +50,7 @@ export interface StyleConfiguratorProps {
     font?: boolean;
     fontSize?: boolean;
     fontWeight?: boolean;
+    lineHeight?: boolean;
     fontStyle?: boolean;
     textDecoration?: boolean;
     textAlign?: boolean;
@@ -182,21 +183,125 @@ export function StyleConfigurator({
   ) => (
     <div>
       <label className={LABEL_CLASS}>{label}</label>
-      <div className="flex gap-2 items-center">
-        <input
-          type="color"
-          value={(styleConfig[key] as string) || placeholder}
-          onChange={(e) => onStyleChange({ [key]: e.target.value })}
-          className="block w-12 h-12 min-w-[48px] border border-gray-300 rounded-md cursor-pointer flex-shrink-0"
-          title={t("colorPickerTitle")}
-        />
-        <input
-          type="text"
-          value={(styleConfig[key] as string) || placeholder}
-          onChange={(e) => onStyleChange({ [key]: e.target.value })}
-          className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          placeholder={placeholder}
-        />
+      <div className="space-y-2">
+        <div className="flex gap-2 items-center">
+          <div className="relative">
+            <input
+              type="color"
+              value={(() => {
+                const color = (styleConfig[key] as string) || placeholder;
+                // Extraer solo el color sin transparencia para el color picker
+                if (color.startsWith("rgba")) {
+                  const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+                  if (match) {
+                    const [, r, g, b] = match;
+                    return `#${parseInt(r)
+                      .toString(16)
+                      .padStart(2, "0")}${parseInt(g)
+                      .toString(16)
+                      .padStart(2, "0")}${parseInt(b)
+                      .toString(16)
+                      .padStart(2, "0")}`;
+                  }
+                }
+                return color.startsWith("#") && color.length > 7
+                  ? color.slice(0, 7)
+                  : color;
+              })()}
+              onChange={(e) => {
+                const currentColor =
+                  (styleConfig[key] as string) || placeholder;
+                // Preservar transparencia si existe
+                if (currentColor.includes("rgba")) {
+                  const alphaMatch = currentColor.match(/,\s*([\d.]+)\)/);
+                  if (alphaMatch) {
+                    const hex = e.target.value;
+                    const r = parseInt(hex.slice(1, 3), 16);
+                    const g = parseInt(hex.slice(3, 5), 16);
+                    const b = parseInt(hex.slice(5, 7), 16);
+                    onStyleChange({
+                      [key]: `rgba(${r}, ${g}, ${b}, ${alphaMatch[1]})`,
+                    });
+                    return;
+                  }
+                }
+                onStyleChange({ [key]: e.target.value });
+              }}
+              className="w-12 h-12 min-w-[48px] border border-gray-300 rounded-md cursor-pointer flex-shrink-0"
+              title={t("colorPickerTitle")}
+            />
+          </div>
+          <input
+            type="text"
+            value={(styleConfig[key] as string) || placeholder}
+            onChange={(e) => onStyleChange({ [key]: e.target.value })}
+            className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder={placeholder}
+          />
+        </div>
+        {/* Slider de opacidad */}
+        <div className="flex items-center gap-2">
+          <label className="text-xs text-gray-600 w-16">
+            {getLabel("opacity")}:
+          </label>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={(() => {
+              const color = (styleConfig[key] as string) || placeholder;
+              if (color.includes("rgba")) {
+                const alphaMatch = color.match(/,\s*([\d.]+)\)/);
+                if (alphaMatch) {
+                  return Math.round(parseFloat(alphaMatch[1]) * 100);
+                }
+              }
+              return 100;
+            })()}
+            onChange={(e) => {
+              const alpha = parseInt(e.target.value) / 100;
+              const currentColor = (styleConfig[key] as string) || placeholder;
+
+              // Convertir hex a rgba
+              if (currentColor.startsWith("#")) {
+                const hex = currentColor.slice(0, 7);
+                const r = parseInt(hex.slice(1, 3), 16);
+                const g = parseInt(hex.slice(3, 5), 16);
+                const b = parseInt(hex.slice(5, 7), 16);
+                onStyleChange({ [key]: `rgba(${r}, ${g}, ${b}, ${alpha})` });
+              } else if (currentColor.includes("rgba")) {
+                // Actualizar alpha en rgba existente
+                const newColor = currentColor.replace(
+                  /,\s*[\d.]+\)/,
+                  `, ${alpha})`
+                );
+                onStyleChange({ [key]: newColor });
+              } else if (currentColor.includes("rgb")) {
+                // Convertir rgb a rgba
+                const match = currentColor.match(
+                  /rgb\((\d+),\s*(\d+),\s*(\d+)\)/
+                );
+                if (match) {
+                  const [, r, g, b] = match;
+                  onStyleChange({ [key]: `rgba(${r}, ${g}, ${b}, ${alpha})` });
+                }
+              }
+            }}
+            className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+          />
+          <span className="text-xs text-gray-600 w-10 text-right">
+            {(() => {
+              const color = (styleConfig[key] as string) || placeholder;
+              if (color.includes("rgba")) {
+                const alphaMatch = color.match(/,\s*([\d.]+)\)/);
+                if (alphaMatch) {
+                  return Math.round(parseFloat(alphaMatch[1]) * 100) + "%";
+                }
+              }
+              return "100%";
+            })()}
+          </span>
+        </div>
       </div>
       {inheritedStyles?.[key] && (
         <p className={INHERITED_TEXT_CLASS}>
@@ -458,6 +563,24 @@ export function StyleConfigurator({
             {inheritedStyles?.font_weight && (
               <p className={INHERITED_TEXT_CLASS}>
                 {t("inherited")}: {inheritedStyles.font_weight}
+              </p>
+            )}
+          </div>
+        )}
+
+        {enabledFields.lineHeight && (
+          <div>
+            <label className={LABEL_CLASS}>{getLabel("lineHeight")}</label>
+            <input
+              type="text"
+              value={styleConfig.line_height || ""}
+              onChange={(e) => onStyleChange({ line_height: e.target.value })}
+              className={INPUT_BASE_CLASS}
+              placeholder="1.5, 24px, 150%"
+            />
+            {inheritedStyles?.line_height && (
+              <p className={INHERITED_TEXT_CLASS}>
+                {t("inherited")}: {inheritedStyles.line_height}
               </p>
             )}
           </div>
