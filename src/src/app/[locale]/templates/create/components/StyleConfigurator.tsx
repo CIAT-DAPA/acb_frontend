@@ -13,6 +13,7 @@ const AVAILABLE_FONTS = [
   "Helvetica",
   "Times New Roman",
   "Georgia",
+  "Poppins",
   "Roboto",
   "Open Sans",
   "Lato",
@@ -22,6 +23,7 @@ const AVAILABLE_FONTS = [
 
 // Mapeo de fuentes a variables CSS de Next.js
 const FONT_CSS_VARS: Record<string, string> = {
+  Poppins: "var(--font-poppins)",
   Roboto: "var(--font-roboto)",
   "Open Sans": "var(--font-open-sans)",
   Lato: "var(--font-lato)",
@@ -70,6 +72,7 @@ export interface StyleConfiguratorProps {
 
     // Layout específico
     fieldsLayout?: boolean;
+    justifyContent?: boolean; // Distribución de campos (justify-content)
     listStyleType?: boolean; // Estilo de bullet points para listas
     listItemsLayout?: boolean; // Layout de items dentro de la lista
   };
@@ -583,6 +586,22 @@ export function StyleConfigurator({
               { value: "vertical", label: t("layoutOptions.vertical") },
             ],
             "vertical"
+          )}
+
+        {/* Distribución de campos (justify-content) */}
+        {enabledFields.justifyContent &&
+          renderSelectField(
+            "justify_content",
+            t("justifyContent"),
+            [
+              { value: "start", label: t("justifyOptions.start") },
+              { value: "end", label: t("justifyOptions.end") },
+              { value: "center", label: t("justifyOptions.center") },
+              { value: "between", label: t("justifyOptions.between") },
+              { value: "around", label: t("justifyOptions.around") },
+              { value: "evenly", label: t("justifyOptions.evenly") },
+            ],
+            "start"
           )}
 
         {/* Estilo de lista */}

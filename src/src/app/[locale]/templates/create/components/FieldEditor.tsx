@@ -455,6 +455,7 @@ export function FieldEditor({
             updateStyleConfig(updates)
           }
           enabledFields={{
+            font: true,
             primaryColor: true,
             fontSize: true,
             iconSize:

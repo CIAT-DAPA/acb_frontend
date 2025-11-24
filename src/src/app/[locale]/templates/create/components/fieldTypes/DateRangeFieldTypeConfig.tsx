@@ -19,6 +19,7 @@ const DATE_FORMATS = [
   "DD-MM-YYYY",
   "dddd, DD - MM",
   "DD-DD, MMMM YYYY",
+  "MMMM/YY",
 ] as const;
 
 export const DateRangeFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({

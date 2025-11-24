@@ -17,6 +17,7 @@ import { CardAPIService } from "../../../../services/cardService";
 
 // Mapeo de fuentes a variables CSS de Next.js
 const FONT_CSS_VARS: Record<string, string> = {
+  Poppins: "var(--font-poppins)",
   Roboto: "var(--font-roboto)",
   "Open Sans": "var(--font-open-sans)",
   Lato: "var(--font-lato)",
@@ -32,6 +33,19 @@ const FONT_CSS_VARS: Record<string, string> = {
 function getFontFamily(font?: string): string {
   if (!font) return "Arial";
   return FONT_CSS_VARS[font] || font;
+}
+
+// Helper para obtener la clase Tailwind de justify-content
+function getJustifyClass(justifyContent?: string): string {
+  const justifyMap: Record<string, string> = {
+    start: "justify-start",
+    end: "justify-end",
+    center: "justify-center",
+    between: "justify-between",
+    around: "justify-around",
+    evenly: "justify-evenly",
+  };
+  return justifyMap[justifyContent || "start"] || "justify-start";
 }
 
 /**
@@ -222,10 +236,15 @@ export function TemplatePreview({
     const day = dateObj.getDate().toString().padStart(2, "0");
     const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
     const year = dateObj.getFullYear();
+    const shortYear = year.toString().slice(-2);
 
     const dayName = dateObj.toLocaleDateString(localeCode, { weekday: "long" });
     const dayNameCapitalized =
       dayName.charAt(0).toUpperCase() + dayName.slice(1);
+
+    const monthName = dateObj.toLocaleDateString(localeCode, { month: "long" });
+    const monthNameCapitalized =
+      monthName.charAt(0).toUpperCase() + monthName.slice(1);
 
     switch (format) {
       case "DD/MM/YYYY":
@@ -236,6 +255,10 @@ export function TemplatePreview({
         return `${day}-${month}-${year}`;
       case "dddd, DD - MM":
         return `${dayNameCapitalized}, ${day} - ${month}`;
+      case "DD, MMMM YYYY":
+        return `${day}, ${monthNameCapitalized} ${year}`;
+      case "MMMM/YY":
+        return `${monthNameCapitalized}/${shortYear}`;
       case "YYYY-MM-DD":
       default:
         return `${year}-${month}-${day}`;
@@ -287,6 +310,9 @@ export function TemplatePreview({
       textAlign:
         (effectiveStyles.text_align as "left" | "center" | "right") ||
         globalStyles.textAlign,
+      fontFamily: effectiveStyles.font
+        ? getFontFamily(effectiveStyles.font)
+        : globalStyles.fontFamily,
       backgroundColor: effectiveStyles.background_color || "transparent",
       backgroundImage: effectiveStyles.background_image
         ? `url("${getBackgroundImageUrl(effectiveStyles.background_image)}")`
@@ -592,14 +618,14 @@ export function TemplatePreview({
         const getItemLayoutClasses = () => {
           switch (listItemsLayout) {
             case "horizontal":
-              return "flex flex-wrap gap-4 items-center justify-between";
+              return "flex flex-wrap items-center justify-between";
             case "grid-2":
-              return "grid gap-1 w-full";
+              return "grid w-full";
             case "grid-3":
-              return "grid gap-1 w-full";
+              return "grid w-full";
             case "vertical":
             default:
-              return "space-y-1";
+              return "";
           }
         };
 
@@ -650,25 +676,34 @@ export function TemplatePreview({
         // Si no hay items, mostrar un item de ejemplo basado en el schema
         const itemsToRender = listItems.length > 0 ? listItems : [{}];
 
-        // Para layout horizontal, el contenedor de items debe ser flex
-        const itemsContainerClass =
-          listItemsLayout === "horizontal"
-            ? "flex flex-wrap gap-4 items-start"
-            : "space-y-2";
+        // Estilos para el contenedor de items con gap configurable
+        const itemsContainerStyle: React.CSSProperties = {
+          gap: effectiveStyles.gap || undefined,
+        };
 
         return (
           <div key={key}>
-            <div className={itemsContainerClass}>
+            <div
+              className={
+                listItemsLayout === "horizontal"
+                  ? "flex flex-wrap items-start"
+                  : ""
+              }
+              style={itemsContainerStyle}
+            >
               {/* Renderizar elementos basados en el valor del campo */}
               {itemsToRender.map((item: any, itemIndex: number) => (
                 <div
                   key={itemIndex}
                   className={
                     listItemsLayout === "horizontal"
-                      ? "flex items-start gap-2"
-                      : "flex items-start gap-2 w-full"
+                      ? "flex items-start"
+                      : "flex items-start w-full"
                   }
-                  style={listItemStyles}
+                  style={{
+                    ...listItemStyles,
+                    gap: "8px", // Gap fijo entre bullet y contenido
+                  }}
                 >
                   {showBullets && (
                     <span
@@ -687,16 +722,11 @@ export function TemplatePreview({
                     </span>
                   )}
                   <div
-                    className={
-                      listItemsLayout === "horizontal"
-                        ? "flex gap-2 items-center"
-                        : `flex-1 min-w-0 ${getItemLayoutClasses()}`
-                    }
-                    style={
-                      listItemsLayout === "horizontal"
-                        ? undefined
-                        : getGridColumnsStyle()
-                    }
+                    className={`flex-1 min-w-0 ${getItemLayoutClasses()}`}
+                    style={{
+                      ...getGridColumnsStyle(),
+                      gap: effectiveStyles.gap || undefined,
+                    }}
                   >
                     {field.field_config?.item_schema &&
                     Object.keys(field.field_config.item_schema).length > 0 ? (
@@ -1241,7 +1271,9 @@ export function TemplatePreview({
                 className={`w-full ${
                   headerConfig.style_config?.fields_layout === "vertical"
                     ? "flex flex-col"
-                    : "flex items-center"
+                    : `flex items-center ${getJustifyClass(
+                        headerConfig.style_config?.justify_content
+                      )}`
                 }`}
                 style={{
                   backgroundColor:
@@ -1492,7 +1524,10 @@ export function TemplatePreview({
                             activeHeaderConfig.style_config?.fields_layout ===
                             "vertical"
                               ? "flex flex-col"
-                              : "flex items-center"
+                              : `flex items-center ${getJustifyClass(
+                                  activeHeaderConfig.style_config
+                                    ?.justify_content
+                                )}`
                           }`}
                           style={{
                             backgroundColor:
@@ -1679,7 +1714,10 @@ export function TemplatePreview({
                             activeFooterConfig.style_config?.fields_layout ===
                             "vertical"
                               ? "flex flex-col"
-                              : "flex items-center"
+                              : `flex items-center ${getJustifyClass(
+                                  activeFooterConfig.style_config
+                                    ?.justify_content
+                                )}`
                           }`}
                           style={{
                             backgroundColor:
@@ -1766,7 +1804,9 @@ export function TemplatePreview({
                 className={`w-full ${
                   footerConfig.style_config?.fields_layout === "vertical"
                     ? "flex flex-col"
-                    : "flex items-center"
+                    : `flex items-center ${getJustifyClass(
+                        footerConfig.style_config?.justify_content
+                      )}`
                 }`}
                 style={{
                   backgroundColor:

@@ -470,6 +470,15 @@
         "previewText": "This is sample text that shows how the applied styles will look.",
         "previewSmallText": "Small text for additional details.",
         "fieldsLayout": "Fields Layout",
+        "justifyContent": "Field Distribution",
+        "justifyOptions": {
+          "start": "Start",
+          "end": "End",
+          "center": "Center",
+          "between": "Space Between",
+          "around": "Space Around",
+          "evenly": "Space Evenly"
+        },
         "alignOptions": {
           "left": "Left",
           "center": "Center",
@@ -618,6 +627,15 @@
         "bulletinWidth": "Bulletin Width (px)",
         "bulletinHeight": "Bulletin Height (px)",
         "fieldsLayout": "Fields Layout",
+        "justifyContent": "Field Distribution",
+        "justifyOptions": {
+          "start": "Start",
+          "end": "End",
+          "center": "Center",
+          "between": "Space Between",
+          "around": "Space Around",
+          "evenly": "Space Evenly"
+        },
         "listStyleType": "List Style",
         "listItemsLayout": "List Items Layout",
         "layoutOptions": {
@@ -1154,6 +1172,15 @@
         "bulletinWidth": "Bulletin Width (px)",
         "bulletinHeight": "Bulletin Height (px)",
         "fieldsLayout": "Fields Layout",
+        "justifyContent": "Field Distribution",
+        "justifyOptions": {
+          "start": "Start",
+          "end": "End",
+          "center": "Center",
+          "between": "Space Between",
+          "around": "Space Around",
+          "evenly": "Space Evenly"
+        },
         "listStyleType": "List Style",
         "listItemsLayout": "List Items Layout",
         "layoutOptions": {

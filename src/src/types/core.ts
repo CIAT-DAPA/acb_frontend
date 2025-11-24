@@ -40,6 +40,13 @@ export interface StyleConfig {
   bulletin_width?: number; // Ancho del boletín en píxeles
   bulletin_height?: number; // Alto del boletín en píxeles
   fields_layout?: "horizontal" | "vertical"; // Layout de los campos
+  justify_content?:
+    | "start"
+    | "end"
+    | "center"
+    | "between"
+    | "around"
+    | "evenly"; // Distribución de los campos en layout horizontal
   list_style_type?: "disc" | "circle" | "square" | "none" | "decimal"; // Estilo de bullet points para listas
   list_items_layout?: "vertical" | "horizontal" | "grid-2" | "grid-3"; // Layout de items dentro de la lista
   icon_size?: number; // Tamaño de los iconos en píxeles

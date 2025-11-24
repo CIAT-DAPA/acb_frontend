@@ -470,6 +470,15 @@
         "previewText": "Este es un texto de ejemplo que muestra cómo se verán los estilos aplicados.",
         "previewSmallText": "Texto pequeño para detalles adicionales.",
         "fieldsLayout": "Organización de Campos",
+        "justifyContent": "Distribución de Campos",
+        "justifyOptions": {
+          "start": "Inicio",
+          "end": "Fin",
+          "center": "Centro",
+          "between": "Espaciado Entre",
+          "around": "Espaciado Alrededor",
+          "evenly": "Espaciado Uniforme"
+        },
         "alignOptions": {
           "left": "Izquierda",
           "center": "Centro",
@@ -618,6 +627,15 @@
         "bulletinWidth": "Ancho del Boletín (px)",
         "bulletinHeight": "Alto del Boletín (px)",
         "fieldsLayout": "Organización de Campos",
+        "justifyContent": "Distribución de Campos",
+        "justifyOptions": {
+          "start": "Inicio",
+          "end": "Fin",
+          "center": "Centro",
+          "between": "Espaciado Entre",
+          "around": "Espaciado Alrededor",
+          "evenly": "Espaciado Uniforme"
+        },
         "listStyleType": "Estilo de Lista",
         "listItemsLayout": "Layout de Items de Lista",
         "layoutOptions": {
@@ -1154,6 +1172,15 @@
         "bulletinWidth": "Ancho del Boletín (px)",
         "bulletinHeight": "Alto del Boletín (px)",
         "fieldsLayout": "Organización de Campos",
+        "justifyContent": "Distribución de Campos",
+        "justifyOptions": {
+          "start": "Inicio",
+          "end": "Fin",
+          "center": "Centro",
+          "between": "Espaciado Entre",
+          "around": "Espaciado Alrededor",
+          "evenly": "Espaciado Uniforme"
+        },
         "listStyleType": "Estilo de Lista",
         "listItemsLayout": "Layout de Items de Lista",
         "layoutOptions": {
