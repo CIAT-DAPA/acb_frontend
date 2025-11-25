@@ -1,6 +1,6 @@
 /**
- * Exporta contenido HTML usando Puppeteer en el servidor
- */
+* Exporta contenido HTML usando Puppeteer en el servidor
+*/
 
 export interface PuppeteerExportConfig {
   html: string;
@@ -12,8 +12,8 @@ export interface PuppeteerExportConfig {
 }
 
 /**
- * Exporta HTML a imagen usando Puppeteer via API route
- */
+* Exporta HTML a imagen usando Puppeteer via API route
+*/
 export async function exportWithPuppeteer(
   config: PuppeteerExportConfig
 ): Promise<void> {
@@ -64,8 +64,8 @@ export async function exportWithPuppeteer(
 }
 
 /**
- * Serializa el HTML de un elemento incluyendo todos sus estilos
- */
+* Serializa el HTML de un elemento incluyendo todos sus estilos
+*/
 export function serializeElementToHTML(element: HTMLElement): string {
   // Clonar el elemento para no modificar el original
   const clone = element.cloneNode(true) as HTMLElement;
@@ -106,6 +106,24 @@ export function serializeElementToHTML(element: HTMLElement): string {
     .map((link) => link.outerHTML)
     .join("\n");
 
+  // Obtener las variables CSS del :root (incluye las variables de fuentes de Next.js)
+  const rootStyles = getComputedStyle(document.documentElement);
+  const cssVariables = Array.from(rootStyles)
+    .filter((prop) => prop.startsWith("--"))
+    .map((prop) => `${prop}: ${rootStyles.getPropertyValue(prop)};`)
+    .join("\n    ");
+
+  // Agregar las fuentes de Google directamente con @import para mayor confiabilidad
+  const googleFontsImport = `
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Sintony:wght@400;700&display=swap');
+  `;
+
   // Construir el HTML completo con estilos y fuentes
   const html = `
     <!DOCTYPE html>
@@ -115,12 +133,18 @@ export function serializeElementToHTML(element: HTMLElement): string {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         ${fontLinks}
         <style>
+          ${googleFontsImport}
+
+          :root {
+            ${cssVariables}
+          }
+
           * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
           }
-          
+
           body {
             margin: 0;
             padding: 0;
@@ -138,3 +162,4 @@ export function serializeElementToHTML(element: HTMLElement): string {
 
   return html;
 }
+ 
