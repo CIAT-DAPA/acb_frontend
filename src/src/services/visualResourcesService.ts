@@ -97,7 +97,7 @@ export class VisualResourcesService extends BaseAPIService {
         };
 
         // 4. Llamar a la API
-        const response = await this.post<any>(this.BASE_ENDPOINT, apiBody);
+        const response = await this.post<any>(this.BASE_ENDPOINT + "/", apiBody);
 
         return {
           success: true,
