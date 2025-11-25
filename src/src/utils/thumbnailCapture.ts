@@ -1,4 +1,4 @@
-import { serializeElementToHTML } from "./exportPuppeteer";
+//import { serializeElementToHTML } from "./exportPuppeteer";
 
 /**
  * Captura screenshots de las secciones del template preview usando Puppeteer
@@ -89,7 +89,7 @@ async function captureSingleElement(
 ): Promise<Blob> {
   try {
     // Serializar el HTML del elemento con todos los estilos
-    const html = serializeElementToHTML(element);
+    const html = ""//serializeElementToHTML(element);
 
     // Obtener dimensiones del elemento
     const width = element.offsetWidth;
