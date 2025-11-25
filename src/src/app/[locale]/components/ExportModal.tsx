@@ -279,6 +279,7 @@ export function ExportModal({
               : config.quality,
           qualityLevel: config.quality as "low" | "medium" | "high" | "ultra",
           selectedSections: config.selectedSections,
+          pageSize: config.pageSize, // Tamaño de página para PDF
 
           // Configuración técnica (viene de props)
           containerSelector: exportConfig.containerSelector,

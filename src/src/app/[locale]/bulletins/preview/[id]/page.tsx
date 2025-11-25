@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { CreateTemplateData } from "@/types/template";
-import { PreviewMode } from "@/types/templatePreview";
 import { ArrowLeft, Loader2, Download } from "lucide-react";
-import { ExportModal, ExportConfig } from "@/app/[locale]/components/ExportModal";
+import { ExportModal, ExportTechnicalConfig } from "@/app/[locale]/components/ExportModal";
 import BulletinAPIService from "@/services/bulletinService";
 import { useTranslations } from "next-intl";
 import { ScrollView } from "@/app/[locale]/components/ScrollView";
@@ -27,15 +26,9 @@ export default function TemplatePreviewPage() {
   const [templateData, setTemplateData] = useState<CreateTemplateData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedMode, setSelectedMode] = useState<PreviewMode>("carousel");
-  const [scrollOrientation, setScrollOrientation] = useState<"vertical" | "horizontal">("vertical");
-  const [gridColumns, setGridColumns] = useState<1 | 2 | 3 | 4 | 5 | 6>(3);
-  const [gridThumbnailSize, setGridThumbnailSize] = useState<"small" | "medium" | "large">("medium");
 
   // Estados para el sistema de exportación
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-  const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
-  const previewContainerId = "export-preview-download"; // ID del contenedor en ExportModal que contiene TemplatePreview
 
   useEffect(() => {
     const loadTemplate = async () => {
@@ -142,19 +135,14 @@ export default function TemplatePreviewPage() {
   };
 
   // Handler para exportación
-  const handleExport = async (
-      config: ExportConfig,
-      onSectionChange: (index: number) => void,
-      onProgressUpdate: (current: number, message: string) => void
-    ) => {
-      try {
-  
-        onProgressUpdate(1, t("exportComplete"));
-      } catch (error) {
-        console.error("❌ Error al exportar:", error);
-        throw error;
-      }
-    };
+  const exportConfig: ExportTechnicalConfig = {
+    containerSelector: "#bulletin-export-preview .flex.gap-8",
+    itemSelectorTemplate: (sectionIndex: number, pageIndex: number) =>
+      `[data-section-index="${sectionIndex}"][data-page-index="${pageIndex}"]`,
+    getExportElement: (previewElement: Element) =>
+      previewElement.querySelector("#template-preview-container > div"),
+    getSectionPages: getSectionTotalPages,
+  };
 
   // Loading state
   if (loading) {
@@ -281,11 +269,13 @@ export default function TemplatePreviewPage() {
         </div>
       </div>
 
-      {/* Modal de exportación */}
+      {/* Modal de exportación en modo auto-export */}
       <ExportModal
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
-        onExport={handleExport}
+        autoExport={true}
+        exportConfig={exportConfig}
+        sections={templateData.version.content.sections}
         totalSections={templateData.version.content.sections.length}
         contentName={templateData.master.template_name}
         templateData={templateData}
