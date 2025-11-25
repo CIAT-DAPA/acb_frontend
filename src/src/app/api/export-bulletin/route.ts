@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import puppeteer from "puppeteer";
 
 export const maxDuration = 60; // Máximo 60 segundos para la ejecución
 
@@ -48,21 +47,36 @@ export async function POST(request: NextRequest) {
       Math.max(1, Number(deviceScaleFactor) || 1)
     );
 
-    // Iniciar el navegador
-    browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-accelerated-2d-canvas",
-        "--disable-gpu",
-      ],
-    });
+    // Iniciar el navegador según el ambiente
+    const isDev = process.env.NODE_ENV === "development";
+
+    if (isDev) {
+      // En desarrollo local, usar puppeteer normal
+      const puppeteer = (await import("puppeteer")).default;
+      browser = await puppeteer.launch({
+        headless: true,
+        args: [
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--disable-dev-shm-usage",
+          "--disable-gpu",
+        ],
+      });
+    } else {
+      // En producción, usar chromium empaquetado
+      const puppeteerCore = (await import("puppeteer-core")).default;
+      const chromium = (await import("@sparticuz/chromium")).default;
+
+      browser = await puppeteerCore.launch({
+        args: chromium.args,
+        executablePath: await chromium.executablePath(),
+        headless: true,
+      });
+    }
 
     const page = await browser.newPage();
 
-    page.on("console", (msg) => {
+    page.on("console", (msg: any) => {
       const type = msg.type();
       const text = msg.text();
       if (type === "log") console.log("🌐 BROWSER:", text);
@@ -84,121 +98,124 @@ export async function POST(request: NextRequest) {
     });
 
     // Esperar a que las fuentes se carguen
-    await page.evaluateHandle("document.fonts.ready");
+    await (page as any).evaluateHandle(() => document.fonts.ready);
 
     // Esperar un poco más para que las imágenes se rendericen (puede que se carguen con JS)
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     // Convertir URLs relativas a absolutas MANUALMENTE (img tags Y background-image)
-    const imagesProcessed = await page.evaluate(async (baseUrl: string) => {
-      const images = Array.from(document.images);
+    const imagesProcessed: any = await (page as any).evaluate(
+      async (baseUrl: string) => {
+        const images = Array.from(document.images);
 
-      // 1. Convertir <img> tags
-      images.forEach((img, index) => {
-        const originalSrc = img.getAttribute("src");
+        // 1. Convertir <img> tags
+        images.forEach((img, index) => {
+          const originalSrc = img.getAttribute("src");
 
-        if (originalSrc && originalSrc.startsWith("/")) {
-          const newSrc = `${baseUrl}${originalSrc}`;
+          if (originalSrc && originalSrc.startsWith("/")) {
+            const newSrc = `${baseUrl}${originalSrc}`;
 
-          img.setAttribute("src", newSrc);
-        } else if (
-          originalSrc &&
-          !originalSrc.startsWith("http://") &&
-          !originalSrc.startsWith("https://") &&
-          !originalSrc.startsWith("data:")
-        ) {
-          const newSrc = `${baseUrl}/${originalSrc}`;
-          img.setAttribute("src", newSrc);
-        }
-      });
+            img.setAttribute("src", newSrc);
+          } else if (
+            originalSrc &&
+            !originalSrc.startsWith("http://") &&
+            !originalSrc.startsWith("https://") &&
+            !originalSrc.startsWith("data:")
+          ) {
+            const newSrc = `${baseUrl}/${originalSrc}`;
+            img.setAttribute("src", newSrc);
+          }
+        });
 
-      // 2. Convertir background-image en estilos inline
-      const elementsWithBackground = Array.from(
-        document.querySelectorAll('[style*="background"]')
-      );
+        // 2. Convertir background-image en estilos inline
+        const elementsWithBackground = Array.from(
+          document.querySelectorAll('[style*="background"]')
+        );
 
-      elementsWithBackground.forEach((el: Element, index) => {
-        const htmlEl = el as HTMLElement;
-        const style = htmlEl.getAttribute("style");
+        elementsWithBackground.forEach((el: Element, index) => {
+          const htmlEl = el as HTMLElement;
+          const style = htmlEl.getAttribute("style");
 
-        if (style && style.includes("url(")) {
-          // Buscar todas las urls en el style
-          const urlRegex = /url\(["']?([^"')]+)["']?\)/g;
-          let match;
-          let newStyle = style;
+          if (style && style.includes("url(")) {
+            // Buscar todas las urls en el style
+            const urlRegex = /url\(["']?([^"')]+)["']?\)/g;
+            let match;
+            let newStyle = style;
 
-          while ((match = urlRegex.exec(style)) !== null) {
-            const originalUrl = match[1];
+            while ((match = urlRegex.exec(style)) !== null) {
+              const originalUrl = match[1];
 
-            if (originalUrl.startsWith("/")) {
-              const absoluteUrl = baseUrl + originalUrl;
-              newStyle = newStyle.replace(match[0], `url("${absoluteUrl}")`);
-            } else if (
-              !originalUrl.startsWith("http://") &&
-              !originalUrl.startsWith("https://") &&
-              !originalUrl.startsWith("data:")
-            ) {
-              const absoluteUrl = baseUrl + "/" + originalUrl;
-              newStyle = newStyle.replace(match[0], `url("${absoluteUrl}")`);
+              if (originalUrl.startsWith("/")) {
+                const absoluteUrl = baseUrl + originalUrl;
+                newStyle = newStyle.replace(match[0], `url("${absoluteUrl}")`);
+              } else if (
+                !originalUrl.startsWith("http://") &&
+                !originalUrl.startsWith("https://") &&
+                !originalUrl.startsWith("data:")
+              ) {
+                const absoluteUrl = baseUrl + "/" + originalUrl;
+                newStyle = newStyle.replace(match[0], `url("${absoluteUrl}")`);
+              }
+            }
+
+            if (newStyle !== style) {
+              htmlEl.setAttribute("style", newStyle);
             }
           }
+        });
 
-          if (newStyle !== style) {
-            htmlEl.setAttribute("style", newStyle);
-          }
-        }
-      });
+        // Ahora esperar a que todas las imágenes se carguen
+        const imagePromises = images.map((img, index) => {
+          return new Promise<{ success: boolean; src: string }>((resolve) => {
+            const imgSrc = img.src || "no-src";
 
-      // Ahora esperar a que todas las imágenes se carguen
-      const imagePromises = images.map((img, index) => {
-        return new Promise<{ success: boolean; src: string }>((resolve) => {
-          const imgSrc = img.src || "no-src";
-
-          if (img.complete && img.naturalHeight !== 0) {
-            resolve({ success: true, src: imgSrc });
-          } else {
-            const timeout = setTimeout(() => {
-              console.error(
-                `❌ TIMEOUT imagen ${index + 1}: ${imgSrc} (no cargó en 8s)`
-              );
-              resolve({ success: false, src: imgSrc });
-            }, 8000); // Aumentado a 8 segundos para dar más tiempo
-
-            img.onload = () => {
-              clearTimeout(timeout);
+            if (img.complete && img.naturalHeight !== 0) {
               resolve({ success: true, src: imgSrc });
-            };
+            } else {
+              const timeout = setTimeout(() => {
+                console.error(
+                  `❌ TIMEOUT imagen ${index + 1}: ${imgSrc} (no cargó en 8s)`
+                );
+                resolve({ success: false, src: imgSrc });
+              }, 8000); // Aumentado a 8 segundos para dar más tiempo
 
-            img.onerror = (error) => {
-              clearTimeout(timeout);
-              console.error(
-                `❌ ERROR cargando imagen ${index + 1}: ${imgSrc}`,
-                error
-              );
-              resolve({ success: false, src: imgSrc });
-            };
-          }
+              img.onload = () => {
+                clearTimeout(timeout);
+                resolve({ success: true, src: imgSrc });
+              };
+
+              img.onerror = (error) => {
+                clearTimeout(timeout);
+                console.error(
+                  `❌ ERROR cargando imagen ${index + 1}: ${imgSrc}`,
+                  error
+                );
+                resolve({ success: false, src: imgSrc });
+              };
+            }
+          });
         });
-      });
 
-      const results = await Promise.all(imagePromises);
-      const successCount = results.filter((r) => r.success).length;
-      const failedImages = results.filter((r) => !r.success);
+        const results = await Promise.all(imagePromises);
+        const successCount = results.filter((r) => r.success).length;
+        const failedImages = results.filter((r) => !r.success);
 
-      if (failedImages.length > 0) {
-        console.error("❌ Imágenes que fallaron:");
-        failedImages.forEach((img, i) => {
-          console.error(`  ${i + 1}. ${img.src}`);
-        });
-      }
+        if (failedImages.length > 0) {
+          console.error("❌ Imágenes que fallaron:");
+          failedImages.forEach((img, i) => {
+            console.error(`  ${i + 1}. ${img.src}`);
+          });
+        }
 
-      return {
-        total: images.length,
-        loaded: successCount,
-        failed: failedImages.length,
-        failedUrls: failedImages.map((i) => i.src),
-      };
-    }, resolvedBaseUrl);
+        return {
+          total: images.length,
+          loaded: successCount,
+          failed: failedImages.length,
+          failedUrls: failedImages.map((i) => i.src),
+        };
+      },
+      resolvedBaseUrl
+    );
 
     if (imagesProcessed.failed > 0) {
       console.warn(
