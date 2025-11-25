@@ -161,6 +161,11 @@
     "section": "Section",
     "statusDraft": "Draft",
     "statusPublished": "Published",
+    "statusArchived": "Archived",
+    "statusPendingReview": "Pending review",
+    "statusRejected": "Rejected",
+    "statusActive": "Active",
+    "statusUnknown": "Unknown",
     "Create": {
       "title": "New Template",
       "subtitle": "Create a new agroclimatic bulletin template",
@@ -186,6 +191,8 @@
     "createNew": "Create New",
     "noResults": "No bulletins found",
     "loading": "Loading bulletins...",
+    "errorTitle": "Error loading bulletins",
+    "retry": "Retry",
     "createFirst": "Create New Bulletin",
     "by": "by",
     "lastModified": "Last modified",
@@ -1653,6 +1660,8 @@
     "searchPlaceholder": "Search the dashboard...",
     "loading": "Loading items...",
     "noResults": "No items found",
+    "errorTitle": "Error loading data",
+    "retry": "Retry",
     "noAccessTitle": "No access",
     "noAccessMessage": "You don't have access to any dashboard sections.",
     "deleteConfirmTitle": "Confirm action",
@@ -1661,7 +1670,60 @@
     "confirmDeleteBtn": "Archive",
     "deleting": "Archiving...",
     "deleteSuccess": "{name} archived successfully",
-    "deleteError": "Error archiving {name}: {error}"
+    "deleteError": "Error archiving {name}: {error}",
+    "noBulletins": "No bulletins available",
+    "noTemplates": "No templates available",
+    "noCards": "No cards available",
+    "statusFilter": {
+      "all": "All",
+      "draft": "Drafts",
+      "published": "Published",
+      "archived": "Archived",
+      "pending_review": "Pending review",
+      "rejected": "Rejected",
+      "active": "Active"
+    },
+    "dateFilter": {
+      "from": "From",
+      "to": "To",
+      "clear": "Clear dates"
+    },
+    "sortBy": {
+      "label": "Sort by",
+      "name-asc": "Name (A-Z)",
+      "name-desc": "Name (Z-A)",
+      "date-newest": "Newest first",
+      "date-oldest": "Oldest first"
+    },
+    "createNew": {
+      "bulletin": "Create Bulletin",
+      "template": "Create Template",
+      "card": "Create Card"
+    },
+    "stats": {
+      "total": "Total",
+      "thisWeek": "This week",
+      "pendingReview": "Pending"
+    },
+    "viewMode": {
+      "grid": "Grid View",
+      "table": "Table View"
+    },
+    "table": {
+      "selectAll": "Select all",
+      "name": "Name",
+      "status": "Status",
+      "author": "Author",
+      "createdDate": "Created date",
+      "updatedDate": "Last modified",
+      "actions": "Actions",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete",
+      "selected": "selected",
+      "bulkActions": "Bulk actions",
+      "archiveSelected": "Archive selected"
+    }
   },
   "PreviewModal": {
     "section": "Section",

@@ -161,6 +161,11 @@
     "section": "Sección",
     "statusDraft": "Borrador",
     "statusPublished": "Publicado",
+    "statusArchived": "Archivado",
+    "statusPendingReview": "Pendiente de revisión",
+    "statusRejected": "Rechazado",
+    "statusActive": "Activo",
+    "statusUnknown": "Desconocido",
     "Create": {
       "title": "Nueva Plantilla",
       "subtitle": "Crea una nueva plantilla de boletín agroclimático",
@@ -186,6 +191,8 @@
     "createNew": "Crear Nuevo",
     "noResults": "No se encontraron boletines",
     "loading": "Cargando boletines...",
+    "errorTitle": "Error al cargar boletines",
+    "retry": "Reintentar",
     "createFirst": "Crear Nuevo Boletín",
     "by": "por",
     "lastModified": "Última modificación",
@@ -1653,6 +1660,8 @@
     "searchPlaceholder": "Buscar en el dashboard...",
     "loading": "Cargando elementos...",
     "noResults": "No se encontraron elementos",
+    "errorTitle": "Error al cargar datos",
+    "retry": "Reintentar",
     "noAccessTitle": "Sin acceso",
     "noAccessMessage": "No tienes acceso a ninguna sección del panel.",
     "deleteConfirmTitle": "Confirmar acción",
@@ -1661,7 +1670,60 @@
     "confirmDeleteBtn": "Archivar",
     "deleting": "Archivando...",
     "deleteSuccess": "{name} archivado exitosamente",
-    "deleteError": "Error al archivar {name}: {error}"
+    "deleteError": "Error al archivar {name}: {error}",
+    "noBulletins": "No hay boletines disponibles",
+    "noTemplates": "No hay plantillas disponibles",
+    "noCards": "No hay cards disponibles",
+    "statusFilter": {
+      "all": "Todos",
+      "draft": "Borradores",
+      "published": "Publicados",
+      "archived": "Archivados",
+      "pending_review": "Pendiente revisión",
+      "rejected": "Rechazados",
+      "active": "Activos"
+    },
+    "dateFilter": {
+      "from": "Desde",
+      "to": "Hasta",
+      "clear": "Limpiar fechas"
+    },
+    "sortBy": {
+      "label": "Ordenar por",
+      "name-asc": "Nombre (A-Z)",
+      "name-desc": "Nombre (Z-A)",
+      "date-newest": "Más recientes",
+      "date-oldest": "Más antiguos"
+    },
+    "createNew": {
+      "bulletin": "Crear Boletín",
+      "template": "Crear Plantilla",
+      "card": "Crear Tarjeta"
+    },
+    "stats": {
+      "total": "Total",
+      "thisWeek": "Esta semana",
+      "pendingReview": "Pendientes"
+    },
+    "viewMode": {
+      "grid": "Vista de Cards",
+      "table": "Vista de Tabla"
+    },
+    "table": {
+      "selectAll": "Seleccionar todo",
+      "name": "Nombre",
+      "status": "Estado",
+      "author": "Autor",
+      "createdDate": "Fecha de creación",
+      "updatedDate": "Última modificación",
+      "actions": "Acciones",
+      "view": "Ver",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "selected": "seleccionado(s)",
+      "bulkActions": "Acciones en bloque",
+      "archiveSelected": "Archivar seleccionados"
+    }
   },
   "PreviewModal": {
     "section": "Sección",

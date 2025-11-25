@@ -2,26 +2,27 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { TemplateAPIService } from "@/services/templateService";
 import { CreateTemplateData } from "@/types/template";
-import { ContentFullPreview } from "@/app/[locale]/components/ContentFullPreview";
 import { PreviewMode } from "@/types/templatePreview";
 import { ArrowLeft, Loader2, Download } from "lucide-react";
 import { ExportModal, ExportConfig } from "@/app/[locale]/components/ExportModal";
 import BulletinAPIService from "@/services/bulletinService";
+import { useTranslations } from "next-intl";
+import { ScrollView } from "@/app/[locale]/components/ScrollView";
 
 /**
- * Página de preview independiente para templates
- * Permite visualizar cualquier template por su ID con todos los modos de preview disponibles
+ * Página de preview independiente para boletines
+ * Permite visualizar cualquier boletin por su ID publicado
  * 
- * Ruta: /[locale]/templates/preview/[id]
- * Ejemplo: /es/templates/preview/68d2d1417194ce27a63033b2
+ * Ruta: /[locale]/bulletins/preview/[id]
+ * Ejemplo: /es/bulletins/preview/68d2d1417194ce27a63033b2
  */
 export default function TemplatePreviewPage() {
   const params = useParams();
   const router = useRouter();
-  const templateId = params.id as string;
+  const bulletinId = params.id as string;
   const locale = params.locale as string;
+  const t = useTranslations("CreateBulletin.export");
 
   const [templateData, setTemplateData] = useState<CreateTemplateData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,8 +39,8 @@ export default function TemplatePreviewPage() {
 
   useEffect(() => {
     const loadTemplate = async () => {
-      if (!templateId) {
-        setError("No se proporcionó un ID de template");
+      if (!bulletinId) {
+        setError("No se proporcionó un ID de boletin");
         setLoading(false);
         return;
       }
@@ -49,36 +50,36 @@ export default function TemplatePreviewPage() {
         setError(null);
 
         // Obtener el template master y su versión actual en una sola llamada
-        const response = await BulletinAPIService.getCurrentVersion(templateId);
+        const response = await BulletinAPIService.getCurrentVersion(bulletinId);
         
         if (!response.success || !response.data) {
-          throw new Error("Template no encontrado");
+          throw new Error("Boletin no encontrado");
         }
 
-        const { master: templateMaster, current_version: currentVersion } = response.data;
+        const { master: bulletinMaster, current_version: currentVersion } = response.data;
 
         // Validar que la versión tenga contenido
         if (!currentVersion.data || !currentVersion.data.sections) {
-          throw new Error("El template no tiene secciones definidas");
+          throw new Error("El boletin no tiene secciones definidas");
         }
         
         // Convertir la respuesta del API al formato CreateTemplateData
         const templateDataFormatted: CreateTemplateData = {
           master: {
-            template_name: templateMaster.bulletin_name || "Template sin nombre",
-            description: templateMaster.description || "",
-            log: templateMaster.log || {
+            template_name: bulletinMaster.bulletin_name || "Boletin sin nombre",
+            description: bulletinMaster.description || "",
+            log: bulletinMaster.log || {
               created_at: new Date().toISOString(),
               creator_user_id: "",
               creator_first_name: null,
               creator_last_name: null,
             },
             status: "active",
-            access_config: templateMaster.access_config || {
+            access_config: bulletinMaster.access_config || {
               access_type: "public",
               allowed_groups: [],
             },
-            thumbnail_images: (templateMaster as any).thumbnail_images || [],
+            thumbnail_images: (bulletinMaster as any).thumbnail_images || [],
           },
           version: {
             version_num: currentVersion.version_num || 1,
@@ -100,9 +101,9 @@ export default function TemplatePreviewPage() {
 
         setTemplateData(templateDataFormatted);
       } catch (err) {
-        console.error("Error cargando template:", err);
+        console.error("Error cargando boletin:", err);
         setError(
-          err instanceof Error ? err.message : "Error al cargar el template"
+          err instanceof Error ? err.message : "Error al cargar el boletin"
         );
       } finally {
         setLoading(false);
@@ -110,29 +111,320 @@ export default function TemplatePreviewPage() {
     };
 
     loadTemplate();
-  }, [templateId]);
+  }, [bulletinId]);
+
+  // Función helper para calcular el número total de páginas de una sección
+  const getSectionTotalPages = (section: any): number => {
+    // Buscar si hay algún field de tipo list o card que requiera paginación
+    for (const block of section.blocks) {
+      for (const field of block.fields) {
+        // Detectar paginación para listas
+        if (field.type === "list" && field.field_config) {
+          const maxItemsPerPage = field.field_config.max_items_per_page;
+          const items = Array.isArray(field.value) ? field.value : [];
+
+          if (maxItemsPerPage && items.length > maxItemsPerPage) {
+            return Math.ceil(items.length / maxItemsPerPage);
+          }
+        }
+
+        // Detectar paginación para cards (cada card es una página)
+        if (field.type === "card" && Array.isArray(field.value)) {
+          const cards = field.value;
+          if (cards.length > 1) {
+            return cards.length; // Una card por página
+          }
+        }
+      }
+    }
+
+    return 1; // Por defecto, 1 página si no hay paginación
+  };
 
   // Handler para exportación
   const handleExport = async (
-    config: ExportConfig, 
-    onSectionChange: (index: number) => void,
-    onProgressUpdate: (current: number, message: string) => void
-  ) => {
-    // La exportación ahora se maneja internamente en ExportModal con Puppeteer
-    // No se necesita lógica adicional aquí
-    console.log("🚀 Exportación iniciada desde ExportModal");
-  };
+      config: ExportConfig,
+      onSectionChange: (index: number) => void,
+      onProgressUpdate: (current: number, message: string) => void
+    ) => {
+      const { serializeElementToHTML } = await import("@/utils/exportPuppeteer");
+      const JSZip = (await import("jszip")).default;
+  
+      const totalSections = templateData?.version.content.sections.length;
+      const sectionsToExport =
+        config.selectedSections.length > 0
+          ? config.selectedSections
+          : Array.from({ length: totalSections || 0 }, (_, i) => i);
+  
+      try {
+        const bulletinName = templateData?.master.template_name
+        const zip = new JSZip();
+        // Para PDF, generamos PNG de alta calidad y luego convertimos
+        const imageFormat = config.format === "pdf" ? "png" : config.format;
+        const finalFormat = config.format;
+  
+        // Asegurar que quality sea un número entero válido
+        const qualityNumber =
+          typeof config.quality === "string"
+            ? parseInt(config.quality, 10)
+            : config.quality;
+  
+        let imageCounter = 0; // Contador global de imágenes exportadas
+  
+        // Cambiar al contenedor de preview primero
+        onSectionChange(0);
+  
+        // Esperar a que el contenedor scroll se monte con todas las secciones expandidas
+        await new Promise((resolve) => setTimeout(resolve, 800));
+  
+        // Obtener el contenedor principal del scroll
+        const scrollContainer = document.querySelector(
+          "#bulletin-export-preview .flex.gap-8"
+        );
+  
+        if (!scrollContainer) {
+          throw new Error("No se encontró el contenedor de secciones");
+        }
+  
+        // Exportar cada sección (y sus páginas si tiene múltiples)
+        for (let i = 0; i < sectionsToExport.length; i++) {
+          const sectionIndex = sectionsToExport[i];
+          const section = templateData?.version.content.sections[sectionIndex];
+  
+          // Detectar cuántas páginas tiene esta sección
+          const totalPages = getSectionTotalPages(section);
+  
+          // Exportar cada página de la sección
+          for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
+            imageCounter++;
+  
+            onProgressUpdate(
+              imageCounter,
+              `${t("sectionGenerating", { current: sectionIndex + 1 })}, ${t(
+                "sectionPage"
+              )} ${pageIndex + 1}/${totalPages}...`
+            );
+  
+            // Pequeño delay para asegurar que la sección esté renderizada
+            await new Promise((resolve) => setTimeout(resolve, 300));
+  
+            // Buscar el elemento de preview específico usando data attributes
+            const previewElement = scrollContainer.querySelector(
+              `[data-section-index="${sectionIndex}"][data-page-index="${pageIndex}"]`
+            );
+  
+            if (!previewElement) {
+              console.warn(
+                `⚠️ No se encontró preview para sección ${
+                  sectionIndex + 1
+                }, página ${pageIndex + 1}`
+              );
+              continue;
+            }
+  
+            // Buscar el contenedor del TemplatePreview (el div interno con el boletín)
+            const templatePreviewContainer = previewElement.querySelector(
+              "#template-preview-container > div"
+            );
+  
+            if (!templatePreviewContainer) {
+              console.warn(
+                `⚠️ No se encontró TemplatePreview container en sección ${
+                  sectionIndex + 1
+                }, página ${pageIndex + 1}`
+              );
+              continue;
+            }
+  
+            // Esperar a que todas las imágenes dentro del contenedor se carguen
+            const images = templatePreviewContainer.querySelectorAll("img");
+            if (images.length > 0) {
+              await Promise.all(
+                Array.from(images).map((img) => {
+                  if (img.complete) return Promise.resolve();
+                  return new Promise((resolve) => {
+                    img.onload = () => resolve(true);
+                    img.onerror = () => resolve(false);
+                    // Timeout de 5 segundos por imagen
+                    setTimeout(() => resolve(false), 5000);
+                  });
+                })
+              );
+            }
+  
+            // Serializar el HTML con estilos
+            const html = serializeElementToHTML(
+              templatePreviewContainer as HTMLElement
+            );
+  
+            // Obtener dimensiones del elemento
+            const rect = templatePreviewContainer.getBoundingClientRect();
+            const width = Math.round(rect.width);
+            const height = Math.round(rect.height);
+  
+            // Calcular deviceScaleFactor según la calidad seleccionada
+            let deviceScaleFactor = 1;
+            switch (config.quality) {
+              case "low":
+                deviceScaleFactor = 1;
+                break;
+              case "medium":
+                deviceScaleFactor = 1.5;
+                break;
+              case "high":
+                deviceScaleFactor = 2;
+                break;
+              case "ultra":
+                deviceScaleFactor = 3;
+                break;
+            }
+  
+            // Llamar a la API para generar la imagen
+            const response = await fetch("/api/export-bulletin", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                html,
+                width,
+                height,
+                format: imageFormat,
+                quality: qualityNumber,
+                deviceScaleFactor, // Enviar el factor de escala
+                baseUrl: window.location.origin, // Agregar URL base para resolver imágenes
+              }),
+            });
+  
+            if (!response.ok) {
+              const error = await response.json();
+              throw new Error(error.details || "Error al generar imagen");
+            }
+  
+            // Obtener el blob de la imagen
+            const blob = await response.blob();
+  
+            // Agregar al ZIP con nombre descriptivo
+            const filename =
+              totalPages > 1
+                ? `seccion_${sectionIndex + 1}_pagina_${
+                    pageIndex + 1
+                  }.${imageFormat}`
+                : sectionsToExport.length > 1
+                ? `seccion_${sectionIndex + 1}.${imageFormat}`
+                : `${bulletinName}.${imageFormat}`;
+  
+            zip.file(filename, blob);
+          }
+        }
+  
+        // Si el formato es PDF, convertir las imágenes a PDF
+        if (finalFormat === "pdf") {
+          onProgressUpdate(sectionsToExport.length, t("toPdf"));
+  
+          // Importar jsPDF dinámicamente
+          const { jsPDF } = await import("jspdf");
+  
+          // Crear documento PDF
+          const pdf = new jsPDF({
+            orientation: "portrait",
+            unit: "px",
+            format: "a4",
+          });
+  
+          let isFirstPage = true;
+  
+          // Obtener todos los archivos del ZIP
+          const files = Object.keys(zip.files).sort();
+  
+          for (const filename of files) {
+            const file = zip.files[filename];
+            const blob = await file.async("blob");
+  
+            // Convertir blob a data URL
+            const dataUrl = await new Promise<string>((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result as string);
+              reader.readAsDataURL(blob);
+            });
+  
+            // Crear imagen para obtener dimensiones
+            const img = await new Promise<HTMLImageElement>((resolve) => {
+              const image = new Image();
+              image.onload = () => resolve(image);
+              image.src = dataUrl;
+            });
+  
+            // Calcular dimensiones para ajustar a la página
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            const imgRatio = img.width / img.height;
+            const pageRatio = pdfWidth / pdfHeight;
+  
+            let finalWidth = pdfWidth;
+            let finalHeight = pdfHeight;
+  
+            if (imgRatio > pageRatio) {
+              // Imagen más ancha
+              finalHeight = pdfWidth / imgRatio;
+            } else {
+              // Imagen más alta
+              finalWidth = pdfHeight * imgRatio;
+            }
+  
+            // Agregar nueva página si no es la primera
+            if (!isFirstPage) {
+              pdf.addPage();
+            }
+            isFirstPage = false;
+  
+            // Agregar imagen al PDF
+            pdf.addImage(
+              dataUrl,
+              imageFormat.toUpperCase(),
+              0,
+              0,
+              finalWidth,
+              finalHeight
+            );
+          }
+  
+          // Descargar el PDF
+          pdf.save(`${bulletinName}.pdf`);
+        } else {
+          // Generar el archivo ZIP para imágenes
+          onProgressUpdate(sectionsToExport.length, t("toZip"));
+  
+          const zipBlob = await zip.generateAsync({ type: "blob" });
+  
+          // Descargar el ZIP
+          const url = URL.createObjectURL(zipBlob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = `${bulletinName}.zip`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }
+  
+        onProgressUpdate(sectionsToExport.length, t("exportComplete"));
+      } catch (error) {
+        console.error("❌ Error al exportar:", error);
+        throw error;
+      }
+    };
 
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#f5f5dc] to-[#fff8e7] flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin text-[#ffaf68] mx-auto mb-4" />
           <p className="text-[#283618] text-lg font-medium">
-            Cargando template...
+            Cargando boletin...
           </p>
-          <p className="text-[#283618]/60 text-sm mt-2">ID: {templateId}</p>
+          <p className="text-[#283618]/60 text-sm mt-2">ID: {bulletinId}</p>
         </div>
       </div>
     );
@@ -141,24 +433,24 @@ export default function TemplatePreviewPage() {
   // Error state
   if (error || !templateData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#f5f5dc] to-[#fff8e7] flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full text-center">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="text-red-600 text-2xl">⚠️</span>
           </div>
           <h2 className="text-2xl font-bold text-[#283618] mb-2">
-            Error al cargar template
+            Error al cargar boletin
           </h2>
           <p className="text-[#283618]/70 mb-6">
-            {error || "No se pudo cargar el template"}
+            {error || "No se pudo cargar el boletin con el ID proporcionado."}
           </p>
-          <p className="text-sm text-[#283618]/50 mb-6">ID: {templateId}</p>
+          <p className="text-sm text-[#283618]/50 mb-6">ID: {bulletinId}</p>
           <button
-            onClick={() => router.push(`/${locale}/templates`)}
+            onClick={() => router.push(`/${locale}/bulletins`)}
             className="px-6 py-3 bg-[#ffaf68] text-white rounded-lg hover:bg-[#ff9d4d] transition-colors flex items-center gap-2 mx-auto"
           >
             <ArrowLeft className="w-4 h-4" />
-            Volver a Templates
+            Volver a Boletines
           </button>
         </div>
       </div>
@@ -166,7 +458,7 @@ export default function TemplatePreviewPage() {
   }
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-[#f5f5dc] to-[#fff8e7]'>
+    <div className='min-h-screen'>
       {/* Header */}
       <div className='bg-white border-b border-[#283618]/10 shadow-sm top-0 z-10'>
         <div className='container mx-auto px-4 py-4'>
@@ -174,9 +466,9 @@ export default function TemplatePreviewPage() {
             {/* Título y navegación */}
             <div className='flex items-center gap-4'>
               <button
-                onClick={() => router.push(`/${locale}/templates`)}
+                onClick={() => router.push(`/${locale}/bulletins`)}
                 className='p-2 hover:bg-[#f5f5dc] rounded-lg transition-colors'
-                title='Volver a Templates'
+                title='Volver a Boletines'
               >
                 <ArrowLeft className='w-5 h-5 text-[#283618]' />
               </button>
@@ -185,7 +477,7 @@ export default function TemplatePreviewPage() {
                   {templateData.master.template_name}
                 </h1>
                 <p className='text-sm text-[#283618]/60'>
-                  Preview del Template •{' '}
+                  Preview del Boletin •{' '}
                   {templateData.version.content.sections.length}{' '}
                   {templateData.version.content.sections.length === 1
                     ? 'sección'
@@ -207,15 +499,9 @@ export default function TemplatePreviewPage() {
               </button>
 
               <div className='text-right'>
-                <p className='text-xs text-[#283618]/50'>ID del Template</p>
+                <p className='text-xs text-[#283618]/50'>ID del boletin</p>
                 <p className='text-sm font-mono text-[#283618]/70'>
-                  {templateId}
-                </p>
-              </div>
-              <div className='text-right'>
-                <p className='text-xs text-[#283618]/50'>Estado</p>
-                <p className='text-sm font-medium text-[#283618] capitalize'>
-                  {templateData.master.status}
+                  {bulletinId}
                 </p>
               </div>
             </div>
@@ -224,187 +510,32 @@ export default function TemplatePreviewPage() {
       </div>
 
       {/* Contenido principal */}
-      <div className='container mx-auto px-0 md:px-4 py-4 md:py-8'>
-        <div className='bg-white md:rounded-xl md:shadow-lg pt-6 pb-6 md:p-6'>
+      <div className='container mx-auto px-0 py-4 md:py-0 md:px-4 '>
+        <div className='bg-white md:rounded-xl md:shadow-lg pb-6 md:p-6'>
           {/* Info y controles - Oculto en móvil para dar más espacio */}
-          <div className='hidden md:block mb-6 pb-6 border-b border-[#283618]/10'>
-            <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
-              <div>
-                <h2 className='text-lg font-semibold text-[#283618] mb-1'>
-                  Vista de Preview
-                </h2>
-                <p className='text-sm text-[#283618]/60'>
-                  Cambia entre los diferentes modos de visualización usando el
-                  toggle
-                </p>
-              </div>
-
-              {/* Botones de orientación para pruebas (solo modo scroll) */}
-              
-                <div className='flex gap-2 items-center'>
-                  <span className='text-xs text-[#283618]/60 font-medium'>
-                    Orientación:
-                  </span>
-                  <button
-                    onClick={() => setScrollOrientation('vertical')}
-                    className={`
-                        px-3 py-1.5 rounded-lg text-xs font-medium transition-all
-                        ${
-                          scrollOrientation === 'vertical'
-                            ? 'bg-[#606c38] text-white'
-                            : 'bg-white text-[#283618] border border-gray-200 hover:bg-gray-50'
-                        }
-                      `}
-                  >
-                    Vertical
-                  </button>
-                  <button
-                    onClick={() => setScrollOrientation('horizontal')}
-                    className={`
-                        px-3 py-1.5 rounded-lg text-xs font-medium transition-all
-                        ${
-                          scrollOrientation === 'horizontal'
-                            ? 'bg-[#606c38] text-white'
-                            : 'bg-white text-[#283618] border border-gray-200 hover:bg-gray-50'
-                        }
-                      `}
-                  >
-                    Horizontal
-                  </button>
-                </div>
-
-              {/* Botones de configuración para grilla (solo modo grid) */}
-              
-                <div className='flex gap-4 items-center'>
-                  {/* Tamaño de thumbnails */}
-                  <div className='flex gap-2 items-center'>
-                    <span className='text-xs text-[#283618]/60 font-medium'>
-                      Tamaño:
-                    </span>
-                    <button
-                      onClick={() => setGridThumbnailSize('small')}
-                      className={`
-                        px-3 py-1.5 rounded-lg text-xs font-medium transition-all
-                        ${
-                          gridThumbnailSize === 'small'
-                            ? 'bg-[#606c38] text-white'
-                            : 'bg-white text-[#283618] border border-gray-200 hover:bg-gray-50'
-                        }
-                      `}
-                    >
-                      S
-                    </button>
-                    <button
-                      onClick={() => setGridThumbnailSize('medium')}
-                      className={`
-                        px-3 py-1.5 rounded-lg text-xs font-medium transition-all
-                        ${
-                          gridThumbnailSize === 'medium'
-                            ? 'bg-[#606c38] text-white'
-                            : 'bg-white text-[#283618] border border-gray-200 hover:bg-gray-50'
-                        }
-                      `}
-                    >
-                      M
-                    </button>
-                    <button
-                      onClick={() => setGridThumbnailSize('large')}
-                      className={`
-                        px-3 py-1.5 rounded-lg text-xs font-medium transition-all
-                        ${
-                          gridThumbnailSize === 'large'
-                            ? 'bg-[#606c38] text-white'
-                            : 'bg-white text-[#283618] border border-gray-200 hover:bg-gray-50'
-                        }
-                      `}
-                    >
-                      L
-                    </button>
-                  </div>
-
-                  {/* Número de columnas */}
-                  <div className='flex gap-2 items-center'>
-                    <span className='text-xs text-[#283618]/60 font-medium'>
-                      Columnas:
-                    </span>
-                    {[1, 2, 3, 4, 5, 6].map((num) => (
-                      <button
-                        key={num}
-                        onClick={() => setGridColumns(num as 1 | 2 | 3 | 4 | 5 | 6)}
-                        className={`
-                          px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all min-w-[32px]
-                          ${
-                            gridColumns === num
-                              ? 'bg-[#606c38] text-white'
-                              : 'bg-white text-[#283618] border border-gray-200 hover:bg-gray-50'
-                          }
-                        `}
-                      >
-                        {num}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              
+          <div className='md:block pb-6 border-b border-[#283618]/10'>
+            <div className='bg-white rounded-lg shadow p-4'>
+              <h3 className='text-sm font-semibold text-[#283618] mb-2'>
+                Descripción
+              </h3>
+              <p className='text-[#283618]/70 text-sm'>
+                {templateData.master.description || 'Sin descripción'}
+              </p>
             </div>
           </div>
 
           {/* Componente de Preview - Sin padding en móvil */}
-          <div className='w-full'>
-            <ContentFullPreview
+          <div className='w-full' id="bulletin-export-preview">
+            <ScrollView
               data={templateData}
-              mode={selectedMode}
-              allowModeToggle={true}
-              carouselConfig={{
-                orientation: scrollOrientation,
-                autoPlay: true,
-                autoPlayInterval: 5000,
-                showControls: true,
-                showIndicators: true,
-                loop: true,
-                enableSwipe: true,
-                itemsPerView: gridColumns,
-              }}
-              scrollConfig={{
-                orientation: scrollOrientation,
+              config={{
+                orientation: "vertical",
                 showMiniNav: true,
                 highlightActive: true,
                 spacing: 'comfortable',
-              }}
-              gridConfig={{
-                columns: gridColumns,
-                thumbnailSize: gridThumbnailSize,
-                showLabels: true,
+                expandAllPages: true,
               }}
             />
-          </div>
-        </div>
-
-        {/* Información adicional del template */}
-        <div className='mt-6 grid grid-cols-1 md:grid-cols-3 gap-4'>
-          <div className='bg-white rounded-lg shadow p-4'>
-            <h3 className='text-sm font-semibold text-[#283618] mb-2'>
-              Descripción
-            </h3>
-            <p className='text-[#283618]/70 text-sm'>
-              {templateData.master.description || 'Sin descripción'}
-            </p>
-          </div>
-          <div className='bg-white rounded-lg shadow p-4'>
-            <h3 className='text-sm font-semibold text-[#283618] mb-2'>
-              Versión
-            </h3>
-            <p className='text-[#283618]/70'>
-              v{templateData.version.version_num || 1}
-            </p>
-          </div>
-          <div className='bg-white rounded-lg shadow p-4'>
-            <h3 className='text-sm font-semibold text-[#283618] mb-2'>
-              Acceso
-            </h3>
-            <p className='text-[#283618]/70 capitalize'>
-              {templateData.master.access_config.access_type}
-            </p>
           </div>
         </div>
       </div>
@@ -416,8 +547,7 @@ export default function TemplatePreviewPage() {
         onExport={handleExport}
         totalSections={templateData.version.content.sections.length}
         contentName={templateData.master.template_name}
-        contentId={templateId}
-        contentType="bulletin"
+        templateData={templateData}
       />
 
       {/* Botón flotante de exportación (móvil) */}
