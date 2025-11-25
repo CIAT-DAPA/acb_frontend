@@ -54,9 +54,7 @@ export const VisualResourceSelector: React.FC<VisualResourceSelectorProps> = ({
         "active"
       );
       if (response.success && response.data) {
-        let filteredResources = response.data.filter(
-          (resource) => resource.status === "active"
-        );
+        let filteredResources = response.data;
 
         // Filtrar por tipo si es necesario
         if (resourceType !== "both") {
