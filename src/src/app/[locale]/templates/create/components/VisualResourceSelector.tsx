@@ -50,7 +50,9 @@ export const VisualResourceSelector: React.FC<VisualResourceSelectorProps> = ({
   const loadResources = async () => {
     setLoadingResources(true);
     try {
-      const response = await VisualResourcesService.getAllVisualResources();
+      const response = await VisualResourcesService.getVisualResourcesByStatus(
+        "active"
+      );
       if (response.success && response.data) {
         let filteredResources = response.data.filter(
           (resource) => resource.status === "active"
