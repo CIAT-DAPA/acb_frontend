@@ -43,7 +43,7 @@ export default function TemplatePreviewPage() {
         setError(null);
 
         // Obtener el template master y su versión actual en una sola llamada
-        const response = await BulletinAPIService.getCurrentVersion(bulletinId);
+        const response = await BulletinAPIService.getBulletinPublished(bulletinId);
         
         if (!response.success || !response.data) {
           throw new Error("Boletin no encontrado");
