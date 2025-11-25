@@ -9,6 +9,7 @@ export interface ExportContentOptions {
   quality: number; // 0-100
   qualityLevel: "low" | "medium" | "high" | "ultra"; // Mapea a escala
   selectedSections: number[]; // Array de índices de secciones a exportar (vacío = todas)
+  pageSize?: string; // "auto" | "a4" | "letter" | "legal" - Solo para PDF
 
   // Selectores DOM
   containerSelector: string; // Selector del contenedor principal (ej: "#bulletin-export-preview .flex.gap-8")
@@ -71,7 +72,16 @@ export async function exportContent(
     const imageFormat = options.format === "pdf" ? "png" : options.format;
     const finalFormat = options.format;
 
-    let imageCounter = 0; // Contador global de imágenes exportadas
+    // PRE-CALCULAR: Total de páginas a exportar para progreso preciso
+    let totalPagesToExport = 0;
+    for (const sectionIndex of sectionsToExport) {
+      const section = options.sections[sectionIndex];
+      totalPagesToExport += options.getSectionPages(section);
+    }
+
+    // Total de pasos = páginas + 1 paso de compresión/conversión final
+    const totalSteps = totalPagesToExport + 1;
+    let currentStep = 0;
 
     // Notificar cambio inicial de sección
     if (options.onSectionChange) {
@@ -100,10 +110,13 @@ export async function exportContent(
 
       // Exportar cada página de la sección
       for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
-        imageCounter++;
+        currentStep++;
+
+        // Calcular porcentaje real basado en pasos totales
+        const percentage = Math.round((currentStep / totalSteps) * 100);
 
         options.onProgressUpdate(
-          imageCounter,
+          percentage,
           `${t.sectionGenerating(sectionIndex + 1)}, ${t.sectionPage} ${
             pageIndex + 1
           }/${totalPages}...`
@@ -226,16 +239,24 @@ export async function exportContent(
 
     // Si el formato es PDF, convertir las imágenes a PDF
     if (finalFormat === "pdf") {
-      options.onProgressUpdate(sectionsToExport.length, t.toPdf);
+      // Incrementar paso final (compresión/conversión)
+      currentStep++;
+      const percentage = Math.round((currentStep / totalSteps) * 100);
+      options.onProgressUpdate(percentage, t.toPdf);
 
       // Importar jsPDF dinámicamente
       const { jsPDF } = await import("jspdf");
+
+      // Determinar el formato de página
+      // Si es "auto", se ajustará al tamaño de cada imagen
+      const useAutoSize = !options.pageSize || options.pageSize === "auto";
+      const pageFormat = useAutoSize ? "a4" : options.pageSize;
 
       // Crear documento PDF
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "px",
-        format: "a4",
+        format: pageFormat as any,
       });
 
       let isFirstPage = true;
@@ -243,9 +264,20 @@ export async function exportContent(
       // Obtener todos los archivos del ZIP
       const files = Object.keys(zip.files).sort();
 
-      for (const filename of files) {
+      for (let fileIndex = 0; fileIndex < files.length; fileIndex++) {
+        const filename = files[fileIndex];
         const file = zip.files[filename];
         const blob = await file.async("blob");
+
+        // Micro-progreso durante conversión a PDF (dentro del último paso)
+        // Progreso va de 99% a 100% mientras se agregan imágenes
+        if (files.length > 1) {
+          const pdfMicroProgress = 99 + (fileIndex / files.length);
+          options.onProgressUpdate(
+            Math.round(pdfMicroProgress),
+            `${t.toPdf} (${fileIndex + 1}/${files.length})`
+          );
+        }
 
         // Convertir blob a data URL
         const dataUrl = await new Promise<string>((resolve) => {
@@ -261,45 +293,72 @@ export async function exportContent(
           image.src = dataUrl;
         });
 
-        // Calcular dimensiones para ajustar a la página
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        const imgRatio = img.width / img.height;
-        const pageRatio = pdfWidth / pdfHeight;
-
-        let finalWidth = pdfWidth;
-        let finalHeight = pdfHeight;
-
-        if (imgRatio > pageRatio) {
-          // Imagen más ancha
-          finalHeight = pdfWidth / imgRatio;
+        // Si es modo "auto", ajustar el tamaño de página a la imagen
+        if (useAutoSize) {
+          // Agregar nueva página con el tamaño exacto de la imagen
+          if (!isFirstPage) {
+            pdf.addPage([img.width, img.height], "portrait");
+          } else {
+            // Para la primera página, configurar el tamaño
+            pdf.internal.pageSize.width = img.width;
+            pdf.internal.pageSize.height = img.height;
+          }
+          
+          // En modo auto, la imagen ocupa toda la página
+          pdf.addImage(
+            dataUrl,
+            imageFormat.toUpperCase(),
+            0,
+            0,
+            img.width,
+            img.height
+          );
         } else {
-          // Imagen más alta
-          finalWidth = pdfHeight * imgRatio;
-        }
+          // Modo con tamaño de página fijo (a4, letter, legal)
+          // Calcular dimensiones para ajustar a la página
+          const pdfWidth = pdf.internal.pageSize.getWidth();
+          const pdfHeight = pdf.internal.pageSize.getHeight();
+          const imgRatio = img.width / img.height;
+          const pageRatio = pdfWidth / pdfHeight;
 
-        // Agregar nueva página si no es la primera
-        if (!isFirstPage) {
-          pdf.addPage();
+          let finalWidth = pdfWidth;
+          let finalHeight = pdfHeight;
+
+          if (imgRatio > pageRatio) {
+            // Imagen más ancha
+            finalHeight = pdfWidth / imgRatio;
+          } else {
+            // Imagen más alta
+            finalWidth = pdfHeight * imgRatio;
+          }
+
+          // Agregar nueva página si no es la primera
+          if (!isFirstPage) {
+            pdf.addPage();
+          }
+
+          // Agregar imagen al PDF ajustada al tamaño de página
+          pdf.addImage(
+            dataUrl,
+            imageFormat.toUpperCase(),
+            0,
+            0,
+            finalWidth,
+            finalHeight
+          );
         }
+        
         isFirstPage = false;
-
-        // Agregar imagen al PDF
-        pdf.addImage(
-          dataUrl,
-          imageFormat.toUpperCase(),
-          0,
-          0,
-          finalWidth,
-          finalHeight
-        );
       }
 
       // Descargar el PDF
       pdf.save(`${options.contentName}.pdf`);
     } else {
       // Generar el archivo ZIP para imágenes
-      options.onProgressUpdate(sectionsToExport.length, t.toZip);
+      // Incrementar paso final (compresión)
+      currentStep++;
+      const percentage = Math.round((currentStep / totalSteps) * 100);
+      options.onProgressUpdate(percentage, t.toZip);
 
       const zipBlob = await zip.generateAsync({ type: "blob" });
 
@@ -314,7 +373,8 @@ export async function exportContent(
       URL.revokeObjectURL(url);
     }
 
-    options.onProgressUpdate(sectionsToExport.length, t.exportComplete);
+    // Progreso final: 100% completado
+    options.onProgressUpdate(100, t.exportComplete);
   } catch (error) {
     console.error("❌ Error al exportar:", error);
     throw error;
