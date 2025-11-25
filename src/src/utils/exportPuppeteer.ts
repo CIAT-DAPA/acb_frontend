@@ -91,13 +91,29 @@ export function serializeElementToHTML(element: HTMLElement): string {
     })
     .join("\n");
 
-  // Construir el HTML completo con estilos
+  // Obtener todos los links de fuentes (Google Fonts, etc.)
+  const fontLinks = Array.from(
+    document.querySelectorAll('link[rel="stylesheet"]')
+  )
+    .filter((link) => {
+      const href = link.getAttribute("href");
+      return (
+        href &&
+        (href.includes("fonts.googleapis.com") ||
+          href.includes("fonts.gstatic.com"))
+      );
+    })
+    .map((link) => link.outerHTML)
+    .join("\n");
+
+  // Construir el HTML completo con estilos y fuentes
   const html = `
     <!DOCTYPE html>
     <html>
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        ${fontLinks}
         <style>
           * {
             margin: 0;
