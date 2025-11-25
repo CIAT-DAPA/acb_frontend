@@ -92,16 +92,17 @@ export async function POST(request: NextRequest) {
     });
 
     // Establecer el contenido HTML con baseURL para resolver URLs relativas
+    // Usar networkidle0 para esperar a que TODO se cargue (fuentes, imágenes, CSS)
     await page.setContent(html, {
-      waitUntil: "domcontentloaded",
+      waitUntil: "networkidle0",
       timeout: 30000,
     });
 
-    // Esperar a que las fuentes se carguen
+    // Esperar explícitamente a que las fuentes se carguen
     await (page as any).evaluateHandle(() => document.fonts.ready);
 
-    // Esperar un poco más para que las imágenes se rendericen (puede que se carguen con JS)
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    // Dar tiempo extra para que el layout se estabilice con las fuentes cargadas
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Convertir URLs relativas a absolutas MANUALMENTE (img tags Y background-image)
     const imagesProcessed: any = await (page as any).evaluate(
