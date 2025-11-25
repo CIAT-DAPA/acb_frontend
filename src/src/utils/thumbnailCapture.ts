@@ -1,7 +1,5 @@
-//import { serializeElementToHTML } from "./exportPuppeteer";
-
 /**
- * Captura screenshots de las secciones del template preview usando Puppeteer
+ * Captura screenshots de las secciones del template preview usando html-to-image
  * Nota: Esta función espera que el preview muestre una sección a la vez
  * y necesita que externamente se cambie selectedSectionIndex antes de llamarla
  * @param previewContainerId ID del contenedor del preview
@@ -47,7 +45,7 @@ export async function captureTemplateThumbnails(
     if (onSectionChange) {
       onSectionChange(i);
       // Dar tiempo para que React actualice el DOM
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      await new Promise((resolve) => setTimeout(resolve, 300));
     }
 
     try {
@@ -76,7 +74,7 @@ export async function captureTemplateThumbnails(
 }
 
 /**
- * Captura un único elemento del DOM como imagen usando Puppeteer
+ * Captura un único elemento del DOM como imagen usando html-to-image
  * @param element Elemento HTML a capturar
  * @param elementId ID del elemento (para logs)
  * @param index Índice de la sección
@@ -88,34 +86,44 @@ async function captureSingleElement(
   index: number = 0
 ): Promise<Blob> {
   try {
-    // Serializar el HTML del elemento con todos los estilos
-    const html = ""//serializeElementToHTML(element);
+    // Importar html-to-image dinámicamente
+    const { toPng } = await import("html-to-image");
 
-    // Obtener dimensiones del elemento
-    const width = element.offsetWidth;
-    const height = element.offsetHeight;
-
-    // Llamar a la API de Puppeteer para generar la imagen
-    const response = await fetch("/api/export-bulletin", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        html,
-        width,
-        height,
-        format: "png",
-        quality: 90,
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.details || "Error al generar thumbnail");
+    // Esperar a que todas las imágenes se carguen
+    const images = element.querySelectorAll("img");
+    if (images.length > 0) {
+      await Promise.all(
+        Array.from(images).map((img) => {
+          if (img.complete && img.naturalHeight !== 0)
+            return Promise.resolve();
+          return new Promise((resolve) => {
+            img.onload = () => resolve(true);
+            img.onerror = () => {
+              console.warn("⚠️ Error cargando imagen:", img.src);
+              resolve(false);
+            };
+            // Timeout de 5 segundos por imagen
+            setTimeout(() => resolve(false), 5000);
+          });
+        })
+      );
     }
 
-    // Obtener el blob de la imagen
+    // Esperar a que las fuentes se carguen
+    await document.fonts.ready;
+
+    // Delay adicional para asegurar renderizado completo
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    // Capturar el elemento como PNG con calidad media (1.5x scale para thumbnails)
+    const dataUrl = await toPng(element, {
+      pixelRatio: 1.5, // Calidad media para thumbnails
+      cacheBust: true,
+      backgroundColor: "#ffffff",
+    });
+
+    // Convertir data URL a blob
+    const response = await fetch(dataUrl);
     const blob = await response.blob();
 
     return blob;
@@ -196,7 +204,7 @@ export async function generateAndUploadThumbnails(
     }
 
     // Dar tiempo para que las imágenes y estilos se carguen completamente
-    await new Promise((resolve) => setTimeout(resolve, 200));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     const thumbnails = await captureTemplateThumbnails(
       previewContainerId,
