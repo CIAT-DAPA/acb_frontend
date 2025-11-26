@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useTranslations } from "next-intl";
 import { TemplateFullPreviewProps, PreviewMode } from "@/types/templatePreview";
 import { CreateTemplateData } from "@/types/template";
 import { CarouselView } from "./CarouselView";
@@ -30,6 +31,8 @@ export function ContentFullPreview({
   initialSection = 0,
   className = "",
 }: ContentFullPreviewProps) {
+  const t = useTranslations("ContentFullPreview");
+  
   // Estado del modo actual (permite cambio dinámico si allowModeToggle=true)
   const [currentMode, setCurrentMode] = useState<PreviewMode>(initialMode);
 
@@ -37,7 +40,7 @@ export function ContentFullPreview({
   if (!data || !data.version || !data.version.content) {
     return (
       <div className="p-8 text-center text-red-600">
-        <p>Error: Datos de contenido inválidos</p>
+        <p>{t("errors.invalidData")}</p>
       </div>
     );
   }
@@ -48,7 +51,7 @@ export function ContentFullPreview({
     return (
       <div className="p-8 text-center text-[#283618]/50">
         <div className="text-4xl mb-4">📄</div>
-        <p>No hay secciones para previsualizar</p>
+        <p>{t("noSections")}</p>
       </div>
     );
   }

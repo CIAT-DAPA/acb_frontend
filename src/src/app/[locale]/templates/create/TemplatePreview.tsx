@@ -1551,7 +1551,7 @@ export function TemplatePreview({
                         <div className="space-y-1 w-full flex-1 flex flex-col">
                           {section.blocks.length === 0 ? (
                             <div className="text-sm text-[#283618]/50 italic pl-4">
-                              No hay bloques en esta sección
+                              {t("noBlocksInSection")}
                             </div>
                           ) : (
                             section.blocks.map((block, blockIndex) => {
@@ -1627,7 +1627,7 @@ export function TemplatePreview({
                                   >
                                     {block.fields.length === 0 ? (
                                       <div className="text-sm text-[#283618]/50 italic">
-                                        No hay campos en este bloque
+                                        {t("noFieldsInBlock")}
                                       </div>
                                     ) : (
                                       block.fields
@@ -1829,11 +1829,11 @@ export function TemplatePreview({
       {/* Información adicional */}
       {moreInfo && (
         <div className="mt-4 text-xs text-[#283618]/50 space-y-1">
-          <div>Versión: {data.version.version_num}</div>
-          <div>Mensaje: {data.version.commit_message}</div>
-          <div>Secciones: {sections.length}</div>
+          <div>{t("version")} {data.version.version_num}</div>
+          <div>{t("message")} {data.version.commit_message}</div>
+          <div>{t("sectionsCount")} {sections.length}</div>
           <div>
-            Campos totales:{" "}
+            {t("totalFields")}{" "}
             {sections.reduce(
               (total, section) =>
                 total +
