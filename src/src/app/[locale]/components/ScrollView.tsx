@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { ScrollConfig } from "@/types/templatePreview";
 import { CreateTemplateData } from "@/types/template";
+import { Card } from "@/types/card";
 import { TemplatePreview } from "../templates/create/TemplatePreview";
 import { List, X } from "lucide-react";
 import * as ui from "@/app/[locale]/components/ui";
@@ -12,6 +13,7 @@ interface ScrollViewProps {
   data: CreateTemplateData;
   config?: ScrollConfig;
   initialSection?: number;
+  cardsMetadata?: Record<string, Card>;
 }
 
 /**
@@ -24,6 +26,7 @@ export function ScrollView({
   data,
   config = {},
   initialSection = 0,
+  cardsMetadata,
 }: ScrollViewProps) {
   const t = useTranslations("ScrollView");
   
@@ -303,6 +306,7 @@ export function ScrollView({
                     selectedSectionIndex={sectionIndex}
                     currentPageIndex={pageIndex}
                     hidePagination={true}
+                    cardsMetadata={cardsMetadata}
                   />
                 </div>
               ))}
@@ -342,6 +346,7 @@ export function ScrollView({
               <TemplatePreview
                 data={data}
                 selectedSectionIndex={sectionIndex}
+                cardsMetadata={cardsMetadata}
               />
             </div>
           );

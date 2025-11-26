@@ -192,12 +192,12 @@ export default function Bulletins() {
                     bulletin.access_config?.allowed_groups || [];
                   const canEdit = can(
                     PERMISSION_ACTIONS.Update,
-                    MODULES.TEMPLATE_MANAGEMENT,
+                    MODULES.BULLETINS_COMPOSER,
                     allowedGroups
                   );
                   const canDelete = can(
                     PERMISSION_ACTIONS.Delete,
-                    MODULES.TEMPLATE_MANAGEMENT,
+                    MODULES.BULLETINS_COMPOSER,
                     allowedGroups
                   );
                   const creatorName =
