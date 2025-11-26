@@ -614,7 +614,7 @@ export function ExportModal({
 
         {/* Footer - Fixed (no hace scroll) */}
         {!loadingContent && !loadError && (
-          <div className="flex-shrink-0 bg-white border-t border-[#283618]/10 p-6 flex items-center justify-between rounded-b-xl">
+          <div className="flex flex-col flex-shrink-0 bg-white border-t border-[#283618]/10 p-6 flex items-center justify-between rounded-b-xl">
             <div className="text-sm text-[#283618]/60">
               {t("formatLabel")}:{" "}
               <span className="font-semibold uppercase">{config.format}</span> |
@@ -644,7 +644,7 @@ export function ExportModal({
         {/* Overlay de progreso - Aparece sobre todo el modal */}
         {isExporting && (
           <div className="absolute inset-0 bg-black/30 backdrop-blur rounded-xl flex items-center justify-center z-20">
-            <div className="bg-[#ffffff] rounded-lg p-4 min-w-[400px] max-w-lg mx-4">
+            <div className="bg-[#ffffff] rounded-lg p-4 max-w-lg mx-4">
               <div className="flex items-center gap-3 mb-2">
                 <Loader2 className="w-5 h-5 animate-spin text-[#ffaf68]" />
                 <span className="text-sm font-medium text-[#283618]">
