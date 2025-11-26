@@ -64,6 +64,7 @@ interface TemplatePreviewProps {
   currentPageIndex?: number; // Control externo del índice de página
   onPageChange?: (pageIndex: number) => void; // Callback cuando cambia la página
   hidePagination?: boolean; // Ocultar controles de paginación
+  cardsMetadata?: Record<string, Card>; // Diccionario de cards precargadas para evitar HTTP calls
 }
 
 // Constantes para estilos repetidos
@@ -82,6 +83,7 @@ export function TemplatePreview({
   currentPageIndex: externalPageIndex,
   onPageChange,
   hidePagination = false,
+  cardsMetadata,
 }: TemplatePreviewProps) {
   const t = useTranslations("CreateTemplate.preview");
   const pathname = usePathname();
@@ -121,6 +123,19 @@ export function TemplatePreview({
   useEffect(() => {
     const loadCards = async () => {
       try {
+        // Si tenemos cardsMetadata, usarlo directamente (optimización para bulletins publicados)
+        if (cardsMetadata && Object.keys(cardsMetadata).length > 0) {
+          const cache = new Map<string, Card>();
+          Object.values(cardsMetadata).forEach((card) => {
+            if (card._id) {
+              cache.set(card._id, card);
+            }
+          });
+          setCardsCache(cache);
+          return;
+        }
+
+        // Si no hay cardsMetadata, hacer el fetch tradicional
         const response = await CardAPIService.getCards();
         if (response.success && response.data) {
           const cache = new Map<string, Card>();
@@ -137,7 +152,7 @@ export function TemplatePreview({
     };
 
     loadCards();
-  }, []);
+  }, [cardsMetadata]);
 
   const styleConfig = data.version.content.style_config;
   const headerConfig = data.version.content.header_config;
