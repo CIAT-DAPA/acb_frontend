@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { TemplateAPIService } from "@/services/templateService";
 import { CreateTemplateData } from "@/types/template";
 import { TemplatePreview } from "../templates/create/TemplatePreview";
@@ -37,6 +38,7 @@ export function TemplatePreviewModal({
   onDelete,
   locale = "es",
 }: TemplatePreviewModalProps) {
+  const t = useTranslations("TemplatePreviewModal");
   const router = useRouter();
   const [templateData, setTemplateData] = useState<CreateTemplateData | null>(
     externalData || null
@@ -66,21 +68,21 @@ export function TemplatePreviewModal({
         const response = await TemplateAPIService.getCurrentVersion(templateId);
 
         if (!response.success || !response.data) {
-          throw new Error("Template no encontrado");
+          throw new Error(t("errors.templateNotFound"));
         }
 
         const { master: templateMaster, current_version: currentVersion } = response.data;
 
         // Validar que la versión tenga contenido
         if (!currentVersion.content || !currentVersion.content.sections) {
-          throw new Error("El template no tiene secciones definidas");
+          throw new Error(t("errors.noSections"));
         }
 
         // Convertir al formato CreateTemplateData
         const formattedData: CreateTemplateData = {
           master: {
             template_name:
-              templateMaster.template_name || "Template sin nombre",
+              templateMaster.template_name || t("defaults.noName"),
             description: templateMaster.description || "",
             log: templateMaster.log || {
               created_at: new Date().toISOString(),
@@ -103,7 +105,7 @@ export function TemplatePreviewModal({
               creator_first_name: null,
               creator_last_name: null,
             },
-            commit_message: currentVersion.commit_message || "Versión inicial",
+            commit_message: currentVersion.commit_message || t("defaults.initialVersion"),
             content: {
               style_config: currentVersion.content.style_config || {},
               header_config: currentVersion.content.header_config,
@@ -117,7 +119,7 @@ export function TemplatePreviewModal({
       } catch (err) {
         console.error("Error cargando template:", err);
         setError(
-          err instanceof Error ? err.message : "Error al cargar el template"
+          err instanceof Error ? err.message : t("errors.loadingError")
         );
       } finally {
         setLoading(false);
@@ -170,12 +172,12 @@ export function TemplatePreviewModal({
       onClose={handleClose}
       title={
         templateData?.master?.template_name ||
-        `Sección ${currentSectionIndex + 1}`
+        t("section", { number: currentSectionIndex + 1 })
       }
       subtitle={
         currentSection?.display_name
           ? `${currentSection.display_name} (${currentSectionIndex + 1}/${totalSections})`
-          : !loading ? `Sección ${currentSectionIndex + 1} de ${totalSections}` : "Cargando..."
+          : !loading ? t("sectionOf", { current: currentSectionIndex + 1, total: totalSections }) : t("loadingShort")
       }
       showNavigation={showNavigation && totalSections > 1}
       currentIndex={currentSectionIndex}
@@ -191,7 +193,7 @@ export function TemplatePreviewModal({
       {loading && (
         <div className="flex flex-col items-center justify-center py-12">
           <Loader2 className="w-12 h-12 animate-spin text-[#ffaf68] mb-4" />
-          <p className="text-[#283618] font-medium">Cargando template...</p>
+          <p className="text-[#283618] font-medium">{t("loading")}</p>
         </div>
       )}
 
@@ -201,7 +203,7 @@ export function TemplatePreviewModal({
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
             <span className="text-red-600 text-2xl">⚠️</span>
           </div>
-          <h3 className="text-xl font-bold text-[#283618] mb-2">Error</h3>
+          <h3 className="text-xl font-bold text-[#283618] mb-2">{t("errorTitle")}</h3>
           <p className="text-[#283618]/70 text-center">{error}</p>
         </div>
       )}
@@ -226,7 +228,7 @@ export function TemplatePreviewModal({
                   className="flex items-center gap-2 px-4 py-2 bg-[#ffaf68] text-white rounded-lg hover:bg-[#ff9d4d] transition-colors font-medium text-sm"
                 >
                   <Edit className="w-4 h-4" />
-                  Editar
+                  {t("actions.edit")}
                 </button>
               )}
               {onClone && (
@@ -235,7 +237,7 @@ export function TemplatePreviewModal({
                   className="flex items-center gap-2 px-4 py-2 bg-[#283618] text-white rounded-lg hover:bg-[#3a4a22] transition-colors font-medium text-sm"
                 >
                   <Copy className="w-4 h-4" />
-                  Clonar
+                  {t("actions.clone")}
                 </button>
               )}
               {onDelete && (
@@ -244,7 +246,7 @@ export function TemplatePreviewModal({
                   className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm"
                 >
                   <Trash2 className="w-4 h-4" />
-                  Eliminar
+                  {t("actions.delete")}
                 </button>
               )}
             </div>

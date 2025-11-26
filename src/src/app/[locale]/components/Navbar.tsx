@@ -76,7 +76,7 @@ export function Navbar() {
       initials.push(userInfo.preferred_username.charAt(0).toUpperCase());
     }
 
-    return initials.join("") || "U";
+    return initials.join("") || t("defaultInitial");
   };
 
   // Componente reutilizable para dropdowns (escritorio)
@@ -190,7 +190,7 @@ export function Navbar() {
         <button
           onClick={toggleMenu}
           className="lg:hidden text-[#fefae0]/80"
-          aria-label={isOpen ? "Cerrar menú" : "Abrir menú"}
+          aria-label={isOpen ? t("closeMenu") : t("openMenu")}
         >
           {isOpen ? (
             <X size={24} className="cursor-pointer hover:text-[#fefae0]" />
@@ -252,7 +252,7 @@ export function Navbar() {
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   className="flex items-center justify-center w-10 h-10 bg-[#bc6c25] text-[#fefae0] font-semibold rounded-full hover:bg-[#bc6c25]/90 transition-colors cursor-pointer"
                   title={
-                    userInfo?.preferred_username || userInfo?.name || "User"
+                    userInfo?.preferred_username || userInfo?.name || t("user")
                   }
                 >
                   {getInitials(
@@ -335,7 +335,7 @@ export function Navbar() {
             {loading ? (
               <div className="flex items-center space-x-2">
                 <div className="animate-spin h-4 w-4 border-2 border-[#ffaf68] border-t-transparent rounded-full"></div>
-                <span className="text-[#fefae0]/80">Cargando...</span>
+                <span className="text-[#fefae0]/80">{t("loading")}</span>
               </div>
             ) : !authenticated ? (
               <button

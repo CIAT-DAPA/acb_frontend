@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { ScrollConfig } from "@/types/templatePreview";
 import { CreateTemplateData } from "@/types/template";
 import { TemplatePreview } from "../templates/create/TemplatePreview";
@@ -24,6 +25,8 @@ export function ScrollView({
   config = {},
   initialSection = 0,
 }: ScrollViewProps) {
+  const t = useTranslations("ScrollView");
+  
   const {
     orientation = "vertical",
     showMiniNav = true,
@@ -127,7 +130,7 @@ export function ScrollView({
         <button
           onClick={() => setIsNavOpen(true)}
           className="md:hidden fixed bottom-21 right-6 w-14 h-14 bg-[#ffaf68] text-white rounded-full shadow-lg hover:bg-[#ff9d4d] transition-all hover:scale-110 flex items-center justify-center z-40"
-          aria-label="Abrir navegador de secciones"
+          aria-label={t("openNavigator")}
         >
           <List className="w-5 h-5" />
         </button>
@@ -169,12 +172,12 @@ export function ScrollView({
             {/* Header con título y botón cerrar (solo móvil) */}
             <div className="flex items-center justify-between mb-2 md:mb-1">
               <div className="text-xs md:text-xs font-semibold text-[#283618]/70">
-                Secciones ({sections.length})
+                {t("sectionsCount", { count: sections.length })}
               </div>
               <button
                 onClick={() => setIsNavOpen(false)}
                 className="md:hidden p-1.5 hover:bg-[#bc6c25]/10 rounded transition-colors"
-                aria-label="Cerrar navegador"
+                aria-label={t("closeNavigator")}
               >
                 <X className="w-4 h-4 text-[#bc6c25]" />
               </button>
@@ -197,7 +200,7 @@ export function ScrollView({
                       : "border border-[#bc6c25]/30 text-[#283618] hover:bg-[#bc6c25]/10 hover:border-[#bc6c25]"
                   }
                 `}
-                aria-label={`Ir a sección ${index + 1}`}
+                aria-label={t("goToSection", { number: index + 1 })}
                 aria-current={activeSectionIndex === index ? "true" : "false"}
               >
                 <div className="flex items-center gap-1.5 md:gap-2">
@@ -205,7 +208,7 @@ export function ScrollView({
                     {String(index + 1).padStart(2, "0")}
                   </span>
                   <span className="truncate text-xs md:text-sm">
-                    {section.display_name || `Sección ${index + 1}`}
+                    {section.display_name || t("section", { number: index + 1 })}
                   </span>
                 </div>
               </button>
@@ -287,9 +290,9 @@ export function ScrollView({
                   {/* Título de sección con número de página */}
                   <div className="mb-1.5 md:mb-2 px-1 md:px-2">
                     <h3 className="text-xs md:text-sm font-semibold text-[#283618]">
-                      {section.display_name || `Sección ${sectionIndex + 1}`}
+                      {section.display_name || t("section", { number: sectionIndex + 1 })}
                       <span className="text-xs ml-2 text-[#606c38]">
-                        (Página {pageIndex + 1}/{pageCount})
+                        ({t("page", { current: pageIndex + 1, total: pageCount })})
                       </span>
                     </h3>
                   </div>
@@ -326,7 +329,7 @@ export function ScrollView({
               {/* Título de sección - Más compacto en móvil */}
               <div className="mb-1.5 md:mb-2 px-1 md:px-2">
                 <h3 className="text-xs md:text-sm font-semibold text-[#283618]">
-                  Sección {sectionIndex + 1}
+                  {t("sectionNumber", { number: sectionIndex + 1 })}
                   {section.display_name && (
                     <span className="hidden md:inline">
                       : {section.display_name}

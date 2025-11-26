@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Field } from "../../../../../../types/template";
 import {
   TextField,
@@ -25,6 +26,7 @@ export function ListFieldEditor({
   value = [],
   onChange,
 }: ListFieldEditorProps) {
+  const t = useTranslations("CreateBulletin.listField");
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set([0]));
 
   // Obtener el esquema de items de la configuración del campo
@@ -237,8 +239,8 @@ export function ListFieldEditor({
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <span className="text-sm text-[#606c38]">
-          {value.length} item(s)
-          {maxItems && ` (máximo: ${maxItems})`}
+          {t("items", { count: value.length })}
+          {maxItems && ` ${t("maximum", { max: maxItems })}`}
         </span>
         <button
           type="button"
@@ -247,7 +249,7 @@ export function ListFieldEditor({
           className={`${btnOutlineSecondary} text-sm disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           <Plus size={16} />
-          Agregar item
+          {t("addItem")}
         </button>
       </div>
 
@@ -269,14 +271,14 @@ export function ListFieldEditor({
                 ) : (
                   <ChevronDown size={16} />
                 )}
-                Item {itemIndex + 1}
+                {t("item", { index: itemIndex + 1 })}
               </button>
               <button
                 type="button"
                 onClick={() => handleRemoveItem(itemIndex)}
                 disabled={value.length <= minItems}
                 className="text-red-600 hover:text-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Eliminar item"
+                title={t("removeItem")}
               >
                 <Trash2 size={16} />
               </button>
@@ -308,7 +310,7 @@ export function ListFieldEditor({
                         )}
                         {fieldDef.validation?.max_length && (
                           <p className="text-xs text-[#606c38] mt-1">
-                            Máximo {fieldDef.validation.max_length} caracteres
+                            {t("maxCharacters", { max: fieldDef.validation.max_length })}
                           </p>
                         )}
                       </div>
@@ -324,7 +326,7 @@ export function ListFieldEditor({
       {value.length === 0 && (
         <div className="text-center py-8 text-[#606c38] border border-dashed border-gray-300 rounded-lg">
           <p className="text-sm">
-            No hay items. Haz clic en "Agregar item" para comenzar.
+            {t("noItems")}
           </p>
         </div>
       )}

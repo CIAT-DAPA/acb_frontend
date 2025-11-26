@@ -21,7 +21,7 @@ export default function TemplatePreviewPage() {
   const router = useRouter();
   const bulletinId = params.id as string;
   const locale = params.locale as string;
-  const t = useTranslations("CreateBulletin.export");
+  const t = useTranslations("CreateBulletin.bulletinPreview");
 
   const [templateData, setTemplateData] = useState<CreateTemplateData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -151,9 +151,9 @@ export default function TemplatePreviewPage() {
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin text-[#ffaf68] mx-auto mb-4" />
           <p className="text-[#283618] text-lg font-medium">
-            Cargando boletin...
+            {t("loading")}
           </p>
-          <p className="text-[#283618]/60 text-sm mt-2">ID: {bulletinId}</p>
+          <p className="text-[#283618]/60 text-sm mt-2">{t("loadingWithId", { id: bulletinId })}</p>
         </div>
       </div>
     );
@@ -168,18 +168,18 @@ export default function TemplatePreviewPage() {
             <span className="text-red-600 text-2xl">⚠️</span>
           </div>
           <h2 className="text-2xl font-bold text-[#283618] mb-2">
-            Error al cargar boletin
+            {t("errorTitle")}
           </h2>
           <p className="text-[#283618]/70 mb-6">
-            {error || "No se pudo cargar el boletin con el ID proporcionado."}
+            {error || t("errorMessage")}
           </p>
-          <p className="text-sm text-[#283618]/50 mb-6">ID: {bulletinId}</p>
+          <p className="text-sm text-[#283618]/50 mb-6">{t("errorId", { id: bulletinId })}</p>
           <button
             onClick={() => router.push(`/${locale}/bulletins`)}
             className="px-6 py-3 bg-[#ffaf68] text-white rounded-lg hover:bg-[#ff9d4d] transition-colors flex items-center gap-2 mx-auto"
           >
             <ArrowLeft className="w-4 h-4" />
-            Volver a Boletines
+            {t("backToBulletins")}
           </button>
         </div>
       </div>
@@ -197,7 +197,7 @@ export default function TemplatePreviewPage() {
               <button
                 onClick={() => router.push(`/${locale}/bulletins`)}
                 className='p-2 hover:bg-[#f5f5dc] rounded-lg transition-colors'
-                title='Volver a Boletines'
+                title={t("backToBulletins")}
               >
                 <ArrowLeft className='w-5 h-5 text-[#283618]' />
               </button>
@@ -206,11 +206,11 @@ export default function TemplatePreviewPage() {
                   {templateData.master.template_name}
                 </h1>
                 <p className='text-sm text-[#283618]/60'>
-                  Preview del Boletin •{' '}
-                  {templateData.version.content.sections.length}{' '}
-                  {templateData.version.content.sections.length === 1
-                    ? 'sección'
-                    : 'secciones'}
+                  {t("previewOf")} •{' '}
+                  {t("sectionCount", {
+                    count: templateData.version.content.sections.length,
+                    plural: templateData.version.content.sections.length === 1 ? t("section") : t("sections")
+                  })}
                 </p>
               </div>
             </div>
@@ -221,14 +221,14 @@ export default function TemplatePreviewPage() {
               <button
                 onClick={() => setIsExportModalOpen(true)}
                 className='flex items-center gap-2 px-4 py-2 bg-[#ffaf68] text-white rounded-lg hover:bg-[#ff9d4d] transition-colors shadow-md hover:shadow-lg'
-                title='Exportar template'
+                title={t("exportTitle")}
               >
                 <Download className='w-4 h-4' />
-                <span className='font-medium'>Exportar</span>
+                <span className='font-medium'>{t("exportButton")}</span>
               </button>
 
               <div className='text-right'>
-                <p className='text-xs text-[#283618]/50'>ID del boletin</p>
+                <p className='text-xs text-[#283618]/50'>{t("bulletinId")}</p>
                 <p className='text-sm font-mono text-[#283618]/70'>
                   {bulletinId}
                 </p>
@@ -245,10 +245,10 @@ export default function TemplatePreviewPage() {
           <div className='md:block pb-6 border-b border-[#283618]/10'>
             <div className='bg-white rounded-lg shadow p-4'>
               <h3 className='text-sm font-semibold text-[#283618] mb-2'>
-                Descripción
+                {t("descriptionLabel")}
               </h3>
               <p className='text-[#283618]/70 text-sm'>
-                {templateData.master.description || 'Sin descripción'}
+                {templateData.master.description || t("noDescription")}
               </p>
             </div>
           </div>
@@ -285,7 +285,7 @@ export default function TemplatePreviewPage() {
       <button
         onClick={() => setIsExportModalOpen(true)}
         className='md:hidden fixed bottom-6 right-6 w-14 h-14 bg-[#ffaf68] text-white rounded-full shadow-lg hover:bg-[#ff9d4d] transition-all hover:scale-110 flex items-center justify-center z-40'
-        title='Exportar'
+        title={t("exportButton")}
       >
         <Download className='w-6 h-6' />
       </button>

@@ -131,7 +131,7 @@ export function TemplateSelectionStep({
                       handlePreview(template._id!);
                     }}
                     className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-2 bg-white/20 rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-200 hover:bg-white/30 z-10 cursor-pointer"
-                    title="Vista previa"
+                    title={t("selectTemplate.preview")}
                   >
                     <Eye className="w-4 h-4 text-white" />
                   </button>
