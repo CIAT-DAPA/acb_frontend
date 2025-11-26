@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { CreateTemplateData } from "@/types/template";
+import { Card } from "@/types/card";
 import { ArrowLeft, Loader2, Download } from "lucide-react";
 import { ExportModal, ExportTechnicalConfig } from "@/app/[locale]/components/ExportModal";
 import BulletinAPIService from "@/services/bulletinService";
@@ -24,6 +25,7 @@ export default function TemplatePreviewPage() {
   const t = useTranslations("CreateBulletin.bulletinPreview");
 
   const [templateData, setTemplateData] = useState<CreateTemplateData | null>(null);
+  const [cardsMetadata, setCardsMetadata] = useState<Record<string, Card>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,7 +35,7 @@ export default function TemplatePreviewPage() {
   useEffect(() => {
     const loadTemplate = async () => {
       if (!bulletinId) {
-        setError("No se proporcionó un ID de boletin");
+        setError(t("errorNoId"));
         setLoading(false);
         return;
       }
@@ -46,20 +48,20 @@ export default function TemplatePreviewPage() {
         const response = await BulletinAPIService.getBulletinPublished(bulletinId);
         
         if (!response.success || !response.data) {
-          throw new Error("Boletin no encontrado");
+          throw new Error(t("errorNotFound"));
         }
 
-        const { master: bulletinMaster, current_version: currentVersion } = response.data;
+        const { master: bulletinMaster, current_version: currentVersion, cards_metadata } = response.data;
 
         // Validar que la versión tenga contenido
         if (!currentVersion.data || !currentVersion.data.sections) {
-          throw new Error("El boletin no tiene secciones definidas");
+          throw new Error(t("errorNoSections"));
         }
         
         // Convertir la respuesta del API al formato CreateTemplateData
         const templateDataFormatted: CreateTemplateData = {
           master: {
-            template_name: bulletinMaster.bulletin_name || "Boletin sin nombre",
+            template_name: bulletinMaster.bulletin_name || t("untitledBulletin"),
             description: bulletinMaster.description || "",
             log: bulletinMaster.log || {
               created_at: new Date().toISOString(),
@@ -82,7 +84,7 @@ export default function TemplatePreviewPage() {
               creator_first_name: null,
               creator_last_name: null,
             },
-            commit_message: currentVersion.commit_message || "Versión inicial",
+            commit_message: currentVersion.commit_message || t("initialVersion"),
             content: {
               style_config: currentVersion.data.style_config || {},
               header_config: currentVersion.data.header_config,
@@ -93,10 +95,11 @@ export default function TemplatePreviewPage() {
         };
 
         setTemplateData(templateDataFormatted);
+        setCardsMetadata(cards_metadata || {});
       } catch (err) {
         console.error("Error cargando boletin:", err);
         setError(
-          err instanceof Error ? err.message : "Error al cargar el boletin"
+          err instanceof Error ? err.message : t("errorLoading")
         );
       } finally {
         setLoading(false);
@@ -264,6 +267,7 @@ export default function TemplatePreviewPage() {
                 spacing: 'comfortable',
                 expandAllPages: true,
               }}
+              cardsMetadata={cardsMetadata}
             />
           </div>
         </div>

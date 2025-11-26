@@ -271,12 +271,26 @@ export class BulletinAPIService extends BaseAPIService {
         _id: data.current_version.id || data.current_version._id,
       };
 
+      // El backend ahora devuelve cards_metadata con todas las cards necesarias
+      // para evitar N+1 llamadas HTTP en el frontend
+      // Normalizamos cada card para que tenga _id en lugar de id
+      const normalizedCardsMetadata: Record<string, any> = {};
+      if (data.cards_metadata) {
+        Object.keys(data.cards_metadata).forEach((cardId) => {
+          const card = data.cards_metadata[cardId];
+          normalizedCardsMetadata[cardId] = {
+            ...card,
+            _id: card.id || card._id, // Map 'id' to '_id' igual que en cardService
+          };
+        });
+      }
 
       return {
         success: true,
         data: {
           master: normalizedMaster,
           current_version: normalizedVersion,
+          cards_metadata: normalizedCardsMetadata,
         },
       };
     } catch (error) {
