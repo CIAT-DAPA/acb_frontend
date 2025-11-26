@@ -9,7 +9,12 @@
     "roles": "Roles",
     "groups": "Grupos",
     "login": "Iniciar sesión",
-    "logout": "Cerrar sesión"
+    "logout": "Cerrar sesión",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú",
+    "loading": "Cargando...",
+    "user": "Usuario",
+    "defaultInitial": "U"
   },
   "Hero": {
     "title": "Crea boletines con",
@@ -222,7 +227,8 @@
       "title": "Seleccionar Plantilla",
       "description": "Elige la plantilla que deseas utilizar para tu boletín",
       "searchPlaceholder": "Buscar plantillas...",
-      "noTemplates": "No se encontraron plantillas disponibles"
+      "noTemplates": "No se encontraron plantillas disponibles",
+      "preview": "Vista previa"
     },
     "basicInfo": {
       "title": "Información Básica",
@@ -259,6 +265,29 @@
       "sectionProgress": "Sección {current} de {total}",
       "selectOption": "Selecciona una opción..."
     },
+    "cardField": {
+      "loading": "Cargando cards...",
+      "noCardsAvailable": "No hay cards disponibles para este campo.",
+      "selectCard": "Seleccionar card...",
+      "add": "Agregar",
+      "selectedCards": "Cards seleccionadas: {count}",
+      "fieldsToComplete": "{count} campo(s) para completar",
+      "unsupportedFieldType": "Tipo de campo no soportado en cards: {type}",
+      "noFieldsToComplete": "Esta card no tiene campos para completar",
+      "noCardsSelected": "No hay cards seleccionadas. Selecciona una card para comenzar."
+    },
+    "listField": {
+      "items": "{count} item(s)",
+      "maximum": "(máximo: {max})",
+      "addItem": "Agregar item",
+      "item": "Item {index}",
+      "removeItem": "Eliminar item",
+      "maxCharacters": "Máximo {max} caracteres",
+      "noItems": "No hay items. Haz clic en \"Agregar item\" para comenzar."
+    },
+    "climateField": {
+      "noParameters": "No hay parámetros climáticos configurados"
+    },
     "navigation": {
       "next": "Siguiente",
       "previous": "Anterior",
@@ -285,15 +314,17 @@
       "selectTemplate": "Selecciona una plantilla para ver la vista previa"
     },
     "bulletinPreview": {
-      "loading": "Cargando template...",
+      "loading": "Cargando boletín...",
       "loadingWithId": "ID: {id}",
-      "errorTitle": "Error al cargar template",
-      "errorMessage": "No se pudo cargar el template",
+      "errorTitle": "Error al cargar boletín",
+      "errorMessage": "No se pudo cargar el boletín con el ID proporcionado.",
       "errorId": "ID: {id}",
       "backToTemplates": "Volver a Templates",
+      "backToBulletins": "Volver a Boletines",
       "backButton": "Volver a Templates",
       "title": "Vista de Preview",
       "description": "Cambia entre los diferentes modos de visualización usando el toggle",
+      "previewOf": "Preview del Boletín",
       "orientation": "Orientación:",
       "vertical": "Vertical",
       "horizontal": "Horizontal",
@@ -303,7 +334,8 @@
       "section": "sección",
       "sections": "secciones",
       "exportButton": "Exportar",
-      "exportTitle": "Exportar template",
+      "exportTitle": "Exportar boletín",
+      "bulletinId": "ID del boletín",
       "templateId": "ID del Template",
       "status": "Estado",
       "previewTitle": "Vista de Preview",
@@ -1240,6 +1272,12 @@
       "previousPage": "← Página Anterior",
       "nextPage": "Página Siguiente →",
       "pageOf": "Página {current} de {total}",
+      "version": "Versión:",
+      "message": "Mensaje:",
+      "sectionsCount": "Secciones:",
+      "totalFields": "Campos totales:",
+      "noFieldsInBlock": "No hay campos en este bloque",
+      "noBlocksInSection": "No hay bloques en esta sección",
       "sampleData": {
         "textField": "Texto de ejemplo",
         "dateField": "Fecha: {date}",
@@ -1253,7 +1291,53 @@
           "Precipitación: 15mm"
         ]
       }
+    },
+    "scrollView": {
+      "openNavigator": "Abrir navegador de secciones",
+      "closeNavigator": "Cerrar navegador",
+      "sections": "Secciones",
+      "sectionsCount": "Secciones ({count})",
+      "goToSection": "Ir a sección {number}",
+      "section": "Sección {number}",
+      "sectionNumber": "Sección {number}"
     }
+  },
+  "ScrollView": {
+    "openNavigator": "Abrir navegador de secciones",
+    "closeNavigator": "Cerrar navegador",
+    "sections": "Secciones",
+    "sectionsCount": "Secciones ({count})",
+    "goToSection": "Ir a sección {number}",
+    "section": "Sección {number}",
+    "sectionNumber": "Sección {number}",
+    "page": "Página {current}/{total}"
+  },
+  "TemplatePreviewModal": {
+    "errors": {
+      "templateNotFound": "Template no encontrado",
+      "noSections": "El template no tiene secciones definidas",
+      "loadingError": "Error al cargar el template"
+    },
+    "loading": "Cargando template...",
+    "loadingShort": "Cargando...",
+    "errorTitle": "Error",
+    "section": "Sección {number}",
+    "sectionOf": "Sección {current} de {total}",
+    "actions": {
+      "edit": "Editar",
+      "clone": "Clonar",
+      "delete": "Eliminar"
+    },
+    "defaults": {
+      "noName": "Template sin nombre",
+      "initialVersion": "Versión inicial"
+    }
+  },
+  "ContentFullPreview": {
+    "errors": {
+      "invalidData": "Error: Datos de contenido inválidos"
+    },
+    "noSections": "No hay secciones para previsualizar"
   },
   "Roles": {
     "title": "Gestión de Roles",

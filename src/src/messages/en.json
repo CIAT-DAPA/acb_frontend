@@ -9,7 +9,12 @@
     "roles": "Roles",
     "groups": "Groups",
     "login": "Login",
-    "logout": "Logout"
+    "logout": "Logout",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "loading": "Loading...",
+    "user": "User",
+    "defaultInitial": "U"
   },
   "Hero": {
     "title": "Create bulletins with",
@@ -222,7 +227,8 @@
       "title": "Select Template",
       "description": "Choose the template you want to use for your bulletin",
       "searchPlaceholder": "Search templates...",
-      "noTemplates": "No templates available"
+      "noTemplates": "No templates available",
+      "preview": "Preview"
     },
     "basicInfo": {
       "title": "Basic Information",
@@ -259,6 +265,29 @@
       "sectionProgress": "Section {current} of {total}",
       "selectOption": "Select an option..."
     },
+    "cardField": {
+      "loading": "Loading cards...",
+      "noCardsAvailable": "No cards available for this field.",
+      "selectCard": "Select card...",
+      "add": "Add",
+      "selectedCards": "Selected cards: {count}",
+      "fieldsToComplete": "{count} field(s) to complete",
+      "unsupportedFieldType": "Unsupported field type in cards: {type}",
+      "noFieldsToComplete": "This card has no fields to complete",
+      "noCardsSelected": "No cards selected. Select a card to begin."
+    },
+    "listField": {
+      "items": "{count} item(s)",
+      "maximum": "(maximum: {max})",
+      "addItem": "Add item",
+      "item": "Item {index}",
+      "removeItem": "Remove item",
+      "maxCharacters": "Maximum {max} characters",
+      "noItems": "No items. Click \"Add item\" to begin."
+    },
+    "climateField": {
+      "noParameters": "No climate parameters configured"
+    },
     "navigation": {
       "next": "Next",
       "previous": "Previous",
@@ -286,14 +315,16 @@
     },
     "bulletinPreview": {
       "loading": "Loading bulletin...",
-      "loadingWithId": "Loading bulletin {id}...",
+      "loadingWithId": "ID: {id}",
       "errorTitle": "Error loading bulletin",
-      "errorMessage": "Could not load the bulletin",
+      "errorMessage": "Could not load the bulletin with the provided ID.",
       "errorId": "ID: {id}",
       "backToTemplates": "Back to Templates",
+      "backToBulletins": "Back to Bulletins",
       "backButton": "Back",
       "title": "Bulletin Preview",
       "description": "Bulletin created from template",
+      "previewOf": "Bulletin Preview",
       "orientation": "Orientation:",
       "vertical": "Vertical",
       "horizontal": "Horizontal",
@@ -303,7 +334,8 @@
       "section": "section",
       "sections": "sections",
       "exportButton": "Export",
-      "exportTitle": "Export Bulletin",
+      "exportTitle": "Export bulletin",
+      "bulletinId": "Bulletin ID",
       "templateId": "Template ID",
       "status": "Status",
       "previewTitle": "Preview View",
@@ -1240,6 +1272,12 @@
       "previousPage": "← Previous Page",
       "nextPage": "Next Page →",
       "pageOf": "Page {current} of {total}",
+      "version": "Version:",
+      "message": "Message:",
+      "sectionsCount": "Sections:",
+      "totalFields": "Total fields:",
+      "noFieldsInBlock": "No fields in this block",
+      "noBlocksInSection": "No blocks in this section",
       "sampleData": {
         "textField": "Sample text",
         "dateField": "Date: {date}",
@@ -1253,7 +1291,53 @@
           "Precipitation: 15mm"
         ]
       }
+    },
+    "scrollView": {
+      "openNavigator": "Open section navigator",
+      "closeNavigator": "Close navigator",
+      "sections": "Sections",
+      "sectionsCount": "Sections ({count})",
+      "goToSection": "Go to section {number}",
+      "section": "Section {number}",
+      "sectionNumber": "Section {number}"
     }
+  },
+  "ScrollView": {
+    "openNavigator": "Open section navigator",
+    "closeNavigator": "Close navigator",
+    "sections": "Sections",
+    "sectionsCount": "Sections ({count})",
+    "goToSection": "Go to section {number}",
+    "section": "Section {number}",
+    "sectionNumber": "Section {number}",
+    "page": "Page {current}/{total}"
+  },
+  "TemplatePreviewModal": {
+    "errors": {
+      "templateNotFound": "Template not found",
+      "noSections": "Template has no sections defined",
+      "loadingError": "Error loading template"
+    },
+    "loading": "Loading template...",
+    "loadingShort": "Loading...",
+    "errorTitle": "Error",
+    "section": "Section {number}",
+    "sectionOf": "Section {current} of {total}",
+    "actions": {
+      "edit": "Edit",
+      "clone": "Clone",
+      "delete": "Delete"
+    },
+    "defaults": {
+      "noName": "Unnamed template",
+      "initialVersion": "Initial version"
+    }
+  },
+  "ContentFullPreview": {
+    "errors": {
+      "invalidData": "Error: Invalid content data"
+    },
+    "noSections": "No sections to preview"
   },
   "Roles": {
     "title": "Role Management",

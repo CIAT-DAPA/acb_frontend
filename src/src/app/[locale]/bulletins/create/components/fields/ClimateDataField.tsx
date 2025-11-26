@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from "next-intl";
 
 interface ClimateDataFieldProps {
   value: any;
@@ -15,6 +16,7 @@ export function ClimateDataField({
   fieldConfig,
   disabled = false,
 }: ClimateDataFieldProps) {
+  const t = useTranslations("CreateBulletin.climateField");
   const availableParams = fieldConfig?.available_parameters || {};
   const paramEntries = Object.entries(availableParams);
 
@@ -22,7 +24,7 @@ export function ClimateDataField({
   if (paramEntries.length === 0) {
     return (
       <div className="text-sm text-gray-500 italic">
-        No hay parámetros climáticos configurados
+        {t("noParameters")}
       </div>
     );
   }
