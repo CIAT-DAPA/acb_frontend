@@ -32,6 +32,24 @@ export default function TemplatePreviewPage() {
   // Estados para el sistema de exportación
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
+  // Estado para controlar la orientación según el tamaño de pantalla
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  // Detectar tamaño de pantalla
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsDesktop(window.innerWidth >= 768); // md breakpoint de Tailwind
+    };
+
+    // Verificar inicialmente
+    checkScreenSize();
+
+    // Escuchar cambios de tamaño
+    window.addEventListener('resize', checkScreenSize);
+
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
   useEffect(() => {
     const loadTemplate = async () => {
       if (!bulletinId) {
@@ -261,7 +279,7 @@ export default function TemplatePreviewPage() {
             <ScrollView
               data={templateData}
               config={{
-                orientation: "vertical",
+                orientation: "horizontal",
                 showMiniNav: true,
                 highlightActive: true,
                 spacing: 'comfortable',
