@@ -97,6 +97,7 @@ interface TemplatePreviewProps {
   currentPageIndex?: number; // Control externo del índice de página
   onPageChange?: (pageIndex: number) => void; // Callback cuando cambia la página
   hidePagination?: boolean; // Ocultar controles de paginación
+  cardsMetadata?: Record<string, Card>; // Diccionario de cards precargadas para evitar HTTP calls
 }
 
 // Constantes para estilos repetidos
@@ -115,6 +116,7 @@ export function TemplatePreview({
   currentPageIndex: externalPageIndex,
   onPageChange,
   hidePagination = false,
+  cardsMetadata,
 }: TemplatePreviewProps) {
   const t = useTranslations("CreateTemplate.preview");
   const pathname = usePathname();
@@ -154,6 +156,19 @@ export function TemplatePreview({
   useEffect(() => {
     const loadCards = async () => {
       try {
+        // Si tenemos cardsMetadata, usarlo directamente (optimización para bulletins publicados)
+        if (cardsMetadata && Object.keys(cardsMetadata).length > 0) {
+          const cache = new Map<string, Card>();
+          Object.values(cardsMetadata).forEach((card) => {
+            if (card._id) {
+              cache.set(card._id, card);
+            }
+          });
+          setCardsCache(cache);
+          return;
+        }
+
+        // Si no hay cardsMetadata, hacer el fetch tradicional
         const response = await CardAPIService.getCards();
         if (response.success && response.data) {
           const cache = new Map<string, Card>();
@@ -170,7 +185,7 @@ export function TemplatePreview({
     };
 
     loadCards();
-  }, []);
+  }, [cardsMetadata]);
 
   const styleConfig = data.version.content.style_config;
   const headerConfig = data.version.content.header_config;
@@ -1618,7 +1633,7 @@ export function TemplatePreview({
                         <div className="space-y-1 w-full flex-1 flex flex-col">
                           {section.blocks.length === 0 ? (
                             <div className="text-sm text-[#283618]/50 italic pl-4">
-                              No hay bloques en esta sección
+                              {t("noBlocksInSection")}
                             </div>
                           ) : (
                             section.blocks.map((block, blockIndex) => {
@@ -1729,7 +1744,7 @@ export function TemplatePreview({
                                   >
                                     {block.fields.length === 0 ? (
                                       <div className="text-sm text-[#283618]/50 italic">
-                                        No hay campos en este bloque
+                                        {t("noFieldsInBlock")}
                                       </div>
                                     ) : (
                                       block.fields
@@ -1941,11 +1956,11 @@ export function TemplatePreview({
       {/* Información adicional */}
       {moreInfo && (
         <div className="mt-4 text-xs text-[#283618]/50 space-y-1">
-          <div>Versión: {data.version.version_num}</div>
-          <div>Mensaje: {data.version.commit_message}</div>
-          <div>Secciones: {sections.length}</div>
+          <div>{t("version")} {data.version.version_num}</div>
+          <div>{t("message")} {data.version.commit_message}</div>
+          <div>{t("sectionsCount")} {sections.length}</div>
           <div>
-            Campos totales:{" "}
+            {t("totalFields")}{" "}
             {sections.reduce(
               (total, section) =>
                 total +

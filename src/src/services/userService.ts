@@ -99,8 +99,8 @@ export class UserService extends BaseAPIService {
 
       const queryString = params.toString();
       const endpoint = queryString
-        ? `${this.BASE_ENDPOINT}?${queryString}`
-        : this.BASE_ENDPOINT;
+        ? `${this.BASE_ENDPOINT}/?${queryString}`
+        : this.BASE_ENDPOINT + "/";
 
       const data = await this.get<any>(endpoint);
       const users = data.users || data.data || data;

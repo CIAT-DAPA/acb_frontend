@@ -50,7 +50,7 @@ export function CardFieldInput({
   currentPageIndex = 0,
   onPageChange,
 }: CardFieldInputProps) {
-  const t = useTranslations("CreateBulletin");
+  const t = useTranslations("CreateBulletin.cardField");
   const [availableCards, setAvailableCards] = useState<Card[]>([]);
   const [selectedCards, setSelectedCards] = useState<SelectedCardData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -371,7 +371,7 @@ export function CardFieldInput({
       default:
         return (
           <div className="text-sm text-gray-500 italic">
-            Tipo de campo no soportado en cards: {cardField.type}
+            {t("unsupportedFieldType", { type: cardField.type })}
           </div>
         );
     }
@@ -382,7 +382,7 @@ export function CardFieldInput({
       <div className="flex items-center justify-center py-8">
         <Loader2 className="h-6 w-6 animate-spin text-[#606c38]" />
         <span className="ml-2 text-sm text-[#283618]/60">
-          Cargando cards...
+          {t("loading")}
         </span>
       </div>
     );
@@ -403,7 +403,7 @@ export function CardFieldInput({
     return (
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
         <p className="text-sm text-gray-600">
-          No hay cards disponibles para este campo.
+          {t("noCardsAvailable")}
         </p>
       </div>
     );
@@ -423,7 +423,7 @@ export function CardFieldInput({
           className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#283618] text-sm"
           disabled={disabled}
         >
-          <option value="">Seleccionar card...</option>
+          <option value="">{t("selectCard")}</option>
           {availableCards
             .filter((card) => !value.includes(card._id!))
             .map((card) => (
@@ -449,7 +449,7 @@ export function CardFieldInput({
           className="px-4 py-2 bg-[#606c38] text-white rounded-md hover:bg-[#283618] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
         >
           <Plus className="h-4 w-4" />
-          <span>Agregar</span>
+          <span>{t("add")}</span>
         </button>
       </div>
 
@@ -457,7 +457,7 @@ export function CardFieldInput({
       {selectedCards.length > 0 && (
         <div className="space-y-3">
           <p className="text-sm font-medium text-[#283618]">
-            Cards seleccionadas: {selectedCards.length}
+            {t("selectedCards", { count: selectedCards.length })}
           </p>
 
           {selectedCards.map((selectedCard, index) => {
@@ -483,7 +483,7 @@ export function CardFieldInput({
                       </p>
                       {formFields.length > 0 && (
                         <p className="text-xs text-[#283618]/60">
-                          {formFields.length} campo(s) para completar
+                          {t("fieldsToComplete", { count: formFields.length })}
                         </p>
                       )}
                     </div>
@@ -547,7 +547,7 @@ export function CardFieldInput({
                 {/* Mensaje cuando no hay campos de formulario */}
                 {formFields.length === 0 && (
                   <div className="p-4 text-sm text-[#283618]/60 italic">
-                    Esta card no tiene campos para completar
+                    {t("noFieldsToComplete")}
                   </div>
                 )}
               </div>
@@ -560,7 +560,7 @@ export function CardFieldInput({
       {selectedCards.length === 0 && (
         <div className="text-center py-8 bg-gray-50 border border-gray-200 rounded-lg">
           <p className="text-sm text-[#283618]/60">
-            No hay cards seleccionadas. Selecciona una card para comenzar.
+            {t("noCardsSelected")}
           </p>
         </div>
       )}

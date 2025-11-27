@@ -1,6 +1,7 @@
 // Tipos para la creación y manejo de boletines basados en la documentación MongoDB
 
 import { LogObject, StyleConfig, AccessConfig } from "./core";
+import type { Card } from "./card";
 
 // Importar los tipos de Field de template (que incluyen el atributo value)
 import type { Field } from "./template";
@@ -159,4 +160,5 @@ export type BulletinStatusType = (typeof BULLETIN_STATUSES)[number];
 export interface BulletinWithCurrentVersion {
   master: BulletinMaster;
   current_version: BulletinVersion;
+  cards_metadata?: Record<string, Card>; // Diccionario de cards indexado por cardId (solo en endpoint published)
 }

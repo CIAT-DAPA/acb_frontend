@@ -8,6 +8,7 @@ import { ContentService } from "@/services/contentService";
 import { ContentType, NormalizedContent } from "@/types/content";
 import * as ui from "@/app/[locale]/components/ui";
 import { useTranslations } from "next-intl";
+import { exportContent } from "@/utils/exportContent";
 
 // Tipos para la configuración de exportación
 export type DownloadFormat = "png" | "jpg" | "pdf";
@@ -49,18 +50,35 @@ export interface ExportConfig {
   showDescription: boolean;
 }
 
+// Configuración técnica para modo auto-export
+export interface ExportTechnicalConfig {
+  containerSelector: string;
+  itemSelectorTemplate: (sectionIndex: number, pageIndex: number) => string;
+  getExportElement: (previewElement: Element) => Element | null;
+  getSectionPages: (section: any) => number;
+}
+
 interface ExportModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onExport: (
+  
+  // MODO 1: Callback externo (backward compatible)
+  onExport?: (
     config: ExportConfig,
     onSectionChange: (index: number) => void,
     onProgressUpdate: (current: number, message: string) => void
   ) => Promise<void>;
+  
+  // MODO 2: Auto-export (nuevo)
+  autoExport?: boolean;
+  exportConfig?: ExportTechnicalConfig;
+  
+  // Datos comunes
   totalSections?: number;
   contentName?: string;
   contentId?: string;
   contentType?: ContentType;
+  sections?: any[]; // Array de secciones para modo auto-export
   templateData?: CreateTemplateData; // Datos del template para renderizar preview (opcional si se pasa contentId)
 }
 
@@ -68,6 +86,9 @@ export function ExportModal({
   isOpen,
   onClose,
   onExport,
+  autoExport = false,
+  exportConfig,
+  sections: externalSections,
   totalSections: externalTotalSections,
   contentName: externalContentName,
   contentId,
@@ -247,8 +268,53 @@ export function ExportModal({
         setProgress({ current, total: 100, message });
       };
 
-      // Pasar callbacks para sección y progreso
-      await onExport(config, setCurrentPreviewSection, handleProgressUpdate);
+      // MODO AUTO-EXPORT: El modal ejecuta la exportación internamente
+      if (autoExport && exportConfig && externalSections) {
+        await exportContent({
+          // Configuración del usuario (del estado interno del modal)
+          format: config.format,
+          quality:
+            typeof config.quality === "string"
+              ? parseInt(config.quality, 10)
+              : config.quality,
+          qualityLevel: config.quality as "low" | "medium" | "high" | "ultra",
+          selectedSections: config.selectedSections,
+          pageSize: config.pageSize, // Tamaño de página para PDF
+
+          // Configuración técnica (viene de props)
+          containerSelector: exportConfig.containerSelector,
+          itemSelectorTemplate: exportConfig.itemSelectorTemplate,
+          getExportElement: exportConfig.getExportElement,
+          getSectionPages: exportConfig.getSectionPages,
+
+          // Datos (vienen de props)
+          sections: externalSections,
+          contentName: contentName,
+
+          // Callbacks
+          onSectionChange: setCurrentPreviewSection,
+          onProgressUpdate: handleProgressUpdate,
+
+          // Traducciones
+          translations: {
+            sectionGenerating: (current) =>
+              t("sectionGenerating", { current }),
+            sectionPage: t("sectionPage"),
+            toPdf: t("toPdf"),
+            toZip: t("toZip"),
+            exportComplete: t("exportComplete"),
+          },
+        });
+      }
+      // MODO CALLBACK: Usar el callback externo (backward compatible)
+      else if (onExport) {
+        await onExport(config, setCurrentPreviewSection, handleProgressUpdate);
+      } else {
+        throw new Error(
+          "ExportModal: Se debe proporcionar 'onExport' o habilitar 'autoExport' con 'exportConfig'"
+        );
+      }
+
       setExportStatus("success");
       setProgress({
         current: 100,
@@ -548,7 +614,7 @@ export function ExportModal({
 
         {/* Footer - Fixed (no hace scroll) */}
         {!loadingContent && !loadError && (
-          <div className="flex-shrink-0 bg-white border-t border-[#283618]/10 p-6 flex items-center justify-between rounded-b-xl">
+          <div className="flex flex-col flex-shrink-0 bg-white border-t border-[#283618]/10 p-6 flex items-center justify-between rounded-b-xl">
             <div className="text-sm text-[#283618]/60">
               {t("formatLabel")}:{" "}
               <span className="font-semibold uppercase">{config.format}</span> |
@@ -578,7 +644,7 @@ export function ExportModal({
         {/* Overlay de progreso - Aparece sobre todo el modal */}
         {isExporting && (
           <div className="absolute inset-0 bg-black/30 backdrop-blur rounded-xl flex items-center justify-center z-20">
-            <div className="bg-[#ffffff] rounded-lg p-4 min-w-[400px] max-w-lg mx-4">
+            <div className="bg-[#ffffff] rounded-lg p-4 max-w-lg mx-4">
               <div className="flex items-center gap-3 mb-2">
                 <Loader2 className="w-5 h-5 animate-spin text-[#ffaf68]" />
                 <span className="text-sm font-medium text-[#283618]">

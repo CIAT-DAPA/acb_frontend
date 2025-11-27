@@ -9,7 +9,12 @@
     "roles": "Roles",
     "groups": "Groups",
     "login": "Login",
-    "logout": "Logout"
+    "logout": "Logout",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "loading": "Loading...",
+    "user": "User",
+    "defaultInitial": "U"
   },
   "Hero": {
     "title": "Create bulletins with",
@@ -161,6 +166,11 @@
     "section": "Section",
     "statusDraft": "Draft",
     "statusPublished": "Published",
+    "statusArchived": "Archived",
+    "statusPendingReview": "Pending review",
+    "statusRejected": "Rejected",
+    "statusActive": "Active",
+    "statusUnknown": "Unknown",
     "Create": {
       "title": "New Template",
       "subtitle": "Create a new agroclimatic bulletin template",
@@ -186,6 +196,8 @@
     "createNew": "Create New",
     "noResults": "No bulletins found",
     "loading": "Loading bulletins...",
+    "errorTitle": "Error loading bulletins",
+    "retry": "Retry",
     "createFirst": "Create New Bulletin",
     "by": "by",
     "lastModified": "Last modified",
@@ -215,7 +227,8 @@
       "title": "Select Template",
       "description": "Choose the template you want to use for your bulletin",
       "searchPlaceholder": "Search templates...",
-      "noTemplates": "No templates available"
+      "noTemplates": "No templates available",
+      "preview": "Preview"
     },
     "basicInfo": {
       "title": "Basic Information",
@@ -252,6 +265,29 @@
       "sectionProgress": "Section {current} of {total}",
       "selectOption": "Select an option..."
     },
+    "cardField": {
+      "loading": "Loading cards...",
+      "noCardsAvailable": "No cards available for this field.",
+      "selectCard": "Select card...",
+      "add": "Add",
+      "selectedCards": "Selected cards: {count}",
+      "fieldsToComplete": "{count} field(s) to complete",
+      "unsupportedFieldType": "Unsupported field type in cards: {type}",
+      "noFieldsToComplete": "This card has no fields to complete",
+      "noCardsSelected": "No cards selected. Select a card to begin."
+    },
+    "listField": {
+      "items": "{count} item(s)",
+      "maximum": "(maximum: {max})",
+      "addItem": "Add item",
+      "item": "Item {index}",
+      "removeItem": "Remove item",
+      "maxCharacters": "Maximum {max} characters",
+      "noItems": "No items. Click \"Add item\" to begin."
+    },
+    "climateField": {
+      "noParameters": "No climate parameters configured"
+    },
     "navigation": {
       "next": "Next",
       "previous": "Previous",
@@ -279,14 +315,22 @@
     },
     "bulletinPreview": {
       "loading": "Loading bulletin...",
-      "loadingWithId": "Loading bulletin {id}...",
+      "loadingWithId": "ID: {id}",
       "errorTitle": "Error loading bulletin",
-      "errorMessage": "Could not load the bulletin",
+      "errorMessage": "Could not load the bulletin with the provided ID.",
       "errorId": "ID: {id}",
+      "errorNoId": "No bulletin ID was provided",
+      "errorNotFound": "Bulletin not found",
+      "errorNoSections": "The bulletin has no sections defined",
+      "errorLoading": "Error loading the bulletin",
+      "untitledBulletin": "Untitled Bulletin",
+      "initialVersion": "Initial version",
       "backToTemplates": "Back to Templates",
+      "backToBulletins": "Back to Bulletins",
       "backButton": "Back",
       "title": "Bulletin Preview",
       "description": "Bulletin created from template",
+      "previewOf": "Bulletin Preview",
       "orientation": "Orientation:",
       "vertical": "Vertical",
       "horizontal": "Horizontal",
@@ -296,7 +340,8 @@
       "section": "section",
       "sections": "sections",
       "exportButton": "Export",
-      "exportTitle": "Export Bulletin",
+      "exportTitle": "Export bulletin",
+      "bulletinId": "Bulletin ID",
       "templateId": "Template ID",
       "status": "Status",
       "previewTitle": "Preview View",
@@ -344,7 +389,11 @@
       "contentLabel": "Content",
       "formatLabel": "Format",
       "sectionsLabel": "Sections",
-      "completed": "completed"
+      "completed": "completed",
+      "sectionGenerating": "Generating section {current}",
+      "sectionPage": "Page",
+      "toPdf": "Converting to PDF...",
+      "toZip": "Generating ZIP file..."
     }
   },
   "Authentication": {
@@ -1260,6 +1309,12 @@
       "previousPage": "← Previous Page",
       "nextPage": "Next Page →",
       "pageOf": "Page {current} of {total}",
+      "version": "Version:",
+      "message": "Message:",
+      "sectionsCount": "Sections:",
+      "totalFields": "Total fields:",
+      "noFieldsInBlock": "No fields in this block",
+      "noBlocksInSection": "No blocks in this section",
       "sampleData": {
         "textField": "Sample text",
         "dateField": "Date: {date}",
@@ -1273,7 +1328,53 @@
           "Precipitation: 15mm"
         ]
       }
+    },
+    "scrollView": {
+      "openNavigator": "Open section navigator",
+      "closeNavigator": "Close navigator",
+      "sections": "Sections",
+      "sectionsCount": "Sections ({count})",
+      "goToSection": "Go to section {number}",
+      "section": "Section {number}",
+      "sectionNumber": "Section {number}"
     }
+  },
+  "ScrollView": {
+    "openNavigator": "Open section navigator",
+    "closeNavigator": "Close navigator",
+    "sections": "Sections",
+    "sectionsCount": "Sections ({count})",
+    "goToSection": "Go to section {number}",
+    "section": "Section {number}",
+    "sectionNumber": "Section {number}",
+    "page": "Page {current}/{total}"
+  },
+  "TemplatePreviewModal": {
+    "errors": {
+      "templateNotFound": "Template not found",
+      "noSections": "Template has no sections defined",
+      "loadingError": "Error loading template"
+    },
+    "loading": "Loading template...",
+    "loadingShort": "Loading...",
+    "errorTitle": "Error",
+    "section": "Section {number}",
+    "sectionOf": "Section {current} of {total}",
+    "actions": {
+      "edit": "Edit",
+      "clone": "Clone",
+      "delete": "Delete"
+    },
+    "defaults": {
+      "noName": "Unnamed template",
+      "initialVersion": "Initial version"
+    }
+  },
+  "ContentFullPreview": {
+    "errors": {
+      "invalidData": "Error: Invalid content data"
+    },
+    "noSections": "No sections to preview"
   },
   "Roles": {
     "title": "Role Management",
@@ -1684,6 +1785,8 @@
     "searchPlaceholder": "Search the dashboard...",
     "loading": "Loading items...",
     "noResults": "No items found",
+    "errorTitle": "Error loading data",
+    "retry": "Retry",
     "noAccessTitle": "No access",
     "noAccessMessage": "You don't have access to any dashboard sections.",
     "deleteConfirmTitle": "Confirm action",
@@ -1692,7 +1795,60 @@
     "confirmDeleteBtn": "Archive",
     "deleting": "Archiving...",
     "deleteSuccess": "{name} archived successfully",
-    "deleteError": "Error archiving {name}: {error}"
+    "deleteError": "Error archiving {name}: {error}",
+    "noBulletins": "No bulletins available",
+    "noTemplates": "No templates available",
+    "noCards": "No cards available",
+    "statusFilter": {
+      "all": "All",
+      "draft": "Drafts",
+      "published": "Published",
+      "archived": "Archived",
+      "pending_review": "Pending review",
+      "rejected": "Rejected",
+      "active": "Active"
+    },
+    "dateFilter": {
+      "from": "From",
+      "to": "To",
+      "clear": "Clear dates"
+    },
+    "sortBy": {
+      "label": "Sort by",
+      "name-asc": "Name (A-Z)",
+      "name-desc": "Name (Z-A)",
+      "date-newest": "Newest first",
+      "date-oldest": "Oldest first"
+    },
+    "createNew": {
+      "bulletin": "Create Bulletin",
+      "template": "Create Template",
+      "card": "Create Card"
+    },
+    "stats": {
+      "total": "Total",
+      "thisWeek": "This week",
+      "pendingReview": "Pending"
+    },
+    "viewMode": {
+      "grid": "Grid View",
+      "table": "Table View"
+    },
+    "table": {
+      "selectAll": "Select all",
+      "name": "Name",
+      "status": "Status",
+      "author": "Author",
+      "createdDate": "Created date",
+      "updatedDate": "Last modified",
+      "actions": "Actions",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete",
+      "selected": "selected",
+      "bulkActions": "Bulk actions",
+      "archiveSelected": "Archive selected"
+    }
   },
   "PreviewModal": {
     "section": "Section",

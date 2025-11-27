@@ -247,6 +247,65 @@ export class BulletinAPIService extends BaseAPIService {
   }
 
   /**
+   * Obtiene la versión actual de un bulletin junto con la información del master
+   * La respuesta del API tiene la estructura: { master: {...}, current_version: {...} }
+   * GET /bulletins/{bulletin_id}/current-version
+   */
+  static async getBulletinPublished(
+    bulletinId: string
+  ): Promise<APIResponse<BulletinWithCurrentVersion>> {
+    try {
+      const data = await this.get<any>(
+        `/bulletins/${bulletinId}/current-version-published`
+      );
+
+      // La API devuelve { master, current_version }
+      // Normalizar el master para tener _id en lugar de id
+      const normalizedMaster: BulletinMaster = {
+        ...data.master,
+        _id: data.master.id || data.master._id,
+      };
+
+      const normalizedVersion: BulletinVersion = {
+        ...data.current_version,
+        _id: data.current_version.id || data.current_version._id,
+      };
+
+      // El backend ahora devuelve cards_metadata con todas las cards necesarias
+      // para evitar N+1 llamadas HTTP en el frontend
+      // Normalizamos cada card para que tenga _id en lugar de id
+      const normalizedCardsMetadata: Record<string, any> = {};
+      if (data.cards_metadata) {
+        Object.keys(data.cards_metadata).forEach((cardId) => {
+          const card = data.cards_metadata[cardId];
+          normalizedCardsMetadata[cardId] = {
+            ...card,
+            _id: card.id || card._id, // Map 'id' to '_id' igual que en cardService
+          };
+        });
+      }
+
+      return {
+        success: true,
+        data: {
+          master: normalizedMaster,
+          current_version: normalizedVersion,
+          cards_metadata: normalizedCardsMetadata,
+        },
+      };
+    } catch (error) {
+      console.error("Error fetching current version:", error);
+      return {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Error al obtener la versión actual",
+      };
+    }
+  }
+
+  /**
    * Crea una nueva versión de un bulletin
    * POST /bulletins/versions
    */

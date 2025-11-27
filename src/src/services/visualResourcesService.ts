@@ -97,7 +97,7 @@ export class VisualResourcesService extends BaseAPIService {
         };
 
         // 4. Llamar a la API
-        const response = await this.post<any>(this.BASE_ENDPOINT, apiBody);
+        const response = await this.post<any>(this.BASE_ENDPOINT + "/", apiBody);
 
         return {
           success: true,
@@ -172,7 +172,7 @@ export class VisualResourcesService extends BaseAPIService {
       formData.append("targetPath", targetPath);
 
       // Llamar al endpoint de Next.js para subir archivos físicamente
-      const response = await fetch("/api/upload-visual-resource", {
+      const response = await fetch("/api/upload-visual-resource/", {
         method: "POST",
         body: formData,
       });

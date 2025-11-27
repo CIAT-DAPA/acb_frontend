@@ -102,6 +102,22 @@ export class EnumAPIService extends BaseAPIService {
   }
 
   /**
+   * Obtener los estados de template desde el API
+   * @returns Array de valores del enum StatusTemplate
+   */
+  static async getTemplateStatuses(): Promise<EnumValue[]> {
+    return this.getEnum("StatusTemplate", false);
+  }
+
+  /**
+   * Obtener los estados de card desde el API
+   * @returns Array de valores del enum StatusCard
+   */
+  static async getCardStatuses(): Promise<EnumValue[]> {
+    return this.getEnum("StatusCard", false);
+  }
+
+  /**
    * Obtener múltiples enums en una sola llamada
    * @param enumNames - Array de nombres de enums a obtener
    * @param includeLabels - Si se deben incluir labels legibles

@@ -12,6 +12,7 @@ import {
   Tag,
   Copy,
 } from "lucide-react";
+import { getStatusBadgeClass, getStatusBadgeConfig } from "@/utils/statusHelpers";
 
 // Props base compartidas
 interface BaseItemCardProps {
@@ -101,36 +102,6 @@ export default function ItemCard(props: ItemCardProps) {
   ) {
     displayImage = props.thumbnailImages[0];
   }
-
-  // Función para obtener el estilo del badge según el status
-  const getStatusBadgeClass = (status?: string) => {
-    if (!status) return "";
-
-    const baseClass = "px-2 py-1 rounded-full text-xs font-medium";
-
-    switch (status.toLowerCase()) {
-      case "draft":
-        return `${baseClass} bg-gray-200 text-gray-700`;
-      case "published":
-        return `${baseClass} bg-green-100 text-green-700`;
-      default:
-        return `${baseClass} bg-blue-100 text-blue-700`;
-    }
-  };
-
-  // Función para obtener el texto traducido del status
-  const getStatusText = (status?: string) => {
-    if (!status) return "";
-
-    switch (status.toLowerCase()) {
-      case "draft":
-        return t("statusDraft") || "Borrador";
-      case "published":
-        return t("statusPublished") || "Publicado";
-      default:
-        return status;
-    }
-  };
 
   // Para cards, usar el primer thumbnail si existe (background_url)
   if (
@@ -288,7 +259,7 @@ export default function ItemCard(props: ItemCardProps) {
             {props.status && (
               <div>
                 <span className={getStatusBadgeClass(props.status)}>
-                  {getStatusText(props.status)}
+                  {t(getStatusBadgeConfig(props.status).translationKey as any)}
                 </span>
               </div>
             )}

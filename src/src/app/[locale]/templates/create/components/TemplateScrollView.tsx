@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { ScrollConfig } from "@/types/templatePreview";
 import { CreateTemplateData } from "@/types/template";
 import { TemplatePreview } from "../TemplatePreview";
@@ -21,6 +22,8 @@ export function TemplateScrollView({
   config = {},
   initialSection = 0,
 }: TemplateScrollViewProps) {
+  const t = useTranslations("CreateTemplate.scrollView");
+  
   const {
     orientation = "vertical",
     showMiniNav = true,
@@ -128,7 +131,7 @@ export function TemplateScrollView({
             p-2.5 rounded-full shadow-lg
             transition-all border border-[#283618]/10
           "
-          aria-label="Abrir navegador de secciones"
+          aria-label={t("openNavigator")}
         >
           <List className="w-5 h-5 text-[#283618]" />
         </button>
@@ -166,12 +169,12 @@ export function TemplateScrollView({
             {/* Header con título y botón cerrar (solo móvil) */}
             <div className="flex items-center justify-between mb-2 md:mb-1">
               <div className="text-xs md:text-xs font-semibold text-[#283618]/70">
-                Secciones ({sections.length})
+                {t("sectionsCount", { count: sections.length })}
               </div>
               <button
                 onClick={() => setIsNavOpen(false)}
                 className="md:hidden p-1 hover:bg-[#283618]/5 rounded transition-colors"
-                aria-label="Cerrar navegador"
+                aria-label={t("closeNavigator")}
               >
                 <X className="w-4 h-4 text-[#283618]" />
               </button>
@@ -194,7 +197,7 @@ export function TemplateScrollView({
                       : "bg-[#283618]/5 text-[#283618] hover:bg-[#283618]/10"
                   }
                 `}
-                aria-label={`Ir a sección ${index + 1}`}
+                aria-label={t("goToSection", { number: index + 1 })}
                 aria-current={activeSectionIndex === index ? "true" : "false"}
               >
                 <div className="flex items-center gap-1.5 md:gap-2">
@@ -202,7 +205,7 @@ export function TemplateScrollView({
                     {String(index + 1).padStart(2, "0")}
                   </span>
                   <span className="truncate text-xs md:text-sm">
-                    {section.display_name || `Sección ${index + 1}`}
+                    {section.display_name || t("section", { number: index + 1 })}
                   </span>
                 </div>
               </button>
@@ -243,7 +246,7 @@ export function TemplateScrollView({
             {/* Título de sección - Más compacto en móvil */}
             <div className="mb-1.5 md:mb-2 px-1 md:px-2">
               <h3 className="text-xs md:text-sm font-semibold text-[#283618]">
-                Sección {index + 1}
+                {t("sectionNumber", { number: index + 1 })}
                 {sections[index].display_name && (
                   <span className="hidden md:inline">: {sections[index].display_name}</span>
                 )}
