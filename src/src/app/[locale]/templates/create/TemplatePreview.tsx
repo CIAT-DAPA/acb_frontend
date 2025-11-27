@@ -915,6 +915,72 @@ export function TemplatePreview({
           </div>
         );
 
+      case "image_upload":
+        // Mostrar placeholder con las dimensiones exactas configuradas
+        const uploadedImageUrl = field.value as string | undefined;
+        const imageHeight = (field.field_config as any)?.max_height;
+        const imageWidth = (field.field_config as any)?.max_width;
+
+        // Estilos del placeholder/imagen con dimensiones exactas
+        const imageUploadContainerStyle: React.CSSProperties = {
+          ...fieldStyles,
+          height: imageHeight ? `${imageHeight}px` : "200px", // Altura por defecto si no está definida
+          width: imageWidth ? `${imageWidth}px` : "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0, // Evitar que se reduzca
+        };
+
+        if (!uploadedImageUrl) {
+          // Mostrar placeholder indicando el espacio exacto que ocupará la imagen
+          return (
+            <div
+              key={key}
+              style={imageUploadContainerStyle}
+              className="border-2 border-dashed border-gray-300 rounded-lg bg-gray-50"
+            >
+              <div className="text-center p-4">
+                <div className="text-4xl mb-2">🖼️</div>
+                <span className={PLACEHOLDER_TEXT_CLASS}>
+                  {field.display_name ||
+                    t("imageUploadPlaceholder", { default: "Imagen a subir" })}
+                </span>
+                {(imageHeight || imageWidth) && (
+                  <div className="text-xs text-gray-400 mt-2">
+                    {imageHeight && `Altura: ${imageHeight}px`}
+                    {imageHeight && imageWidth && " × "}
+                    {imageWidth && `Ancho: ${imageWidth}px`}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        }
+
+        // Mostrar la imagen subida ocupando el espacio exacto y ajustándose con object-fit: cover
+        return (
+          <div
+            key={key}
+            style={imageUploadContainerStyle}
+            className="overflow-hidden rounded-lg"
+          >
+            <img
+              src={uploadedImageUrl}
+              alt={field.display_name || "Imagen subida"}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover", // La imagen cubre todo el espacio, recortando si es necesario
+              }}
+              onError={(e) => {
+                (e.target as HTMLImageElement).src =
+                  "/assets/img/imageNotFound.png";
+              }}
+            />
+          </div>
+        );
+
       case "card":
         // Obtener los IDs de cards disponibles desde field_config
         const availableCardIds =
@@ -1956,9 +2022,15 @@ export function TemplatePreview({
       {/* Información adicional */}
       {moreInfo && (
         <div className="mt-4 text-xs text-[#283618]/50 space-y-1">
-          <div>{t("version")} {data.version.version_num}</div>
-          <div>{t("message")} {data.version.commit_message}</div>
-          <div>{t("sectionsCount")} {sections.length}</div>
+          <div>
+            {t("version")} {data.version.version_num}
+          </div>
+          <div>
+            {t("message")} {data.version.commit_message}
+          </div>
+          <div>
+            {t("sectionsCount")} {sections.length}
+          </div>
           <div>
             {t("totalFields")}{" "}
             {sections.reduce(
