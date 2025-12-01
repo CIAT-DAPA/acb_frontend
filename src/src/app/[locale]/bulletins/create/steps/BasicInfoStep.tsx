@@ -12,6 +12,7 @@ import {
   DateInput,
   SelectInput,
   SearchableInput,
+  ImageUploadInput,
 } from "../components/fields";
 
 interface BasicInfoStepProps {
@@ -139,6 +140,15 @@ export function BasicInfoStep({ bulletinData, onUpdate }: BasicInfoStepProps) {
       case "text_with_icon":
         return (
           <TextWithIconInput
+            field={field}
+            value={fieldValue as string}
+            onChange={(value) => handleChange(index, value)}
+          />
+        );
+
+      case "image_upload":
+        return (
+          <ImageUploadInput
             field={field}
             value={fieldValue as string}
             onChange={(value) => handleChange(index, value)}
