@@ -1267,31 +1267,329 @@ export function TemplatePreview({
         );
 
       case "moon_calendar":
-        // Calendario lunar simulado con 31 días en una cuadrícula de 7 columnas
         const daysOfWeek = ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"];
-        const daysInMonth = 31;
 
-        // Simulación de fases lunares (estos serían configurables al crear el boletín)
-        const moonPhases: Record<number, string> = {
-          3: "nueva",
-          10: "cuartoCreciente",
-          17: "llena",
-          24: "cuartoMenguante",
-          31: "nueva",
+        // Obtener datos del valor del campo si está en modo form
+        const moonCalendarValue =
+          field.value && typeof field.value === "object"
+            ? (field.value as any)
+            : {};
+
+        // Usar el mes y año del date picker si están disponibles, sino usar fecha actual
+        const currentDate = new Date();
+        const monthNames = [
+          "enero",
+          "febrero",
+          "marzo",
+          "abril",
+          "mayo",
+          "junio",
+          "julio",
+          "agosto",
+          "septiembre",
+          "octubre",
+          "noviembre",
+          "diciembre",
+        ];
+        const defaultMonth = monthNames[currentDate.getMonth()];
+        const defaultYear = currentDate.getFullYear();
+
+        const selectedMonth = moonCalendarValue.month || defaultMonth;
+        const selectedYear = moonCalendarValue.year || defaultYear;
+
+        // Determinar días del mes según el mes seleccionado
+        const DAYS_IN_MONTH_MAP: { [key: string]: number } = {
+          enero: 31,
+          febrero: 28,
+          marzo: 31,
+          abril: 30,
+          mayo: 31,
+          junio: 30,
+          julio: 31,
+          agosto: 31,
+          septiembre: 30,
+          octubre: 31,
+          noviembre: 30,
+          diciembre: 31,
         };
+
+        const isLeapYear = (year: number) => {
+          return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+        };
+
+        let daysInMonth = DAYS_IN_MONTH_MAP[selectedMonth] || 31;
+        if (selectedMonth === "febrero" && isLeapYear(selectedYear)) {
+          daysInMonth = 29;
+        }
+
+        // Obtener fechas de fases lunares del valor del campo
+        const fullMoonDate = moonCalendarValue.full_moon_date;
+        const newMoonDate = moonCalendarValue.new_moon_date;
+        const waxingCrescentDate = moonCalendarValue.waxing_crescent_date;
+        const waningCrescentDate = moonCalendarValue.waning_crescent_date;
+
+        // Extraer día del mes de una fecha string (YYYY-MM-DD)
+        const getDayFromDate = (
+          dateString: string | undefined
+        ): number | null => {
+          if (!dateString) return null;
+          const parts = dateString.split("-");
+          return parts.length === 3 ? parseInt(parts[2]) : null;
+        };
+
+        const fullMoonDay = getDayFromDate(fullMoonDate);
+        const newMoonDay = getDayFromDate(newMoonDate);
+        const waxingCrescentDay = getDayFromDate(waxingCrescentDate);
+        const waningCrescentDay = getDayFromDate(waningCrescentDate);
+
+        // Construir un mapa de fases lunares principales
+        type MoonPhase =
+          | "llena"
+          | "nueva"
+          | "cuartoCreciente"
+          | "cuartoMenguante";
+        const mainPhases: Array<{ day: number; phase: MoonPhase }> = [];
+
+        if (fullMoonDay) mainPhases.push({ day: fullMoonDay, phase: "llena" });
+        if (newMoonDay) mainPhases.push({ day: newMoonDay, phase: "nueva" });
+        if (waxingCrescentDay)
+          mainPhases.push({ day: waxingCrescentDay, phase: "cuartoCreciente" });
+        if (waningCrescentDay)
+          mainPhases.push({ day: waningCrescentDay, phase: "cuartoMenguante" });
+
+        // Ordenar por día
+        mainPhases.sort((a, b) => a.day - b.day);
+
+        // Determinar el orden del ciclo lunar
+        // El ciclo típico es: nueva -> creciente -> llena -> menguante -> nueva
+        const phaseOrder: MoonPhase[] = [
+          "nueva",
+          "cuartoCreciente",
+          "llena",
+          "cuartoMenguante",
+        ];
+
+        // Función para obtener la transición entre dos fases y su número de imágenes
+        const getTransitionInfo = (
+          fromPhase: MoonPhase,
+          toPhase: MoonPhase
+        ): { folder: string; images: number } | null => {
+          if (fromPhase === "cuartoCreciente" && toPhase === "llena")
+            return { folder: "crecToLlena", images: 7 };
+          if (fromPhase === "llena" && toPhase === "cuartoMenguante")
+            return { folder: "llenaToMeng", images: 7 };
+          if (fromPhase === "cuartoMenguante" && toPhase === "nueva")
+            return { folder: "mengToNueva", images: 5 };
+          if (fromPhase === "nueva" && toPhase === "cuartoCreciente")
+            return { folder: "nuevaToCrec", images: 6 };
+
+          // Casos especiales cuando hay fases faltantes
+          if (fromPhase === "nueva" && toPhase === "llena")
+            return { folder: "nuevaToCrec", images: 6 }; // Primera mitad
+          if (fromPhase === "llena" && toPhase === "nueva")
+            return { folder: "llenaToMeng", images: 7 }; // Segunda mitad
+          if (fromPhase === "cuartoCreciente" && toPhase === "cuartoMenguante")
+            return { folder: "crecToLlena", images: 7 }; // A través de llena
+          if (fromPhase === "cuartoMenguante" && toPhase === "cuartoCreciente")
+            return { folder: "mengToNueva", images: 5 }; // A través de nueva
+
+          return null;
+        };
+
+        // Construir mapa de días con sus imágenes
+        const dayMoonMap: { [day: number]: { icon: string; label: string } } =
+          {};
+
+        // Primero asignar las fases principales
+        mainPhases.forEach(({ day, phase }) => {
+          const labels: { [key in MoonPhase]: string } = {
+            llena: "Llena",
+            nueva: "Nueva",
+            cuartoCreciente: "Crec.",
+            cuartoMenguante: "Meng.",
+          };
+          dayMoonMap[day] = {
+            icon: `/assets/img/moons/${phase}.png`,
+            label: labels[phase],
+          };
+        });
+
+        // Función auxiliar para llenar días con transiciones
+        const fillTransitionDays = (
+          startDay: number,
+          endDay: number,
+          transitionFolder: string,
+          totalImages: number,
+          reverse: boolean = false
+        ) => {
+          const daysBetween = endDay - startDay + 1;
+
+          for (let d = startDay; d <= endDay; d++) {
+            // Para reversa, queremos que el último día tenga la última imagen de la transición
+            // y el primer día tenga la primera imagen
+            const position = reverse ? endDay - d : d - startDay;
+            let imageIndex: number;
+
+            if (daysBetween <= totalImages) {
+              // Mapear al rango de imágenes disponibles, pero desde el final hacia el inicio en reversa
+              if (reverse) {
+                // Invertir: último día del mes debe tener la última imagen (más cercana a la fase)
+                const ratio = (daysBetween - 1 - position) / (daysBetween - 1);
+                imageIndex = Math.round(ratio * (totalImages - 1)) + 1;
+              } else {
+                const ratio = position / (daysBetween - 1);
+                imageIndex = Math.round(ratio * (totalImages - 1)) + 1;
+              }
+              imageIndex = Math.max(1, Math.min(imageIndex, totalImages));
+            } else {
+              if (position === 0) {
+                imageIndex = reverse ? totalImages : 1;
+              } else if (position === daysBetween - 1) {
+                imageIndex = reverse ? 1 : totalImages;
+              } else {
+                if (reverse) {
+                  const ratio =
+                    (daysBetween - 1 - position) / (daysBetween - 1);
+                  imageIndex = Math.round(ratio * (totalImages - 1)) + 1;
+                } else {
+                  const ratio = position / (daysBetween - 1);
+                  imageIndex = Math.round(ratio * (totalImages - 1)) + 1;
+                }
+                imageIndex = Math.max(1, Math.min(imageIndex, totalImages));
+              }
+            }
+
+            if (!dayMoonMap[d] || !dayMoonMap[d].label) {
+              dayMoonMap[d] = {
+                icon: `/assets/img/moons/${transitionFolder}/${imageIndex}.png`,
+                label: "",
+              };
+            }
+          }
+        };
+
+        // Llenar días antes de la primera fase (transición inversa)
+        if (mainPhases.length > 0) {
+          const firstPhase = mainPhases[0];
+          if (firstPhase.day > 1) {
+            // Determinar de qué fase viene (ciclo lunar: menguante -> nueva -> creciente -> llena -> menguante)
+            let previousPhase: MoonPhase;
+            if (firstPhase.phase === "nueva") previousPhase = "cuartoMenguante";
+            else if (firstPhase.phase === "cuartoCreciente")
+              previousPhase = "nueva";
+            else if (firstPhase.phase === "llena")
+              previousPhase = "cuartoCreciente";
+            else previousPhase = "llena"; // cuartoMenguante viene de llena
+
+            const transitionInfo = getTransitionInfo(
+              previousPhase,
+              firstPhase.phase
+            );
+            if (transitionInfo) {
+              fillTransitionDays(
+                1,
+                firstPhase.day - 1,
+                transitionInfo.folder,
+                transitionInfo.images,
+                true
+              );
+            }
+          }
+        }
+
+        // Calcular las transiciones entre fases consecutivas
+        for (let i = 0; i < mainPhases.length - 1; i++) {
+          const currentPhase = mainPhases[i];
+          const nextPhase = mainPhases[i + 1];
+
+          if (nextPhase.day > currentPhase.day) {
+            const startDay = currentPhase.day + 1;
+            const endDay = nextPhase.day - 1;
+
+            if (endDay >= startDay) {
+              const transitionInfo = getTransitionInfo(
+                currentPhase.phase,
+                nextPhase.phase
+              );
+              if (transitionInfo) {
+                fillTransitionDays(
+                  startDay,
+                  endDay,
+                  transitionInfo.folder,
+                  transitionInfo.images,
+                  false
+                );
+              }
+            }
+          }
+        }
+
+        // Llenar días después de la última fase (transición normal)
+        if (mainPhases.length > 0) {
+          const lastPhase = mainPhases[mainPhases.length - 1];
+          if (lastPhase.day < daysInMonth) {
+            // Determinar a qué fase va (ciclo lunar)
+            let nextPhase: MoonPhase;
+            if (lastPhase.phase === "nueva") nextPhase = "cuartoCreciente";
+            else if (lastPhase.phase === "cuartoCreciente") nextPhase = "llena";
+            else if (lastPhase.phase === "llena") nextPhase = "cuartoMenguante";
+            else nextPhase = "nueva"; // cuartoMenguante va a nueva
+
+            const transitionInfo = getTransitionInfo(
+              lastPhase.phase,
+              nextPhase
+            );
+            if (transitionInfo) {
+              fillTransitionDays(
+                lastPhase.day + 1,
+                daysInMonth,
+                transitionInfo.folder,
+                transitionInfo.images,
+                false
+              );
+            }
+          }
+        }
 
         const getMoonIcon = (day: number): string | null => {
-          const phase = moonPhases[day];
-          if (!phase) return null;
-          return `/assets/img/moons/${phase}.png`;
+          return dayMoonMap[day]?.icon || null;
         };
+
+        const getMoonPhaseLabel = (day: number): string | null => {
+          return dayMoonMap[day]?.label || null;
+        };
+
+        // Calcular el día de la semana en que empieza el mes
+        const MONTH_INDEX: { [key: string]: number } = {
+          enero: 0,
+          febrero: 1,
+          marzo: 2,
+          abril: 3,
+          mayo: 4,
+          junio: 5,
+          julio: 6,
+          agosto: 7,
+          septiembre: 8,
+          octubre: 9,
+          noviembre: 10,
+          diciembre: 11,
+        };
+
+        const firstDayOfMonth = new Date(
+          selectedYear,
+          MONTH_INDEX[selectedMonth],
+          1
+        );
+        const startDayOfWeek = firstDayOfMonth.getDay(); // 0 = Domingo, 1 = Lunes, etc.
 
         // Obtener configuración del título
         const moonCalendarConfig = field.field_config as any;
         const titleIcon = moonCalendarConfig?.title_icon;
         const titleLabel =
           moonCalendarConfig?.title_label || "Calendario lunar - {month}";
-        const displayTitle = titleLabel.replace("{month}", "agosto");
+        const displayMonth =
+          selectedMonth.charAt(0).toUpperCase() + selectedMonth.slice(1);
+        const displayTitle = titleLabel.replace("{month}", displayMonth);
 
         return (
           <div key={key} style={fieldStyles} className="w-full">
@@ -1341,10 +1639,24 @@ export function TemplatePreview({
 
             {/* Cuadrícula de días del mes */}
             <div className="grid grid-cols-7 gap-0">
+              {/* Celdas vacías para los días antes del inicio del mes */}
+              {Array.from({ length: startDayOfWeek }, (_, i) => (
+                <div
+                  key={`empty-${i}`}
+                  className="flex flex-col relative"
+                  style={{
+                    border: "0.5px solid rgba(217, 217, 217, 0.2)",
+                    minHeight: "70px",
+                    backgroundColor: "rgba(0, 0, 0, 0.1)",
+                  }}
+                />
+              ))}
+
+              {/* Días del mes */}
               {Array.from({ length: daysInMonth }, (_, i) => {
                 const day = i + 1;
                 const moonIcon = getMoonIcon(day);
-                const dayOfWeek = i % 7; // 0 = Domingo, 1 = Lunes, etc.
+                const dayOfWeek = (startDayOfWeek + i) % 7; // Calcular día de la semana real
                 const isSunday = dayOfWeek === 0;
 
                 return (
@@ -1380,7 +1692,7 @@ export function TemplatePreview({
                       {moonIcon && (
                         <img
                           src={moonIcon}
-                          alt={moonPhases[day]}
+                          alt={getMoonPhaseLabel(day) || "Moon phase"}
                           className="w-7 h-7"
                           onError={(e) => {
                             (e.target as HTMLImageElement).style.display =
@@ -1390,7 +1702,7 @@ export function TemplatePreview({
                       )}
 
                       {/* Etiqueta de fase lunar */}
-                      {moonIcon && (
+                      {moonIcon && getMoonPhaseLabel(day) && (
                         <span
                           className="text-xs"
                           style={{
@@ -1398,10 +1710,7 @@ export function TemplatePreview({
                             opacity: 0.8,
                           }}
                         >
-                          {moonPhases[day] === "llena" && "Llena"}
-                          {moonPhases[day] === "nueva" && "Nueva"}
-                          {moonPhases[day] === "cuartoCreciente" && "Meng."}
-                          {moonPhases[day] === "cuartoMenguante" && "Meng."}
+                          {getMoonPhaseLabel(day)}
                         </span>
                       )}
                     </div>

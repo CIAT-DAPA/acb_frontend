@@ -16,6 +16,7 @@ import {
   SelectBackgroundField,
   CardFieldInput,
   ImageUploadInput,
+  MoonCalendarInput,
 } from "../components/fields";
 
 interface SectionStepProps {
@@ -234,6 +235,19 @@ export function SectionStep({
           <ImageUploadInput
             field={field}
             value={fieldValue as string}
+            onChange={onChange}
+          />
+        );
+
+      case "moon_calendar":
+        const moonCalendarValue =
+          typeof fieldValue === "object" && fieldValue !== null
+            ? fieldValue
+            : {};
+        return (
+          <MoonCalendarInput
+            field={field}
+            value={moonCalendarValue as any}
             onChange={onChange}
           />
         );

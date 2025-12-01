@@ -288,6 +288,14 @@
     "climateField": {
       "noParameters": "No hay parámetros climáticos configurados"
     },
+    "moonCalendar": {
+      "monthYear": "Mes y Año",
+      "moonPhasesTitle": "Fases Lunares",
+      "fullMoon": "Luna Llena",
+      "newMoon": "Luna Nueva",
+      "waxingCrescent": "Cuarto Creciente",
+      "waningCrescent": "Cuarto Menguante"
+    },
     "navigation": {
       "next": "Siguiente",
       "previous": "Anterior",
