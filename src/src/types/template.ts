@@ -106,6 +106,8 @@ export interface MoonCalendarFieldConfig {
 
 export interface ImageFieldConfig {
   images: string[];
+  show_label?: boolean; // Si se muestra el label debajo de la imagen
+  label_text?: string; // Texto del label que se muestra debajo de la imagen
 }
 
 // Tipo base para todos los campos

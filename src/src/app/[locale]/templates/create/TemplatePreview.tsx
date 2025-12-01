@@ -775,7 +775,7 @@ export function TemplatePreview({
               className={
                 listItemsLayout === "horizontal"
                   ? "flex flex-wrap items-start"
-                  : ""
+                  : "grid"
               }
               style={itemsContainerStyle}
             >
@@ -952,7 +952,27 @@ export function TemplatePreview({
 
       case "image":
         // Mostrar la imagen si tiene valor (cuando form es false)
-        const imageUrl = field.value as string | undefined;
+        // El valor puede ser un string (URL directa) o un objeto {url, label}
+        const imageValue = field.value;
+        const imageUrl =
+          typeof imageValue === "string"
+            ? imageValue
+            : typeof imageValue === "object" &&
+              imageValue &&
+              "url" in imageValue
+            ? (imageValue as any).url
+            : undefined;
+        const itemImageLabel =
+          typeof imageValue === "object" && imageValue && "label" in imageValue
+            ? (imageValue as any).label
+            : undefined;
+
+        const imageConfig = field.field_config as any;
+        const showImageLabel = imageConfig?.show_label ?? false;
+        const configImageLabel = imageConfig?.label_text || "";
+
+        // El label puede venir del config o del item (en listas)
+        const finalImageLabel = itemImageLabel || configImageLabel;
 
         if (!imageUrl) {
           return (
@@ -970,17 +990,38 @@ export function TemplatePreview({
           <div
             key={key}
             style={fieldStyles}
-            className="flex items-center justify-center overflow-hidden"
+            className="flex flex-col items-center"
           >
             <img
               src={imageUrl}
               alt={field.display_name || "Imagen"}
-              className="max-w-full max-h-full object-contain"
+              className="max-w-full max-h-full object-contain block"
               onError={(e) => {
                 (e.target as HTMLImageElement).src =
                   "/assets/img/imageNotFound.png";
               }}
+              onLoad={(e) => {
+                const img = e.target as HTMLImageElement;
+                const label = img.nextElementSibling as HTMLElement;
+                if (label) {
+                  label.style.maxWidth = `${img.offsetWidth + 24}px`;
+                }
+              }}
             />
+            {(showImageLabel || itemImageLabel) && finalImageLabel && (
+              <div
+                className="text-center mt-2"
+                style={{
+                  color: fieldStyles.color,
+                  fontSize: fieldStyles.fontSize,
+                  fontFamily: fieldStyles.fontFamily,
+                  wordBreak: "break-word",
+                  overflowWrap: "break-word",
+                }}
+              >
+                {finalImageLabel}
+              </div>
+            )}
           </div>
         );
 

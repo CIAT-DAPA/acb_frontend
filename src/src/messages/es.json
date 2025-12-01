@@ -1076,7 +1076,10 @@
         "itemNumber": "Item",
         "deleteItem": "Eliminar item",
         "noItemsMessage": "No hay items. Haz clic en 'Agregar Item' para comenzar.",
-        "defineSchemaFirst": "Primero define el esquema de elementos arriba"
+        "defineSchemaFirst": "Primero define el esquema de elementos arriba",
+        "imageLabel": "Label de la Imagen",
+        "imageLabelPlaceholder": "ej. Figura 1: Descripción",
+        "imageLabelHelp": "Texto que aparecerá debajo de la imagen"
       },
       "imageConfig": {
         "predefinedImageLabel": "Imagen Predefinida (Value)",
@@ -1086,6 +1089,11 @@
         "deleteValue": "Eliminar valor predefinido",
         "selectPredefinedImage": "Seleccionar imagen predefinida",
         "selectPredefinedImageTitle": "Seleccionar Imagen Predefinida",
+        "showLabel": "Mostrar label debajo de la imagen",
+        "showLabelHelp": "Si está habilitado, se mostrará un label debajo de la imagen",
+        "labelText": "Texto del Label",
+        "labelPlaceholder": "ej. Figura 1: Descripción",
+        "labelTextHelp": "Texto que aparecerá debajo de la imagen",
         "availableImagesLabel": "Imágenes Disponibles",
         "addImage": "Agregar Imagen",
         "availableImagesHelp": "Agrega las imágenes que el usuario podrá seleccionar para este campo",

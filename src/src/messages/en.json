@@ -1076,7 +1076,10 @@
         "itemNumber": "Item",
         "deleteItem": "Delete item",
         "noItemsMessage": "No items. Click 'Add Item' to start.",
-        "defineSchemaFirst": "First define the elements schema above"
+        "defineSchemaFirst": "First define the elements schema above",
+        "imageLabel": "Image Label",
+        "imageLabelPlaceholder": "e.g., Figure 1: Description",
+        "imageLabelHelp": "Text that will appear below the image"
       },
       "imageConfig": {
         "predefinedImageLabel": "Predefined Image (Value)",
@@ -1086,6 +1089,11 @@
         "deleteValue": "Delete predefined value",
         "selectPredefinedImage": "Select predefined image",
         "selectPredefinedImageTitle": "Select Predefined Image",
+        "showLabel": "Show label below image",
+        "showLabelHelp": "If enabled, a label will be displayed below the image",
+        "labelText": "Label Text",
+        "labelPlaceholder": "e.g., Figure 1: Description",
+        "labelTextHelp": "Text that will appear below the image",
         "availableImagesLabel": "Available Images",
         "addImage": "Add Image",
         "availableImagesHelp": "Add the images that the user can select for this field",

@@ -37,46 +37,88 @@ const ItemFieldInput: React.FC<ItemFieldInputProps> = ({
 
   // Para campos de tipo image, usar el VisualResourceSelector
   if (fieldDef.type === "image") {
+    // Verificar si el field_config tiene show_label configurado
+    const showLabel = fieldDef.field_config?.show_label ?? true;
+
+    // El valor puede ser un string (solo URL) o un objeto {url, label}
+    const imageValue =
+      typeof value === "string" ? { url: value, label: "" } : value || {};
+    const imageUrl = imageValue.url || "";
+    const imageLabel = imageValue.label || "";
+
+    const handleImageChange = (url: string) => {
+      if (showLabel) {
+        onChange({ url, label: imageLabel });
+      } else {
+        onChange(url); // Solo guardar la URL si no se muestra el label
+      }
+      setShowImageSelector(false);
+    };
+
+    const handleLabelChange = (label: string) => {
+      onChange({ url: imageUrl, label });
+    };
+
     return (
       <>
-        <div className="flex items-center space-x-2">
-          {value ? (
-            <div className="flex items-center space-x-2 flex-1">
-              <div className="relative w-20 h-20 border border-gray-300 rounded-md overflow-hidden bg-gray-50">
-                <img
-                  src={value}
-                  alt={fieldDef.label || fieldId}
-                  className="w-full h-full object-cover"
-                />
+        <div className="space-y-3">
+          {/* Selector de imagen */}
+          <div className="flex items-center space-x-2">
+            {imageUrl ? (
+              <div className="flex items-center space-x-2 flex-1">
+                <div className="relative w-20 h-20 border border-gray-300 rounded-md overflow-hidden bg-gray-50">
+                  <img
+                    src={imageUrl}
+                    alt={fieldDef.label || fieldId}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowImageSelector(true)}
+                  className={`${btnOutlineSecondary} whitespace-nowrap`}
+                >
+                  {t("changeImage")}
+                </button>
               </div>
+            ) : (
               <button
                 type="button"
                 onClick={() => setShowImageSelector(true)}
-                className={`${btnOutlineSecondary} whitespace-nowrap`}
+                className={`${btnOutlineSecondary} w-full`}
               >
-                {t("changeImage")}
+                {t("selectImage")}
               </button>
+            )}
+          </div>
+
+          {/* Input para el label de la imagen - solo si show_label está habilitado */}
+          {imageUrl && showLabel && (
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                {t("imageLabel")}
+              </label>
+              <input
+                type="text"
+                value={imageLabel}
+                onChange={(e) => handleLabelChange(e.target.value)}
+                className={inputClass}
+                placeholder={t("imageLabelPlaceholder")}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {t("imageLabelHelp")}
+              </p>
             </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setShowImageSelector(true)}
-              className={`${btnOutlineSecondary} w-full`}
-            >
-              {t("selectImage")}
-            </button>
           )}
         </div>
+
         <VisualResourceSelector
           isOpen={showImageSelector}
           onClose={() => setShowImageSelector(false)}
-          onSelect={(url) => {
-            onChange(url);
-            setShowImageSelector(false);
-          }}
+          onSelect={handleImageChange}
           title={`${t("selectTitle")} ${fieldDef.label || fieldId}`}
           resourceType="image"
-          selectedUrl={value}
+          selectedUrl={imageUrl}
         />
       </>
     );
