@@ -100,7 +100,8 @@ export interface CardFieldConfig {
 }
 
 export interface MoonCalendarFieldConfig {
-  // No tiene configuración en el template creation, solo se usa en la vista previa
+  title_icon?: string; // URL del icono que acompaña el título
+  title_label?: string; // Label del título con {month} como placeholder para el mes
 }
 
 export interface ImageFieldConfig {

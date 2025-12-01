@@ -854,7 +854,7 @@ export function SectionsStep({
                         {currentSection.display_name || t("overview.noName")}
                       </h3>
                     </div>
-                    <div className="text-sm text-[#283618]/70 mt-1">
+                    <div className="text-sm text-[#283618]/70 mt-1 w-100 truncate">
                       {t("overview.page")} {currentSection.order} •{" "}
                       {currentSection.blocks.length} {t("overview.blocks")} •{" "}
                       {t("overview.id")}: {currentSection.section_id}

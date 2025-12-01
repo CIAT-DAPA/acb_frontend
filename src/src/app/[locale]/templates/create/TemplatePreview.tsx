@@ -1236,8 +1236,42 @@ export function TemplatePreview({
           return `/assets/img/moons/${phase}.png`;
         };
 
+        // Obtener configuración del título
+        const moonCalendarConfig = field.field_config as any;
+        const titleIcon = moonCalendarConfig?.title_icon;
+        const titleLabel =
+          moonCalendarConfig?.title_label || "Calendario lunar - {month}";
+        const displayTitle = titleLabel.replace("{month}", "agosto");
+
         return (
           <div key={key} style={fieldStyles} className="w-full">
+            {/* Título del calendario */}
+            {(titleIcon || titleLabel) && (
+              <div
+                className="flex items-center gap-2 mb-2 py-1 justify-center"
+                style={{
+                  backgroundColor: "rgba(44, 40, 37, 0.3)",
+                }}
+              >
+                {titleIcon && (
+                  <img
+                    src={titleIcon}
+                    alt="Calendar icon"
+                    className="w-5 h-5 object-contain"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                    }}
+                  />
+                )}
+                <span
+                  className="font-semibold text-base"
+                  style={{ color: fieldStyles.color || "#ffffff" }}
+                >
+                  {displayTitle}
+                </span>
+              </div>
+            )}
+
             {/* Encabezado con días de la semana */}
             <div className="grid grid-cols-7 gap-0">
               {daysOfWeek.map((day, idx) => (
@@ -1246,7 +1280,7 @@ export function TemplatePreview({
                   className="text-center font-semibold text-sm py-1"
                   style={{
                     color: fieldStyles.color || "#ffffff",
-                    backgroundColor: idx === 0 ? "rgba(0, 0, 0, 0.3)" : "",
+                    backgroundColor: idx === 0 ? "rgba(44, 40, 37, 0.3)" : "",
                     border: "0.5px solid rgba(217, 217, 217, 0.2)",
                   }}
                 >

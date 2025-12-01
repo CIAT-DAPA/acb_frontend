@@ -1208,8 +1208,15 @@
         "cardsCount": "{count} card{plural} disponible{plural} para selección"
       },
       "moonCalendarConfig": {
-        "noConfigNeeded": "Este tipo de campo no requiere configuración en la plantilla.",
-        "description": "El calendario lunar se mostrará como una cuadrícula en el preview. Al crear un boletín, el usuario especificará el mes y las fechas de cada fase lunar."
+        "titleLabel": "Título del Calendario",
+        "titlePlaceholder": "ej. Calendario lunar - {month}",
+        "titleHelp": "Usa {month} como marcador de posición para el nombre del mes. Ejemplo: 'Calendario lunar - {month}' se convertirá en 'Calendario lunar - agosto'",
+        "titleIcon": "Icono del Título",
+        "titleIconHelp": "Selecciona un icono para mostrar junto al título del calendario",
+        "iconSelected": "Icono seleccionado",
+        "changeIcon": "Cambiar",
+        "selectIcon": "Seleccionar Icono",
+        "selectIconTitle": "Seleccionar Icono del Título del Calendario"
       },
       "value": {
         "title": "Valor del Campo",

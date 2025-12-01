@@ -1208,8 +1208,15 @@
         "cardsCount": "{count} card{plural} available for selection"
       },
       "moonCalendarConfig": {
-        "noConfigNeeded": "This field type does not require configuration in the template.",
-        "description": "The moon calendar will be displayed as a grid in the preview. When creating a bulletin, the user will specify the month and the dates for each moon phase."
+        "titleLabel": "Calendar Title",
+        "titlePlaceholder": "e.g., Moon Calendar - {month}",
+        "titleHelp": "Use {month} as a placeholder for the month name. Example: 'Moon Calendar - {month}' will become 'Moon Calendar - August'",
+        "titleIcon": "Title Icon",
+        "titleIconHelp": "Select an icon to display next to the calendar title",
+        "iconSelected": "Icon selected",
+        "changeIcon": "Change",
+        "selectIcon": "Select Icon",
+        "selectIconTitle": "Select Calendar Title Icon"
       },
       "value": {
         "title": "Field Value",
