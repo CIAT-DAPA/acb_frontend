@@ -273,6 +273,8 @@ export function TemplatePreview({
         return `${dayNameCapitalized}, ${day} - ${month}`;
       case "DD, MMMM YYYY":
         return `${day}, ${monthNameCapitalized} ${year}`;
+      case "DD de MMMM":
+        return `${day} de ${monthNameCapitalized}`;
       case "MMMM/YY":
         return `${monthNameCapitalized}/${shortYear}`;
       case "YYYY-MM-DD":
@@ -531,6 +533,28 @@ export function TemplatePreview({
       case "date_range":
         const dateRangeFormat =
           (field.field_config as any)?.date_format || "DD/MM/YYYY";
+        const showMoonPhases =
+          (field.field_config as any)?.show_moon_phases || false;
+
+        // Obtener las fases de luna configuradas o desde el valor
+        let startMoonPhase = (field.field_config as any)?.start_moon_phase;
+        let endMoonPhase = (field.field_config as any)?.end_moon_phase;
+
+        // Si form es true y hay valor con moon_phases, usar esos valores
+        if (field.form && field.value && typeof field.value === "object") {
+          if ("start_moon_phase" in field.value) {
+            startMoonPhase = (field.value as any).start_moon_phase;
+          }
+          if ("end_moon_phase" in field.value) {
+            endMoonPhase = (field.value as any).end_moon_phase;
+          }
+        }
+
+        // Helper para obtener la ruta de la imagen de la luna
+        const getMoonImagePath = (phase?: string) => {
+          if (!phase) return "/assets/img/moons/llena.png";
+          return `/assets/img/moons/${phase}.png`;
+        };
 
         // Si el formato es DD-DD, MMMM YYYY, combinar en un solo formato
         const isRangeFormat = dateRangeFormat === "DD-DD, MMMM YYYY";
@@ -597,6 +621,51 @@ export function TemplatePreview({
           }
         }
 
+        // Si se muestran las fases de luna, usar layout con imágenes
+        if (showMoonPhases) {
+          return (
+            <div
+              key={key}
+              style={fieldStyles}
+              className="flex items-center justify-between gap-4"
+            >
+              {/* Fecha de inicio con luna debajo */}
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-center">{startDateDisplay}</span>
+                <img
+                  src={getMoonImagePath(startMoonPhase)}
+                  alt="Moon phase"
+                  className="w-8 h-8 object-contain"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src =
+                      "/assets/img/moons/llena.png";
+                  }}
+                />
+              </div>
+
+              {/* Separador "Y" */}
+              <div className="flex-shrink-0 w-8 h-8 rounded-sm bg-[#525556] text-white flex items-center justify-center font-bold text-sm">
+                Y
+              </div>
+
+              {/* Fecha de fin con luna debajo */}
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-center">{endDateDisplay}</span>
+                <img
+                  src={getMoonImagePath(endMoonPhase)}
+                  alt="Moon phase"
+                  className="w-8 h-8 object-contain"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src =
+                      "/assets/img/moons/llena.png";
+                  }}
+                />
+              </div>
+            </div>
+          );
+        }
+
+        // Sin lunas: formato tradicional
         return (
           <div key={key} style={fieldStyles}>
             {`${startDateDisplay} - ${endDateDisplay}`}

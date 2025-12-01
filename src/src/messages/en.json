@@ -1015,6 +1015,18 @@
       },
       "dateRangeConfig": {
         "format": "Date Format",
+        "showMoonPhases": "Show moon phases with dates",
+        "showMoonPhasesHelp": "Display moon phase icons next to each date",
+        "moonPhasesConfigTitle": "Moon Phase Configuration",
+        "moonPhasesConfigHelp": "Select the moon phase for each date (only when form is disabled)",
+        "startMoonPhase": "Start date moon phase",
+        "endMoonPhase": "End date moon phase",
+        "moonPhases": {
+          "full": "Full Moon",
+          "new": "New Moon",
+          "waxingCrescent": "Waxing Crescent",
+          "waningCrescent": "Waning Crescent"
+        },
         "startDateSection": "Start Date",
         "startDateLabel": "Label",
         "startDateLabelPlaceholder": "E.g: Start Date, From, etc.",

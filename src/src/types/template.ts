@@ -73,6 +73,9 @@ export interface DateRangeFieldConfig {
   start_date_description: string;
   end_date_label: string;
   end_date_description: string;
+  show_moon_phases?: boolean; // Si se muestran las fases de la luna
+  start_moon_phase?: "llena" | "nueva" | "cuartoCreciente" | "cuartoMenguante"; // Fase de la luna para fecha inicio
+  end_moon_phase?: "llena" | "nueva" | "cuartoCreciente" | "cuartoMenguante"; // Fase de la luna para fecha fin
 }
 
 export interface ImageUploadFieldConfig {

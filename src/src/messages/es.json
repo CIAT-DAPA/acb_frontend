@@ -1015,6 +1015,18 @@
       },
       "dateRangeConfig": {
         "format": "Formato de Fecha",
+        "showMoonPhases": "Mostrar fases de luna con fechas",
+        "showMoonPhasesHelp": "Muestra íconos de fase lunar junto a cada fecha",
+        "moonPhasesConfigTitle": "Configuración de Fases Lunares",
+        "moonPhasesConfigHelp": "Selecciona la fase lunar para cada fecha (solo cuando form está desactivado)",
+        "startMoonPhase": "Fase lunar fecha inicio",
+        "endMoonPhase": "Fase lunar fecha fin",
+        "moonPhases": {
+          "full": "Luna Llena",
+          "new": "Luna Nueva",
+          "waxingCrescent": "Cuarto Creciente",
+          "waningCrescent": "Cuarto Menguante"
+        },
         "startDateSection": "Fecha de Inicio",
         "startDateLabel": "Etiqueta",
         "startDateLabelPlaceholder": "Ej: Fecha Inicial, Desde, etc.",
