@@ -1079,7 +1079,11 @@
         "defineSchemaFirst": "Primero define el esquema de elementos arriba",
         "imageLabel": "Label de la Imagen",
         "imageLabelPlaceholder": "ej. Figura 1: Descripción",
-        "imageLabelHelp": "Texto que aparecerá debajo de la imagen"
+        "imageLabelHelp": "Texto que aparecerá debajo de la imagen",
+        "iconLabel": "Icono",
+        "changeIcon": "Cambiar icono",
+        "selectIcon": "Seleccionar icono",
+        "selectIconTitle": "Seleccionar Icono"
       },
       "imageConfig": {
         "predefinedImageLabel": "Imagen Predefinida (Value)",

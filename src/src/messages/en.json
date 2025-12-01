@@ -1079,7 +1079,11 @@
         "defineSchemaFirst": "First define the elements schema above",
         "imageLabel": "Image Label",
         "imageLabelPlaceholder": "e.g., Figure 1: Description",
-        "imageLabelHelp": "Text that will appear below the image"
+        "imageLabelHelp": "Text that will appear below the image",
+        "iconLabel": "Icon",
+        "changeIcon": "Change icon",
+        "selectIcon": "Select icon",
+        "selectIconTitle": "Select Icon"
       },
       "imageConfig": {
         "predefinedImageLabel": "Predefined Image (Value)",

@@ -360,17 +360,26 @@ export function TemplatePreview({
         );
 
       case "text_with_icon":
-        // Verificar si el valor existe y no está vacío
-        const hasValue =
-          field.value !== null &&
-          field.value !== undefined &&
-          field.value !== "";
-        const textWithIconValue = hasValue
-          ? renderFieldValue(field.value)
-          : field.label || "Texto con icono";
+        // El valor puede ser un string o un objeto {text, icon}
+        let textWithIconValue = "";
+        let iconFromValue = null;
 
-        // Obtener el icono seleccionado o el primer icono disponible como fallback
+        if (field.value) {
+          if (typeof field.value === "object" && "text" in field.value) {
+            // Es un objeto {text, icon} - usado en listas
+            textWithIconValue = (field.value as any).text || "";
+            iconFromValue = (field.value as any).icon || null;
+          } else {
+            // Es un string simple
+            textWithIconValue = renderFieldValue(field.value);
+          }
+        } else {
+          textWithIconValue = field.label || "Texto con icono";
+        }
+
+        // Obtener el icono: primero del valor (en listas), luego del field_config, o fallback
         const selectedIcon =
+          iconFromValue ||
           (field.field_config as any)?.selected_icon ||
           (field.field_config?.icon_options &&
           field.field_config.icon_options.length > 0
@@ -396,7 +405,7 @@ export function TemplatePreview({
             style={fieldStyles}
             className="flex items-center gap-2"
           >
-            {/* Icono - siempre se muestra (configurado desde el template) */}
+            {/* Icono - siempre se muestra (configurado desde el template o del valor) */}
             {selectedIcon ? (
               selectedIcon.startsWith("http") ||
               selectedIcon.startsWith("/") ? (
