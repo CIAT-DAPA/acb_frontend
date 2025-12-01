@@ -583,14 +583,17 @@ export function SectionsStep({
   const duplicateSection = useCallback(
     (sectionIndex: number) => {
       const sectionToDuplicate = data.version.content.sections[sectionIndex];
-      const duplicatedSection: Section = {
-        ...sectionToDuplicate,
-        section_id: `${sectionToDuplicate.section_id}_copy_${Date.now()}`,
-        display_name: `${sectionToDuplicate.display_name} (${t(
-          "section.duplicate"
-        )})`,
-        order: data.version.content.sections.length + 1,
-      };
+      // Hacer una copia profunda para evitar compartir referencias
+      const duplicatedSection: Section = JSON.parse(
+        JSON.stringify(sectionToDuplicate)
+      );
+      duplicatedSection.section_id = `${
+        sectionToDuplicate.section_id
+      }_copy_${Date.now()}`;
+      duplicatedSection.display_name = `${sectionToDuplicate.display_name} (${t(
+        "section.duplicate"
+      )})`;
+      duplicatedSection.order = data.version.content.sections.length + 1;
 
       onDataChange((prevData) => ({
         ...prevData,
