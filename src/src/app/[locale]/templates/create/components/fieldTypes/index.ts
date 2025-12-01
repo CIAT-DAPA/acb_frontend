@@ -16,6 +16,7 @@ export * from "./ClimateDataFieldTypeConfig";
 export * from "./ImageFieldTypeConfig";
 export * from "./ImageUploadFieldTypeConfig";
 export * from "./CardFieldTypeConfig";
+export * from "./MoonCalendarFieldTypeConfig";
 export * from "./DefaultFieldTypeConfig";
 
 // Exportaciones del registro y factory

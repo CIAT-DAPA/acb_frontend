@@ -964,7 +964,8 @@
         "algorithm": "Algoritmo",
         "page_number": "Número de Página",
         "card": "Tarjeta",
-        "image": "Imagen"
+        "image": "Imagen",
+        "moon_calendar": "Calendario Lunar"
       },
       "textConfig": {
         "subtype": "Tipo de Texto",
@@ -1205,6 +1206,10 @@
         "noResults": "No se encontraron cards con ese nombre",
         "noMoreCards": "No hay más cards disponibles",
         "cardsCount": "{count} card{plural} disponible{plural} para selección"
+      },
+      "moonCalendarConfig": {
+        "noConfigNeeded": "Este tipo de campo no requiere configuración en la plantilla.",
+        "description": "El calendario lunar se mostrará como una cuadrícula en el preview. Al crear un boletín, el usuario especificará el mes y las fechas de cada fase lunar."
       },
       "value": {
         "title": "Valor del Campo",

@@ -99,6 +99,10 @@ export interface CardFieldConfig {
   available_cards: string[]; // Array de IDs de cards que el usuario puede seleccionar
 }
 
+export interface MoonCalendarFieldConfig {
+  // No tiene configuración en el template creation, solo se usa en la vista previa
+}
+
 export interface ImageFieldConfig {
   images: string[];
 }
@@ -123,7 +127,8 @@ export interface FieldBase {
     | "algorithm"
     | "page_number"
     | "card"
-    | "image";
+    | "image"
+    | "moon_calendar";
   description?: string;
   label?: string;
   form: boolean;
@@ -146,7 +151,8 @@ export interface FieldBase {
     | AlgorithmFieldConfig
     | PageNumberFieldConfig
     | CardFieldConfig
-    | ImageFieldConfig;
+    | ImageFieldConfig
+    | MoonCalendarFieldConfig;
   value?:
     | string
     | number
@@ -238,6 +244,11 @@ export interface ImageField extends FieldBase {
   field_config: ImageFieldConfig;
 }
 
+export interface MoonCalendarField extends FieldBase {
+  type: "moon_calendar";
+  field_config?: MoonCalendarFieldConfig;
+}
+
 // Union type para todos los tipos de campo
 export type Field =
   | TextField
@@ -255,7 +266,8 @@ export type Field =
   | AlgorithmField
   | PageNumberField
   | CardField
-  | ImageField;
+  | ImageField
+  | MoonCalendarField;
 
 export interface Block {
   block_id: string;
@@ -352,6 +364,7 @@ export const FIELD_TYPES = [
   "page_number",
   "card",
   "image",
+  "moon_calendar",
 ] as const;
 
 // Constantes específicas para template creation

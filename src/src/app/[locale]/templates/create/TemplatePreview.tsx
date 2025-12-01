@@ -1216,6 +1216,118 @@ export function TemplatePreview({
           </div>
         );
 
+      case "moon_calendar":
+        // Calendario lunar simulado con 31 días en una cuadrícula de 7 columnas
+        const daysOfWeek = ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"];
+        const daysInMonth = 31;
+
+        // Simulación de fases lunares (estos serían configurables al crear el boletín)
+        const moonPhases: Record<number, string> = {
+          3: "nueva",
+          10: "cuartoCreciente",
+          17: "llena",
+          24: "cuartoMenguante",
+          31: "nueva",
+        };
+
+        const getMoonIcon = (day: number): string | null => {
+          const phase = moonPhases[day];
+          if (!phase) return null;
+          return `/assets/img/moons/${phase}.png`;
+        };
+
+        return (
+          <div key={key} style={fieldStyles} className="w-full">
+            {/* Encabezado con días de la semana */}
+            <div className="grid grid-cols-7 gap-0">
+              {daysOfWeek.map((day, idx) => (
+                <div
+                  key={idx}
+                  className="text-center font-semibold text-sm py-1"
+                  style={{
+                    color: fieldStyles.color || "#ffffff",
+                    backgroundColor: idx === 0 ? "rgba(0, 0, 0, 0.3)" : "",
+                    border: "0.5px solid rgba(217, 217, 217, 0.2)",
+                  }}
+                >
+                  {day}
+                </div>
+              ))}
+            </div>
+
+            {/* Cuadrícula de días del mes */}
+            <div className="grid grid-cols-7 gap-0">
+              {Array.from({ length: daysInMonth }, (_, i) => {
+                const day = i + 1;
+                const moonIcon = getMoonIcon(day);
+                const dayOfWeek = i % 7; // 0 = Domingo, 1 = Lunes, etc.
+                const isSunday = dayOfWeek === 0;
+
+                return (
+                  <div
+                    key={day}
+                    className="flex flex-col relative"
+                    style={{
+                      border: "0.5px solid rgba(217, 217, 217, 0.2)",
+                      minHeight: "70px",
+                    }}
+                  >
+                    {/* Número del día en la parte superior */}
+                    <div
+                      className="text-center"
+                      style={{
+                        backgroundColor: isSunday
+                          ? "rgba(0, 0, 0, 0.3)"
+                          : "transparent",
+                        borderBottom: "0.5px solid rgba(217, 217, 217, 0.2)",
+                      }}
+                    >
+                      <span
+                        className="text-sm font-medium"
+                        style={{ color: fieldStyles.color || "#ffffff" }}
+                      >
+                        {day}
+                      </span>
+                    </div>
+
+                    {/* Área para la luna y etiqueta */}
+                    <div className="flex-1 flex flex-col items-center justify-center p-1">
+                      {/* Icono de fase lunar si aplica */}
+                      {moonIcon && (
+                        <img
+                          src={moonIcon}
+                          alt={moonPhases[day]}
+                          className="w-7 h-7"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display =
+                              "none";
+                          }}
+                        />
+                      )}
+
+                      {/* Etiqueta de fase lunar */}
+                      {moonIcon && (
+                        <span
+                          className="text-xs"
+                          style={{
+                            color: fieldStyles.color || "#ffffff",
+                            opacity: 0.8,
+                          }}
+                        >
+                          {moonPhases[day] === "llena" && "Llena"}
+                          {moonPhases[day] === "nueva" && "Nueva"}
+                          {moonPhases[day] === "cuartoCreciente" && "Meng."}
+                          {moonPhases[day] === "cuartoMenguante" && "Meng."}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+
       default:
         // Para cualquier otro tipo de campo, si form es false y tiene valor, mostrarlo
         const defaultValue =

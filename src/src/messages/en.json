@@ -964,7 +964,8 @@
         "algorithm": "Algorithm",
         "page_number": "Page Number",
         "card": "Card",
-        "image": "Image"
+        "image": "Image",
+        "moon_calendar": "Moon Calendar"
       },
       "textConfig": {
         "subtype": "Text Type",
@@ -1205,6 +1206,10 @@
         "noResults": "No cards found with that name",
         "noMoreCards": "No more cards available",
         "cardsCount": "{count} card{plural} available for selection"
+      },
+      "moonCalendarConfig": {
+        "noConfigNeeded": "This field type does not require configuration in the template.",
+        "description": "The moon calendar will be displayed as a grid in the preview. When creating a bulletin, the user will specify the month and the dates for each moon phase."
       },
       "value": {
         "title": "Field Value",
