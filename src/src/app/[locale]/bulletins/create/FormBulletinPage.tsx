@@ -109,6 +109,53 @@ export default function FormBulletinPage({
 
   const [isLoading, setIsLoading] = useState(false);
 
+  // Helper para extraer todas las URLs de imágenes del boletín
+  const extractImageUrls = useCallback((data: CreateBulletinData): string[] => {
+    const imageUrls: string[] = [];
+
+    const extractFromFields = (fields: Field[]) => {
+      fields.forEach((field) => {
+        if (
+          field.type === "image_upload" &&
+          field.value &&
+          typeof field.value === "string"
+        ) {
+          imageUrls.push(field.value);
+        }
+      });
+    };
+
+    // Extraer de header
+    if (data.version.data.header_config?.fields) {
+      extractFromFields(data.version.data.header_config.fields);
+    }
+
+    // Extraer de footer
+    if (data.version.data.footer_config?.fields) {
+      extractFromFields(data.version.data.footer_config.fields);
+    }
+
+    // Extraer de secciones
+    data.version.data.sections.forEach((section) => {
+      // Header de sección
+      if (section.header_config?.fields) {
+        extractFromFields(section.header_config.fields);
+      }
+
+      // Footer de sección
+      if (section.footer_config?.fields) {
+        extractFromFields(section.footer_config.fields);
+      }
+
+      // Bloques de sección
+      section.blocks.forEach((block) => {
+        extractFromFields(block.fields);
+      });
+    });
+
+    return imageUrls;
+  }, []);
+
   // Cargar template seleccionado y llenar estructura inicial
   const loadTemplateVersion = useCallback(
     async (templateId: string) => {
@@ -566,11 +613,82 @@ export default function FormBulletinPage({
 
     setIsLoading(true);
     try {
+      // Extraer todas las imágenes temporales para moverlas a permanentes
+      const tempImages = extractImageUrls(creationState.data).filter((url) =>
+        url.includes("/bulletins/temp/")
+      );
+
+      // Mover imágenes a almacenamiento permanente
+      let finalizedData = creationState.data;
+      if (tempImages.length > 0) {
+        const finalizeResponse = await fetch("/api/finalize-bulletin-images", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tempImages }),
+        });
+
+        if (finalizeResponse.ok) {
+          const { images: permanentImages } = await finalizeResponse.json();
+
+          // Actualizar las URLs en los datos del boletín
+          const updateImageUrls = (
+            data: CreateBulletinData,
+            urlMap: Map<string, string>
+          ) => {
+            const updateFields = (fields: Field[]) => {
+              fields.forEach((field) => {
+                if (
+                  field.type === "image_upload" &&
+                  field.value &&
+                  typeof field.value === "string"
+                ) {
+                  const newUrl = urlMap.get(field.value);
+                  if (newUrl) {
+                    field.value = newUrl;
+                  }
+                }
+              });
+            };
+
+            if (data.version.data.header_config?.fields) {
+              updateFields(data.version.data.header_config.fields);
+            }
+
+            if (data.version.data.footer_config?.fields) {
+              updateFields(data.version.data.footer_config.fields);
+            }
+
+            data.version.data.sections.forEach((section) => {
+              if (section.header_config?.fields) {
+                updateFields(section.header_config.fields);
+              }
+
+              if (section.footer_config?.fields) {
+                updateFields(section.footer_config.fields);
+              }
+
+              section.blocks.forEach((block) => {
+                updateFields(block.fields);
+              });
+            });
+          };
+
+          // Crear mapa de URLs temporales a permanentes
+          const urlMap = new Map<string, string>();
+          tempImages.forEach((tempUrl, index) => {
+            urlMap.set(tempUrl, permanentImages[index]);
+          });
+
+          finalizedData = JSON.parse(JSON.stringify(creationState.data));
+          updateImageUrls(finalizedData, urlMap);
+        }
+      }
+
       // Asegurarse de que el estado sea published
       const publishedData = {
-        ...creationState.data,
+        ...finalizedData,
         master: {
-          ...creationState.data.master,
+          ...finalizedData.master,
           status: "published",
         },
       };
@@ -650,7 +768,15 @@ export default function FormBulletinPage({
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, creationState.data, isEditMode, bulletinId, showToast, t]);
+  }, [
+    isLoading,
+    creationState.data,
+    isEditMode,
+    bulletinId,
+    showToast,
+    t,
+    extractImageUrls,
+  ]);
 
   // Convertir bulletinData a CreateTemplateData para el preview
   const previewData = useMemo((): CreateTemplateData | null => {

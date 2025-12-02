@@ -13,11 +13,27 @@ const AVAILABLE_FONTS = [
   "Helvetica",
   "Times New Roman",
   "Georgia",
+  "Poppins",
   "Roboto",
   "Open Sans",
   "Lato",
   "Montserrat",
+  "Archivo Narrow",
 ];
+
+// Mapeo de fuentes a variables CSS de Next.js
+const FONT_CSS_VARS: Record<string, string> = {
+  Poppins: "var(--font-poppins)",
+  Roboto: "var(--font-roboto)",
+  "Open Sans": "var(--font-open-sans)",
+  Lato: "var(--font-lato)",
+  Montserrat: "var(--font-montserrat)",
+  "Archivo Narrow": "var(--font-archivo-narrow)",
+  Arial: "Arial, sans-serif",
+  Helvetica: "Helvetica, sans-serif",
+  "Times New Roman": "'Times New Roman', serif",
+  Georgia: "Georgia, serif",
+};
 
 export interface StyleConfiguratorProps {
   styleConfig: StyleConfig;
@@ -34,6 +50,7 @@ export interface StyleConfiguratorProps {
     font?: boolean;
     fontSize?: boolean;
     fontWeight?: boolean;
+    lineHeight?: boolean;
     fontStyle?: boolean;
     textDecoration?: boolean;
     textAlign?: boolean;
@@ -56,6 +73,7 @@ export interface StyleConfiguratorProps {
 
     // Layout específico
     fieldsLayout?: boolean;
+    justifyContent?: boolean; // Distribución de campos (justify-content)
     listStyleType?: boolean; // Estilo de bullet points para listas
     listItemsLayout?: boolean; // Layout de items dentro de la lista
   };
@@ -165,21 +183,125 @@ export function StyleConfigurator({
   ) => (
     <div>
       <label className={LABEL_CLASS}>{label}</label>
-      <div className="flex gap-2 items-center">
-        <input
-          type="color"
-          value={(styleConfig[key] as string) || placeholder}
-          onChange={(e) => onStyleChange({ [key]: e.target.value })}
-          className="block w-12 h-12 min-w-[48px] border border-gray-300 rounded-md cursor-pointer flex-shrink-0"
-          title={t("colorPickerTitle")}
-        />
-        <input
-          type="text"
-          value={(styleConfig[key] as string) || placeholder}
-          onChange={(e) => onStyleChange({ [key]: e.target.value })}
-          className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          placeholder={placeholder}
-        />
+      <div className="space-y-2">
+        <div className="flex gap-2 items-center">
+          <div className="relative">
+            <input
+              type="color"
+              value={(() => {
+                const color = (styleConfig[key] as string) || placeholder;
+                // Extraer solo el color sin transparencia para el color picker
+                if (color.startsWith("rgba")) {
+                  const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+                  if (match) {
+                    const [, r, g, b] = match;
+                    return `#${parseInt(r)
+                      .toString(16)
+                      .padStart(2, "0")}${parseInt(g)
+                      .toString(16)
+                      .padStart(2, "0")}${parseInt(b)
+                      .toString(16)
+                      .padStart(2, "0")}`;
+                  }
+                }
+                return color.startsWith("#") && color.length > 7
+                  ? color.slice(0, 7)
+                  : color;
+              })()}
+              onChange={(e) => {
+                const currentColor =
+                  (styleConfig[key] as string) || placeholder;
+                // Preservar transparencia si existe
+                if (currentColor.includes("rgba")) {
+                  const alphaMatch = currentColor.match(/,\s*([\d.]+)\)/);
+                  if (alphaMatch) {
+                    const hex = e.target.value;
+                    const r = parseInt(hex.slice(1, 3), 16);
+                    const g = parseInt(hex.slice(3, 5), 16);
+                    const b = parseInt(hex.slice(5, 7), 16);
+                    onStyleChange({
+                      [key]: `rgba(${r}, ${g}, ${b}, ${alphaMatch[1]})`,
+                    });
+                    return;
+                  }
+                }
+                onStyleChange({ [key]: e.target.value });
+              }}
+              className="w-12 h-12 min-w-[48px] border border-gray-300 rounded-md cursor-pointer flex-shrink-0"
+              title={t("colorPickerTitle")}
+            />
+          </div>
+          <input
+            type="text"
+            value={(styleConfig[key] as string) || placeholder}
+            onChange={(e) => onStyleChange({ [key]: e.target.value })}
+            className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder={placeholder}
+          />
+        </div>
+        {/* Slider de opacidad */}
+        <div className="flex items-center gap-2">
+          <label className="text-xs text-gray-600 w-16">
+            {getLabel("opacity")}:
+          </label>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={(() => {
+              const color = (styleConfig[key] as string) || placeholder;
+              if (color.includes("rgba")) {
+                const alphaMatch = color.match(/,\s*([\d.]+)\)/);
+                if (alphaMatch) {
+                  return Math.round(parseFloat(alphaMatch[1]) * 100);
+                }
+              }
+              return 100;
+            })()}
+            onChange={(e) => {
+              const alpha = parseInt(e.target.value) / 100;
+              const currentColor = (styleConfig[key] as string) || placeholder;
+
+              // Convertir hex a rgba
+              if (currentColor.startsWith("#")) {
+                const hex = currentColor.slice(0, 7);
+                const r = parseInt(hex.slice(1, 3), 16);
+                const g = parseInt(hex.slice(3, 5), 16);
+                const b = parseInt(hex.slice(5, 7), 16);
+                onStyleChange({ [key]: `rgba(${r}, ${g}, ${b}, ${alpha})` });
+              } else if (currentColor.includes("rgba")) {
+                // Actualizar alpha en rgba existente
+                const newColor = currentColor.replace(
+                  /,\s*[\d.]+\)/,
+                  `, ${alpha})`
+                );
+                onStyleChange({ [key]: newColor });
+              } else if (currentColor.includes("rgb")) {
+                // Convertir rgb a rgba
+                const match = currentColor.match(
+                  /rgb\((\d+),\s*(\d+),\s*(\d+)\)/
+                );
+                if (match) {
+                  const [, r, g, b] = match;
+                  onStyleChange({ [key]: `rgba(${r}, ${g}, ${b}, ${alpha})` });
+                }
+              }
+            }}
+            className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+          />
+          <span className="text-xs text-gray-600 w-10 text-right">
+            {(() => {
+              const color = (styleConfig[key] as string) || placeholder;
+              if (color.includes("rgba")) {
+                const alphaMatch = color.match(/,\s*([\d.]+)\)/);
+                if (alphaMatch) {
+                  return Math.round(parseFloat(alphaMatch[1]) * 100) + "%";
+                }
+              }
+              return "100%";
+            })()}
+          </span>
+        </div>
       </div>
       {inheritedStyles?.[key] && (
         <p className={INHERITED_TEXT_CLASS}>
@@ -446,6 +568,24 @@ export function StyleConfigurator({
           </div>
         )}
 
+        {enabledFields.lineHeight && (
+          <div>
+            <label className={LABEL_CLASS}>{getLabel("lineHeight")}</label>
+            <input
+              type="text"
+              value={styleConfig.line_height || ""}
+              onChange={(e) => onStyleChange({ line_height: e.target.value })}
+              className={INPUT_BASE_CLASS}
+              placeholder="1.5, 24px, 150%"
+            />
+            {inheritedStyles?.line_height && (
+              <p className={INHERITED_TEXT_CLASS}>
+                {t("inherited")}: {inheritedStyles.line_height}
+              </p>
+            )}
+          </div>
+        )}
+
         {enabledFields.fontStyle &&
           renderSelectField(
             "font_style",
@@ -571,6 +711,22 @@ export function StyleConfigurator({
             "vertical"
           )}
 
+        {/* Distribución de campos (justify-content) */}
+        {enabledFields.justifyContent &&
+          renderSelectField(
+            "justify_content",
+            t("justifyContent"),
+            [
+              { value: "start", label: t("justifyOptions.start") },
+              { value: "end", label: t("justifyOptions.end") },
+              { value: "center", label: t("justifyOptions.center") },
+              { value: "between", label: t("justifyOptions.between") },
+              { value: "around", label: t("justifyOptions.around") },
+              { value: "evenly", label: t("justifyOptions.evenly") },
+            ],
+            "start"
+          )}
+
         {/* Estilo de lista */}
         {enabledFields.listStyleType &&
           renderSelectField(
@@ -610,7 +766,9 @@ export function StyleConfigurator({
           <div
             className="p-6 border rounded-lg"
             style={{
-              fontFamily: styleConfig.font || "Arial",
+              fontFamily: styleConfig.font
+                ? FONT_CSS_VARS[styleConfig.font] || styleConfig.font
+                : "Arial",
               color: styleConfig.primary_color || "#000000",
               backgroundColor: styleConfig.background_color || "#ffffff",
               backgroundImage: styleConfig.background_image
@@ -641,13 +799,23 @@ export function StyleConfigurator({
           >
             <h4
               className="text-xl font-bold mb-2"
-              style={{ color: styleConfig.primary_color }}
+              style={{
+                color: styleConfig.primary_color,
+                fontFamily: styleConfig.font
+                  ? FONT_CSS_VARS[styleConfig.font] || styleConfig.font
+                  : "Arial",
+              }}
             >
               {t("previewMainTitle")}
             </h4>
             <h5
               className="text-lg font-semibold mb-2"
-              style={{ color: styleConfig.secondary_color }}
+              style={{
+                color: styleConfig.secondary_color,
+                fontFamily: styleConfig.font
+                  ? FONT_CSS_VARS[styleConfig.font] || styleConfig.font
+                  : "Arial",
+              }}
             >
               {t("previewSubtitle")}
             </h5>

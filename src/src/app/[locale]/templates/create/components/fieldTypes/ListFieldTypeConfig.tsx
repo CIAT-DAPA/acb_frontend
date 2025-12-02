@@ -24,6 +24,7 @@ interface ItemFieldInputProps {
   fieldDef: any;
   value: any;
   onChange: (value: any) => void;
+  onFieldDefChange?: (updatedFieldDef: any) => void; // Nueva prop para actualizar el fieldDef
 }
 
 const ItemFieldInput: React.FC<ItemFieldInputProps> = ({
@@ -31,52 +32,178 @@ const ItemFieldInput: React.FC<ItemFieldInputProps> = ({
   fieldDef,
   value,
   onChange,
+  onFieldDefChange,
 }) => {
   const t = useTranslations("CreateTemplate.fieldEditor.listConfig");
   const [showImageSelector, setShowImageSelector] = useState(false);
+  const [showIconSelector, setShowIconSelector] = useState(false);
 
   // Para campos de tipo image, usar el VisualResourceSelector
   if (fieldDef.type === "image") {
+    // Verificar si el field_config tiene show_label configurado
+    const showLabel = fieldDef.field_config?.show_label ?? true;
+
+    // El valor puede ser un string (solo URL) o un objeto {url, label}
+    const imageValue =
+      typeof value === "string" ? { url: value, label: "" } : value || {};
+    const imageUrl = imageValue.url || "";
+    const imageLabel = imageValue.label || "";
+
+    const handleImageChange = (url: string) => {
+      if (showLabel) {
+        onChange({ url, label: imageLabel });
+      } else {
+        onChange(url); // Solo guardar la URL si no se muestra el label
+      }
+      setShowImageSelector(false);
+    };
+
+    const handleLabelChange = (label: string) => {
+      onChange({ url: imageUrl, label });
+    };
+
     return (
       <>
-        <div className="flex items-center space-x-2">
-          {value ? (
-            <div className="flex items-center space-x-2 flex-1">
-              <div className="relative w-20 h-20 border border-gray-300 rounded-md overflow-hidden bg-gray-50">
-                <img
-                  src={value}
-                  alt={fieldDef.label || fieldId}
-                  className="w-full h-full object-cover"
-                />
+        <div className="space-y-3">
+          {/* Selector de imagen */}
+          <div className="flex items-center space-x-2">
+            {imageUrl ? (
+              <div className="flex items-center space-x-2 flex-1">
+                <div className="relative w-20 h-20 border border-gray-300 rounded-md overflow-hidden bg-gray-50">
+                  <img
+                    src={imageUrl}
+                    alt={fieldDef.label || fieldId}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowImageSelector(true)}
+                  className={`${btnOutlineSecondary} whitespace-nowrap`}
+                >
+                  {t("changeImage")}
+                </button>
               </div>
+            ) : (
               <button
                 type="button"
                 onClick={() => setShowImageSelector(true)}
-                className={`${btnOutlineSecondary} whitespace-nowrap`}
+                className={`${btnOutlineSecondary} w-full`}
               >
-                {t("changeImage")}
+                {t("selectImage")}
               </button>
+            )}
+          </div>
+
+          {/* Input para el label de la imagen - solo si show_label está habilitado */}
+          {imageUrl && showLabel && (
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                {t("imageLabel")}
+              </label>
+              <input
+                type="text"
+                value={imageLabel}
+                onChange={(e) => handleLabelChange(e.target.value)}
+                className={inputClass}
+                placeholder={t("imageLabelPlaceholder")}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {t("imageLabelHelp")}
+              </p>
             </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setShowImageSelector(true)}
-              className={`${btnOutlineSecondary} w-full`}
-            >
-              {t("selectImage")}
-            </button>
           )}
         </div>
+
         <VisualResourceSelector
           isOpen={showImageSelector}
           onClose={() => setShowImageSelector(false)}
-          onSelect={(url) => {
-            onChange(url);
-            setShowImageSelector(false);
-          }}
+          onSelect={handleImageChange}
           title={`${t("selectTitle")} ${fieldDef.label || fieldId}`}
           resourceType="image"
-          selectedUrl={value}
+          selectedUrl={imageUrl}
+        />
+      </>
+    );
+  }
+
+  // Para campos de tipo text_with_icon, permitir seleccionar icono y escribir texto
+  if (fieldDef.type === "text_with_icon") {
+    // El valor puede ser un string (solo texto) o un objeto {text, icon}
+    const itemValue =
+      typeof value === "string" ? { text: value, icon: "" } : value || {};
+    const textValue = itemValue.text || "";
+    const selectedIcon = itemValue.icon || "";
+
+    const handleIconChange = (url: string) => {
+      onChange({ text: textValue, icon: url });
+      setShowIconSelector(false);
+    };
+
+    const handleTextChange = (text: string) => {
+      onChange({ text, icon: selectedIcon });
+    };
+
+    return (
+      <>
+        <div className="space-y-3">
+          {/* Input para el texto */}
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              {fieldDef.label || fieldId}
+            </label>
+            <input
+              type="text"
+              value={textValue}
+              onChange={(e) => handleTextChange(e.target.value)}
+              className={inputClass}
+              placeholder={`${t("enterValue")} ${fieldDef.label || fieldId}`}
+            />
+          </div>
+
+          {/* Selector de icono */}
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              {t("iconLabel")}
+            </label>
+            <div className="flex items-center space-x-2">
+              {selectedIcon ? (
+                <div className="flex items-center space-x-2 flex-1">
+                  <div className="relative w-12 h-12 border border-gray-300 rounded-md overflow-hidden bg-gray-50 flex items-center justify-center">
+                    <img
+                      src={selectedIcon}
+                      alt="Selected icon"
+                      className="w-8 h-8 object-contain"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowIconSelector(true)}
+                    className={`${btnOutlineSecondary} whitespace-nowrap`}
+                  >
+                    {t("changeIcon")}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowIconSelector(true)}
+                  className={`${btnOutlineSecondary} w-full`}
+                >
+                  {t("selectIcon")}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <VisualResourceSelector
+          isOpen={showIconSelector}
+          onClose={() => setShowIconSelector(false)}
+          onSelect={handleIconChange}
+          title={t("selectIconTitle")}
+          resourceType="icon"
+          selectedUrl={selectedIcon}
         />
       </>
     );
@@ -466,6 +593,17 @@ export const ListFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                                 };
                                 updateField({
                                   value: newItems,
+                                });
+                              }}
+                              onFieldDefChange={(updatedFieldDef) => {
+                                // Actualizar el fieldDef en el schema
+                                const currentSchema =
+                                  fieldConfig?.item_schema || {};
+                                updateFieldConfig({
+                                  item_schema: {
+                                    ...currentSchema,
+                                    [fieldId]: updatedFieldDef,
+                                  },
                                 });
                               }}
                             />

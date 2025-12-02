@@ -288,6 +288,14 @@
     "climateField": {
       "noParameters": "No climate parameters configured"
     },
+    "moonCalendar": {
+      "monthYear": "Month and Year",
+      "moonPhasesTitle": "Moon Phases",
+      "fullMoon": "Full Moon",
+      "newMoon": "New Moon",
+      "waxingCrescent": "Waxing Crescent",
+      "waningCrescent": "Waning Crescent"
+    },
     "navigation": {
       "next": "Next",
       "previous": "Previous",
@@ -519,6 +527,15 @@
         "previewText": "This is sample text that shows how the applied styles will look.",
         "previewSmallText": "Small text for additional details.",
         "fieldsLayout": "Fields Layout",
+        "justifyContent": "Field Distribution",
+        "justifyOptions": {
+          "start": "Start",
+          "end": "End",
+          "center": "Center",
+          "between": "Space Between",
+          "around": "Space Around",
+          "evenly": "Space Evenly"
+        },
         "alignOptions": {
           "left": "Left",
           "center": "Center",
@@ -637,11 +654,13 @@
         "inherited": "Inherited",
         "secondaryColor": "Secondary Color",
         "backgroundColor": "Background Color",
+        "opacity": "Opacity",
         "fontSize": "Font Size (px)",
         "iconSize": "Icon Size (px)",
         "iconUseOriginalColor": "Keep original icon color",
         "iconUseOriginalColorHelp": "If disabled, the icon will use the primary color from the context",
         "fontWeight": "Font Weight",
+        "lineHeight": "Line Height",
         "fontStyle": "Font Style",
         "textDecoration": "Text Decoration",
         "textAlign": "Text Alignment",
@@ -667,6 +686,15 @@
         "bulletinWidth": "Bulletin Width (px)",
         "bulletinHeight": "Bulletin Height (px)",
         "fieldsLayout": "Fields Layout",
+        "justifyContent": "Field Distribution",
+        "justifyOptions": {
+          "start": "Start",
+          "end": "End",
+          "center": "Center",
+          "between": "Space Between",
+          "around": "Space Around",
+          "evenly": "Space Evenly"
+        },
         "listStyleType": "List Style",
         "listItemsLayout": "List Items Layout",
         "layoutOptions": {
@@ -944,7 +972,8 @@
         "algorithm": "Algorithm",
         "page_number": "Page Number",
         "card": "Card",
-        "image": "Image"
+        "image": "Image",
+        "moon_calendar": "Moon Calendar"
       },
       "textConfig": {
         "subtype": "Text Type",
@@ -995,6 +1024,18 @@
       },
       "dateRangeConfig": {
         "format": "Date Format",
+        "showMoonPhases": "Show moon phases with dates",
+        "showMoonPhasesHelp": "Display moon phase icons next to each date",
+        "moonPhasesConfigTitle": "Moon Phase Configuration",
+        "moonPhasesConfigHelp": "Select the moon phase for each date (only when form is disabled)",
+        "startMoonPhase": "Start date moon phase",
+        "endMoonPhase": "End date moon phase",
+        "moonPhases": {
+          "full": "Full Moon",
+          "new": "New Moon",
+          "waxingCrescent": "Waxing Crescent",
+          "waningCrescent": "Waning Crescent"
+        },
         "startDateSection": "Start Date",
         "startDateLabel": "Label",
         "startDateLabelPlaceholder": "E.g: Start Date, From, etc.",
@@ -1043,7 +1084,14 @@
         "itemNumber": "Item",
         "deleteItem": "Delete item",
         "noItemsMessage": "No items. Click 'Add Item' to start.",
-        "defineSchemaFirst": "First define the elements schema above"
+        "defineSchemaFirst": "First define the elements schema above",
+        "imageLabel": "Image Label",
+        "imageLabelPlaceholder": "e.g., Figure 1: Description",
+        "imageLabelHelp": "Text that will appear below the image",
+        "iconLabel": "Icon",
+        "changeIcon": "Change icon",
+        "selectIcon": "Select icon",
+        "selectIconTitle": "Select Icon"
       },
       "imageConfig": {
         "predefinedImageLabel": "Predefined Image (Value)",
@@ -1053,6 +1101,11 @@
         "deleteValue": "Delete predefined value",
         "selectPredefinedImage": "Select predefined image",
         "selectPredefinedImageTitle": "Select Predefined Image",
+        "showLabel": "Show label below image",
+        "showLabelHelp": "If enabled, a label will be displayed below the image",
+        "labelText": "Label Text",
+        "labelPlaceholder": "e.g., Figure 1: Description",
+        "labelTextHelp": "Text that will appear below the image",
         "availableImagesLabel": "Available Images",
         "addImage": "Add Image",
         "availableImagesHelp": "Add the images that the user can select for this field",
@@ -1067,6 +1120,28 @@
         "previewNumber": "Preview {number}",
         "galleryPreviewHelp": "The user will be able to select one of these images",
         "selectImageTitle": "Select Image {number}"
+      },
+      "imageUploadConfig": {
+        "allowedFormatsLabel": "Allowed Image Formats",
+        "allowedFormatsHelp": "Select the image formats that users can upload",
+        "noFormatsSelectedWarning": "Warning: No formats selected. Users won't be able to upload images.",
+        "maxFileSizeLabel": "Maximum File Size",
+        "maxFileSizeHelp": "Maximum size allowed for uploaded images",
+        "previewDimensionsTitle": "Exact Dimensions in Bulletin",
+        "previewDimensionsHelp": "Define the exact dimensions the image will occupy in the bulletin preview",
+        "heightLabel": "Height",
+        "heightPlaceholder": "e.g. 300",
+        "widthLabel": "Width",
+        "widthPlaceholder": "e.g. 400",
+        "optional": "optional",
+        "dimensionUnit": "pixels (px)",
+        "summaryTitle": "Configuration Summary",
+        "summaryFormats": "Allowed formats",
+        "summaryMaxSize": "Max. file size",
+        "summaryMaxHeight": "Height in preview",
+        "summaryMaxWidth": "Width in preview",
+        "none": "None",
+        "notDefined": "Not defined"
       },
       "defaultConfig": {
         "title": "Configuration for type \"{type}\"",
@@ -1152,6 +1227,17 @@
         "noMoreCards": "No more cards available",
         "cardsCount": "{count} card{plural} available for selection"
       },
+      "moonCalendarConfig": {
+        "titleLabel": "Calendar Title",
+        "titlePlaceholder": "e.g., Moon Calendar - {month}",
+        "titleHelp": "Use {month} as a placeholder for the month name. Example: 'Moon Calendar - {month}' will become 'Moon Calendar - August'",
+        "titleIcon": "Title Icon",
+        "titleIconHelp": "Select an icon to display next to the calendar title",
+        "iconSelected": "Icon selected",
+        "changeIcon": "Change",
+        "selectIcon": "Select Icon",
+        "selectIconTitle": "Select Calendar Title Icon"
+      },
       "value": {
         "title": "Field Value",
         "label": "Value",
@@ -1176,11 +1262,13 @@
         "iconUseOriginalColor": "Keep original icon color",
         "iconUseOriginalColorHelp": "If disabled, the icon will use the primary color from the context",
         "fontWeight": "Font Weight",
+        "lineHeight": "Line Height",
         "fontStyle": "Font Style",
         "textDecoration": "Text Decoration",
         "textAlign": "Text Alignment",
         "secondaryColor": "Secondary Color",
         "backgroundColor": "Background Color",
+        "opacity": "Opacity",
         "borderColor": "Border Color",
         "borderWidth": "Border Width",
         "borderRadius": "Border Radius",
@@ -1203,6 +1291,15 @@
         "bulletinWidth": "Bulletin Width (px)",
         "bulletinHeight": "Bulletin Height (px)",
         "fieldsLayout": "Fields Layout",
+        "justifyContent": "Field Distribution",
+        "justifyOptions": {
+          "start": "Start",
+          "end": "End",
+          "center": "Center",
+          "between": "Space Between",
+          "around": "Space Around",
+          "evenly": "Space Evenly"
+        },
         "listStyleType": "List Style",
         "listItemsLayout": "List Items Layout",
         "layoutOptions": {
@@ -1271,6 +1368,7 @@
       "emptyBlock": "Empty block",
       "invalidDate": "Invalid date",
       "noImage": "No image",
+      "imageUploadPlaceholder": "Image to upload",
       "noCardsAvailable": "No cards available",
       "selectCard": "Select a card",
       "loadingCard": "Loading card...",

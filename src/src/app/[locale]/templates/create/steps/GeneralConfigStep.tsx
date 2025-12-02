@@ -256,6 +256,8 @@ export function GeneralConfigStep({
             backgroundColor: true,
             backgroundImage: true,
             fontSize: true,
+            fontWeight: true,
+            lineHeight: true,
             textAlign: true,
             // Deshabilitamos bulletinWidth y bulletinHeight aquí
             bulletinWidth: false,

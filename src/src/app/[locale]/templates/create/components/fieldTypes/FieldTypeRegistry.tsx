@@ -14,7 +14,9 @@ import { SelectWithIconsFieldTypeConfig } from "./SelectWithIconsFieldTypeConfig
 import { SelectBackgroundFieldTypeConfig } from "./SelectBackgroundFieldTypeConfig";
 import { ClimateDataFieldTypeConfig } from "./ClimateDataFieldTypeConfig";
 import { ImageFieldTypeConfig } from "./ImageFieldTypeConfig";
+import { ImageUploadFieldTypeConfig } from "./ImageUploadFieldTypeConfig";
 import { CardFieldTypeConfig } from "./CardFieldTypeConfig";
+import { MoonCalendarFieldTypeConfig } from "./MoonCalendarFieldTypeConfig";
 import { DefaultFieldTypeConfig } from "./DefaultFieldTypeConfig";
 
 // Registro de componentes por tipo de campo
@@ -31,7 +33,9 @@ const FIELD_TYPE_COMPONENTS: Record<string, FieldTypeComponent> = {
   select_background: SelectBackgroundFieldTypeConfig,
   climate_data_puntual: ClimateDataFieldTypeConfig,
   image: ImageFieldTypeConfig,
+  image_upload: ImageUploadFieldTypeConfig,
   card: CardFieldTypeConfig,
+  moon_calendar: MoonCalendarFieldTypeConfig,
 };
 
 // Factory para obtener el componente correcto según el tipo

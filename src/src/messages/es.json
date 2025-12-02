@@ -288,6 +288,14 @@
     "climateField": {
       "noParameters": "No hay parámetros climáticos configurados"
     },
+    "moonCalendar": {
+      "monthYear": "Mes y Año",
+      "moonPhasesTitle": "Fases Lunares",
+      "fullMoon": "Luna Llena",
+      "newMoon": "Luna Nueva",
+      "waxingCrescent": "Cuarto Creciente",
+      "waningCrescent": "Cuarto Menguante"
+    },
     "navigation": {
       "next": "Siguiente",
       "previous": "Anterior",
@@ -519,6 +527,15 @@
         "previewText": "Este es un texto de ejemplo que muestra cómo se verán los estilos aplicados.",
         "previewSmallText": "Texto pequeño para detalles adicionales.",
         "fieldsLayout": "Organización de Campos",
+        "justifyContent": "Distribución de Campos",
+        "justifyOptions": {
+          "start": "Inicio",
+          "end": "Fin",
+          "center": "Centro",
+          "between": "Espaciado Entre",
+          "around": "Espaciado Alrededor",
+          "evenly": "Espaciado Uniforme"
+        },
         "alignOptions": {
           "left": "Izquierda",
           "center": "Centro",
@@ -637,11 +654,13 @@
         "inherited": "Heredado",
         "secondaryColor": "Color Secundario",
         "backgroundColor": "Color de Fondo",
+        "opacity": "Opacidad",
         "fontSize": "Tamaño de Fuente (px)",
         "iconSize": "Tamaño de Iconos (px)",
         "iconUseOriginalColor": "Mantener color original del icono",
         "iconUseOriginalColorHelp": "Si está desactivado, el icono usará el color primario del contexto",
         "fontWeight": "Grosor del Texto",
+        "lineHeight": "Altura de Línea",
         "fontStyle": "Estilo del Texto",
         "textDecoration": "Decoración del Texto",
         "textAlign": "Alineación del Texto",
@@ -667,6 +686,15 @@
         "bulletinWidth": "Ancho del Boletín (px)",
         "bulletinHeight": "Alto del Boletín (px)",
         "fieldsLayout": "Organización de Campos",
+        "justifyContent": "Distribución de Campos",
+        "justifyOptions": {
+          "start": "Inicio",
+          "end": "Fin",
+          "center": "Centro",
+          "between": "Espaciado Entre",
+          "around": "Espaciado Alrededor",
+          "evenly": "Espaciado Uniforme"
+        },
         "listStyleType": "Estilo de Lista",
         "listItemsLayout": "Layout de Items de Lista",
         "layoutOptions": {
@@ -944,7 +972,8 @@
         "algorithm": "Algoritmo",
         "page_number": "Número de Página",
         "card": "Tarjeta",
-        "image": "Imagen"
+        "image": "Imagen",
+        "moon_calendar": "Calendario Lunar"
       },
       "textConfig": {
         "subtype": "Tipo de Texto",
@@ -995,6 +1024,18 @@
       },
       "dateRangeConfig": {
         "format": "Formato de Fecha",
+        "showMoonPhases": "Mostrar fases de luna con fechas",
+        "showMoonPhasesHelp": "Muestra íconos de fase lunar junto a cada fecha",
+        "moonPhasesConfigTitle": "Configuración de Fases Lunares",
+        "moonPhasesConfigHelp": "Selecciona la fase lunar para cada fecha (solo cuando form está desactivado)",
+        "startMoonPhase": "Fase lunar fecha inicio",
+        "endMoonPhase": "Fase lunar fecha fin",
+        "moonPhases": {
+          "full": "Luna Llena",
+          "new": "Luna Nueva",
+          "waxingCrescent": "Cuarto Creciente",
+          "waningCrescent": "Cuarto Menguante"
+        },
         "startDateSection": "Fecha de Inicio",
         "startDateLabel": "Etiqueta",
         "startDateLabelPlaceholder": "Ej: Fecha Inicial, Desde, etc.",
@@ -1043,7 +1084,14 @@
         "itemNumber": "Item",
         "deleteItem": "Eliminar item",
         "noItemsMessage": "No hay items. Haz clic en 'Agregar Item' para comenzar.",
-        "defineSchemaFirst": "Primero define el esquema de elementos arriba"
+        "defineSchemaFirst": "Primero define el esquema de elementos arriba",
+        "imageLabel": "Label de la Imagen",
+        "imageLabelPlaceholder": "ej. Figura 1: Descripción",
+        "imageLabelHelp": "Texto que aparecerá debajo de la imagen",
+        "iconLabel": "Icono",
+        "changeIcon": "Cambiar icono",
+        "selectIcon": "Seleccionar icono",
+        "selectIconTitle": "Seleccionar Icono"
       },
       "imageConfig": {
         "predefinedImageLabel": "Imagen Predefinida (Value)",
@@ -1053,6 +1101,11 @@
         "deleteValue": "Eliminar valor predefinido",
         "selectPredefinedImage": "Seleccionar imagen predefinida",
         "selectPredefinedImageTitle": "Seleccionar Imagen Predefinida",
+        "showLabel": "Mostrar label debajo de la imagen",
+        "showLabelHelp": "Si está habilitado, se mostrará un label debajo de la imagen",
+        "labelText": "Texto del Label",
+        "labelPlaceholder": "ej. Figura 1: Descripción",
+        "labelTextHelp": "Texto que aparecerá debajo de la imagen",
         "availableImagesLabel": "Imágenes Disponibles",
         "addImage": "Agregar Imagen",
         "availableImagesHelp": "Agrega las imágenes que el usuario podrá seleccionar para este campo",
@@ -1067,6 +1120,28 @@
         "previewNumber": "Preview {number}",
         "galleryPreviewHelp": "El usuario podrá seleccionar una de estas imágenes",
         "selectImageTitle": "Seleccionar Imagen {number}"
+      },
+      "imageUploadConfig": {
+        "allowedFormatsLabel": "Formatos de Imagen Permitidos",
+        "allowedFormatsHelp": "Selecciona los formatos de imagen que los usuarios pueden subir",
+        "noFormatsSelectedWarning": "Advertencia: No hay formatos seleccionados. Los usuarios no podrán subir imágenes.",
+        "maxFileSizeLabel": "Tamaño Máximo de Archivo",
+        "maxFileSizeHelp": "Tamaño máximo permitido para las imágenes subidas",
+        "previewDimensionsTitle": "Dimensiones Exactas en el Boletín",
+        "previewDimensionsHelp": "Define las dimensiones exactas que ocupará la imagen en el preview del boletín",
+        "heightLabel": "Altura",
+        "heightPlaceholder": "ej. 300",
+        "widthLabel": "Ancho",
+        "widthPlaceholder": "ej. 400",
+        "optional": "opcional",
+        "dimensionUnit": "píxeles (px)",
+        "summaryTitle": "Resumen de Configuración",
+        "summaryFormats": "Formatos permitidos",
+        "summaryMaxSize": "Tamaño máx. archivo",
+        "summaryMaxHeight": "Altura en preview",
+        "summaryMaxWidth": "Ancho en preview",
+        "none": "Ninguno",
+        "notDefined": "No definido"
       },
       "defaultConfig": {
         "title": "Configuración de tipo \"{type}\"",
@@ -1152,6 +1227,17 @@
         "noMoreCards": "No hay más cards disponibles",
         "cardsCount": "{count} card{plural} disponible{plural} para selección"
       },
+      "moonCalendarConfig": {
+        "titleLabel": "Título del Calendario",
+        "titlePlaceholder": "ej. Calendario lunar - {month}",
+        "titleHelp": "Usa {month} como marcador de posición para el nombre del mes. Ejemplo: 'Calendario lunar - {month}' se convertirá en 'Calendario lunar - agosto'",
+        "titleIcon": "Icono del Título",
+        "titleIconHelp": "Selecciona un icono para mostrar junto al título del calendario",
+        "iconSelected": "Icono seleccionado",
+        "changeIcon": "Cambiar",
+        "selectIcon": "Seleccionar Icono",
+        "selectIconTitle": "Seleccionar Icono del Título del Calendario"
+      },
       "value": {
         "title": "Valor del Campo",
         "label": "Valor",
@@ -1176,11 +1262,13 @@
         "iconUseOriginalColor": "Mantener color original del icono",
         "iconUseOriginalColorHelp": "Si está desactivado, el icono usará el color primario del contexto",
         "fontWeight": "Grosor del Texto",
+        "lineHeight": "Altura de Línea",
         "fontStyle": "Estilo del Texto",
         "textDecoration": "Decoración del Texto",
         "textAlign": "Alineación del Texto",
         "secondaryColor": "Color Secundario",
         "backgroundColor": "Color de Fondo",
+        "opacity": "Opacidad",
         "borderColor": "Color del Borde",
         "borderWidth": "Grosor del Borde",
         "borderRadius": "Redondeado",
@@ -1203,6 +1291,15 @@
         "bulletinWidth": "Ancho del Boletín (px)",
         "bulletinHeight": "Alto del Boletín (px)",
         "fieldsLayout": "Organización de Campos",
+        "justifyContent": "Distribución de Campos",
+        "justifyOptions": {
+          "start": "Inicio",
+          "end": "Fin",
+          "center": "Centro",
+          "between": "Espaciado Entre",
+          "around": "Espaciado Alrededor",
+          "evenly": "Espaciado Uniforme"
+        },
         "listStyleType": "Estilo de Lista",
         "listItemsLayout": "Layout de Items de Lista",
         "layoutOptions": {
@@ -1271,6 +1368,7 @@
       "emptyBlock": "Bloque vacío",
       "invalidDate": "Fecha inválida",
       "noImage": "Sin imagen",
+      "imageUploadPlaceholder": "Imagen a subir",
       "noCardsAvailable": "No hay cards disponibles",
       "selectCard": "Seleccione una card",
       "loadingCard": "Cargando card...",
