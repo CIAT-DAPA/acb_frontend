@@ -186,6 +186,7 @@ export function HeaderFooterConfigurator({
             borderColor: true,
             borderWidth: true,
             borderRadius: true,
+            borderSides: true,
             padding: true,
             margin: true,
             gap: true,
@@ -204,6 +205,7 @@ export function HeaderFooterConfigurator({
           onStyleChange={updateStyle}
           enabledFields={{
             fieldsLayout: true,
+            justifyContent: true,
           }}
           title={t("layout.title")}
           description={t("layout.fieldsLayout.help")}

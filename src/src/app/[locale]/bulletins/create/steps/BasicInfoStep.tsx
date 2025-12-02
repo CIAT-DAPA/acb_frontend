@@ -12,6 +12,8 @@ import {
   DateInput,
   SelectInput,
   SearchableInput,
+  ImageUploadInput,
+  MoonCalendarInput,
 } from "../components/fields";
 
 interface BasicInfoStepProps {
@@ -141,6 +143,28 @@ export function BasicInfoStep({ bulletinData, onUpdate }: BasicInfoStepProps) {
           <TextWithIconInput
             field={field}
             value={fieldValue as string}
+            onChange={(value) => handleChange(index, value)}
+          />
+        );
+
+      case "image_upload":
+        return (
+          <ImageUploadInput
+            field={field}
+            value={fieldValue as string}
+            onChange={(value) => handleChange(index, value)}
+          />
+        );
+
+      case "moon_calendar":
+        const moonCalendarValue =
+          typeof fieldValue === "object" && fieldValue !== null
+            ? fieldValue
+            : {};
+        return (
+          <MoonCalendarInput
+            field={field}
+            value={moonCalendarValue as any}
             onChange={(value) => handleChange(index, value)}
           />
         );

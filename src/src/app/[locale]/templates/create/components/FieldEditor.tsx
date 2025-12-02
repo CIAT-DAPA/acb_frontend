@@ -147,6 +147,10 @@ export function FieldEditor({
           start_date_description: currentConfig?.start_date_description || "",
           end_date_label: currentConfig?.end_date_label || "End Date",
           end_date_description: currentConfig?.end_date_description || "",
+          // Preservar las configuraciones de fases de luna
+          show_moon_phases: currentConfig?.show_moon_phases,
+          start_moon_phase: currentConfig?.start_moon_phase,
+          end_moon_phase: currentConfig?.end_moon_phase,
         },
       } as Field;
     }
@@ -455,7 +459,9 @@ export function FieldEditor({
             updateStyleConfig(updates)
           }
           enabledFields={{
+            font: true,
             primaryColor: true,
+            backgroundColor: true,
             fontSize: true,
             iconSize:
               currentField.type === "text_with_icon" ||
@@ -464,6 +470,7 @@ export function FieldEditor({
               currentField.type === "text_with_icon" ||
               currentField.type === "select_with_icons",
             fontWeight: true,
+            lineHeight: true,
             fontStyle: true,
             textDecoration: true,
             textAlign: true,

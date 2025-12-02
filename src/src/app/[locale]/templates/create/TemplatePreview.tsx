@@ -15,6 +15,39 @@ import { SmartIcon } from "../../components/AdaptiveSvgIcon";
 import { Card } from "../../../../types/card";
 import { CardAPIService } from "../../../../services/cardService";
 
+// Mapeo de fuentes a variables CSS de Next.js
+const FONT_CSS_VARS: Record<string, string> = {
+  Poppins: "var(--font-poppins)",
+  Roboto: "var(--font-roboto)",
+  "Open Sans": "var(--font-open-sans)",
+  Lato: "var(--font-lato)",
+  Montserrat: "var(--font-montserrat)",
+  "Archivo Narrow": "var(--font-archivo-narrow)",
+  Arial: "Arial, sans-serif",
+  Helvetica: "Helvetica, sans-serif",
+  "Times New Roman": "'Times New Roman', serif",
+  Georgia: "Georgia, serif",
+};
+
+// Helper para obtener el fontFamily correcto
+function getFontFamily(font?: string): string {
+  if (!font) return "Arial";
+  return FONT_CSS_VARS[font] || font;
+}
+
+// Helper para obtener la clase Tailwind de justify-content
+function getJustifyClass(justifyContent?: string): string {
+  const justifyMap: Record<string, string> = {
+    start: "justify-start",
+    end: "justify-end",
+    center: "justify-center",
+    between: "justify-between",
+    around: "justify-around",
+    evenly: "justify-evenly",
+  };
+  return justifyMap[justifyContent || "start"] || "justify-start";
+}
+
 /**
  * Helper function para generar estilos de borde según los lados seleccionados
  */
@@ -161,9 +194,10 @@ export function TemplatePreview({
 
   // Estilos globales aplicados
   const globalStyles = {
-    fontFamily: styleConfig?.font || "Arial",
+    fontFamily: getFontFamily(styleConfig?.font),
     color: styleConfig?.primary_color || "#000000",
     fontSize: `${styleConfig?.font_size || 16}px`,
+    lineHeight: styleConfig?.line_height || "normal",
     backgroundColor: styleConfig?.background_color || "#ffffff",
     textAlign:
       (styleConfig?.text_align as "left" | "center" | "right") || "left",
@@ -218,10 +252,15 @@ export function TemplatePreview({
     const day = dateObj.getDate().toString().padStart(2, "0");
     const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
     const year = dateObj.getFullYear();
+    const shortYear = year.toString().slice(-2);
 
     const dayName = dateObj.toLocaleDateString(localeCode, { weekday: "long" });
     const dayNameCapitalized =
       dayName.charAt(0).toUpperCase() + dayName.slice(1);
+
+    const monthName = dateObj.toLocaleDateString(localeCode, { month: "long" });
+    const monthNameCapitalized =
+      monthName.charAt(0).toUpperCase() + monthName.slice(1);
 
     switch (format) {
       case "DD/MM/YYYY":
@@ -232,6 +271,12 @@ export function TemplatePreview({
         return `${day}-${month}-${year}`;
       case "dddd, DD - MM":
         return `${dayNameCapitalized}, ${day} - ${month}`;
+      case "DD, MMMM YYYY":
+        return `${day}, ${monthNameCapitalized} ${year}`;
+      case "DD de MMMM":
+        return `${day} de ${monthNameCapitalized}`;
+      case "MMMM/YY":
+        return `${monthNameCapitalized}/${shortYear}`;
       case "YYYY-MM-DD":
       default:
         return `${year}-${month}-${day}`;
@@ -278,11 +323,16 @@ export function TemplatePreview({
         ? `${effectiveStyles.font_size}px`
         : globalStyles.fontSize,
       fontWeight: effectiveStyles.font_weight || "400",
+      lineHeight:
+        effectiveStyles.line_height || globalStyles.lineHeight || "normal",
       fontStyle: effectiveStyles.font_style || "normal",
       textDecoration: effectiveStyles.text_decoration || "none",
       textAlign:
         (effectiveStyles.text_align as "left" | "center" | "right") ||
         globalStyles.textAlign,
+      fontFamily: effectiveStyles.font
+        ? getFontFamily(effectiveStyles.font)
+        : globalStyles.fontFamily,
       backgroundColor: effectiveStyles.background_color || "transparent",
       backgroundImage: effectiveStyles.background_image
         ? `url("${getBackgroundImageUrl(effectiveStyles.background_image)}")`
@@ -310,17 +360,26 @@ export function TemplatePreview({
         );
 
       case "text_with_icon":
-        // Verificar si el valor existe y no está vacío
-        const hasValue =
-          field.value !== null &&
-          field.value !== undefined &&
-          field.value !== "";
-        const textWithIconValue = hasValue
-          ? renderFieldValue(field.value)
-          : field.label || "Texto con icono";
+        // El valor puede ser un string o un objeto {text, icon}
+        let textWithIconValue = "";
+        let iconFromValue = null;
 
-        // Obtener el icono seleccionado o el primer icono disponible como fallback
+        if (field.value) {
+          if (typeof field.value === "object" && "text" in field.value) {
+            // Es un objeto {text, icon} - usado en listas
+            textWithIconValue = (field.value as any).text || "";
+            iconFromValue = (field.value as any).icon || null;
+          } else {
+            // Es un string simple
+            textWithIconValue = renderFieldValue(field.value);
+          }
+        } else {
+          textWithIconValue = field.label || "Texto con icono";
+        }
+
+        // Obtener el icono: primero del valor (en listas), luego del field_config, o fallback
         const selectedIcon =
+          iconFromValue ||
           (field.field_config as any)?.selected_icon ||
           (field.field_config?.icon_options &&
           field.field_config.icon_options.length > 0
@@ -346,7 +405,7 @@ export function TemplatePreview({
             style={fieldStyles}
             className="flex items-center gap-2"
           >
-            {/* Icono - siempre se muestra (configurado desde el template) */}
+            {/* Icono - siempre se muestra (configurado desde el template o del valor) */}
             {selectedIcon ? (
               selectedIcon.startsWith("http") ||
               selectedIcon.startsWith("/") ? (
@@ -483,6 +542,28 @@ export function TemplatePreview({
       case "date_range":
         const dateRangeFormat =
           (field.field_config as any)?.date_format || "DD/MM/YYYY";
+        const showMoonPhases =
+          (field.field_config as any)?.show_moon_phases || false;
+
+        // Obtener las fases de luna configuradas o desde el valor
+        let startMoonPhase = (field.field_config as any)?.start_moon_phase;
+        let endMoonPhase = (field.field_config as any)?.end_moon_phase;
+
+        // Si form es true y hay valor con moon_phases, usar esos valores
+        if (field.form && field.value && typeof field.value === "object") {
+          if ("start_moon_phase" in field.value) {
+            startMoonPhase = (field.value as any).start_moon_phase;
+          }
+          if ("end_moon_phase" in field.value) {
+            endMoonPhase = (field.value as any).end_moon_phase;
+          }
+        }
+
+        // Helper para obtener la ruta de la imagen de la luna
+        const getMoonImagePath = (phase?: string) => {
+          if (!phase) return "/assets/img/moons/llena.png";
+          return `/assets/img/moons/${phase}.png`;
+        };
 
         // Si el formato es DD-DD, MMMM YYYY, combinar en un solo formato
         const isRangeFormat = dateRangeFormat === "DD-DD, MMMM YYYY";
@@ -549,6 +630,51 @@ export function TemplatePreview({
           }
         }
 
+        // Si se muestran las fases de luna, usar layout con imágenes
+        if (showMoonPhases) {
+          return (
+            <div
+              key={key}
+              style={fieldStyles}
+              className="flex items-center justify-between gap-4"
+            >
+              {/* Fecha de inicio con luna debajo */}
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-center">{startDateDisplay}</span>
+                <img
+                  src={getMoonImagePath(startMoonPhase)}
+                  alt="Moon phase"
+                  className="w-8 h-8 object-contain"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src =
+                      "/assets/img/moons/llena.png";
+                  }}
+                />
+              </div>
+
+              {/* Separador "Y" */}
+              <div className="flex-shrink-0 w-8 h-8 rounded-sm bg-[#525556] text-white flex items-center justify-center font-bold text-sm">
+                Y
+              </div>
+
+              {/* Fecha de fin con luna debajo */}
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-center">{endDateDisplay}</span>
+                <img
+                  src={getMoonImagePath(endMoonPhase)}
+                  alt="Moon phase"
+                  className="w-8 h-8 object-contain"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src =
+                      "/assets/img/moons/llena.png";
+                  }}
+                />
+              </div>
+            </div>
+          );
+        }
+
+        // Sin lunas: formato tradicional
         return (
           <div key={key} style={fieldStyles}>
             {`${startDateDisplay} - ${endDateDisplay}`}
@@ -588,14 +714,14 @@ export function TemplatePreview({
         const getItemLayoutClasses = () => {
           switch (listItemsLayout) {
             case "horizontal":
-              return "flex flex-wrap gap-4 items-center justify-between";
+              return "flex flex-wrap items-center justify-between";
             case "grid-2":
-              return "grid gap-1 w-full";
+              return "grid w-full";
             case "grid-3":
-              return "grid gap-1 w-full";
+              return "grid w-full";
             case "vertical":
             default:
-              return "space-y-1";
+              return "";
           }
         };
 
@@ -630,12 +756,15 @@ export function TemplatePreview({
             ? `${effectiveStyles.font_size}px`
             : undefined,
           fontWeight: effectiveStyles.font_weight || undefined,
+          lineHeight: effectiveStyles.line_height || undefined,
           fontStyle: effectiveStyles.font_style || undefined,
           textDecoration: effectiveStyles.text_decoration || undefined,
           textAlign:
             (effectiveStyles.text_align as "left" | "center" | "right") ||
             undefined,
-          fontFamily: effectiveStyles.font || undefined,
+          fontFamily: effectiveStyles.font
+            ? getFontFamily(effectiveStyles.font)
+            : undefined,
         };
 
         // Obtener el array de items del valor del campo
@@ -644,25 +773,34 @@ export function TemplatePreview({
         // Si no hay items, mostrar un item de ejemplo basado en el schema
         const itemsToRender = listItems.length > 0 ? listItems : [{}];
 
-        // Para layout horizontal, el contenedor de items debe ser flex
-        const itemsContainerClass =
-          listItemsLayout === "horizontal"
-            ? "flex flex-wrap gap-4 items-start"
-            : "";
+        // Estilos para el contenedor de items con gap configurable
+        const itemsContainerStyle: React.CSSProperties = {
+          gap: effectiveStyles.gap || undefined,
+        };
 
         return (
           <div key={key}>
-            <div className={itemsContainerClass}>
+            <div
+              className={
+                listItemsLayout === "horizontal"
+                  ? "flex flex-wrap items-start"
+                  : "grid"
+              }
+              style={itemsContainerStyle}
+            >
               {/* Renderizar elementos basados en el valor del campo */}
               {itemsToRender.map((item: any, itemIndex: number) => (
                 <div
                   key={itemIndex}
                   className={
                     listItemsLayout === "horizontal"
-                      ? "flex items-start gap-2"
-                      : "flex items-start gap-2 w-full"
+                      ? "flex items-start"
+                      : "flex items-start w-full"
                   }
-                  style={listItemStyles}
+                  style={{
+                    ...listItemStyles,
+                    gap: "8px", // Gap fijo entre bullet y contenido
+                  }}
                 >
                   {showBullets && (
                     <span
@@ -681,16 +819,11 @@ export function TemplatePreview({
                     </span>
                   )}
                   <div
-                    className={
-                      listItemsLayout === "horizontal"
-                        ? "flex gap-2 items-center"
-                        : `flex-1 min-w-0 ${getItemLayoutClasses()}`
-                    }
-                    style={
-                      listItemsLayout === "horizontal"
-                        ? undefined
-                        : getGridColumnsStyle()
-                    }
+                    className={`flex-1 min-w-0 ${getItemLayoutClasses()}`}
+                    style={{
+                      ...getGridColumnsStyle(),
+                      gap: effectiveStyles.gap || undefined,
+                    }}
                   >
                     {field.field_config?.item_schema &&
                     Object.keys(field.field_config.item_schema).length > 0 ? (
@@ -828,7 +961,27 @@ export function TemplatePreview({
 
       case "image":
         // Mostrar la imagen si tiene valor (cuando form es false)
-        const imageUrl = field.value as string | undefined;
+        // El valor puede ser un string (URL directa) o un objeto {url, label}
+        const imageValue = field.value;
+        const imageUrl =
+          typeof imageValue === "string"
+            ? imageValue
+            : typeof imageValue === "object" &&
+              imageValue &&
+              "url" in imageValue
+            ? (imageValue as any).url
+            : undefined;
+        const itemImageLabel =
+          typeof imageValue === "object" && imageValue && "label" in imageValue
+            ? (imageValue as any).label
+            : undefined;
+
+        const imageConfig = field.field_config as any;
+        const showImageLabel = imageConfig?.show_label ?? false;
+        const configImageLabel = imageConfig?.label_text || "";
+
+        // El label puede venir del config o del item (en listas)
+        const finalImageLabel = itemImageLabel || configImageLabel;
 
         if (!imageUrl) {
           return (
@@ -846,12 +999,99 @@ export function TemplatePreview({
           <div
             key={key}
             style={fieldStyles}
-            className="flex items-center justify-center overflow-hidden"
+            className="flex flex-col items-center"
           >
             <img
               src={imageUrl}
               alt={field.display_name || "Imagen"}
-              className="max-w-full max-h-full object-contain"
+              className="max-w-full max-h-full object-contain block"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src =
+                  "/assets/img/imageNotFound.png";
+              }}
+              onLoad={(e) => {
+                const img = e.target as HTMLImageElement;
+                const label = img.nextElementSibling as HTMLElement;
+                if (label) {
+                  label.style.maxWidth = `${img.offsetWidth + 24}px`;
+                }
+              }}
+            />
+            {(showImageLabel || itemImageLabel) && finalImageLabel && (
+              <div
+                className="text-center mt-2"
+                style={{
+                  color: fieldStyles.color,
+                  fontSize: fieldStyles.fontSize,
+                  fontFamily: fieldStyles.fontFamily,
+                  wordBreak: "break-word",
+                  overflowWrap: "break-word",
+                }}
+              >
+                {finalImageLabel}
+              </div>
+            )}
+          </div>
+        );
+
+      case "image_upload":
+        // Mostrar placeholder con las dimensiones exactas configuradas
+        const uploadedImageUrl = field.value as string | undefined;
+        const imageHeight = (field.field_config as any)?.max_height;
+        const imageWidth = (field.field_config as any)?.max_width;
+
+        // Estilos del placeholder/imagen con dimensiones exactas
+        const imageUploadContainerStyle: React.CSSProperties = {
+          ...fieldStyles,
+          height: imageHeight ? `${imageHeight}px` : "200px", // Altura por defecto si no está definida
+          width: imageWidth ? `${imageWidth}px` : "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0, // Evitar que se reduzca
+        };
+
+        if (!uploadedImageUrl) {
+          // Mostrar placeholder indicando el espacio exacto que ocupará la imagen
+          return (
+            <div
+              key={key}
+              style={imageUploadContainerStyle}
+              className="border-2 border-dashed border-gray-300 rounded-lg bg-gray-50"
+            >
+              <div className="text-center p-4">
+                <div className="text-4xl mb-2">🖼️</div>
+                <span className={PLACEHOLDER_TEXT_CLASS}>
+                  {field.display_name ||
+                    t("imageUploadPlaceholder", { default: "Imagen a subir" })}
+                </span>
+                {(imageHeight || imageWidth) && (
+                  <div className="text-xs text-gray-400 mt-2">
+                    {imageHeight && `Altura: ${imageHeight}px`}
+                    {imageHeight && imageWidth && " × "}
+                    {imageWidth && `Ancho: ${imageWidth}px`}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        }
+
+        // Mostrar la imagen subida ocupando el espacio exacto y ajustándose con object-fit: cover
+        return (
+          <div
+            key={key}
+            style={imageUploadContainerStyle}
+            className="overflow-hidden rounded-lg"
+          >
+            <img
+              src={uploadedImageUrl}
+              alt={field.display_name || "Imagen subida"}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover", // La imagen cubre todo el espacio, recortando si es necesario
+              }}
               onError={(e) => {
                 (e.target as HTMLImageElement).src =
                   "/assets/img/imageNotFound.png";
@@ -979,6 +1219,7 @@ export function TemplatePreview({
                 padding: effectiveBlockStyles.padding || undefined,
                 backgroundColor:
                   effectiveBlockStyles.background_color || "transparent",
+                boxSizing: "border-box",
                 ...getBorderStyles(block.style_config),
                 ...(effectiveBlockStyles.background_image && {
                   backgroundImage: `url(${getBackgroundImageUrl(
@@ -1022,6 +1263,461 @@ export function TemplatePreview({
                 </div>
               );
             })}
+          </div>
+        );
+
+      case "moon_calendar":
+        const daysOfWeek = ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"];
+
+        // Obtener datos del valor del campo si está en modo form
+        const moonCalendarValue =
+          field.value && typeof field.value === "object"
+            ? (field.value as any)
+            : {};
+
+        // Usar el mes y año del date picker si están disponibles, sino usar fecha actual
+        const currentDate = new Date();
+        const monthNames = [
+          "enero",
+          "febrero",
+          "marzo",
+          "abril",
+          "mayo",
+          "junio",
+          "julio",
+          "agosto",
+          "septiembre",
+          "octubre",
+          "noviembre",
+          "diciembre",
+        ];
+        const defaultMonth = monthNames[currentDate.getMonth()];
+        const defaultYear = currentDate.getFullYear();
+
+        const selectedMonth = moonCalendarValue.month || defaultMonth;
+        const selectedYear = moonCalendarValue.year || defaultYear;
+
+        // Determinar días del mes según el mes seleccionado
+        const DAYS_IN_MONTH_MAP: { [key: string]: number } = {
+          enero: 31,
+          febrero: 28,
+          marzo: 31,
+          abril: 30,
+          mayo: 31,
+          junio: 30,
+          julio: 31,
+          agosto: 31,
+          septiembre: 30,
+          octubre: 31,
+          noviembre: 30,
+          diciembre: 31,
+        };
+
+        const isLeapYear = (year: number) => {
+          return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+        };
+
+        let daysInMonth = DAYS_IN_MONTH_MAP[selectedMonth] || 31;
+        if (selectedMonth === "febrero" && isLeapYear(selectedYear)) {
+          daysInMonth = 29;
+        }
+
+        // Obtener fechas de fases lunares del valor del campo
+        const fullMoonDate = moonCalendarValue.full_moon_date;
+        const newMoonDate = moonCalendarValue.new_moon_date;
+        const waxingCrescentDate = moonCalendarValue.waxing_crescent_date;
+        const waningCrescentDate = moonCalendarValue.waning_crescent_date;
+
+        // Extraer día del mes de una fecha string (YYYY-MM-DD)
+        const getDayFromDate = (
+          dateString: string | undefined
+        ): number | null => {
+          if (!dateString) return null;
+          const parts = dateString.split("-");
+          return parts.length === 3 ? parseInt(parts[2]) : null;
+        };
+
+        const fullMoonDay = getDayFromDate(fullMoonDate);
+        const newMoonDay = getDayFromDate(newMoonDate);
+        const waxingCrescentDay = getDayFromDate(waxingCrescentDate);
+        const waningCrescentDay = getDayFromDate(waningCrescentDate);
+
+        // Construir un mapa de fases lunares principales
+        type MoonPhase =
+          | "llena"
+          | "nueva"
+          | "cuartoCreciente"
+          | "cuartoMenguante";
+        const mainPhases: Array<{ day: number; phase: MoonPhase }> = [];
+
+        if (fullMoonDay) mainPhases.push({ day: fullMoonDay, phase: "llena" });
+        if (newMoonDay) mainPhases.push({ day: newMoonDay, phase: "nueva" });
+        if (waxingCrescentDay)
+          mainPhases.push({ day: waxingCrescentDay, phase: "cuartoCreciente" });
+        if (waningCrescentDay)
+          mainPhases.push({ day: waningCrescentDay, phase: "cuartoMenguante" });
+
+        // Ordenar por día
+        mainPhases.sort((a, b) => a.day - b.day);
+
+        // Determinar el orden del ciclo lunar
+        // El ciclo típico es: nueva -> creciente -> llena -> menguante -> nueva
+        const phaseOrder: MoonPhase[] = [
+          "nueva",
+          "cuartoCreciente",
+          "llena",
+          "cuartoMenguante",
+        ];
+
+        // Función para obtener la transición entre dos fases y su número de imágenes
+        const getTransitionInfo = (
+          fromPhase: MoonPhase,
+          toPhase: MoonPhase
+        ): { folder: string; images: number } | null => {
+          if (fromPhase === "cuartoCreciente" && toPhase === "llena")
+            return { folder: "crecToLlena", images: 7 };
+          if (fromPhase === "llena" && toPhase === "cuartoMenguante")
+            return { folder: "llenaToMeng", images: 7 };
+          if (fromPhase === "cuartoMenguante" && toPhase === "nueva")
+            return { folder: "mengToNueva", images: 5 };
+          if (fromPhase === "nueva" && toPhase === "cuartoCreciente")
+            return { folder: "nuevaToCrec", images: 6 };
+
+          // Casos especiales cuando hay fases faltantes
+          if (fromPhase === "nueva" && toPhase === "llena")
+            return { folder: "nuevaToCrec", images: 6 }; // Primera mitad
+          if (fromPhase === "llena" && toPhase === "nueva")
+            return { folder: "llenaToMeng", images: 7 }; // Segunda mitad
+          if (fromPhase === "cuartoCreciente" && toPhase === "cuartoMenguante")
+            return { folder: "crecToLlena", images: 7 }; // A través de llena
+          if (fromPhase === "cuartoMenguante" && toPhase === "cuartoCreciente")
+            return { folder: "mengToNueva", images: 5 }; // A través de nueva
+
+          return null;
+        };
+
+        // Construir mapa de días con sus imágenes
+        const dayMoonMap: { [day: number]: { icon: string; label: string } } =
+          {};
+
+        // Primero asignar las fases principales
+        mainPhases.forEach(({ day, phase }) => {
+          const labels: { [key in MoonPhase]: string } = {
+            llena: "Llena",
+            nueva: "Nueva",
+            cuartoCreciente: "Crec.",
+            cuartoMenguante: "Meng.",
+          };
+          dayMoonMap[day] = {
+            icon: `/assets/img/moons/${phase}.png`,
+            label: labels[phase],
+          };
+        });
+
+        // Función auxiliar para llenar días con transiciones
+        const fillTransitionDays = (
+          startDay: number,
+          endDay: number,
+          transitionFolder: string,
+          totalImages: number,
+          reverse: boolean = false
+        ) => {
+          const daysBetween = endDay - startDay + 1;
+
+          for (let d = startDay; d <= endDay; d++) {
+            // Para reversa, queremos que el último día tenga la última imagen de la transición
+            // y el primer día tenga la primera imagen
+            const position = reverse ? endDay - d : d - startDay;
+            let imageIndex: number;
+
+            if (daysBetween <= totalImages) {
+              // Mapear al rango de imágenes disponibles, pero desde el final hacia el inicio en reversa
+              if (reverse) {
+                // Invertir: último día del mes debe tener la última imagen (más cercana a la fase)
+                const ratio = (daysBetween - 1 - position) / (daysBetween - 1);
+                imageIndex = Math.round(ratio * (totalImages - 1)) + 1;
+              } else {
+                const ratio = position / (daysBetween - 1);
+                imageIndex = Math.round(ratio * (totalImages - 1)) + 1;
+              }
+              imageIndex = Math.max(1, Math.min(imageIndex, totalImages));
+            } else {
+              if (position === 0) {
+                imageIndex = reverse ? totalImages : 1;
+              } else if (position === daysBetween - 1) {
+                imageIndex = reverse ? 1 : totalImages;
+              } else {
+                if (reverse) {
+                  const ratio =
+                    (daysBetween - 1 - position) / (daysBetween - 1);
+                  imageIndex = Math.round(ratio * (totalImages - 1)) + 1;
+                } else {
+                  const ratio = position / (daysBetween - 1);
+                  imageIndex = Math.round(ratio * (totalImages - 1)) + 1;
+                }
+                imageIndex = Math.max(1, Math.min(imageIndex, totalImages));
+              }
+            }
+
+            if (!dayMoonMap[d] || !dayMoonMap[d].label) {
+              dayMoonMap[d] = {
+                icon: `/assets/img/moons/${transitionFolder}/${imageIndex}.png`,
+                label: "",
+              };
+            }
+          }
+        };
+
+        // Llenar días antes de la primera fase (transición inversa)
+        if (mainPhases.length > 0) {
+          const firstPhase = mainPhases[0];
+          if (firstPhase.day > 1) {
+            // Determinar de qué fase viene (ciclo lunar: menguante -> nueva -> creciente -> llena -> menguante)
+            let previousPhase: MoonPhase;
+            if (firstPhase.phase === "nueva") previousPhase = "cuartoMenguante";
+            else if (firstPhase.phase === "cuartoCreciente")
+              previousPhase = "nueva";
+            else if (firstPhase.phase === "llena")
+              previousPhase = "cuartoCreciente";
+            else previousPhase = "llena"; // cuartoMenguante viene de llena
+
+            const transitionInfo = getTransitionInfo(
+              previousPhase,
+              firstPhase.phase
+            );
+            if (transitionInfo) {
+              fillTransitionDays(
+                1,
+                firstPhase.day - 1,
+                transitionInfo.folder,
+                transitionInfo.images,
+                true
+              );
+            }
+          }
+        }
+
+        // Calcular las transiciones entre fases consecutivas
+        for (let i = 0; i < mainPhases.length - 1; i++) {
+          const currentPhase = mainPhases[i];
+          const nextPhase = mainPhases[i + 1];
+
+          if (nextPhase.day > currentPhase.day) {
+            const startDay = currentPhase.day + 1;
+            const endDay = nextPhase.day - 1;
+
+            if (endDay >= startDay) {
+              const transitionInfo = getTransitionInfo(
+                currentPhase.phase,
+                nextPhase.phase
+              );
+              if (transitionInfo) {
+                fillTransitionDays(
+                  startDay,
+                  endDay,
+                  transitionInfo.folder,
+                  transitionInfo.images,
+                  false
+                );
+              }
+            }
+          }
+        }
+
+        // Llenar días después de la última fase (transición normal)
+        if (mainPhases.length > 0) {
+          const lastPhase = mainPhases[mainPhases.length - 1];
+          if (lastPhase.day < daysInMonth) {
+            // Determinar a qué fase va (ciclo lunar)
+            let nextPhase: MoonPhase;
+            if (lastPhase.phase === "nueva") nextPhase = "cuartoCreciente";
+            else if (lastPhase.phase === "cuartoCreciente") nextPhase = "llena";
+            else if (lastPhase.phase === "llena") nextPhase = "cuartoMenguante";
+            else nextPhase = "nueva"; // cuartoMenguante va a nueva
+
+            const transitionInfo = getTransitionInfo(
+              lastPhase.phase,
+              nextPhase
+            );
+            if (transitionInfo) {
+              fillTransitionDays(
+                lastPhase.day + 1,
+                daysInMonth,
+                transitionInfo.folder,
+                transitionInfo.images,
+                false
+              );
+            }
+          }
+        }
+
+        const getMoonIcon = (day: number): string | null => {
+          return dayMoonMap[day]?.icon || null;
+        };
+
+        const getMoonPhaseLabel = (day: number): string | null => {
+          return dayMoonMap[day]?.label || null;
+        };
+
+        // Calcular el día de la semana en que empieza el mes
+        const MONTH_INDEX: { [key: string]: number } = {
+          enero: 0,
+          febrero: 1,
+          marzo: 2,
+          abril: 3,
+          mayo: 4,
+          junio: 5,
+          julio: 6,
+          agosto: 7,
+          septiembre: 8,
+          octubre: 9,
+          noviembre: 10,
+          diciembre: 11,
+        };
+
+        const firstDayOfMonth = new Date(
+          selectedYear,
+          MONTH_INDEX[selectedMonth],
+          1
+        );
+        const startDayOfWeek = firstDayOfMonth.getDay(); // 0 = Domingo, 1 = Lunes, etc.
+
+        // Obtener configuración del título
+        const moonCalendarConfig = field.field_config as any;
+        const titleIcon = moonCalendarConfig?.title_icon;
+        const titleLabel =
+          moonCalendarConfig?.title_label || "Calendario lunar - {month}";
+        const displayMonth =
+          selectedMonth.charAt(0).toUpperCase() + selectedMonth.slice(1);
+        const displayTitle = titleLabel.replace("{month}", displayMonth);
+
+        return (
+          <div key={key} style={fieldStyles} className="w-full">
+            {/* Título del calendario */}
+            {(titleIcon || titleLabel) && (
+              <div
+                className="flex items-center gap-2 mb-2 py-1 justify-center"
+                style={{
+                  backgroundColor: "rgba(44, 40, 37, 0.3)",
+                }}
+              >
+                {titleIcon && (
+                  <img
+                    src={titleIcon}
+                    alt="Calendar icon"
+                    className="w-5 h-5 object-contain"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                    }}
+                  />
+                )}
+                <span
+                  className="font-semibold text-base"
+                  style={{ color: fieldStyles.color || "#ffffff" }}
+                >
+                  {displayTitle}
+                </span>
+              </div>
+            )}
+
+            {/* Encabezado con días de la semana */}
+            <div className="grid grid-cols-7 gap-0">
+              {daysOfWeek.map((day, idx) => (
+                <div
+                  key={idx}
+                  className="text-center font-semibold text-sm py-1"
+                  style={{
+                    color: fieldStyles.color || "#ffffff",
+                    backgroundColor: idx === 0 ? "rgba(44, 40, 37, 0.3)" : "",
+                    border: "0.5px solid rgba(217, 217, 217, 0.2)",
+                  }}
+                >
+                  {day}
+                </div>
+              ))}
+            </div>
+
+            {/* Cuadrícula de días del mes */}
+            <div className="grid grid-cols-7 gap-0">
+              {/* Celdas vacías para los días antes del inicio del mes */}
+              {Array.from({ length: startDayOfWeek }, (_, i) => (
+                <div
+                  key={`empty-${i}`}
+                  className="flex flex-col relative"
+                  style={{
+                    border: "0.5px solid rgba(217, 217, 217, 0.2)",
+                    minHeight: "70px",
+                    backgroundColor: "rgba(0, 0, 0, 0.1)",
+                  }}
+                />
+              ))}
+
+              {/* Días del mes */}
+              {Array.from({ length: daysInMonth }, (_, i) => {
+                const day = i + 1;
+                const moonIcon = getMoonIcon(day);
+                const dayOfWeek = (startDayOfWeek + i) % 7; // Calcular día de la semana real
+                const isSunday = dayOfWeek === 0;
+
+                return (
+                  <div
+                    key={day}
+                    className="flex flex-col relative"
+                    style={{
+                      border: "0.5px solid rgba(217, 217, 217, 0.2)",
+                      minHeight: "70px",
+                    }}
+                  >
+                    {/* Número del día en la parte superior */}
+                    <div
+                      className="text-center"
+                      style={{
+                        backgroundColor: isSunday
+                          ? "rgba(0, 0, 0, 0.3)"
+                          : "transparent",
+                        borderBottom: "0.5px solid rgba(217, 217, 217, 0.2)",
+                      }}
+                    >
+                      <span
+                        className="text-sm font-medium"
+                        style={{ color: fieldStyles.color || "#ffffff" }}
+                      >
+                        {day}
+                      </span>
+                    </div>
+
+                    {/* Área para la luna y etiqueta */}
+                    <div className="flex-1 flex flex-col items-center justify-center p-1">
+                      {/* Icono de fase lunar si aplica */}
+                      {moonIcon && (
+                        <img
+                          src={moonIcon}
+                          alt={getMoonPhaseLabel(day) || "Moon phase"}
+                          className="w-7 h-7"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display =
+                              "none";
+                          }}
+                        />
+                      )}
+
+                      {/* Etiqueta de fase lunar */}
+                      {moonIcon && getMoonPhaseLabel(day) && (
+                        <span
+                          className="text-xs"
+                          style={{
+                            color: fieldStyles.color || "#ffffff",
+                            opacity: 0.8,
+                          }}
+                        >
+                          {getMoonPhaseLabel(day)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         );
 
@@ -1199,10 +1895,10 @@ export function TemplatePreview({
             {data.master.description ||
               t("noDescription", { default: "Sin descripción" })}
           </p>
-            <div className="text-xs text-[#bc6c25] mt-2">
+          <div className="text-xs text-[#bc6c25] mt-2">
             {t("status")}: {data.master.status} | {t("access")}:{" "}
             {data.master.access_config.access_type}
-            </div>
+          </div>
         </div>
       )}
 
@@ -1235,7 +1931,9 @@ export function TemplatePreview({
                 className={`w-full ${
                   headerConfig.style_config?.fields_layout === "vertical"
                     ? "flex flex-col"
-                    : "flex items-center"
+                    : `flex items-center ${getJustifyClass(
+                        headerConfig.style_config?.justify_content
+                      )}`
                 }`}
                 style={{
                   backgroundColor:
@@ -1256,6 +1954,8 @@ export function TemplatePreview({
                     ? `${headerConfig.style_config.font_size}px`
                     : globalStyles.fontSize,
                   fontWeight: headerConfig.style_config?.font_weight || "400",
+                  lineHeight:
+                    headerConfig.style_config?.line_height || undefined,
                   fontStyle: headerConfig.style_config?.font_style || "normal",
                   textDecoration:
                     headerConfig.style_config?.text_decoration || "none",
@@ -1336,8 +2036,9 @@ export function TemplatePreview({
 
                   // Estilos aplicados a la sección completa
                   const sectionStyles = {
-                    fontFamily:
-                      section.style_config?.font || globalStyles.fontFamily,
+                    fontFamily: section.style_config?.font
+                      ? getFontFamily(section.style_config.font)
+                      : globalStyles.fontFamily,
                     color:
                       section.style_config?.primary_color || globalStyles.color,
                     fontSize: section.style_config?.font_size
@@ -1485,7 +2186,10 @@ export function TemplatePreview({
                             activeHeaderConfig.style_config?.fields_layout ===
                             "vertical"
                               ? "flex flex-col"
-                              : "flex items-center"
+                              : `flex items-center ${getJustifyClass(
+                                  activeHeaderConfig.style_config
+                                    ?.justify_content
+                                )}`
                           }`}
                           style={{
                             backgroundColor:
@@ -1510,6 +2214,9 @@ export function TemplatePreview({
                             fontWeight:
                               activeHeaderConfig.style_config?.font_weight ||
                               "400",
+                            lineHeight:
+                              activeHeaderConfig.style_config?.line_height ||
+                              undefined,
                             fontStyle:
                               activeHeaderConfig.style_config?.font_style ||
                               "normal",
@@ -1604,6 +2311,7 @@ export function TemplatePreview({
                                   block.style_config?.gap !== undefined
                                     ? block.style_config.gap
                                     : "8px",
+                                boxSizing: "border-box",
                                 ...getBorderStyles(block.style_config),
                                 // Si tiene un card field, ocupar todo el espacio disponible
                                 ...(hasCardField && {
@@ -1621,13 +2329,47 @@ export function TemplatePreview({
                                   ? "flex flex-wrap"
                                   : "flex flex-col";
 
+                              // Calcular ancho considerando el margin
+                              const marginValue =
+                                block.style_config?.margin || "0";
+                              let widthStyle = {};
+                              if (
+                                marginValue &&
+                                marginValue !== "0" &&
+                                marginValue !== "0px"
+                              ) {
+                                // Parsear margin que puede tener múltiples valores
+                                const marginParts = marginValue
+                                  .trim()
+                                  .split(/\s+/);
+                                let marginLeft = "0";
+                                let marginRight = "0";
+
+                                if (marginParts.length === 1) {
+                                  // margin: 10px (todos los lados)
+                                  marginLeft = marginRight = marginParts[0];
+                                } else if (marginParts.length === 2) {
+                                  // margin: 10px 20px (vertical horizontal)
+                                  marginLeft = marginRight = marginParts[1];
+                                } else if (marginParts.length === 3) {
+                                  // margin: 10px 20px 30px (top horizontal bottom)
+                                  marginLeft = marginRight = marginParts[1];
+                                } else if (marginParts.length === 4) {
+                                  // margin: 10px 20px 30px 40px (top right bottom left)
+                                  marginRight = marginParts[1];
+                                  marginLeft = marginParts[3];
+                                }
+
+                                widthStyle = {
+                                  width: `calc(100% - ${marginLeft} - ${marginRight})`,
+                                };
+                              }
+
                               return (
                                 <div
                                   key={`preview-block-${sectionIndex}-${blockIndex}`}
-                                  className={`w-full ${
-                                    hasCardField ? "flex-1" : ""
-                                  }`}
-                                  style={blockStyles}
+                                  className={hasCardField ? "flex-1" : ""}
+                                  style={{ ...blockStyles, ...widthStyle }}
                                 >
                                   {/* Campos del bloque */}
                                   <div
@@ -1672,7 +2414,10 @@ export function TemplatePreview({
                             activeFooterConfig.style_config?.fields_layout ===
                             "vertical"
                               ? "flex flex-col"
-                              : "flex items-center"
+                              : `flex items-center ${getJustifyClass(
+                                  activeFooterConfig.style_config
+                                    ?.justify_content
+                                )}`
                           }`}
                           style={{
                             backgroundColor:
@@ -1699,6 +2444,9 @@ export function TemplatePreview({
                             fontWeight:
                               activeFooterConfig.style_config?.font_weight ||
                               "400",
+                            lineHeight:
+                              activeFooterConfig.style_config?.line_height ||
+                              undefined,
                             fontStyle:
                               activeFooterConfig.style_config?.font_style ||
                               "normal",
@@ -1759,7 +2507,9 @@ export function TemplatePreview({
                 className={`w-full ${
                   footerConfig.style_config?.fields_layout === "vertical"
                     ? "flex flex-col"
-                    : "flex items-center"
+                    : `flex items-center ${getJustifyClass(
+                        footerConfig.style_config?.justify_content
+                      )}`
                 }`}
                 style={{
                   backgroundColor:
@@ -1780,6 +2530,8 @@ export function TemplatePreview({
                     ? `${footerConfig.style_config.font_size}px`
                     : globalStyles.fontSize,
                   fontWeight: footerConfig.style_config?.font_weight || "400",
+                  lineHeight:
+                    footerConfig.style_config?.line_height || undefined,
                   fontStyle: footerConfig.style_config?.font_style || "normal",
                   textDecoration:
                     footerConfig.style_config?.text_decoration || "none",
@@ -1844,9 +2596,15 @@ export function TemplatePreview({
       {/* Información adicional */}
       {moreInfo && (
         <div className="mt-4 text-xs text-[#283618]/50 space-y-1">
-          <div>{t("version")} {data.version.version_num}</div>
-          <div>{t("message")} {data.version.commit_message}</div>
-          <div>{t("sectionsCount")} {sections.length}</div>
+          <div>
+            {t("version")} {data.version.version_num}
+          </div>
+          <div>
+            {t("message")} {data.version.commit_message}
+          </div>
+          <div>
+            {t("sectionsCount")} {sections.length}
+          </div>
           <div>
             {t("totalFields")}{" "}
             {sections.reduce(

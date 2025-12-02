@@ -73,6 +73,9 @@ export interface DateRangeFieldConfig {
   start_date_description: string;
   end_date_label: string;
   end_date_description: string;
+  show_moon_phases?: boolean; // Si se muestran las fases de la luna
+  start_moon_phase?: "llena" | "nueva" | "cuartoCreciente" | "cuartoMenguante"; // Fase de la luna para fecha inicio
+  end_moon_phase?: "llena" | "nueva" | "cuartoCreciente" | "cuartoMenguante"; // Fase de la luna para fecha fin
 }
 
 export interface ImageUploadFieldConfig {
@@ -96,8 +99,15 @@ export interface CardFieldConfig {
   available_cards: string[]; // Array de IDs de cards que el usuario puede seleccionar
 }
 
+export interface MoonCalendarFieldConfig {
+  title_icon?: string; // URL del icono que acompaña el título
+  title_label?: string; // Label del título con {month} como placeholder para el mes
+}
+
 export interface ImageFieldConfig {
   images: string[];
+  show_label?: boolean; // Si se muestra el label debajo de la imagen
+  label_text?: string; // Texto del label que se muestra debajo de la imagen
 }
 
 // Tipo base para todos los campos
@@ -120,7 +130,8 @@ export interface FieldBase {
     | "algorithm"
     | "page_number"
     | "card"
-    | "image";
+    | "image"
+    | "moon_calendar";
   description?: string;
   label?: string;
   form: boolean;
@@ -143,7 +154,8 @@ export interface FieldBase {
     | AlgorithmFieldConfig
     | PageNumberFieldConfig
     | CardFieldConfig
-    | ImageFieldConfig;
+    | ImageFieldConfig
+    | MoonCalendarFieldConfig;
   value?:
     | string
     | number
@@ -235,6 +247,11 @@ export interface ImageField extends FieldBase {
   field_config: ImageFieldConfig;
 }
 
+export interface MoonCalendarField extends FieldBase {
+  type: "moon_calendar";
+  field_config?: MoonCalendarFieldConfig;
+}
+
 // Union type para todos los tipos de campo
 export type Field =
   | TextField
@@ -252,7 +269,8 @@ export type Field =
   | AlgorithmField
   | PageNumberField
   | CardField
-  | ImageField;
+  | ImageField
+  | MoonCalendarField;
 
 export interface Block {
   block_id: string;
@@ -349,6 +367,7 @@ export const FIELD_TYPES = [
   "page_number",
   "card",
   "image",
+  "moon_calendar",
 ] as const;
 
 // Constantes específicas para template creation

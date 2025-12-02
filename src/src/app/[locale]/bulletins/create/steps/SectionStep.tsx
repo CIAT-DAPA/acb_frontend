@@ -15,6 +15,8 @@ import {
   SearchableInput,
   SelectBackgroundField,
   CardFieldInput,
+  ImageUploadInput,
+  MoonCalendarInput,
 } from "../components/fields";
 
 interface SectionStepProps {
@@ -28,9 +30,19 @@ interface SectionStepProps {
 // Helper para normalizar valores de date_range
 const normalizeDateRangeValue = (
   value: any
-): { start_date: string; end_date: string } => {
+): {
+  start_date: string;
+  end_date: string;
+  start_moon_phase?: string;
+  end_moon_phase?: string;
+} => {
   if (typeof value === "object" && value !== null && !Array.isArray(value)) {
-    return value as { start_date: string; end_date: string };
+    return {
+      start_date: value.start_date || "",
+      end_date: value.end_date || "",
+      start_moon_phase: value.start_moon_phase,
+      end_moon_phase: value.end_moon_phase,
+    };
   }
   return { start_date: "", end_date: "" };
 };
@@ -215,6 +227,28 @@ export function SectionStep({
             onChange={onChange}
             currentPageIndex={currentPageIndex}
             onPageChange={onPageChange}
+          />
+        );
+
+      case "image_upload":
+        return (
+          <ImageUploadInput
+            field={field}
+            value={fieldValue as string}
+            onChange={onChange}
+          />
+        );
+
+      case "moon_calendar":
+        const moonCalendarValue =
+          typeof fieldValue === "object" && fieldValue !== null
+            ? fieldValue
+            : {};
+        return (
+          <MoonCalendarInput
+            field={field}
+            value={moonCalendarValue as any}
+            onChange={onChange}
           />
         );
 

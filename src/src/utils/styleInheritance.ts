@@ -25,6 +25,7 @@ export function combineStyles(
     if (parentStyle.icon_use_original_color !== undefined)
       combined.icon_use_original_color = parentStyle.icon_use_original_color;
     if (parentStyle.font_weight) combined.font_weight = parentStyle.font_weight;
+    if (parentStyle.line_height) combined.line_height = parentStyle.line_height;
     if (parentStyle.font_style) combined.font_style = parentStyle.font_style;
     if (parentStyle.text_decoration)
       combined.text_decoration = parentStyle.text_decoration;
@@ -50,6 +51,7 @@ export function combineStyles(
     if (childStyle.icon_use_original_color !== undefined)
       combined.icon_use_original_color = childStyle.icon_use_original_color;
     if (childStyle.font_weight) combined.font_weight = childStyle.font_weight;
+    if (childStyle.line_height) combined.line_height = childStyle.line_height;
     if (childStyle.font_style) combined.font_style = childStyle.font_style;
     if (childStyle.text_decoration)
       combined.text_decoration = childStyle.text_decoration;
@@ -140,6 +142,9 @@ export function inheritStylesFromContainer(
   }
   if (containerStyle.font_weight) {
     inheritedStyles.font_weight = containerStyle.font_weight;
+  }
+  if (containerStyle.line_height) {
+    inheritedStyles.line_height = containerStyle.line_height;
   }
   if (containerStyle.font_style) {
     inheritedStyles.font_style = containerStyle.font_style;
@@ -258,6 +263,9 @@ export function getInheritableStyles(
   }
   if (containerStyle.font_weight) {
     inheritable.font_weight = containerStyle.font_weight;
+  }
+  if (containerStyle.line_height) {
+    inheritable.line_height = containerStyle.line_height;
   }
   if (containerStyle.font_style) {
     inheritable.font_style = containerStyle.font_style;

@@ -6,6 +6,7 @@ export { DateInput } from "./DateInput";
 export { DateRangeInput } from "./DateRangeInput";
 export { SelectInput } from "./SelectInput";
 export { SearchableInput } from "./SearchableInput";
+export { ImageUploadInput } from "./ImageUploadInput";
 
 // Aliases for backward compatibility (all point to unified components)
 export { TextInput as TextField } from "./TextInput";
@@ -19,3 +20,4 @@ export { SelectBackgroundField } from "./SelectBackgroundField";
 export { ClimateDataField } from "./ClimateDataField";
 export { ListFieldEditor } from "./ListFieldEditor";
 export { CardFieldInput } from "./CardFieldInput";
+export { MoonCalendarInput } from "./MoonCalendarInput";

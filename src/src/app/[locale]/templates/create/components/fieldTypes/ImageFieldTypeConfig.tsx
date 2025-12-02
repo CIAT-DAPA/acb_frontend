@@ -20,6 +20,8 @@ import { VisualResourceSelector } from "../VisualResourceSelector";
 
 interface ImageFieldConfig {
   images: string[];
+  show_label?: boolean;
+  label_text?: string;
 }
 
 export const ImageFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
@@ -33,6 +35,8 @@ export const ImageFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
 
   const config = (currentField.field_config as ImageFieldConfig) || {};
   const images = config.images || [];
+  const showLabel = config.show_label ?? false;
+  const labelText = config.label_text || "";
 
   // Estado para el selector de imágenes
   const [showImageSelectorForIndex, setShowImageSelectorForIndex] = useState<
@@ -44,6 +48,14 @@ export const ImageFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
 
   const updateImages = (newImages: string[]) => {
     updateFieldConfig({ images: newImages });
+  };
+
+  const handleShowLabelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateFieldConfig({ show_label: e.target.checked });
+  };
+
+  const handleLabelTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateFieldConfig({ label_text: e.target.value });
   };
 
   const addImage = () => {
@@ -120,6 +132,34 @@ export const ImageFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
           )}
         </div>
       )}
+
+      {/* Configuración del label */}
+      <div>
+        <label className="flex items-center space-x-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={showLabel}
+            onChange={handleShowLabelChange}
+            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          />
+          <span className={labelClass}>{t("showLabel")}</span>
+        </label>
+        <p className={helpTextClass}>{t("showLabelHelp")}</p>
+
+        {showLabel && (
+          <div className="mt-3">
+            <label className={labelClass}>{t("labelText")}</label>
+            <input
+              type="text"
+              value={labelText}
+              onChange={handleLabelTextChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder={t("labelPlaceholder")}
+            />
+            <p className={helpTextClass}>{t("labelTextHelp")}</p>
+          </div>
+        )}
+      </div>
 
       {/* Lista de imágenes (solo cuando form es true) */}
       {currentField.form && (
