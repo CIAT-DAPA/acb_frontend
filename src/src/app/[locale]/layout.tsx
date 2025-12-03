@@ -81,6 +81,21 @@ export default async function RootLayout({ children, params }: Props) {
     <html lang={locale}>
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
+        {/* Google tag (gtag.js) */}
+        <script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-MLWGH1E59C"
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-MLWGH1E59C');
+            `,
+          }}
+        />
       </head>
       <body
         className={`${sintony.variable} ${poppins.variable} ${montserrat.variable} ${roboto.variable} ${openSans.variable} ${lato.variable} ${archivoNarrow.variable} antialiased`}
