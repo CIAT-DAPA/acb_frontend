@@ -8,6 +8,7 @@ import { useState, useTransition, useEffect } from "react";
 const LANGUAGES = [
   { code: "es", name: "Español", flag: "🇪🇸" },
   { code: "en", name: "English", flag: "🇺🇸" },
+  { code: "vi", name: "Tiếng Việt", flag: "🇻🇳" },
 ] as const;
 
 export function LanguageSelector() {
@@ -21,7 +22,7 @@ export function LanguageSelector() {
   const pathnameLocale = pathname.split("/")[1];
 
   // Usar el locale del pathname si está disponible, sino el del hook
-  const currentLocale = ["es", "en"].includes(pathnameLocale)
+  const currentLocale = ["es", "en", "vi"].includes(pathnameLocale)
     ? pathnameLocale
     : hookLocale;
 
