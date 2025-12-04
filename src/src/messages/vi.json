@@ -1,0 +1,1766 @@
+{
+  "Navbar": {
+    "templates": "Biểu mẫu",
+    "bulletins": "Bản tin",
+    "cards": "Thẻ",
+    "visualResources": "Tài liệu trực quan",
+    "content": "Nội dung",
+    "administration": "Quản trị",
+    "roles": "Vai trò",
+    "groups": "Nhóm",
+    "login": "Đăng nhập",
+    "logout": "Đăng xuất",
+    "openMenu": "Mở menu"
+  },
+  "Roles": {
+    "modules": {
+      "templatemanagement": "Biểu mẫu",
+      "bulletinscomposer": "Bản tin",
+      "cardmanagement": "Thẻ",
+      "accesscontrol": "Truy cập",
+      "dashboardbulletins": "Bảng điều khiển",
+      "review": "Rà soát",
+      "externalintegrations": "Tích hợp"
+    },
+    "noResultsSearch": "Hãy thử các thuật ngữ tìm kiếm khác nhau",
+    "table": {
+      "edit": "Chỉnh sửa",
+      "description": "Miêu tả",
+      "role": "Vai trò",
+      "activePermissions": "Các Quyền đã được kích hoạt",
+      "enabledModules": "Các mô-đun được kích hoạt",
+      "actions": "Các hành động",
+      "viewDetails": "Xem chi tiết",
+      "modulesCount": "{count} / 7 mô-đun",
+      "hide": "Ẩn",
+      "activePermissionsLabel": "Các Quyền đã được kích hoạt",
+      "enabledModulesLabel": "của 7 mô-đun được kích hoạt",
+      "enabledModulesCount": "{count} trong số 7 mô-đun được bật",
+      "modulesAndPermissions": "Các Mô-đun và Quyền hạn CRUD:",
+      "noModulesEnabled": "Vai trò này chưa được bật quyền truy cập vào mô-đun nào."
+    },
+    "crud": {
+      "delete": "Xóa bỏ",
+      "create": "Tạo",
+      "read": "Đọc",
+      "update": "Cập nhật"
+    },
+    "permissionsInfo": {
+      "delete": "Xóa bỏ",
+      "create": "Tạo",
+      "read": "Đọc",
+      "update": "Cập nhật",
+      "title": "Các Mô-đun Quyền hạn Hệ thống",
+      "bulletinsComposer": "Tạo và chỉnh sửa bản tin",
+      "templateManagement": "Quản lý biểu mẫu",
+      "dashboardBulletins": "Xem danh sách bản tin",
+      "review": "Quản lý quy trình đánh giá",
+      "cardManagement": "Quản lý các thẻ có thể tái sử dụng",
+      "accessControl": "Quản lý người dùng và vai trò",
+      "externalIntegrations": "Quản lý tích hợp",
+      "crudNote": "Mỗi mô-đun có thể có các quyền {create}, {read}, {update} và {delete} (CRUD)."
+    },
+    "title": "Quản lý Quyền hạn theo Vai trò",
+    "subtitle": "Các Vai trò xác định quyền và cấp độ truy cập của người dùng trong nền tảng. Mỗi vai trò có các quyền cụ thể cho các mô-đun hệ thống khác nhau, sử dụng mô hình CRUD (Tạo, Đọc, Cập nhật, Xóa).",
+    "searchPlaceholder": "Tìm kiếm vai trò theo tên hoặc mô tả…",
+    "createNew": "Tạo vai trò",
+    "loading": "Đang tải vai trò...",
+    "errorTitle": "Lỗi khi tải các vai trò",
+    "showing": "Hiển thị {filtered} trong tổng số {total} vai trò",
+    "totalRoles": "Tổng số vai trò: {count}",
+    "noResults": "Không tìm thấy vai trò nào",
+    "noRolesSystem": "Hệ thống chưa thiết lập vai trò nào."
+  },
+  "Dashboard": {
+    "templates": "Biểu mẫu",
+    "bulletins": "Bản tin",
+    "cards": "Thẻ",
+    "cancelDelete": "Hủy bỏ",
+    "confirmDeleteBtn": "Lưu trữ",
+    "deleting": "Đang lưu trữ...",
+    "title": "Bảng điều khiển",
+    "subtitle": "Tổng quan nhanh về các biểu mẫu, bản tin và thẻ có sẵn",
+    "searchPlaceholder": "Tìm kiếm trên bảng điều khiển...",
+    "loading": "Đang tải các mục...",
+    "noResults": "Không tìm thấy mục nào",
+    "noAccessTitle": "Không có quyền truy cập",
+    "noAccessMessage": "Bạn không có quyền truy cập vào bất kỳ mục nào trên bảng điều khiển.",
+    "deleteConfirmTitle": "Xác nhận hành động",
+    "deleteConfirmMessage": "Bạn có chắc chắn muốn lưu trữ \"{name}\" không? Thao tác này sẽ đánh dấu nó là đã lưu trữ.",
+    "deleteSuccess": "{name} đã được lưu trữ thành công",
+    "deleteError": "Lỗi khi lưu trữ {tên}: {error}"
+  },
+  "VisualResources": {
+    "title": "Tài liệu trực quan",
+    "subtitle": "Quản lý các tệp hình ảnh phục vụ cho việc xây dựng bản tin: hình ảnh, hình nền và biểu tượng.",
+    "searchPlaceholder": "Tìm kiếm tập tin...",
+    "uploadFile": "Tải lên tập tin",
+    "allFiles": "Tất cả các tập tin",
+    "images": "Hình ảnh",
+    "icons": "Biểu tượng",
+    "noResults": "Không tìm thấy tài liệu",
+    "noResources": "Không có tài liệu trực quan",
+    "tryDifferentSearch": "Hãy thử các thuật ngữ tìm kiếm khác nhau",
+    "uploadFirst": "Bắt đầu bằng cách tải lên các tệp hình ảnh đầu tiên",
+    "uploadFirstFile": "Tải lên tệp đầu tiên",
+    "uploadedBy": "Được tải lên bởi",
+    "viewFile": "Xem tập tin",
+    "downloadFile": "Tải xuống tệp",
+    "deleteFile": "Xóa tập tin",
+    "updatedBy": "Cập nhật bởi",
+    "edit": "Chỉnh sửa",
+    "download": "Tải xuống",
+    "delete": "Xóa bỏ",
+    "duplicate": "Tạo bản sao",
+    "editSuccess": "Tài liệu trực quan đã được cập nhật thành công",
+    "editError": "Lỗi khi cập nhật tài liệu trực quan",
+    "deleteSuccess": "Tài liệu trực quan đã được xóa thành công",
+    "deleteError": "Lỗi khi xóa tài liệu trực quan",
+    "backToTemplates": "Quay lại Biểu mẫu",
+    "backToVisualResources": "Quay lại Tài liệu trực quan",
+    "uploadConfiguration": "Cấu hình tài liệu",
+    "resourceType": "Loại tài liệu",
+    "accessType": "Loại truy cập",
+    "selectGroup": "Chọn nhóm",
+    "public": "Công cộng",
+    "publicAccess": "Công cộng",
+    "private": "Riêng tư",
+    "privateAccess": "Riêng tư",
+    "groupSpecific": "Nhóm cụ thể",
+    "dragFiles": "Kéo tập tin vào đây",
+    "dropFiles": "Thả tập tin vào đây",
+    "clickToSelect": "hoặc nhấp để chọn tệp",
+    "selectFiles": "Chọn tệp",
+    "selectedFiles": "Các tập tin đã chọn",
+    "fileTooLarge": "Tệp quá lớn",
+    "invalidFileType": "Loại tệp không hợp lệ",
+    "uploading": "Đang tải lên...",
+    "uploaded": "Đã tải lên",
+    "uploadError": "Lỗi",
+    "cancel": "Hủy bỏ",
+    "cancelEdit": "Hủy bỏ",
+    "cancelDelete": "Hủy bỏ",
+    "uploadFiles": "Tải lên",
+    "customFileName": "Tên Tệp Tùy Chỉnh",
+    "customFileNamePlaceholder": "Nhập tên tùy chỉnh của bạn (tùy chọn)",
+    "customFileNameHelp": "Nếu để trống, tên tệp gốc sẽ được sử dụng. Phần mở rộng sẽ được tự động thêm vào.",
+    "editFile": "Chỉnh sửa tập tin",
+    "editResource": "Chỉnh sửa tài liệu trực quan",
+    "preview": "Xem trước",
+    "resourceInfo": "Thông tin tài liệu",
+    "fileName": "Tên tập tin",
+    "fileNamePlaceholder": "Tên tập tin",
+    "fileType": "Loại tập tin",
+    "image": "Hình ảnh",
+    "icon": "Biểu tượng",
+    "accessTypeLabel": "Loại truy cập",
+    "restrictedAccess": "Giới hạn cho nhóm",
+    "allowedGroup": "Nhóm được cấp phép",
+    "saveChanges": "Lưu thay đổi",
+    "saving": "Đang lưu...",
+    "deleteResource": "Xóa tài liệu",
+    "deleteConfirmTitle": "Xóa tài liệu trực quan?",
+    "deleteConfirmMessage": "Bạn có chắc chắn muốn xóa \"{fileName}\" không? Thao tác này không thể hoàn tác.",
+    "confirmDelete": "Có, xóa",
+    "deleting": "Đang xóa..."
+  },
+  "Templates": {
+    "visualResources": "Tài liệu trực quan",
+    "edit": "Chỉnh sửa",
+    "download": "Tải xuống",
+    "cancelDelete": "Hủy bỏ",
+    "Create": {
+      "cancel": "Hủy bỏ",
+      "title": "Mẫu mới",
+      "subtitle": "Tạo mẫu bản tin  thời tiết nông vụ mới",
+      "back": "Mặt sau",
+      "name": "Tên biểu mẫu",
+      "namePlaceholder": "ví dụ: Bản tin Cà phê Hàng tháng",
+      "description": "Miêu tả",
+      "descriptionPlaceholder": "Mô tả mục đích của biểu mẫu này...",
+      "category": "Phân loại",
+      "categories": {
+        "monthly": "Bản tin tháng",
+        "weekly": "Báo cáo hàng tuần",
+        "alerts": "Cảnh báo thời tiết"
+      },
+      "create": "Tạo biểu mẫu"
+    },
+    "preview": "Xem trước",
+    "title": "Tạo các biểu mẫu mới có thể tùy chỉnh hoàn toàn",
+    "subtitle": "Quản lý và tạo biểu mẫu bản tin  thời tiết nông vụ với các trường thông tin, hình ảnh và biểu đồ bạn muốn.",
+    "createNew": "Tạo mới",
+    "searchPlaceholder": "Tìm kiếm biểu mẫu...",
+    "by": "Bởi",
+    "basedOn": "Dựa trên",
+    "lastModified": "Lần sửa đổi cuối cùng",
+    "view": "Xem",
+    "delete": "Lưu trữ",
+    "confirmDeleteBtn": "Lưu trữ",
+    "deleteConfirmTitle": "Mẫu lưu trữ",
+    "deleteConfirmMessage": "Bạn có chắc chắn muốn lưu trữ {name} không? Thao tác này sẽ chuyển trạng thái của {name} thành đã lưu trữ và sẽ không hiển thị trong danh sách chính.",
+    "deleting": "Đang lưu trữ...",
+    "deleteSuccess": "Biểu mẫu {name} đã được lưu trữ thành công",
+    "deleteError": "Lỗi khi lưu trữ biểu mẫu {name}: {error}",
+    "noResults": "Không tìm thấy biểu mẫu nào",
+    "loading": "Đang tải biểu mẫu...",
+    "retry": "Thử lại",
+    "createFirst": "Tạo biểu mẫu đầu tiên của bạn",
+    "loadError": "Lỗi khi tải biểu mẫu",
+    "connectionError": "Lỗi kết nối khi tải biểu mẫu",
+    "unknownError": "Lỗi không xác định",
+    "page": "trang",
+    "pages": "các trang",
+    "section": "Phần",
+    "statusDraft": "Bản nháp",
+    "statusPublished": "Đã xuất bản"
+  },
+  "CreateBulletin": {
+    "exportModal": {
+      "contentLabel": "Nội dung",
+      "loadError": "Lỗi",
+      "cancel": "Hủy bỏ",
+      "section": "Phần",
+      "export": "Xuất file",
+      "exporting": "Đang xuất file...",
+      "exportComplete": "Đã xuất xong!",
+      "title": "Xuất nội dung",
+      "format": "Định dạng tệp",
+      "quality": "Chất lượng hình ảnh",
+      "pdfConfig": "Cấu hình PDF",
+      "pageSize": "Kích thước trang",
+      "sectionsPerPage": "Số phần trên mỗi trang",
+      "sectionsPerPageRange": "1 (một trang một)",
+      "sectionsPerPageMax": "6 (lưới 2x3)",
+      "sectionsToExport": "Các mục cần xuất",
+      "selectAll": "Chọn tất cả",
+      "deselectAll": "Bỏ chọn tất cả",
+      "allSections": "Tất cả các phần ({total})",
+      "selectedSections": "{selected} trong tổng số {total} phần đã chọn",
+      "loading": "Đang tải nội dung...",
+      "startingExport": "Bắt đầu xuất file...",
+      "exportSuccess": "Xuất thành công!",
+      "exportSuccessMessage": "Tệp đã được tải xuống thành công.",
+      "exportError": "Lỗi xuất file",
+      "formatLabel": "Định dạng",
+      "sectionsLabel": "Các phần",
+      "completed": "hoàn thành",
+      "sectionGenerating": "Đang tạo phần {current}",
+      "sectionPage": "Trang",
+      "toPdf": "Đang chuyển đổi sang PDF...",
+      "toZip": "Đang tạo tệp ZIP..."
+    },
+    "bulletinPreview": {
+      "backToTemplates": "Quay lại Biểu mẫu",
+      "backToBulletins": "Quay lại Bản tin",
+      "backButton": "Mặt sau",
+      "descriptionLabel": "Miêu tả",
+      "loading": "Đang tải bản tin...",
+      "errorTitle": "Lỗi khi tải bản tin",
+      "exportButton": "Xuất file",
+      "loadingWithId": "Đang tải bản tin {id}...",
+      "errorMessage": "Không thể tải bản tin",
+      "errorId": "Mã số: {id}",
+      "title": "Xem trước bản tin",
+      "description": "Bản tin được tạo từ biểu mẫu",
+      "previewOf": "Xem trước bản tin",
+      "orientation": "Định hướng:",
+      "vertical": "Thẳng đứng",
+      "horizontal": "Nằm ngang",
+      "size": "Kích cỡ:",
+      "columns": "Các cột:",
+      "sectionCount": "{count, plural, =1 {1 phần} other {{count} phần}}",
+      "section": "phần",
+      "sections": "các phần",
+      "exportTitle": "Xuất bản tin",
+      "bulletinId": "ID bản tin",
+      "templateId": "ID biểu mẫu",
+      "status": "Trạng thái",
+      "previewTitle": "Xem trước",
+      "noDescription": "Không có mô tả",
+      "version": "Phiên bản",
+      "access": "Truy cập"
+    },
+    "preview": {
+      "title": "Xem trước",
+      "subtitle": "Trực quan hóa bản tin của bạn sẽ trông như thế nào",
+      "selectTemplate": "Chọn một biểu mẫu để xem bản xem trước"
+    },
+    "navigation": {
+      "saving": "Đang lưu...",
+      "finish": "Tạo bản tin",
+      "next": "Tiếp theo",
+      "previous": "Trước",
+      "creating": "Đang tạo...",
+      "save": "Lưu bản nháp",
+      "publish": "Xuất bản",
+      "publishing": "Xuất bản...",
+      "export": "Xuất file"
+    },
+    "selectTemplate": {
+      "searchPlaceholder": "Tìm kiếm biểu mẫu...",
+      "title": "Chọn biểu mẫu",
+      "description": "Chọn biểu mẫu bạn muốn sử dụng cho bản tin của mình",
+      "noTemplates": "Không có biểu mẫu nào có sẵn",
+      "preview": "Xem trước"
+    },
+    "section": {
+      "title": "Phần",
+      "selectOption": "Chọn một tùy chọn...",
+      "description": "Điền thông tin cho phần này",
+      "noFields": "Phần này không có ô cài đặt",
+      "headerFields": "Các ô nhập liệu ở Đầu trang",
+      "notFound": "Không tìm thấy phần này"
+    },
+    "title": "Tạo bản tin",
+    "subtitle": "Tạo bản tin thời tiết nông vụ mới bằng cách sử dụng biểu mẫu",
+    "titleEdit": "Chỉnh sửa bản tin",
+    "subtitleEdit": "Cập nhật và sửa đổi bản tin thời tiết nông vụ",
+    "backToBulletins": "Quay lại Bản tin",
+    "success": "Bản tin đã được tạo thành công",
+    "updateSuccess": "Bản tin đã được cập nhật thành công",
+    "savedAsDraft": "Bản tin được lưu dưới dạng bản nháp",
+    "error": "Lỗi khi tạo bản tin",
+    "errorLoadingTemplate": "Lỗi khi tải biểu mẫu",
+    "editBulletin": {
+      "loading": "Đang tải bản tin...",
+      "errorTitle": "Lỗi khi tải bản tin",
+      "errorInvalidId": "ID bản tin không hợp lệ",
+      "errorNoData": "Không thể tải thông tin bản tin",
+      "errorNoVersion": "Phiên bản bản tin không có dữ liệu hợp lệ",
+      "errorGeneric": "Lỗi khi tải dữ liệu bản tin"
+    },
+    "basicInfo": {
+      "title": "Thông tin cơ bản",
+      "description": "Xác định tên và dữ liệu chính cho bản tin của bạn",
+      "fields": {
+        "name": {
+          "label": "Tên bản tin",
+          "placeholder": "VD: Bản tin thời tiết nông vụ - Tháng 1 năm 2025",
+          "helper": "Chọn một tên mô tả để dễ dàng nhận dạng bản tin này"
+        }
+      }
+    },
+    "headerFooter": {
+      "title": "Đầu trang và Chân trang",
+      "description": "Thiết lập đầu trang và chân trang cho toàn bộ bản tin của bạn",
+      "headerSection": "Đầu trang toàn cục",
+      "footerSection": "Chân trang toàn cục",
+      "selectOption": "Chọn một tùy chọn...",
+      "noFields": "Biểu mẫu này không có trường cấu hình cho đầu trang và chân trang",
+      "headerTitle": "Đầu trang của bản tin",
+      "headerDescription": "Cấu hình thông tin sẽ hiển thị ở đầu trang bản tin của bạn",
+      "footerTitle": "Chân trang của bản tin",
+      "footerDescription": "Cấu hình thông tin sẽ hiển thị ở chân trang bản tin của bạn"
+    },
+    "fillData": {
+      "selectOption": "Chọn một tùy chọn...",
+      "sectionProgress": "Phần {current} của {total}"
+    },
+    "cardField": {
+      "loading": "Đang tải thẻ...",
+      "noCardsAvailable": "Không có thẻ nào có sẵn cho trường này.",
+      "selectCard": "Chọn thẻ...",
+      "add": "Thêm",
+      "selectedCards": "Đã chọn thẻ: {count}",
+      "fieldsToComplete": "{count} trường cần hoàn thành",
+      "unsupportedFieldType": "Loại trường không được hỗ trợ trong thẻ: {type}",
+      "noFieldsToComplete": "Thẻ này không có trường nào cần hoàn thành",
+      "noCardsSelected": "Chưa chọn thẻ nào. Vui lòng chọn thẻ để bắt đầu."
+    },
+    "listField": {
+      "items": "{count} mục",
+      "maximum": "(tối đa: {max})",
+      "addItem": "Thêm mục",
+      "item": "Mục {index}",
+      "removeItem": "Xóa mục",
+      "maxCharacters": "Tối đa {max} ký tự",
+      "noItems": "Không có mục nào. Nhấn \"Thêm mục\" để bắt đầu."
+    },
+    "climateField": {
+      "noParameters": "Không có tham số khí hậu nào được cấu hình"
+    },
+    "publishModal": {
+      "title": "Bản tin đã được xuất bản!",
+      "message": "Bản tin của bạn đã được xuất bản thành công và hiện đã có sẵn.",
+      "urlLabel": "Link truy cập bản tin:",
+      "copyUrl": "Sao chép",
+      "copied": "Đã sao chép",
+      "viewLink": "Xem bản tin đã xuất bản",
+      "close": "Đóng"
+    },
+    "export": {
+      "title": "Xuất bản tin",
+      "exportButton": "Xuất bản tin",
+      "description": "Xem lại tất cả các phần và xuất bản tin của bạn dưới dạng hình ảnh",
+      "exporting": "Đang xuất file...",
+      "sectionGenerating": "Đang tạo phần {current}",
+      "sectionPage": "Trang",
+      "toPdf": "Đang chuyển đổi sang PDF...",
+      "toZip": "Đang tạo tệp ZIP...",
+      "exportComplete": "Đã xuất xong!"
+    }
+  },
+  "CreateCard": {
+    "steps": {
+      "content": "Nội dung",
+      "basicInfo": "Thông tin cơ bản",
+      "basicInfoDesc": "Xác định dữ liệu thẻ chính",
+      "contentDesc": "Cấu hình các khối thẻ và trường thông tin"
+    },
+    "preview": {
+      "content": "Nội dung",
+      "images": "Hình ảnh",
+      "public": "Công cộng",
+      "private": "Riêng tư",
+      "title": "Xem trước",
+      "icon": "Biểu tượng",
+      "accessType": "Truy cập",
+      "fields": "Các trường thông tin",
+      "cardType": "Kiểu",
+      "blocks": "Khối",
+      "background": "Nền",
+      "untitled": "Chưa có tiêu đề",
+      "cardName": "Tên",
+      "statistics": "Thống kê",
+      "noFields": "Không có trường thông tin",
+      "noContent": "Chưa có nội dung"
+    },
+    "content": {
+      "images": "Hình ảnh",
+      "edit": "Chỉnh sửa",
+      "backgroundColor": "Màu nền",
+      "tabs": {
+        "header": "Đầu trang",
+        "footer": "Chân trang",
+        "blocks": "Khối"
+      },
+      "addField": "Thêm trường thông tin",
+      "removeField": "Xóa trường thông tin",
+      "fields": "Các trường thông tin",
+      "noFieldsConfigured": "Không có trường thông tin nào được cấu hình",
+      "editField": "Chỉnh sửa trường thông tin",
+      "backgroundImage": "Hình nền",
+      "dragToReorder": "Kéo để sắp xếp lại",
+      "newField": "Trường thông tin mới",
+      "addBlock": "Thêm khối",
+      "blocks": "Khối",
+      "removeBlock": "Xóa khối",
+      "blockConfiguration": "Cấu hình khối",
+      "blockNamePlaceholder": "Tên khối",
+      "blockName": "Tên khối",
+      "blockStyles": "Phong cách Khối Nội dung",
+      "noFieldsHelp": "Các trường xác định thông tin nào sẽ được thu thập trong khối này",
+      "selectButton": "Lựa chọn",
+      "title": "Nội dung thẻ",
+      "description": "Cấu hình các khối và trường thông tin sẽ tạo thành nội dung thẻ",
+      "backgroundUrl": "Đường dẫn đến ảnh nền",
+      "backgroundUrlPlaceholder": "https://example.com/background.jpg",
+      "backgroundUrlHelp": "Đường dẫn (link) của hình ảnh nền cho thẻ",
+      "noBlocks": "Chưa có khối nào. Thêm khối đầu tiên để bắt đầu.",
+      "noFields": "Khối này chưa có trường thông tin nào",
+      "blockNameInputPlaceholder": "Nhập tên khối",
+      "blockNameHelp": "Tên này giúp xác định khối trong cấu hình",
+      "blockStylesDescription": "Kiểu Khối (Block styles) sẽ được áp dụng cho vùng chứa nhóm các trường thông tin. Hãy sử dụng 'Padding' (Khoảng đệm trong) cho không gian bên trong và 'Gap' (Khoảng cách) cho không gian giữa các trường bên trong khối.",
+      "blockFieldsTitle": "Các Trường thông tin trong Khối ({count})",
+      "cardBackground": "Hình nền Thẻ",
+      "noImageSelected": "Không có hình ảnh nào được chọn",
+      "backgroundImageHelp": "Chọn một hình ảnh từ các nguồn dữ liệu trực quan để sử dụng làm hình nền",
+      "backgroundColorHelp": "Màu sắc sẽ được áp dụng nếu không có hình nền nào được chọn",
+      "padding": "Đệm (Khoảng trống bên trong)",
+      "paddingPlaceholder": "Ví dụ: 16px, 1rem, 10px 20px",
+      "paddingHelp": "Khoảng cách bên trong giữa đường viền thẻ và nội dung của thẻ",
+      "gap": "Khoảng trống (Khoảng cách giữa các khối)",
+      "gapPlaceholder": "Ví dụ: 16px, 1rem, 20px",
+      "gapHelp": "Khoảng cách giữa các khối thẻ",
+      "blockId": "ID: {id} • {count} trường",
+      "expandConfiguration": "Mở rộng cấu hình",
+      "collapseConfiguration": "Thu gọn cấu hình",
+      "untitled": "Chưa có tiêu đề",
+      "errors": {
+        "blocksRequired": "Bạn phải thêm ít nhất một khối"
+      }
+    },
+    "basicInfo": {
+      "accessType": "Loại truy cập",
+      "accessTypes": {
+        "public": "Công cộng",
+        "private": "Riêng tư",
+        "restricted": "Hạn chế"
+      },
+      "title": "Thông tin cơ bản",
+      "allowedGroups": "Nhóm được phép",
+      "loadingGroups": "Đang tải nhóm...",
+      "name": "Tên thẻ",
+      "description": "Xác định dữ liệu chính của thẻ của bạn",
+      "namePlaceholder": "VD: Cảnh báo sâu bệnh hại cà phê",
+      "type": "Loại thẻ",
+      "typeHelp": "Chọn loại thẻ dựa trên mục đích sử dụng",
+      "accessTypeHelp": "Xác định ai có thể sử dụng thẻ này",
+      "allowedGroupsHelp": "Giữ Ctrl/Cmd để chọn nhiều nhóm",
+      "errors": {
+        "nameRequired": "Tên thẻ là bắt buộc",
+        "typeRequired": "Loại thẻ là bắt buộc",
+        "groupsRequired": "Bạn phải chọn ít nhất một nhóm cho các thẻ bị giới hạn."
+      }
+    },
+    "actions": {
+      "back": "Mặt sau",
+      "next": "Tiếp theo",
+      "create": "Tạo thẻ",
+      "update": "Cập nhật thẻ"
+    },
+    "messages": {
+      "loading": "Đang tải thẻ...",
+      "createSuccess": "Thẻ đã được tạo thành công",
+      "updateSuccess": "Thẻ đã được cập nhật thành công",
+      "saveError": "Lỗi khi lưu thẻ: {error}",
+      "duplicateCardName": "Đã có thẻ có tên này. Vui lòng chọn tên khác.",
+      "loadError": "Lỗi khi tải thẻ",
+      "loadErrorMessage": "Không thể tải dữ liệu thẻ",
+      "invalidId": "ID thẻ không hợp lệ"
+    },
+    "title": "Tạo thẻ",
+    "titleEdit": "Chỉnh sửa thẻ",
+    "subtitle": "Xác định nội dung mẫu (sẵn có) có thể dùng trong bản tin.",
+    "backToCards": "Quay lại Thẻ"
+  },
+  "Groups": {
+    "table": {
+      "roles": "Vai trò",
+      "edit": "Chỉnh sửa",
+      "description": "Miêu tả",
+      "role": "Vai trò",
+      "actions": "Các hành động",
+      "viewDetails": "Xem chi tiết",
+      "hide": "Ẩn",
+      "group": "Nhóm",
+      "country": "Quốc gia",
+      "members": "Thành viên",
+      "membersCount": "{count} thành viên",
+      "rolesCount": "{count} vai trò duy nhất",
+      "usersAndRoles": "Người dùng và Vai trò:",
+      "noUsers": "Nhóm này không có người dùng nào được chỉ định",
+      "user": "Người dùng"
+    },
+    "noResultsSearch": "Hãy thử các thuật ngữ tìm kiếm khác nhau",
+    "loading": "Đang tải nhóm...",
+    "title": "Quản lý nhóm",
+    "subtitle": "Các Nhóm tổ chức người dùng theo đơn vị địa lý và hỗ trợ quản lý quyền hạn. Mỗi nhóm đại diện cho một quốc gia hoặc khu vực và bao gồm những người dùng với các vai trò cụ thể.",
+    "searchPlaceholder": "Tìm kiếm nhóm theo tên, quốc gia hoặc mô tả...",
+    "createNew": "Tạo nhóm",
+    "errorTitle": "Lỗi khi tải nhóm",
+    "showing": "Hiển thị {filtered} trong tổng số {total}",
+    "totalGroups": "Tổng số nhóm: {count}",
+    "noResults": "Không tìm thấy nhóm nào",
+    "noGroupsSystem": "Hệ thống chưa thiết lập nhóm nào.",
+    "groupsInfo": {
+      "title": "Giới thiệu về Nhóm",
+      "description": "Các Nhóm cho phép tổ chức người dùng theo vị trí địa lý (quốc gia) và gán các vai trò cụ thể để cùng nhau quản lý bản tin và tài nguyên.",
+      "benefits": "Lợi ích của việc sử dụng nhóm:",
+      "benefit1": "Tổ chức địa lý của người dùng",
+      "benefit2": "Phân công vai trò cụ thể cho từng nhóm",
+      "benefit3": "Quản lý quyền tập trung",
+      "benefit4": "Phối hợp hiệu quả đối với các bản tin theo khu vực"
+    }
+  },
+  "Hero": {
+    "title": "Tạo bản tin với",
+    "subtitle": "",
+    "description": "Nền tảng để xây dựng, hiệu đính và xuất bản các bản tin thời tiết nông vụ theo cách chuyên nghiệp.",
+    "cta": "Bắt đầu xây dựng",
+    "stats": {
+      "countries": "Bản tin từ 2 quốc gia",
+      "templates": "Biểu mẫu có thể tùy chỉnh"
+    },
+    "animatedWords": {
+      "word1": "Thông tin khí hậu",
+      "word2": "khuyến nghị",
+      "word3": "dự báo"
+    }
+  },
+  "Cards": {
+    "updatedBy": "Cập nhật bởi",
+    "edit": "Chỉnh sửa",
+    "download": "Tải xuống",
+    "delete": "Xóa bỏ",
+    "confirmDeleteBtn": "Xóa bỏ",
+    "duplicate": "Tạo bản sao",
+    "confirmDuplicateBtn": "Tạo bản sao",
+    "cancelDelete": "Hủy bỏ",
+    "cancelDuplicate": "Hủy bỏ",
+    "preview": "Xem trước",
+    "deleting": "Đang xóa...",
+    "lastModified": "Lần sửa đổi cuối cùng",
+    "retry": "Thử lại",
+    "page": "trang",
+    "pages": "các trang",
+    "section": "Phần",
+    "by": "Bởi",
+    "cardTypes": {
+      "general": "Tổng quan",
+      "pest_or_disease": "Sâu hoặc bệnh",
+      "pest": "Sâu bệnh",
+      "crop_info": "Thông tin cây trồng",
+      "crop": "Mùa vụ",
+      "crops": "Cây trồng",
+      "recommendation": "Khuyến cáo",
+      "weather_alert": "Cảnh báo thời tiết",
+      "alert": "Cảnh báo"
+    },
+    "blocks": "khối",
+    "fields": "Trường thông tin",
+    "loading": "Đang tải thẻ...",
+    "title": "Quản lý các thẻ có thể tái sử dụng cho bản tin của bạn",
+    "subtitle": "Các Thẻ là nội dung được định nghĩa trước mà bạn có thể chèn vào bản tin của mình: (bao gồm) sâu bệnh, dịch bệnh, thông tin cây trồng và khuyến nghị.",
+    "createNew": "Tạo thẻ",
+    "searchPlaceholder": "Tìm kiếm thẻ theo tên hoặc loại...",
+    "deleteConfirmTitle": "Xóa thẻ",
+    "deleteConfirmMessage": "Bạn có chắc chắn muốn xóa \"{name}\" không? Thao tác này không thể hoàn tác.",
+    "deleteSuccess": "Thẻ \"{name}\" đã được xóa thành công",
+    "deleteError": "Lỗi khi xóa thẻ \"{name}\": {error}",
+    "duplicateConfirmTitle": "Sao chép thẻ",
+    "duplicateConfirmMessage": "Nhập tên cho thẻ mới được sao chép:",
+    "cardNameLabel": "Tên thẻ",
+    "cardNamePlaceholder": "Tên thẻ bị trùng lặp",
+    "duplicating": "Đang sao chép...",
+    "duplicateSuccess": "Thẻ \"{name}\" đã được sao chép thành công",
+    "duplicateError": "Lỗi khi sao chép thẻ \"{name}\": {error}",
+    "noResults": "Không tìm thấy thẻ",
+    "createFirst": "Tạo thẻ đầu tiên của bạn",
+    "filterByType": "Lọc theo loại",
+    "allTypes": "Tất cả các loại",
+    "templates": "Các biểu mẫu"
+  },
+  "PreviewModal": {
+    "edit": "Chỉnh sửa",
+    "delete": "Xóa bỏ",
+    "errorTitle": "Lỗi",
+    "section": "Phần",
+    "publish": "Xuất bản",
+    "loadingEllipsis": "Đang tải...",
+    "of": "của",
+    "loading": "Đang tải",
+    "clone": "Bản sao",
+    "sendToReview": "Gửi đi duyệt",
+    "downloadPDF": "Tải xuống định dạng PDF"
+  },
+  "Bulletins": {
+    "download": "Tải xuống",
+    "createNew": "Tạo mới",
+    "lastModified": "Lần sửa đổi cuối cùng",
+    "view": "Xem",
+    "title": "Quản lý và tạo bản tin thời tiết nông vụ",
+    "subtitle": "Tạo, hiệu đính và xuất bản bản tin thời tiết nông vụ bằng các biểu mẫu có thể tùy chỉnh.",
+    "searchPlaceholder": "Tìm kiếm bản tin...",
+    "noResults": "Không tìm thấy bản tin nào",
+    "loading": "Đang tải bản tin...",
+    "createFirst": "Tạo bản tin mới",
+    "by": "Bởi"
+  },
+  "CreateRole": {
+    "crud": {
+      "delete": "Xóa bỏ",
+      "create": "Tạo",
+      "read": "Đọc",
+      "update": "Cập nhật"
+    },
+    "cancel": "Hủy bỏ",
+    "description": "Miêu tả",
+    "basicInfo": "Thông tin cơ bản",
+    "createRole": "Tạo vai trò",
+    "modules": {
+      "review": {
+        "name": "Rà soát",
+        "description": "Quản lý quy trình rà soát bản tin"
+      },
+      "cardmanagement": {
+        "description": "Quản lý các thẻ có thể tái sử dụng",
+        "name": "Quản lý thẻ"
+      },
+      "bulletinscomposer": {
+        "name": "Biên tập bản tin",
+        "description": "Tạo và chỉnh sửa bản tin thời tiết nông vụ"
+      },
+      "templatemanagement": {
+        "name": "Quản lý biểu mẫu",
+        "description": "Quản lý các mẫu bản tin"
+      },
+      "dashboardbulletins": {
+        "name": "Bảng điều khiển Bản tin",
+        "description": "Xem danh sách bản tin và trạng thái"
+      },
+      "accesscontrol": {
+        "name": "Kiểm soát truy cập",
+        "description": "Quản lý người dùng, vai trò và nhóm"
+      },
+      "externalintegrations": {
+        "name": "Các Hệ thống Tích hợp Ngoài",
+        "description": "Cấu hình tích hợp với các hệ thống bên ngoài"
+      }
+    },
+    "backToRoles": "Quay lại Vai trò",
+    "title": "Tạo Vai trò mới",
+    "subtitle": "Thiết lập quyền và cấp độ truy cập cho vai trò mới trong hệ thống.",
+    "titleEdit": "Chỉnh sửa vai trò",
+    "subtitleEdit": "Chỉnh sửa quyền và cấp độ truy cập cho vai trò đã tồn tại.",
+    "loadingRole": "Đang tải vai trò...",
+    "roleName": "Tên vai trò",
+    "roleNamePlaceholder": "ví dụ: Trình biên tập bản tin",
+    "roleNameRequired": "Tên vai trò là bắt buộc",
+    "roleNameMinLength": "Tên phải có ít nhất 3 ký tự",
+    "descriptionPlaceholder": "Mô tả trách nhiệm và phạm vi của vai trò này...",
+    "descriptionRequired": "Mô tả là bắt buộc",
+    "descriptionMinLength": "Mô tả phải có ít nhất 10 ký tự",
+    "permissions": "Quyền truy cập theo Vai trò",
+    "permissionsEnabled": "Quyền hạn đang được kích hoạt",
+    "permissionsRequired": "Ít nhất một quyền hạn phải được kích hoạt cho vai trò này.",
+    "module": "Mô-đun",
+    "all": "Tất cả",
+    "checkAll": "Kiểm tra tất cả",
+    "uncheckAll": "Bỏ chọn tất cả",
+    "complete": "Hoàn thành",
+    "permissionsNote": "Lưu ý: Quyền CRUD cho phép: Tạo tài nguyên mới, Đọc và xem thông tin, Cập nhật tài nguyên hiện có và Xóa tài nguyên. Đảm bảo chỉ cấp các quyền cần thiết cho từng vai trò.",
+    "creating": "Tạo vai trò...",
+    "createSuccess": "Vai trò đã được tạo thành công",
+    "createError": "Lỗi khi tạo vai trò",
+    "updateRole": "Cập nhật vai trò",
+    "updating": "Đang cập nhật...",
+    "updateSuccess": "Vai trò đã được cập nhật thành công",
+    "updateError": "Lỗi khi cập nhật vai trò",
+    "validationError": "Vui lòng khắc phục các lỗi trong biểu mẫu",
+    "connectionError": "Lỗi kết nối khi tạo vai trò"
+  },
+  "CreateTemplate": {
+    "sections": {
+      "section": {
+        "duplicate": "Tạo bản sao",
+        "editName": "Chỉnh sửa tên phần",
+        "addBlock": "Thêm khối",
+        "remove": "Di chuyển",
+        "moveUp": "Di chuyển lên",
+        "moveDown": "Di chuyển xuống",
+        "blocks": "Khối",
+        "noBlocks": "Không có khối nào trong phần này",
+        "sectionId": "ID phần",
+        "iconUrl": "Biểu tượng đường dẫn"
+      },
+      "overview": {
+        "page": "Trang",
+        "title": "Cấu hình chung",
+        "removeIcon": "Di chuyển",
+        "sectionName": "Tên phần",
+        "sectionNamePlaceholder": "Nhập tên phần",
+        "sectionNameHelp": "Tên này sẽ xuất hiện trong phần điều hướng.",
+        "pageOrder": "Thứ tự trang",
+        "pageOrderHelp": "Xác định thứ tự của trang này trong bản tin",
+        "sectionIcon": "Biểu tượng phần",
+        "selectedIcon": "Biểu tượng đã chọn",
+        "selectIcon": "Chọn biểu tượng",
+        "changeIcon": "Thay đổi biểu tượng",
+        "loadingIcons": "Đang tải biểu tượng...",
+        "iconHelp": "Biểu tượng tùy chọn sẽ xuất hiện bên cạnh tên phần",
+        "sectionStyles": "Phong cách Phần",
+        "sectionStylesDescription": "Cácphong cách này sẽ được áp dụng cho tất cả các khối và trường thông tin trong phần này, trừ khi bị ghi đè.",
+        "noName": "Không có tên",
+        "blocks": "khối",
+        "id": "ID",
+        "duplicateSection": "Phần trùng lặp",
+        "deleteSection": "Xóa phần"
+      },
+      "navigation": {
+        "sections": "Các phần",
+        "addSection": "Thêm phần"
+      },
+      "tabs": {
+        "header": "Đầu trang",
+        "footer": "Chân trang",
+        "blocks": "Khối",
+        "general": "Tổng quan"
+      },
+      "block": {
+        "addField": "Thêm trường thông tin",
+        "addFieldButton": "Thêm trường thông tin",
+        "fields": "Các trường thông tin",
+        "noFieldsConfigured": "Không có trường thông tin nào được cấu hình",
+        "editName": "Chỉnh sửa tên khối",
+        "remove": "Xóa khối",
+        "noFields": "Không có trường thông tin nào trong khối này",
+        "configuration": "Cấu hình khối",
+        "nameLabel": "Tên khối",
+        "namePlaceholder": "Nhập tên khối",
+        "nameHelp": "Tên này giúp xác định khối trong phần cấu hình",
+        "styles": "Phong cách Khối Nội dung",
+        "stylesDescription": "Kiểu dáng Khối sẽ được áp dụng cho vùng chứa (container) nhóm các trường thông tin.",
+        "fieldsTitle": "Các Trường thông tin của Khối",
+        "fieldsHelp": "Các trường xác định thông tin nào sẽ được thu thập trong khối này",
+        "configureBlock": "Cấu hình khối",
+        "closeConfiguration": "Đóng cấu hình",
+        "deleteBlock": "Xóa khối"
+      },
+      "title": "Cấu hình thành phần",
+      "description": "Thiết kế các mục chính trong nội dung biểu mẫu của bạn",
+      "addSection": "Thêm phần",
+      "info": "Tổng số phần",
+      "dragToReorder": "Kéo để sắp xếp lại",
+      "configureField": "Cấu hình trường thông tin",
+      "deleteField": "Xóa trường thông tin",
+      "newField": "Trường thông tin mới",
+      "yes": "Có",
+      "no": "Không",
+      "noSections": {
+        "title": "Chưa có phần nào",
+        "description": "Các mục là các khối xây dựng chính của mẫu của bạn. Mỗi mục có thể chứa nhiều khối nội dung.",
+        "cta": "Thêm phần đầu tiên của bạn"
+      },
+      "empty": {
+        "title": "Không có phần nào",
+        "description": "Thêm mục đầu tiên của bạn để bắt đầu tạo cấu trúc cho biểu mẫu.",
+        "addFirst": "Thêm phần đầu tiên"
+      },
+      "blocksTab": {
+        "addBlock": "Thêm khối",
+        "title": "Các khối nội dung",
+        "infoMessage": "Các Khối tổ chức nội dung trong mỗi trang. Mỗi Khối có thể chứa nhiều trường với các loại thông tin khác nhau.",
+        "noBlocks": "Không có khối",
+        "noBlocksDescription": "Các Khối tổ chức nội dung trong mỗi trang",
+        "addFirstBlock": "Thêm khối đầu tiên",
+        "fields": "Trường thông tin"
+      },
+      "iconSelector": {
+        "loading": "Đang tải biểu tượng...",
+        "title": "Chọn biểu tượng cho phần",
+        "noIcons": "Không có biểu tượng nào có sẵn",
+        "uploadPrompt": "Tải lên các biểu tượng trong phần Tài liệu trực quan"
+      },
+      "headerTab": {
+        "title": "Đầu mục",
+        "description": "Cấu hình một đầu trang cụ thể cho mục này. Đầu trang này sẽ thay thế đầu trang toàn cục chỉ trên trang này.",
+        "priorityTitle": "Ưu tiên",
+        "priorityMessage": "Nếu bạn cấu hình một đầu trang tại đây, nó sẽ được ưu tiên hơn đầu trang mẫu toàn cục. Nếu bạn không cấu hình gì, đầu trang toàn cục sẽ được sử dụng tự động.",
+        "usingGlobal": "Đang sử dụng đầu trang toàn cục",
+        "customizeButton": "Tùy chỉnh cho phần này",
+        "usingGlobalHelp": "Phần này sử dụng đầu trang toàn cục. Nhấp vào \"Tùy chỉnh\" để tạo phiên bản cụ thể mà bạn có thể tự chỉnh sửa.",
+        "restoreGlobal": "Khôi phục lại kiểu toàn cục",
+        "confirmRestore": "Bạn có chắc chắn muốn xóa tùy chỉnh và quay lại đầu trang toàn cục không?"
+      },
+      "footerTab": {
+        "priorityTitle": "Ưu tiên",
+        "customizeButton": "Tùy chỉnh cho phần này",
+        "restoreGlobal": "Khôi phục lại kiểu toàn cục",
+        "title": "Chân mục",
+        "description": "Cấu hình một chân trang cụ thể cho mục này.",
+        "priorityMessage": "Nếu bạn cấu hình một chân trang tại đây, nó sẽ được ưu tiên hơn. Nếu bạn không tùy chỉnh gì, chân trang toàn cục sẽ được tự động sử dụng.",
+        "usingGlobal": "Đang sử dụng Chân trang Toàn cục",
+        "usingGlobalHelp": "Mục này đang sử dụng chân trang toàn cục. Nhấp vào \"Tùy chỉnh\" để tạo phiên bản cụ thể mà bạn có thể tự chỉnh sửa.",
+        "confirmRestore": "Bạn có chắc chắn muốn xóa tùy chỉnh và quay lại chân trang toàn cục không?"
+      },
+      "fieldEditor": {
+        "title": "Cấu hình trường thông tin",
+        "closeEditor": "Đóng trình chỉnh sửa"
+      },
+      "newSection": "Phần mới",
+      "newBlock": "Khối mới"
+    },
+    "back": "Quay lại Biểu mẫu",
+    "backToTemplates": "Quay lại Biểu mẫu",
+    "basicInfo": {
+      "fields": {
+        "accessType": {
+          "label": "Loại truy cập",
+          "options": {
+            "public": "Công cộng",
+            "restricted": "Hạn chế"
+          },
+          "help": {
+            "public": "Hiển thị cho tất cả người dùng",
+            "restricted": "Chỉ hiển thị cho các nhóm cụ thể"
+          }
+        },
+        "status": {
+          "options": {
+            "draft": "Bản nháp",
+            "active": "Đang hoạt động",
+            "archived": "Đã lưu trữ"
+          },
+          "label": "Trạng thái"
+        },
+        "description": {
+          "label": "Miêu tả",
+          "placeholder": "Mô tả mục đích và phạm vi của biểu mẫu này..."
+        },
+        "name": {
+          "label": "Tên biểu mẫu",
+          "placeholder": "ví dụ: Bản tin khí hậu nông nghiệp cà phê"
+        },
+        "allowedGroups": {
+          "label": "Nhóm được phép",
+          "placeholder": "Chọn nhóm có thể truy cập mẫu này...",
+          "loading": "Đang tải nhóm..."
+        }
+      },
+      "title": "Thông tin cơ bản",
+      "description": "Xác định dữ liệu chính cho biểu mẫu của bạn"
+    },
+    "fieldEditor": {
+      "cancel": "Hủy bỏ",
+      "actions": {
+        "cancel": "Hủy bỏ",
+        "remove": "Di chuyển",
+        "save": "Lưu",
+        "addOption": "Thêm tùy chọn",
+        "addParameter": "Thêm tham số",
+        "add": "Thêm vào"
+      },
+      "styleConfig": {
+        "previewTitle": "Xem trước",
+        "listLayoutOptions": {
+          "vertical": "Thẳng đứng",
+          "horizontal": "Nằm ngang",
+          "grid2": "Lưới 2 cột",
+          "grid3": "Lưới 3 cột"
+        },
+        "colorPickerTitle": "Bộ chọn màu",
+        "inherited": "Kế thừa",
+        "backgroundImagePreviewAlt": "Xem trước nền",
+        "removeImage": "Xóa hình ảnh",
+        "noBackgroundImage": "Không có hình nền",
+        "changeImage": "Thay đổi hình ảnh",
+        "selectImage": "Chọn hình ảnh",
+        "selectBackgroundImageTitle": "Chọn hình nền",
+        "previewMainTitle": "Tiêu đề chính",
+        "previewSubtitle": "Ví dụ phụ đề",
+        "previewText": "Đây là đoạn văn bản mẫu cho thấy các kiểu dáng đã áp dụng sẽ trông như thế nào.",
+        "previewSmallText": "Chữ nhỏ để biết thêm thông tin chi tiết.",
+        "fieldsLayout": "Bố cục các ô nhập liệu",
+        "justifyContent": "Bố trí các ô nhập liệu",
+        "justifyOptions": {
+          "start": "Bắt đầu",
+          "end": "Kết thúc",
+          "center": "Trung tâm",
+          "between": "Chia đều khoảng cách giữa các phần tử",
+          "around": "Chia khoảng cách xung quanh",
+          "evenly": "Chia đều khoảng cách"
+        },
+        "alignOptions": {
+          "center": "Trung tâm",
+          "left": "Bên trái",
+          "right": "Phải"
+        },
+        "borderLeft": "Bên trái",
+        "borderRight": "Phải",
+        "fontWeightOptions": {
+          "thin": "Mỏng (100)",
+          "extraLight": "Siêu nhẹ (200)",
+          "light": "Ánh sáng (300)",
+          "normal": "Bình thường (400)",
+          "medium": "Trung bình (500)",
+          "semiBold": "Nửa đậm (600)",
+          "bold": "In đậm (700)",
+          "extraBold": "Đậm hơn (800)",
+          "black": "Đen (900)"
+        },
+        "fontStyleOptions": {
+          "normal": "Bình thường",
+          "italic": "In nghiêng"
+        },
+        "textDecorationOptions": {
+          "none": "Không có",
+          "underline": "Gạch chân",
+          "lineThrough": "Dòng qua"
+        },
+        "layoutOptions": {
+          "horizontal": "Ngang (cạnh nhau)",
+          "vertical": "Dọc (xếp chồng)"
+        },
+        "listStyleOptions": {
+          "disc": "• Hình tròn tô đầy",
+          "circle": "○ Vòng tròn trống",
+          "square": "■ Hình vuông",
+          "decimal": "1. Đã đánh số",
+          "none": "Không có dấu đầu dòng"
+        },
+        "font": "Phông chữ",
+        "secondaryColor": "Màu thứ cấp",
+        "backgroundColor": "Màu nền",
+        "fontSize": "Kích thước phông chữ (px)",
+        "textAlign": "Căn chỉnh văn bản",
+        "color": "Màu văn bản",
+        "opacity": "Độ trong suốt",
+        "iconSize": "Kích thước biểu tượng (px)",
+        "iconUseOriginalColor": "Giữ màu biểu tượng ban đầu",
+        "iconUseOriginalColorHelp": "Nếu bị vô hiệu hóa, biểu tượng sẽ sử dụng màu chính từ ngữ cảnh.",
+        "fontWeight": "Độ đậm của phông chữ",
+        "lineHeight": "Chiều cao dòng",
+        "fontStyle": "Kiểu phông chữ",
+        "textDecoration": "Trang trí văn bản",
+        "borderColor": "Màu viền",
+        "backgroundImage": "Hình nền",
+        "borderWidth": "Chiều rộng đường viền",
+        "borderRadius": "Bán kính đường viền",
+        "borderSides": "Các mặt Đường viền",
+        "borderSidesHelp": "Chọn các mặt cần hiển thị đường viền",
+        "borderTop": "Đầu",
+        "borderBottom": "Cuối",
+        "bulletinWidth": "Chiều rộng bản tin (px)",
+        "bulletinHeight": "Chiều cao bản tin (px)",
+        "listStyleType": "Kiểu trình bày danh sách",
+        "listItemsLayout": "Bố trí các phần tử trong Danh sách",
+        "title": "Kiểu trường thông tin",
+        "padding": "Đệm (CSS)-Khoảng trống giữa nội dung và đường viền",
+        "margin": "Lề (CSS)-Khoảng trống bên ngoài đường viền (Border), dùng để tạo khoảng cách giữa các phần tử.",
+        "gap": "Khoảng cách trường- Khoảng trống giữa các ô nhập liệu"
+      },
+      "preview": {
+        "title": "Xem trước"
+      },
+      "fieldTypes": {
+        "image": "Hình ảnh",
+        "text": "Chữ",
+        "text_with_icon": "Văn bản có biểu tượng",
+        "climate_data_puntual": "Dữ liệu khí hậu",
+        "list": "Danh sách",
+        "select": "Lựa chọn",
+        "searchable": "Ô chọn có thể tìm kiếm",
+        "select_with_icons": "Chọn kèm Biểu tượng",
+        "select_background": "Chọn kèm hình nền",
+        "number": "Số",
+        "date": "Ngày",
+        "date_range": "Phạm vi ngày",
+        "image_upload": "Tải hình ảnh lên",
+        "algorithm": "Thuật toán",
+        "page_number": "Số trang",
+        "card": "Thẻ",
+        "moon_calendar": "Lịch mặt trăng"
+      },
+      "selectWithIconsConfig": {
+        "iconUrl": "Biểu tượng",
+        "selectIcon": "Chọn biểu tượng",
+        "changeIcon": "Thay đổi",
+        "selectIconFor": "Chọn biểu tượng cho tùy chọn",
+        "allowMultiple": "Cho phép lựa chọn nhiều",
+        "allowMultipleHelp": "Nếu được cho phép, người dùng sẽ có thể chọn nhiều tùy chọn",
+        "showLabel": "Hiển thị nhãn bên cạnh biểu tượng",
+        "showLabelHelp": "Nếu được cho phép, văn bản tùy chọn sẽ được hiển thị bên cạnh biểu tượng",
+        "optionsAndIcons": "Tùy chọn và Biểu tượng",
+        "optionLabel": "Lựa chọn",
+        "optionPlaceholder": "Văn bản tùy chọn",
+        "noOptionsMessage": "Không có tùy chọn nào được xác định. Nhấp vào \"Thêm tùy chọn\" để bắt đầu.",
+        "iconSelected": "Biểu tượng đã chọn"
+      },
+      "value": {
+        "iconLabel": "Biểu tượng",
+        "selectedIcon": "Biểu tượng đã chọn",
+        "title": "Giá trị trường thông tin",
+        "label": "Giá trị",
+        "placeholder": "Giá trị hiển thị trong bản tin",
+        "help": "Vì trường thông tin này không xuất hiện trong biểu mẫu, bạn phải xác định giá trị sẽ được hiển thị tại đây.",
+        "loadingIcons": "Đang tải các biểu tượng có sẵn...",
+        "noIconsAvailable": "Không có biểu tượng nào khả dụng. Vui lòng tải biểu tượng lên phần Tài liệu trực quan.",
+        "selectIconPlaceholder": "Chọn một biểu tượng",
+        "selectIcon": "Chọn biểu tượng",
+        "iconHelp": "Chọn biểu tượng sẽ đi kèm với văn bản trong bản tin"
+      },
+      "save": "Lưu thay đổi",
+      "basic": {
+        "description": "Miêu tả",
+        "fieldId": "ID trường thông tin",
+        "displayName": "Tên hiển thị",
+        "type": "Loại trường thông tin",
+        "label": "Nhãn"
+      },
+      "fields": {
+        "description": {
+          "label": "Miêu tả",
+          "help": "Trợ giúp cho người dùng"
+        },
+        "fieldId": {
+          "label": "ID trường thông tin",
+          "help": "Mã định danh duy nhất (không có khoảng trắng hoặc ký tự đặc biệt)"
+        },
+        "displayName": {
+          "label": "Tên hiển thị",
+          "help": "Tên hiển thị cho người dùng"
+        },
+        "type": {
+          "label": "Loại trường thông tin"
+        },
+        "label": {
+          "label": "Nhãn",
+          "help": "Nhãn tùy chọn cho người dùng"
+        },
+        "required": {
+          "label": "Trường thông tin bắt buộc"
+        },
+        "form": {
+          "label": "Hiển thị dưới dạng",
+          "help": "Trường thông tin này sẽ xuất hiện trong biểu mẫu nhập dữ liệu"
+        },
+        "bulletin": {
+          "label": "Hiển thị trong bản tin",
+          "help": "Trường thông tin này sẽ xuất hiện trong bản tin"
+        }
+      },
+      "dateRangeConfig": {
+        "startDateDescription": "Miêu tả",
+        "endDateDescription": "Miêu tả",
+        "startDateLabel": "Nhãn",
+        "endDateLabel": "Nhãn",
+        "format": "Định dạng ngày tháng",
+        "startDateSection": "Ngày bắt đầu",
+        "startDateLabelPlaceholder": "Ví dụ: Ngày bắt đầu, Từ, v.v.",
+        "startDateDescriptionPlaceholder": "Mô tả ngày bắt đầu",
+        "endDateSection": "Ngày kết thúc",
+        "endDateLabelPlaceholder": "Ví dụ: Ngày kết thúc, Đến, v.v.",
+        "endDateDescriptionPlaceholder": "Mô tả ngày kết thúc"
+      },
+      "basicInfo": "Thông tin cơ bản",
+      "pageNumberConfig": {
+        "format": "Định dạng",
+        "help": "Sử dụng '{page}' cho trang hiện tại và '{total}' cho tổng số trang",
+        "previewTitle": "Xem trước cách phân chia các trang",
+        "formatLabel": "Định dạng đã thiết lập:",
+        "previewHelp": "Đây là bản xem trước. Số trang sẽ được tự động tạo."
+      },
+      "imageConfig": {
+        "changeImage": "Thay đổi hình ảnh",
+        "selectImage": "Chọn hình ảnh",
+        "change": "Thay đổi",
+        "predefinedImageLabel": "Hình ảnh được xác định trước (Giá trị)",
+        "predefinedImageHelp": "Vì trường thông tin này không hiển thị trong biểu mẫu (form = false), bạn phải chỉ định hình ảnh sẽ được hiển thị trực tiếp trong bản tin.",
+        "predefinedImageAlt": "Hình ảnh được xác định trước",
+        "deleteValue": "Xóa giá trị được xác định trước",
+        "selectPredefinedImage": "Chọn hình ảnh được xác định trước",
+        "selectPredefinedImageTitle": "Chọn Hình ảnh được Xác định trước",
+        "availableImagesLabel": "Hình ảnh có sẵn",
+        "addImage": "Thêm hình ảnh",
+        "availableImagesHelp": "Thêm hình ảnh mà người dùng có thể chọn cho trường thông tin này",
+        "imageNumber": "Hình ảnh {number}",
+        "noImage": "Không có hình ảnh",
+        "deleteImage": "Xóa hình ảnh",
+        "noImagesConfigured": "Không có hình ảnh nào được cấu hình",
+        "clickAddImage": "Nhấp vào \"Thêm hình ảnh\" để bắt đầu",
+        "galleryPreviewLabel": "Xem trước thư viện",
+        "previewNumber": "Xem trước {number}",
+        "galleryPreviewHelp": "Người dùng sẽ có thể chọn một trong những hình ảnh này",
+        "selectImageTitle": "Chọn hình ảnh {number}"
+      },
+      "listConfig": {
+        "addField": "Thêm trường thông tin",
+        "type": "Kiểu",
+        "form": "Hình thức",
+        "bulletin": "Bản tin",
+        "dragToReorder": "Kéo để sắp xếp lại",
+        "configureField": "Cấu hình trường thông tin",
+        "deleteField": "Xóa trường thông tin",
+        "newField": "Trường thông tin mới",
+        "yes": "Có",
+        "no": "Không",
+        "configureFieldTitle": "Cấu hình trường thông tin",
+        "selectTitle": "Lựa chọn",
+        "changeImage": "Thay đổi",
+        "selectImage": "Chọn hình ảnh",
+        "enterValue": "Nhập",
+        "minItems": "Số lượng phần tử tối thiểu",
+        "maxItems": "Số lượng phần tử tối đa",
+        "itemsPerPage": "Số mục trên mỗi trang (tùy chọn)",
+        "itemsPerPagePlaceholder": "Để trống để hiển thị tất cả",
+        "itemsPerPageHelp": "Nếu được chỉ định, danh sách sẽ được chia thành các trang với số lượng phần tử này.",
+        "schemaTitle": "Sơ đồ Cấu trúc các Phần tử Danh sách",
+        "schemaDescription": "Xác định các trường thông tin mà mỗi mục danh sách sẽ có",
+        "noFieldsMessage": "Chưa có trường thông tin nào được xác định. Nhấp vào \"Thêm trường\" để bắt đầu.",
+        "itemsTitle": "Danh sách các mục",
+        "itemsDescription": "Xác định các mục sẽ được hiển thị trong bản tin",
+        "addItem": "Thêm mục",
+        "itemNumber": "Mục",
+        "deleteItem": "Xóa mục",
+        "noItemsMessage": "Không có mục nào. Nhấp vào 'Thêm mục' để bắt đầu.",
+        "defineSchemaFirst": "Trước tiên, hãy xác định sơ đồ các phần tử ở trên"
+      },
+      "climateDataConfig": {
+        "type": "Kiểu",
+        "label": "Nhãn",
+        "typeText": "Chữ",
+        "defaultTitle": "Dữ liệu khí hậu",
+        "typeNumber": "Số",
+        "availableParameters": "Các thông số khí hậu có sẵn",
+        "parameterKey": "Khóa tham số",
+        "unit": "Đơn vị",
+        "colName": "Tên cột",
+        "addNewParameter": "Thêm tham số mới",
+        "noParameters": "Chưa cấu hình thông số khí hậu. Nhấp vào \"Thêm thông số\" để bắt đầu.",
+        "helpTitle": "Thông tin dữ liệu khí hậu",
+        "helpParameter": "Mỗi tham số đại diện cho một loại dữ liệu khí hậu",
+        "helpColName": "Tên cột phải khớp với tệp dữ liệu",
+        "helpType": "Sử dụng 'Số' cho các giá trị số và 'Văn bản' cho các quan sát",
+        "helpUnit": "Đơn vị sẽ được hiển thị cùng với giá trị trong bản tin",
+        "placeholders": {
+          "labelExample": "VD: Nhiệt độ tối đa",
+          "unitExample": "VD: °C, mm, %",
+          "colNameExample": "Ví dụ: nhiệt độ tối đa, lượng mưa",
+          "keyExample": "Ví dụ: nhiệt độ tối đa, lượng mưa"
+        },
+        "previewExampleValue": "Giá trị mẫu",
+        "showNameInPreview": "Hiển thị tên trong bản xem trước",
+        "parameterStyles": "Kiểu tham số"
+      },
+      "cardConfig": {
+        "type": "Kiểu",
+        "availableCards": "Thẻ có sẵn để lựa chọn",
+        "addCard": "Thêm thẻ",
+        "loading": "Đang tải...",
+        "help": "Chọn các thẻ mà người dùng có thể chọn cho trường thông tin này",
+        "noPreview": "Không có bản xem trước",
+        "remove": "Xóa thẻ",
+        "noCardsSelected": "Không có thẻ nào được chọn",
+        "noCardsHelp": "Nhấp vào \"Thêm thẻ\" để bắt đầu",
+        "modalTitle": "Chọn thẻ",
+        "searchPlaceholder": "Tìm kiếm thẻ theo tên...",
+        "loadingCards": "Đang tải thẻ...",
+        "noResults": "Không tìm thấy thẻ nào có tên đó",
+        "noMoreCards": "Không còn thẻ nào khả dụng",
+        "cardsCount": "{count} thẻ{plural} có sẵn để lựa chọn"
+      },
+      "selectBackgroundConfig": {
+        "backgroundImage": "Hình nền",
+        "select": "Lựa chọn",
+        "change": "Thay đổi",
+        "noImage": "Không có hình ảnh",
+        "optionLabel": "Lựa chọn",
+        "noOptionsMessage": "Không có tùy chọn nào được xác định. Nhấp vào \"Thêm tùy chọn\" để bắt đầu.",
+        "optionsAndBackgrounds": "Các Tùy chọn và Hình nền",
+        "optionPlaceholder": "VD: Nền sáng",
+        "backgroundLabel": "Nền",
+        "selectBackgroundFor": "Chọn hình nền cho"
+      },
+      "title": "Biên tập các trường thông tin",
+      "noConfig": "Không có cấu hình cụ thể nào cho loại trường thông tin này",
+      "visibility": {
+        "title": "Khả năng hiển thị",
+        "form": "Hiển thị trong biểu mẫu để tạo bản tin",
+        "bulletin": "Hiển thị trong bản tin cuối cùng",
+        "formHelp": "Nếu không hiển thị trong biểu mẫu, nhãn và mô tả sẽ được tự động gán từ tên hiển thị"
+      },
+      "validation": {
+        "title": "Xác thực",
+        "required": "Trường thông tin bắt buộc",
+        "minLength": "Chiều dài tối thiểu",
+        "maxLength": "Chiều dài tối đa"
+      },
+      "specificConfig": {
+        "title": "Cấu hình riêng biệt"
+      },
+      "searchableConfig": {
+        "addOption": "Thêm tùy chọn",
+        "noOptionsMessage": "Không có tùy chọn nào được xác định. Nhấp vào \"Thêm tùy chọn\" để bắt đầu.",
+        "options": "Tùy chọn có sẵn",
+        "optionPlaceholder": "Tên tùy chọn",
+        "help": "Người dùng sẽ có thể tìm kiếm trong số các tùy chọn này hoặc tạo một tùy chọn mới nếu nó không tồn tại",
+        "removeOption": "Xóa tùy chọn"
+      },
+      "textWithIconConfig": {
+        "selectIcon": "Lựa chọn",
+        "validationsHelp": "Các quy tắc kiểm tra này sẽ được thực hiện khi người dùng hoàn tất biểu mẫu.",
+        "iconOptions": "Tùy chọn biểu tượng",
+        "iconOptionsHelp": "Đây là các tùy chọn biểu tượng mà người dùng sẽ có thể chọn khi điền vào mẫu.",
+        "addIcon": "Thêm biểu tượng",
+        "iconUrlPlaceholder": "https://example.com/icon.svg",
+        "noIconSelected": "Không có biểu tượng nào được chọn",
+        "changeIcon": "Thay đổi",
+        "iconSelectorTitle": "Chọn biểu tượng cho tùy chọn",
+        "showLabelForm": "Hiển thị nhãn trong biểu mẫu",
+        "showLabelPreview": "Hiển thị nhãn trong bản xem trước",
+        "showLabelFormHelp": "Nếu được kích hoạt, \"nhãn: giá trị\" sẽ được hiển thị trong bản tin",
+        "showLabelPreviewHelp": "Nếu được kích hoạt, nhãn sẽ được hiển thị bên cạnh giá trị trong bản tin."
+      },
+      "textConfig": {
+        "subtype": "Kiểu văn bản",
+        "short": "Ngắn",
+        "long": "Dài",
+        "subtypeHelp": "Ngắn: văn bản một dòng. Dài: vùng văn bản nhiều dòng.",
+        "validationsHelp": "Các quy tắc kiểm tra này sẽ được thực hiện khi người dùng hoàn tất biểu mẫu."
+      },
+      "numberConfig": {
+        "subtype": {
+          "label": "Loại Dữ liệu Số",
+          "integer": "Số nguyên",
+          "decimal": "Số thập phân"
+        },
+        "min": {
+          "label": "Giá trị tối thiểu"
+        },
+        "minValue": "Giá trị tối thiểu",
+        "max": {
+          "label": "Giá trị tối đa"
+        },
+        "maxValue": "Giá trị tối đa",
+        "step": {
+          "label": "Bước"
+        },
+        "decimals": {
+          "label": "Chữ số thập phân"
+        },
+        "decimalPlaces": "Chữ số thập phân"
+      },
+      "dateConfig": {
+        "format": "Định dạng ngày tháng"
+      },
+      "defaultConfig": {
+        "title": "Cấu hình cho kiểu \"{type}\"",
+        "message": "Kiểu trường này chưa có cấu hình cụ thể được triển khai.",
+        "helpText": "Các thuộc tính chung (tên, mô tả, kiểu) có sẵn trong các phần khác của trình soạn thảo."
+      }
+    },
+    "generalConfig": {
+      "styles": {
+        "previewTitle": "Xem trước",
+        "listLayoutOptions": {
+          "vertical": "Thẳng đứng",
+          "horizontal": "Nằm ngang",
+          "grid2": "Lưới 2 cột",
+          "grid3": "Lưới 3 cột"
+        },
+        "title": "Phong cách chung cho toàn bộ bản tin",
+        "colorPickerTitle": "Bộ chọn màu",
+        "inherited": "Kế thừa",
+        "backgroundImagePreviewAlt": "Xem trước nền",
+        "removeImage": "Xóa hình ảnh",
+        "noBackgroundImage": "Không có hình nền",
+        "changeImage": "Thay đổi hình ảnh",
+        "selectImage": "Chọn hình ảnh",
+        "selectBackgroundImageTitle": "Chọn hình nền",
+        "previewMainTitle": "Tiêu đề chính",
+        "previewSubtitle": "Ví dụ phụ đề",
+        "previewText": "Đây là đoạn văn bản mẫu cho thấy các kiểu dáng đã áp dụng sẽ trông như thế nào.",
+        "previewSmallText": "Chữ nhỏ để biết thêm thông tin chi tiết.",
+        "fieldsLayout": "Bố cục các ô nhập liệu",
+        "justifyContent": "Bố trí các ô nhập liệu",
+        "justifyOptions": {
+          "start": "Bắt đầu",
+          "end": "Kết thúc",
+          "center": "Trung tâm",
+          "between": "Chia đều khoảng cách giữa các phần tử",
+          "around": "Chia khoảng cách xung quanh",
+          "evenly": "Chia đều khoảng cách"
+        },
+        "alignOptions": {
+          "center": "Trung tâm",
+          "left": "Bên trái",
+          "right": "Phải"
+        },
+        "textAlign": {
+          "options": {
+            "center": "Trung tâm",
+            "left": "Bên trái",
+            "right": "Phải"
+          },
+          "label": "Căn chỉnh văn bản"
+        },
+        "fontWeightOptions": {
+          "thin": "Mỏng (100)",
+          "extraLight": "Siêu nhẹ (200)",
+          "light": "Ánh sáng (300)",
+          "normal": "Bình thường (400)",
+          "medium": "Trung bình (500)",
+          "semiBold": "Nửa đậm (600)",
+          "bold": "In đậm (700)",
+          "extraBold": "Đậm hơn (800)",
+          "black": "Đen (900)"
+        },
+        "fontStyleOptions": {
+          "normal": "Bình thường",
+          "italic": "In nghiêng"
+        },
+        "textDecorationOptions": {
+          "none": "Không có",
+          "underline": "Gạch chân",
+          "lineThrough": "Dòng qua"
+        },
+        "layoutOptions": {
+          "horizontal": "Ngang (cạnh nhau)",
+          "vertical": "Dọc (xếp chồng)"
+        },
+        "listStyleOptions": {
+          "disc": "• Hình tròn tô đầy",
+          "circle": "○ Vòng tròn trống",
+          "square": "■ Hình vuông",
+          "decimal": "1. Đã đánh số",
+          "none": "Không có dấu đầu dòng"
+        },
+        "font": {
+          "label": "Phông chữ"
+        },
+        "primaryColor": {
+          "label": "Màu cơ bản"
+        },
+        "secondaryColor": {
+          "label": "Màu thứ cấp"
+        },
+        "backgroundColor": {
+          "label": "Màu nền"
+        },
+        "fontSize": {
+          "label": "Kích thước phông chữ (px)"
+        }
+      },
+      "title": "Cấu hình chung",
+      "description": "Xác định các phong cách toàn cục sẽ được áp dụng cho toàn bộ biểu mẫu",
+      "fields": {
+        "commitMessage": {
+          "label": "Tin nhắn Phiên bản",
+          "placeholder": "Mô tả những thay đổi trong phiên bản này..."
+        }
+      },
+      "dimensions": {
+        "title": "Kích thước bản tin",
+        "preset": {
+          "label": "Định dạng được xác định trước",
+          "help": "Chọn định dạng có sẵn hoặc chọn Tùy chỉnh để xác định kích thước bạn muốn"
+        },
+        "width": {
+          "label": "Chiều rộng (px)"
+        },
+        "height": {
+          "label": "Chiều cao (px)"
+        },
+        "help": "Bạn có thể sửa đổi kích thước theo cách thủ công bất cứ lúc nào."
+      },
+      "preview": {
+        "title": "Xem trước kiểu thiết kế",
+        "sampleText": "Xem trước định dạng văn bản",
+        "primaryText": "Ví dụ về màu  chữ cơ bản",
+        "secondaryText": "Ví dụ về màu chữ thứ cấp",
+        "backgroundNote": "Màu nền sẽ được áp dụng cho toàn bộ tài liệu",
+        "subtitle": "Phụ đề mẫu",
+        "text": "Đây là đoạn văn bản nội dung mẫu cho thấy nội dung của bạn sẽ trông như thế nào với các kiểu dáng đã chọn.",
+        "smallText": "Chữ nhỏ để ghi chú và  bổ sung thông tin chi tiết."
+      }
+    },
+    "headerFooter": {
+      "globalStyles": {
+        "previewTitle": "Xem trước",
+        "listLayoutOptions": {
+          "vertical": "Thẳng đứng",
+          "horizontal": "Nằm ngang",
+          "grid2": "Lưới 2 cột",
+          "grid3": "Lưới 3 cột"
+        },
+        "title": "Phong cách chung cho toàn bộ bản tin",
+        "colorPickerTitle": "Bộ chọn màu",
+        "inherited": "Kế thừa",
+        "backgroundImagePreviewAlt": "Xem trước nền",
+        "removeImage": "Xóa hình ảnh",
+        "noBackgroundImage": "Không có hình nền",
+        "changeImage": "Thay đổi hình ảnh",
+        "selectImage": "Chọn hình ảnh",
+        "selectBackgroundImageTitle": "Chọn hình nền",
+        "previewMainTitle": "Tiêu đề chính",
+        "previewSubtitle": "Ví dụ phụ đề",
+        "previewText": "Đây là đoạn văn bản mẫu cho thấy các kiểu dáng đã áp dụng sẽ trông như thế nào.",
+        "previewSmallText": "Chữ nhỏ để biết thêm thông tin chi tiết.",
+        "fieldsLayout": "Bố cục các ô nhập liệu",
+        "justifyContent": "Bố trí các ô nhập liệu",
+        "justifyOptions": {
+          "start": "Bắt đầu",
+          "end": "Kết thúc",
+          "center": "Trung tâm",
+          "between": "Chia đều khoảng cách giữa các phần tử",
+          "around": "Chia khoảng cách xung quanh",
+          "evenly": "Chia đều khoảng cách"
+        },
+        "alignOptions": {
+          "center": "Trung tâm",
+          "left": "Bên trái",
+          "right": "Phải"
+        },
+        "borderLeft": "Bên trái",
+        "borderRight": "Phải",
+        "fontWeightOptions": {
+          "thin": "Mỏng (100)",
+          "extraLight": "Siêu nhẹ (200)",
+          "light": "Ánh sáng (300)",
+          "normal": "Bình thường (400)",
+          "medium": "Trung bình (500)",
+          "semiBold": "Nửa đậm (600)",
+          "bold": "In đậm (700)",
+          "extraBold": "Đậm hơn (800)",
+          "black": "Đen (900)"
+        },
+        "fontStyleOptions": {
+          "normal": "Bình thường",
+          "italic": "In nghiêng"
+        },
+        "textDecorationOptions": {
+          "none": "Không có",
+          "underline": "Gạch chân",
+          "lineThrough": "Dòng qua"
+        },
+        "layoutOptions": {
+          "horizontal": "Ngang (cạnh nhau)",
+          "vertical": "Dọc (xếp chồng)"
+        },
+        "listStyleOptions": {
+          "disc": "• Hình tròn tô đầy",
+          "circle": "○ Vòng tròn trống",
+          "square": "■ Hình vuông",
+          "decimal": "1. Đã đánh số",
+          "none": "Không có dấu đầu dòng"
+        },
+        "font": "Phông chữ",
+        "secondaryColor": "Màu thứ cấp",
+        "backgroundColor": "Màu nền",
+        "fontSize": "Kích thước phông chữ (px)",
+        "textAlign": "Căn chỉnh văn bản",
+        "color": "Màu văn bản",
+        "opacity": "Độ trong suốt",
+        "iconSize": "Kích thước biểu tượng (px)",
+        "iconUseOriginalColor": "Giữ màu biểu tượng ban đầu",
+        "iconUseOriginalColorHelp": "Nếu bị vô hiệu hóa, biểu tượng sẽ sử dụng màu chính từ ngữ cảnh.",
+        "fontWeight": "Độ đậm của phông chữ",
+        "lineHeight": "Chiều cao dòng",
+        "fontStyle": "Kiểu phông chữ",
+        "textDecoration": "Trang trí văn bản",
+        "borderColor": "Màu viền",
+        "backgroundImage": "Hình nền",
+        "borderWidth": "Chiều rộng đường viền",
+        "borderRadius": "Bán kính đường viền",
+        "borderSides": "Các mặt Đường viền",
+        "borderSidesHelp": "Chọn các mặt cần hiển thị đường viền",
+        "borderTop": "Đầu",
+        "borderBottom": "Cuối",
+        "padding": "Đệm",
+        "margin": "Lề",
+        "gap": "Khoảng cách giữa các trường thông tin",
+        "bulletinWidth": "Chiều rộng bản tin (px)",
+        "bulletinHeight": "Chiều cao bản tin (px)",
+        "listStyleType": "Kiểu trình bày danh sách",
+        "listItemsLayout": "Bố trí các phần tử trong Danh sách",
+        "help": "Các kiểu dáng này sẽ được áp dụng cho toàn bộ thành phần. Các kiểu dáng trường riêng lẻ có thể ghi đè (override) các giá trị này."
+      },
+      "layout": {
+        "title": "Bố cục các ô nhập liệu",
+        "fieldsLayout": {
+          "options": {
+            "horizontal": "Ngang (cạnh nhau)",
+            "vertical": "Theo chiều dọc (cái này nằm dưới cái kia)"
+          },
+          "label": "Tổ chức các ô nhập liệu",
+          "help": "Xác định cách các trường sẽ được tổ chức trong thành phần."
+        }
+      },
+      "title": "Cấu hình đầu trang và chân trang",
+      "description": "Cấu hình các trường thông tin sẽ xuất hiện ở phần đầu trang và chân trang",
+      "tabs": {
+        "header": "Đầu trang",
+        "footer": "Chân trang"
+      },
+      "info": {
+        "header": {
+          "title": "Đầu trang là gì?",
+          "description": "Đầu trang xuất hiện ở phần đầu mỗi trang của bản tin. Phù hợp để ghi các tiêu đề, ngày tháng, logo và thông tin chung."
+        },
+        "footer": {
+          "title": "Chân trang là gì?",
+          "description": "Chân trang xuất hiện ở cuối mỗi trang của bản tin. Phần này rất phù hợp để đánh số trang, thông tin liên hệ và ghi chú tác giả."
+        }
+      },
+      "addField": "Thêm trường thông tin",
+      "fields": {
+        "add": "Thêm trường thông tin",
+        "title": "Các trường thông tin",
+        "empty": "Không có trường thông tin nào được cấu hình",
+        "emptyHint": "Thêm các trường thông tin để tùy chỉnh phần này",
+        "type": "Kiểu",
+        "form": "Hình thức",
+        "bulletin": "Bản tin"
+      },
+      "noFields": "Chưa có trường thông tin nào được thêm vào",
+      "removeField": "Xóa trường thông tin",
+      "fieldsList": "Danh sách trường thông tin ({count})",
+      "editField": {
+        "title": "Chỉnh sửa trường thông tin"
+      }
+    },
+    "preview": {
+      "title": "Xem trước",
+      "noDescription": "Không có mô tả",
+      "noImage": "Không có hình ảnh",
+      "status": "Trạng thái:",
+      "access": "Truy cập:",
+      "subtitle": "Biểu mẫu của bạn sẽ trông như sau",
+      "untitled": "Biểu mẫu không có tiêu đề",
+      "header": "ĐẦU TRANG",
+      "footer": "CHÂN TRANG",
+      "noSections": "Không có phần nào được cấu hình",
+      "emptySection": "Phần trống",
+      "emptyBlock": "Khối trống",
+      "invalidDate": "Ngày không hợp lệ",
+      "noCardsAvailable": "Không có thẻ nào có sẵn",
+      "selectCard": "Chọn một thẻ",
+      "loadingCard": "Đang tải thẻ...",
+      "pageFormat": "Trang {page} trong tổng số {total}",
+      "previousPage": "← Trang trước",
+      "nextPage": "Trang tiếp theo →",
+      "pageOf": "Trang {current} trong tổng số {total}",
+      "version": "Phiên bản:",
+      "message": "Tin nhắn:",
+      "sectionsCount": "Phần:",
+      "totalFields": "Tổng số trường:",
+      "noFieldsInBlock": "Không có trường nào trong khối này",
+      "noBlocksInSection": "Không có khối nào trong phần này",
+      "sampleData": {
+        "textField": "Văn bản mẫu",
+        "dateField": "Ngày: {date}",
+        "dateRange": "Giai đoạn: {start} - {end}",
+        "listTitle": "Danh sách mẫu:",
+        "listItems": ["Mục 1", "Mục 2", "Mục 3"],
+        "climateTitle": "Dữ liệu khí hậu:",
+        "climateData": ["Nhiệt độ: 25°C", "Độ ẩm: 65%", "Lượng mưa: 15mm"]
+      }
+    },
+    "finish": "Tạo biểu mẫu",
+    "navigation": {
+      "finish": "Tạo biểu mẫu",
+      "next": "Tiếp theo",
+      "previous": "Trước",
+      "update": "Cập nhật biểu mẫu"
+    },
+    "next": "Tiếp theo",
+    "previous": "Trước",
+    "creating": "Đang tạo...",
+    "steps": {
+      "sections": {
+        "title": "Các phần",
+        "description": "Nội dung chính"
+      },
+      "basicInfo": {
+        "title": "Thông tin cơ bản",
+        "description": "Tên và mô tả"
+      },
+      "generalConfig": {
+        "title": "Cấu hình chung",
+        "description": "Phong cách chung"
+      },
+      "headerFooter": {
+        "title": "Đầu trang/chân trang",
+        "description": "Đầu trang và chân trang"
+      }
+    },
+    "title": "Tạo mẫu mới",
+    "subtitle": "Thiết kế mẫu tùy chỉnh cho bản tin thời tiết nông vụ của bạn",
+    "editTitle": "Chỉnh sửa biểu mẫu",
+    "editSubtitle": "Cập nhật và cải thiện mẫu bản tin thời tiết nông vụ của bạn",
+    "success": "Biểu mẫu đã được tạo thành công!",
+    "updateSuccess": "Biểu mẫu đã được cập nhật thành công!",
+    "error": "Lỗi khi tạo biểu mẫu: {error}"
+  },
+  "ScrollView": {
+    "openNavigator": "Mở trình điều hướng phần",
+    "closeNavigator": "Đóng trình điều hướng",
+    "sections": "Các phần",
+    "sectionsCount": "Các phần ({count})",
+    "goToSection": "Đi đến phần {number}",
+    "section": "Phần {number}",
+    "sectionNumber": "Phần {number}",
+    "page": "Trang {current}/{total}"
+  },
+  "ContentFullPreview": {
+    "errors": {
+      "invalidData": "Lỗi: Dữ liệu nội dung không hợp lệ"
+    },
+    "noSections": "Không có phần nào để xem trước"
+  },
+  "CreateGroup": {
+    "cancel": "Hủy bỏ",
+    "description": "Miêu tả",
+    "basicInfo": "Thông tin cơ bản",
+    "removeUser": "Di chuyển",
+    "loading": "Đang tải...",
+    "roleId": "Vai trò",
+    "noRolesFound": "Không tìm thấy vai trò nào",
+    "groupNameMinLength": "Tên phải có ít nhất 3 ký tự",
+    "descriptionRequired": "Mô tả là bắt buộc",
+    "descriptionMinLength": "Mô tả phải có ít nhất 10 ký tự",
+    "updating": "Đang cập nhật...",
+    "validationError": "Vui lòng khắc phục các lỗi trong biểu mẫu",
+    "createGroup": "Tạo nhóm",
+    "userId": "Người dùng",
+    "backToGroups": "Quay lại Nhóm",
+    "title": "Tạo nhóm mới",
+    "subtitle": "Xác định nhóm địa lý mới và chỉ định người dùng có vai trò cụ thể",
+    "titleEdit": "Chỉnh sửa nhóm",
+    "subtitleEdit": "Sửa đổi thông tin và người dùng của nhóm hiện có",
+    "loadingGroup": "Đang tải nhóm...",
+    "groupName": "Tên nhóm",
+    "groupNamePlaceholder": "ví dụ Colombia, Việt Nam",
+    "groupNameRequired": "Tên nhóm là bắt buộc",
+    "country": "Quốc gia (Mã ISO-2)",
+    "countryPlaceholder": "ví dụ CO, VN, BR",
+    "countryRequired": "Mã quốc gia là bắt buộc",
+    "countryInvalid": "Mã quốc gia phải có 2 ký tự (ISO-2)",
+    "descriptionPlaceholder": "Mô tả phạm vi và mục đích của nhóm này...",
+    "usersAccess": "Người dùng và vai trò",
+    "usersAccessDescription": "Chỉ định người dùng và vai trò của họ trong nhóm này. Bạn có thể thêm người dùng sau khi tạo nhóm.",
+    "addUser": "Thêm người dùng",
+    "userIdPlaceholder": "ví dụ 507f1f77bcf86cd799439011",
+    "selectUser": "Chọn người dùng",
+    "noUsersFound": "Không tìm thấy người dùng",
+    "roleIdPlaceholder": "ví dụ 507f191e810c19729de860ea",
+    "selectRole": "Chọn một vai trò",
+    "noUsers": "Chưa có người dùng nào được chỉ định",
+    "usersNote": "Lưu ý: Người dùng được thêm sẽ có quyền truy cập vào nhóm với các vai trò được chỉ định. Hãy đảm bảo ID hợp lệ.",
+    "creating": "Tạo nhóm...",
+    "createSuccess": "Nhóm đã được tạo thành công",
+    "createError": "Lỗi khi tạo nhóm",
+    "updateGroup": "Cập nhật nhóm",
+    "updateSuccess": "Nhóm đã được cập nhật thành công",
+    "updateError": "Lỗi khi cập nhật nhóm",
+    "connectionError": "Lỗi kết nối khi tạo nhóm",
+    "countryInfo": {
+      "title": "Mã quốc gia (ISO 3166-1 alpha-2)",
+      "description": "Sử dụng mã viết hoa 2 chữ cái:",
+      "examples": "Ví dụ: CO (Colombia), VN (Việt Nam), BR (Brazil), US (Hoa Kỳ), MX (Mexico)"
+    }
+  },
+  "Features": {
+    "title": "Mọi thứ bạn cần để tạo ra",
+    "titleHighlight": "Bản tin đặc biệt",
+    "description": "Một công cụ cộng tác giúp đơn giản hóa quá trình tạo, hiệu đính và xuất bản bản tin thời tiết nông vụ.",
+    "feature1": {
+      "title": "Tạo bản tin",
+      "description": "Tạo bản tin thời tiết nông vụ chuyên nghiệp bằng trình soạn thảo trực quan được thiết kế riêng cho từng quốc gia."
+    },
+    "feature2": {
+      "title": "Xuất file linh hoạt",
+      "description": "Xuất bản bản tin của bạn theo nhiều định dạng: PDF để in hoặc hình ảnh ở định dạng PNG hoặc JPG để chia sẻ trên mạng xã hội."
+    },
+    "feature3": {
+      "title": "Quy trình hiệu đính",
+      "description": "Hệ thống đánh giá hoàn chỉnh với chức năng kiểm soát phiên bản, bình luận và phê duyệt để đảm bảo chất lượng nội dung."
+    },
+    "feature4": {
+      "title": "Mẫu tùy chỉnh",
+      "description": "Tạo và lưu các biểu mẫu có thể tái sử dụng cho nhu cầu cụ thể của bạn."
+    }
+  },
+  "Footer": {
+    "brand": "Công cụ xây dựng bản tin",
+    "description": "Công cụ miễn phí để tạo bản tin thời tiết nông vụ",
+    "links": "Liên kết",
+    "partner": "Đối tác",
+    "copyright": "© 2025 Công cụ xây dựng bản tin."
+  },
+  "TemplateModal": {
+    "next": "Tiếp theo",
+    "previous": "Trước",
+    "closeModal": "Đóng cửa sổ"
+  },
+  "Authentication": {
+    "verification": "Đang xác minh...",
+    "accessRestrictedTitle": "Truy cập bị hạn chế",
+    "accessRestrictedMessage": "Bạn phải đăng nhập để truy cập trang này.",
+    "redirecting": "Đang chuyển hướng đến trang đăng nhập...",
+    "accessDeniedTitle": "Truy cập bị từ chối",
+    "accessDeniedMessage": "Bạn không có quyền truy cập vào phần này."
+  }
+}
