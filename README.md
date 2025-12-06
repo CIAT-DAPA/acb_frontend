@@ -152,3 +152,4 @@ The application uses Keycloak for authentication and authorization. Users must b
 ## 📄 Documentation
 
 - [Field Types Documentation](./FIELD_TYPES_DOCUMENTATION.md) - Complete guide for all field types
+
