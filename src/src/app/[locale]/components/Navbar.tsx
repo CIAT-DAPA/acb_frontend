@@ -213,7 +213,7 @@ export function Navbar() {
             )}
 
             {/* Dropdown de Content */}
-            {authenticated && VISIBLE_CONFIG_ITEMS.length > 0 && (
+            {authenticated && VISIBLE_CONFIG_ITEMS.length > 0 ? (
               <DropdownMenu
                 label={t("content")}
                 isOpen={showConfigMenu}
@@ -221,7 +221,7 @@ export function Navbar() {
                 items={VISIBLE_CONFIG_ITEMS}
                 onItemClick={() => setShowConfigMenu(false)}
               />
-            )}
+            ) : null}
 
             {/* Dropdown de Administration */}
             {authenticated && isAdminAnywhere && (
@@ -233,6 +233,13 @@ export function Navbar() {
                 onItemClick={() => setShowWorkspacesMenu(false)}
               />
             )}
+
+            {/* Link de Partners */}
+            <li>
+              <Link href="/partners" className={`${NAV_BASE} ${NAV_INACTIVE}`}>
+                {t("partners")}
+              </Link>
+            </li>
           </ul>
 
           {/* Selector de idioma */}
@@ -305,14 +312,14 @@ export function Navbar() {
             )}
 
             {/* Dropdown de Content - Móvil */}
-            {authenticated && VISIBLE_CONFIG_ITEMS.length > 0 && (
+            {authenticated && VISIBLE_CONFIG_ITEMS.length > 0 ? (
               <MobileDropdownMenu
                 label={t("content")}
                 isOpen={showConfigMenu}
                 onToggle={() => setShowConfigMenu(!showConfigMenu)}
                 items={VISIBLE_CONFIG_ITEMS}
               />
-            )}
+            ) : null}
 
             {/* Dropdown de Administration - Móvil */}
             {authenticated && isAdminAnywhere && (
@@ -323,6 +330,17 @@ export function Navbar() {
                 items={ADMIN_ITEMS}
               />
             )}
+
+            {/* Link de Partners - Móvil */}
+            <li>
+              <Link
+                href="/partners"
+                onClick={() => setIsOpen(false)}
+                className="text-[#fefae0]/80 hover:text-[#ffaf68] transition-colors"
+              >
+                {t("partners")}
+              </Link>
+            </li>
           </ul>
 
           {/* Selector de idioma móvil */}

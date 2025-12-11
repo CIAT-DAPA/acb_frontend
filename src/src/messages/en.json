@@ -8,6 +8,7 @@
     "administration": "Administration",
     "roles": "Roles",
     "groups": "Groups",
+    "partners": "Partners",
     "login": "Login",
     "logout": "Logout",
     "openMenu": "Open menu",
@@ -15,6 +16,10 @@
     "loading": "Loading...",
     "user": "User",
     "defaultInitial": "U"
+  },
+  "Partners": {
+    "title": "Our Partners",
+    "description": "We work in collaboration with leading organizations in agriculture and climate to strengthen agroclimatic information systems worldwide."
   },
   "Hero": {
     "title": "Create bulletins with",

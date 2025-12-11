@@ -1241,7 +1241,7 @@ export function SectionsStep({
 
                     <div className="bg-[#bc6c25]/20 border border-[#bc6c25]/60 rounded-lg p-4">
                       <div className="flex items-start space-x-3">
-                        <div className="flex-shrink-0 mt-0.5">
+                        <div className="shrink-0 mt-0.5">
                           <svg
                             className="w-5 h-5 text-[#bc6c25]"
                             fill="currentColor"
@@ -1347,7 +1347,7 @@ export function SectionsStep({
 
                     <div className="bg-[#bc6c25]/20 border border-[#bc6c25]/60 rounded-lg p-4">
                       <div className="flex items-start space-x-3">
-                        <div className="flex-shrink-0 mt-0.5">
+                        <div className="shrink-0 mt-0.5">
                           <svg
                             className="w-5 h-5 text-[#bc6c25]"
                             fill="currentColor"

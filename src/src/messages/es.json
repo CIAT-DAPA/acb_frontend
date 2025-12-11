@@ -8,6 +8,7 @@
     "administration": "Administración",
     "roles": "Roles",
     "groups": "Grupos",
+    "partners": "Socios",
     "login": "Iniciar sesión",
     "logout": "Cerrar sesión",
     "openMenu": "Abrir menú",
@@ -15,6 +16,10 @@
     "loading": "Cargando...",
     "user": "Usuario",
     "defaultInitial": "U"
+  },
+  "Partners": {
+    "title": "Nuestros Socios",
+    "description": "Trabajamos en colaboración con organizaciones líderes en agricultura y clima para fortalecer los sistemas de información agroclimática en todo el mundo."
   },
   "Hero": {
     "title": "Crea boletines con",

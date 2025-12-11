@@ -59,6 +59,10 @@ export function Footer() {
       path: "/groups",
       requiresAdmin: true,
     },
+    {
+      name: t("partner"),
+      path: "/partners",
+    },
   ];
 
   // Filtrar links según permisos
@@ -104,23 +108,10 @@ export function Footer() {
 
           {/* Socios */}
           <div className="space-y-4">
-            <h3 className={sectionTitle}>{t("partner")}</h3>
             <div className="flex flex-wrap gap-4 items-center">
               <Image
-                src="/assets/img/AllianceLogo.png"
+                src="/assets/partners/guatemala/AllianceLogoWhite.png"
                 alt="logo de la alianza"
-                width={200}
-                height={37}
-              />
-              <Image
-                src="/assets/img/ICCLogo.png"
-                alt="logo del ICC"
-                width={200}
-                height={37}
-              />
-              <Image
-                src="/assets/img/magaLogo.png"
-                alt="logo del MAGA"
                 width={200}
                 height={37}
               />

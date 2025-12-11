@@ -8,9 +8,18 @@
     "administration": "Quản trị",
     "roles": "Vai trò",
     "groups": "Nhóm",
+    "partners": "Đối tác",
     "login": "Đăng nhập",
     "logout": "Đăng xuất",
-    "openMenu": "Mở menu"
+    "openMenu": "Mở menu",
+    "closeMenu": "Đóng menu",
+    "loading": "Đang tải...",
+    "user": "Người dùng",
+    "defaultInitial": "U"
+  },
+  "Partners": {
+    "title": "Đối tác của chúng tôi",
+    "description": "Chúng tôi hợp tác với các tổ chức hàng đầu về nông nghiệp và khí hậu để tăng cường hệ thống thông tin khí hậu nông nghiệp trên toàn thế giới."
   },
   "Roles": {
     "modules": {
