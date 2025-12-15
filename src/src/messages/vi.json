@@ -348,6 +348,14 @@
           "label": "Tên bản tin",
           "placeholder": "VD: Bản tin thời tiết nông vụ - Tháng 1 năm 2025",
           "helper": "Chọn một tên mô tả để dễ dàng nhận dạng bản tin này"
+        },
+        "nameMachine": {
+          "label": "Tên máy",
+          "placeholder": "vd: ban-tin-thoi-tiet-nong-vu-thang-1-nam-2025",
+          "help": "Mã định danh duy nhất cho URL và API. Tự động tạo nhưng bạn có thể chỉnh sửa.",
+          "errors": {
+            "invalid": "Chỉ cho phép chữ thường, số và dấu gạch ngang. Không được bắt đầu hoặc kết thúc bằng dấu gạch ngang."
+          }
         }
       }
     },
@@ -902,6 +910,14 @@
         "name": {
           "label": "Tên biểu mẫu",
           "placeholder": "ví dụ: Bản tin khí hậu nông nghiệp cà phê"
+        },
+        "nameMachine": {
+          "label": "Tên máy",
+          "placeholder": "ví dụ: ban-tin-khi-hau-nong-nghiep-ca-phe",
+          "help": "Mã định danh duy nhất cho URL và API. Tự động tạo nhưng bạn có thể chỉnh sửa.",
+          "errors": {
+            "invalid": "Chỉ cho phép chữ thường, số và dấu gạch ngang. Không được bắt đầu hoặc kết thúc bằng dấu gạch ngang."
+          }
         },
         "allowedGroups": {
           "label": "Nhóm được phép",

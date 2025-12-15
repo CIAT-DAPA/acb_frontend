@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useCallback } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { CreateTemplateData } from "../../../../../types/template";
 import { ACCESS_TYPES } from "../../../../../types/core";
 import GroupSelector from "../../../components/GroupSelector";
+import { slugify, isValidSlug } from "../../../../../utils/slugify";
 
 interface BasicInfoStepProps {
   data: CreateTemplateData;
@@ -24,6 +25,9 @@ export function BasicInfoStep({
   const t = useTranslations("CreateTemplate.basicInfo");
   const allowedGroups: string[] =
     data?.master?.access_config?.allowed_groups ?? [];
+  
+  // Estado para controlar si el name_machine está siendo editado manualmente
+  const [isManualNameMachine, setIsManualNameMachine] = useState(false);
 
   const updateMaster = useCallback(
     (updates: Partial<typeof data.master>) => {
@@ -40,7 +44,17 @@ export function BasicInfoStep({
 
   const handleNameChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      updateMaster({ template_name: e.target.value });
+      const newName = e.target.value;
+      updateMaster({ template_name: newName });
+
+      // Auto-generar name_machine solo si no se ha editado manualmente
+      if (!isManualNameMachine) {
+        const newNameMachine = slugify(newName);
+        updateMaster({ 
+          template_name: newName,
+          name_machine: newNameMachine 
+        });
+      }
 
       // Limpiar errores del campo
       if (errors.template_name) {
@@ -50,7 +64,31 @@ export function BasicInfoStep({
         });
       }
     },
-    [updateMaster, errors, onErrorsChange]
+    [updateMaster, errors, onErrorsChange, isManualNameMachine]
+  );
+
+  const handleNameMachineChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newNameMachine = e.target.value;
+      setIsManualNameMachine(true);
+      updateMaster({ name_machine: newNameMachine });
+
+      // Validar el formato
+      if (newNameMachine && !isValidSlug(newNameMachine)) {
+        onErrorsChange({
+          ...errors,
+          name_machine: [t("fields.nameMachine.errors.invalid", {
+            default: "Solo se permiten letras minúsculas, números y guiones. No puede comenzar ni terminar con guión."
+          })],
+        });
+      } else if (errors.name_machine) {
+        onErrorsChange({
+          ...errors,
+          name_machine: [],
+        });
+      }
+    },
+    [updateMaster, errors, onErrorsChange, t]
   );
 
   const handleDescriptionChange = useCallback(
@@ -126,6 +164,44 @@ export function BasicInfoStep({
             })}
           />
           {errors.template_name?.map((error, index) => (
+            <p key={index} className="mt-1 text-sm text-red-600">
+              {error}
+            </p>
+          ))}
+        </div>
+
+        {/* Nombre máquina (slug) */}
+        <div>
+          <label
+            htmlFor="name_machine"
+            className="block text-sm font-medium text-[#283618]/70 mb-2"
+          >
+            {t("fields.nameMachine.label", { default: "Nombre Máquina" })} *
+          </label>
+          <input
+            type="text"
+            id="name_machine"
+            value={data.master.name_machine || ""}
+            onChange={handleNameMachineChange}
+            className={`
+              block w-full px-3 py-2 border rounded-md shadow-sm font-mono text-sm
+              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+              ${
+                errors.name_machine?.length
+                  ? "border-red-500"
+                  : "border-gray-300"
+              }
+            `}
+            placeholder={t("fields.nameMachine.placeholder", {
+              default: "ej: boletin-agroclimatico-cafe-narino",
+            })}
+          />
+          <p className="mt-1 text-xs text-[#283618]/50">
+            {t("fields.nameMachine.help", {
+              default: "Identificador único para URLs y APIs. Se genera automáticamente pero puedes editarlo.",
+            })}
+          </p>
+          {errors.name_machine?.map((error, index) => (
             <p key={index} className="mt-1 text-sm text-red-600">
               {error}
             </p>

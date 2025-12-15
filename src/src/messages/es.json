@@ -244,6 +244,14 @@
           "label": "Nombre del Boletín",
           "placeholder": "Ej: Boletín Agroclimático - Enero 2025",
           "helper": "Elige un nombre descriptivo para identificar fácilmente este boletín"
+        },
+        "nameMachine": {
+          "label": "Nombre Máquina",
+          "placeholder": "ej: boletin-agroclimatico-enero-2025",
+          "help": "Identificador único para URLs y APIs. Se genera automáticamente pero puedes editarlo.",
+          "errors": {
+            "invalid": "Solo se permiten letras minúsculas, números y guiones. No puede comenzar ni terminar con guión."
+          }
         }
       }
     },
@@ -463,6 +471,14 @@
         "name": {
           "label": "Nombre de la Plantilla",
           "placeholder": "Ej: Boletín Agroclimático de Café - Nariño"
+        },
+        "nameMachine": {
+          "label": "Nombre Máquina",
+          "placeholder": "ej: boletin-agroclimatico-cafe-narino",
+          "help": "Identificador único para URLs y APIs. Se genera automáticamente pero puedes editarlo.",
+          "errors": {
+            "invalid": "Solo se permiten letras minúsculas, números y guiones. No puede comenzar ni terminar con guión."
+          }
         },
         "description": {
           "label": "Descripción",

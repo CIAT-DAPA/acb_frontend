@@ -72,6 +72,7 @@ export default function FormBulletinPage({
     data: initialData || {
       master: {
         bulletin_name: "",
+        name_machine: "",
         status: "draft",
         log: {
           created_at: new Date().toISOString(),
@@ -804,6 +805,7 @@ export default function FormBulletinPage({
       master: {
         template_name:
           creationState.data.master.bulletin_name || "Vista previa",
+        name_machine: creationState.data.master.name_machine || "vista-previa",
         description: "",
         status: "active",
         log: creationState.data.master.log,

@@ -5,9 +5,13 @@ import { useParams, useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import CreateTemplatePage from "../../create/FormTemplatePage";
 import { TemplateAPIService } from "../../../../../services/templateService";
-import { CreateTemplateData, TemplateVersionContent } from "../../../../../types/template";
+import {
+  CreateTemplateData,
+  TemplateVersionContent,
+} from "../../../../../types/template";
 import { ProtectedRoute } from "../../../../../components/ProtectedRoute";
 import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
+import { slugify } from "../../../../../utils/slugify";
 
 export default function EditTemplatePage() {
   const params = useParams();
@@ -57,7 +61,10 @@ export default function EditTemplatePage() {
         if (response.success && response.data) {
           const { master, current_version: currentVersion } = response.data;
           template = master;
-          console.log("Template master y versión cargados:", { master, currentVersion });
+          console.log("Template master y versión cargados:", {
+            master,
+            currentVersion,
+          });
 
           // Verificar que existe el content
           if (currentVersion && currentVersion.content) {
@@ -88,6 +95,8 @@ export default function EditTemplatePage() {
       const templateData: CreateTemplateData = {
         master: {
           template_name: template.template_name,
+          name_machine:
+            template.name_machine || slugify(template.template_name), // Generar automáticamente si no existe
           description: template.description,
           status: template.status,
           log: template.log,
@@ -160,8 +169,18 @@ export default function EditTemplatePage() {
   const allowedGroups = initialData.master?.access_config?.allowed_groups || [];
 
   return (
-    <ProtectedRoute requiredPermission={{ action: PERMISSION_ACTIONS.Update, module: MODULES.TEMPLATE_MANAGEMENT, resourceGroupIds: allowedGroups }}>
-      <CreateTemplatePage mode="edit" templateId={templateId} initialData={initialData} />
+    <ProtectedRoute
+      requiredPermission={{
+        action: PERMISSION_ACTIONS.Update,
+        module: MODULES.TEMPLATE_MANAGEMENT,
+        resourceGroupIds: allowedGroups,
+      }}
+    >
+      <CreateTemplatePage
+        mode="edit"
+        templateId={templateId}
+        initialData={initialData}
+      />
     </ProtectedRoute>
   );
 }

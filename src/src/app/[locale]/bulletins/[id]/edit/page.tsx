@@ -10,6 +10,7 @@ import { CreateBulletinData } from "../../../../../types/bulletin";
 import { ProtectedRoute } from "../../../../../components/ProtectedRoute";
 import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
 import { useAuth } from "@/hooks/useAuth";
+import { slugify } from "../../../../../utils/slugify";
 
 export default function EditBulletinPage() {
   const params = useParams();
@@ -63,6 +64,7 @@ export default function EditBulletinPage() {
       const bulletinData: CreateBulletinData = {
         master: {
           bulletin_name: master.bulletin_name,
+          name_machine: master.name_machine || slugify(master.bulletin_name), // Generar automáticamente si no existe
           status: master.status,
           log: master.log,
           base_template_master_id: master.base_template_master_id,

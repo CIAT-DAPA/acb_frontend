@@ -244,6 +244,14 @@
           "label": "Bulletin Name",
           "placeholder": "e.g. Agroclimatic Bulletin - January 2025",
           "helper": "Choose a descriptive name to easily identify this bulletin"
+        },
+        "nameMachine": {
+          "label": "Machine Name",
+          "placeholder": "e.g. agroclimatic-bulletin-january-2025",
+          "help": "Unique identifier for URLs and APIs. Auto-generated but you can edit it.",
+          "errors": {
+            "invalid": "Only lowercase letters, numbers, and hyphens allowed. Cannot start or end with a hyphen."
+          }
         }
       }
     },
@@ -463,6 +471,14 @@
         "name": {
           "label": "Template Name",
           "placeholder": "e.g. Coffee Agroclimatic Bulletin - Nariño"
+        },
+        "nameMachine": {
+          "label": "Machine Name",
+          "placeholder": "e.g. coffee-agroclimatic-bulletin-narino",
+          "help": "Unique identifier for URLs and APIs. Auto-generated but you can edit it.",
+          "errors": {
+            "invalid": "Only lowercase letters, numbers, and hyphens allowed. Cannot start or end with a hyphen."
+          }
         },
         "description": {
           "label": "Description",
