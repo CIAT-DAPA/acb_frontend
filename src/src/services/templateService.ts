@@ -83,6 +83,32 @@ export class TemplateAPIService extends BaseAPIService {
   }
 
   /**
+   * Obtiene todos los slug names de templates existentes
+   * GET /templates/slug_name
+   */
+  static async getAllSlugNames(): Promise<APIResponse<string[]>> {
+    try {
+      const data = await this.get<any>("/templates/slug_name");
+      const slugNames = data.slug_names || data.data || data || [];
+
+      return {
+        success: true,
+        data: slugNames,
+      };
+    } catch (error) {
+      console.error("Error fetching template slug names:", error);
+      return {
+        success: false,
+        data: [],
+        message:
+          error instanceof Error
+            ? error.message
+            : "Error al obtener los nombres máquina",
+      };
+    }
+  }
+
+  /**
    * Crea un nuevo template
    */
   static async createTemplate(

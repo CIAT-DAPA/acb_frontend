@@ -68,6 +68,7 @@ export interface BulletinVersion {
 export interface BulletinMaster {
   _id?: string;
   bulletin_name: string;
+  name_machine: string; // Identificador único en formato slug (ej: "monthly-climate-bulletin-january-2025")
   description?: string; // Opcional - descripción del boletín
   log: LogObject;
   base_template_master_id: string; // Referencia al template master usado

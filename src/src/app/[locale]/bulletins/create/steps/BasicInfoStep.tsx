@@ -1,9 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
+import { slugify, isValidSlug } from "../../../../../utils/slugify";
 import { CreateBulletinData } from "../../../../../types/bulletin";
 import { Field } from "../../../../../types/template";
+import { BulletinAPIService } from "../../../../../services/bulletinService";
 import {
   ListFieldEditor,
   TextInput,
@@ -25,6 +27,23 @@ export function BasicInfoStep({ bulletinData, onUpdate }: BasicInfoStepProps) {
   const t = useTranslations("CreateBulletin");
   const tHeader = useTranslations("CreateBulletin.headerFooter");
 
+  // Estado para controlar si el name_machine está siendo editado manualmente
+  const [isManualNameMachine, setIsManualNameMachine] = useState(false);
+  const [nameMachineError, setNameMachineError] = useState<string>("");
+  // Estado para almacenar los slug names existentes
+  const [existingSlugNames, setExistingSlugNames] = useState<string[]>([]);
+
+  // Cargar los slug names existentes al montar el componente
+  useEffect(() => {
+    const loadSlugNames = async () => {
+      const response = await BulletinAPIService.getAllSlugNames();
+      if (response.success && response.data) {
+        setExistingSlugNames(response.data);
+      }
+    };
+    loadSlugNames();
+  }, []);
+
   const handleNameChange = (value: string) => {
     onUpdate((prev) => ({
       ...prev,
@@ -33,6 +52,49 @@ export function BasicInfoStep({ bulletinData, onUpdate }: BasicInfoStepProps) {
         bulletin_name: value,
       },
     }));
+
+    // Auto-generar name_machine solo si no se ha editado manualmente
+    if (!isManualNameMachine) {
+      const newNameMachine = slugify(value);
+      onUpdate((prev) => ({
+        ...prev,
+        master: {
+          ...prev.master,
+          bulletin_name: value,
+          name_machine: newNameMachine,
+        },
+      }));
+    }
+  };
+
+  const handleNameMachineChange = (value: string) => {
+    setIsManualNameMachine(true);
+    onUpdate((prev) => ({
+      ...prev,
+      master: {
+        ...prev.master,
+        name_machine: value,
+      },
+    }));
+
+    // Validar el formato
+    if (value && !isValidSlug(value)) {
+      setNameMachineError(
+        t("basicInfo.fields.nameMachine.errors.invalid", {
+          default:
+            "Solo se permiten letras minúsculas, números y guiones bajos. No puede comenzar ni terminar con guión bajo.",
+        })
+      );
+    } else if (value && existingSlugNames.includes(value)) {
+      // Validar si el slug ya existe
+      setNameMachineError(
+        t("basicInfo.fields.nameMachine.errors.duplicate", {
+          default: "Este nombre máquina ya está en uso. Por favor, elige otro.",
+        })
+      );
+    } else {
+      setNameMachineError("");
+    }
   };
 
   const handleHeaderFieldChange = (fieldIndex: number, value: any) => {
@@ -224,6 +286,36 @@ export function BasicInfoStep({ bulletinData, onUpdate }: BasicInfoStepProps) {
           <p className="mt-1 text-xs text-[#283618]/60">
             {t("basicInfo.fields.name.helper")}
           </p>
+        </div>
+
+        {/* Machine Name */}
+        <div>
+          <label className="block text-sm font-medium text-[#283618] mb-2">
+            {t("basicInfo.fields.nameMachine.label", {
+              default: "Nombre Máquina",
+            })}
+            <span className="text-red-500 ml-1">*</span>
+          </label>
+          <input
+            type="text"
+            value={bulletinData.master.name_machine || ""}
+            onChange={(e) => handleNameMachineChange(e.target.value)}
+            placeholder={t("basicInfo.fields.nameMachine.placeholder", {
+              default: "ej: boletin-cafe-enero-2025",
+            })}
+            className={`w-full px-4 py-2 border rounded-lg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[#283618] ${
+              nameMachineError ? "border-red-500" : "border-[#283618]/20"
+            }`}
+          />
+          <p className="mt-1 text-xs text-[#283618]/60">
+            {t("basicInfo.fields.nameMachine.help", {
+              default:
+                "Identificador único para URLs y APIs. Se genera automáticamente pero puedes editarlo.",
+            })}
+          </p>
+          {nameMachineError && (
+            <p className="mt-1 text-sm text-red-600">{nameMachineError}</p>
+          )}
         </div>
       </div>
 

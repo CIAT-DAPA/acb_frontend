@@ -373,7 +373,7 @@ export default function Templates() {
             <div className="p-6">
               <div className="flex gap-4">
                 {/* Icono del template */}
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   <div className="w-16 h-16 bg-[#ffaf68]/20 rounded-lg flex items-center justify-center">
                     <FileText className="h-8 w-8 text-[#ffaf68]" />
                   </div>

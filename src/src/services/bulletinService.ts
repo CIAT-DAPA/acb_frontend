@@ -1,4 +1,9 @@
-import { BulletinMaster, BulletinVersion, BulletinStatus, BulletinWithCurrentVersion } from "@/types/bulletin";
+import {
+  BulletinMaster,
+  BulletinVersion,
+  BulletinStatus,
+  BulletinWithCurrentVersion,
+} from "@/types/bulletin";
 import { BaseAPIService } from "./apiConfig";
 
 // Interfaz para respuestas de la API
@@ -91,6 +96,32 @@ export class BulletinAPIService extends BaseAPIService {
   }
 
   /**
+   * Obtiene todos los slug names de bulletins existentes
+   * GET /bulletins/slug_name
+   */
+  static async getAllSlugNames(): Promise<APIResponse<string[]>> {
+    try {
+      const data = await this.get<any>("/bulletins/slug_name");
+      const slugNames = data.slug_names || data.data || data || [];
+
+      return {
+        success: true,
+        data: slugNames,
+      };
+    } catch (error) {
+      console.error("Error fetching bulletin slug names:", error);
+      return {
+        success: false,
+        data: [],
+        message:
+          error instanceof Error
+            ? error.message
+            : "Error al obtener los nombres máquina",
+      };
+    }
+  }
+
+  /**
    * Crea un nuevo bulletin
    * POST /bulletins/
    */
@@ -109,9 +140,7 @@ export class BulletinAPIService extends BaseAPIService {
       return {
         success: false,
         message:
-          error instanceof Error
-            ? error.message
-            : "Error al crear el boletín",
+          error instanceof Error ? error.message : "Error al crear el boletín",
       };
     }
   }
@@ -226,7 +255,6 @@ export class BulletinAPIService extends BaseAPIService {
         _id: data.current_version.id || data.current_version._id,
       };
 
-
       return {
         success: true,
         data: {
@@ -306,12 +334,69 @@ export class BulletinAPIService extends BaseAPIService {
   }
 
   /**
+   * Obtiene un boletín publicado por su slug
+   * GET /bulletins/by-slug/{bulletinSlug}
+   */
+  static async getBulletinBySlug(
+    bulletinSlug: string
+  ): Promise<APIResponse<BulletinWithCurrentVersion>> {
+    try {
+      const data = await this.get<any>(`/bulletins/by-slug/${bulletinSlug}`);
+
+      // La API devuelve { master, current_version, cards_metadata }
+      // Normalizar el master para tener _id en lugar de id
+      const normalizedMaster: BulletinMaster = {
+        ...data.master,
+        _id: data.master.id || data.master._id,
+      };
+
+      const normalizedVersion: BulletinVersion = {
+        ...data.current_version,
+        _id: data.current_version.id || data.current_version._id,
+      };
+
+      // Normalizar cards_metadata
+      const normalizedCardsMetadata: Record<string, any> = {};
+      if (data.cards_metadata) {
+        Object.keys(data.cards_metadata).forEach((cardId) => {
+          const card = data.cards_metadata[cardId];
+          normalizedCardsMetadata[cardId] = {
+            ...card,
+            _id: card.id || card._id,
+          };
+        });
+      }
+
+      return {
+        success: true,
+        data: {
+          master: normalizedMaster,
+          current_version: normalizedVersion,
+          cards_metadata: normalizedCardsMetadata,
+        },
+      };
+    } catch (error) {
+      console.error("Error fetching bulletin by slug:", error);
+      return {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Error al obtener el boletín",
+      };
+    }
+  }
+
+  /**
    * Crea una nueva versión de un bulletin
    * POST /bulletins/versions
    */
   static async createBulletinVersion(
     bulletinId: string,
-    versionData: Omit<BulletinVersion, "_id" | "bulletin_master_id" | "previous_version_id" | "log">
+    versionData: Omit<
+      BulletinVersion,
+      "_id" | "bulletin_master_id" | "previous_version_id" | "log"
+    >
   ): Promise<APIResponse<BulletinVersion>> {
     try {
       console.log("Creating bulletin version for bulletin ID:", {
@@ -413,9 +498,7 @@ export class BulletinAPIService extends BaseAPIService {
       return {
         success: false,
         message:
-          error instanceof Error
-            ? error.message
-            : "Error al clonar el boletín",
+          error instanceof Error ? error.message : "Error al clonar el boletín",
       };
     }
   }
@@ -445,7 +528,9 @@ export class BulletinAPIService extends BaseAPIService {
   /**
    * Exporta un bulletin a PDF (método auxiliar para futuras implementaciones)
    */
-  static async exportBulletinToPDF(bulletinId: string): Promise<APIResponse<Blob>> {
+  static async exportBulletinToPDF(
+    bulletinId: string
+  ): Promise<APIResponse<Blob>> {
     try {
       const data = await this.get<Blob>(`/bulletins/${bulletinId}/export/pdf`, {
         responseType: "blob",
