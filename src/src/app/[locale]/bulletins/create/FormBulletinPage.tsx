@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "../../../../hooks/useAuth";
 import { Stepper, StepConfig } from "../../components/Stepper";
 import {
@@ -52,6 +52,8 @@ export default function FormBulletinPage({
   const t = useTranslations("CreateBulletin");
   const { userInfo } = useAuth();
   const router = useRouter();
+  const params = useParams();
+  const locale = (params.locale as string) || "es";
   const { showToast } = useToast();
   const isEditMode = mode === "edit";
   const [showPublishModal, setShowPublishModal] = useState(false);
@@ -59,6 +61,9 @@ export default function FormBulletinPage({
     null
   );
   const [urlCopied, setUrlCopied] = useState(false);
+
+  // Estado para guardar el name_machine del template (para generar URLs amigables)
+  const [templateNameMachine, setTemplateNameMachine] = useState<string>("");
 
   // Estado de paginación del preview (para sincronizar con CardFieldInput)
   const [previewPageIndex, setPreviewPageIndex] = useState(0);
@@ -109,6 +114,26 @@ export default function FormBulletinPage({
   });
 
   const [isLoading, setIsLoading] = useState(false);
+
+  // Cargar el name_machine del template cuando hay initialData (modo edición)
+  useEffect(() => {
+    const loadTemplateNameMachine = async () => {
+      if (initialData && initialData.master.base_template_master_id) {
+        try {
+          const response = await TemplateAPIService.getCurrentVersion(
+            initialData.master.base_template_master_id
+          );
+          if (response.success && response.data?.master.name_machine) {
+            setTemplateNameMachine(response.data.master.name_machine);
+          }
+        } catch (error) {
+          console.error("Error loading template name_machine:", error);
+        }
+      }
+    };
+
+    loadTemplateNameMachine();
+  }, [initialData]);
 
   // Helper para extraer todas las URLs de imágenes del boletín
   const extractImageUrls = useCallback((data: CreateBulletinData): string[] => {
@@ -166,6 +191,11 @@ export default function FormBulletinPage({
 
         if (response.success && response.data) {
           const { current_version, master } = response.data;
+
+          // Guardar el name_machine del template para usarlo en las URLs
+          if (master.name_machine) {
+            setTemplateNameMachine(master.name_machine);
+          }
 
           // Verificar que existe el content
           if (!current_version.content) {
@@ -1075,14 +1105,14 @@ export default function FormBulletinPage({
                 <input
                   type="text"
                   readOnly
-                  value={`${window.location.origin}/bulletins/preview/${publishedBulletinId}`}
+                  value={`${window.location.origin}/${locale}/${templateNameMachine}/${creationState.data.master.name_machine}`}
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-[#283618] text-sm"
                   onClick={(e) => e.currentTarget.select()}
                 />
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(
-                      `${window.location.origin}/bulletins/preview/${publishedBulletinId}`
+                      `${window.location.origin}/${locale}/${templateNameMachine}/${creationState.data.master.name_machine}`
                     );
                     setUrlCopied(true);
                     setTimeout(() => setUrlCopied(false), 2000);
@@ -1117,7 +1147,7 @@ export default function FormBulletinPage({
                 {t("publishModal.close")}
               </button>
               <Link
-                href={`/bulletins/preview/${publishedBulletinId}`}
+                href={`/${locale}/${templateNameMachine}/${creationState.data.master.name_machine}`}
                 className={`${btnPrimary}`}
               >
                 {t("publishModal.viewLink")}

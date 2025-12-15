@@ -338,9 +338,11 @@
     "bulletinPreview": {
       "loading": "Cargando boletín...",
       "loadingWithId": "ID: {id}",
+      "loadingWithSlug": "Cargando: {slug}",
       "errorTitle": "Error al cargar boletín",
       "errorMessage": "No se pudo cargar el boletín con el ID proporcionado.",
       "errorId": "ID: {id}",
+      "errorSlug": "Ruta: {templateSlug}/{bulletinSlug}",
       "errorNoId": "No se proporcionó un ID de boletín",
       "errorNotFound": "Boletín no encontrado",
       "errorNoSections": "El boletín no tiene secciones definidas",

@@ -338,9 +338,11 @@
     "bulletinPreview": {
       "loading": "Loading bulletin...",
       "loadingWithId": "ID: {id}",
+      "loadingWithSlug": "Loading: {slug}",
       "errorTitle": "Error loading bulletin",
       "errorMessage": "Could not load the bulletin with the provided ID.",
       "errorId": "ID: {id}",
+      "errorSlug": "Path: {templateSlug}/{bulletinSlug}",
       "errorNoId": "No bulletin ID was provided",
       "errorNotFound": "Bulletin not found",
       "errorNoSections": "The bulletin has no sections defined",
