@@ -15,7 +15,8 @@
     "closeMenu": "Cerrar menú",
     "loading": "Cargando...",
     "user": "Usuario",
-    "defaultInitial": "U"
+    "defaultInitial": "U",
+    "brand": "Generador de Boletines"
   },
   "Partners": {
     "title": "Nuestros Socios",
@@ -132,7 +133,7 @@
     }
   },
   "Footer": {
-    "brand": "Bulletin builder",
+    "brand": "Generador de Boletines",
     "description": "Herramienta gratuita para crear boletines agroclimáticos de forma colaborativa.",
     "links": "Enlaces",
     "partner": "Socios",

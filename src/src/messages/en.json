@@ -15,7 +15,8 @@
     "closeMenu": "Close menu",
     "loading": "Loading...",
     "user": "User",
-    "defaultInitial": "U"
+    "defaultInitial": "U",
+    "brand": "Bulletin Builder"
   },
   "Partners": {
     "title": "Our Partners",

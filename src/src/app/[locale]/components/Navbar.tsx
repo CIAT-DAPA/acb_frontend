@@ -183,7 +183,7 @@ export function Navbar() {
             width={34}
             height={37}
           />
-          <span className="font-headers">Bulletin Builder</span>
+          <span className="font-headers">{t("brand")}</span>
         </Link>
 
         {/* Botón hamburguesa */}
