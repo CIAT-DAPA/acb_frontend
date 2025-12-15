@@ -96,6 +96,32 @@ export class BulletinAPIService extends BaseAPIService {
   }
 
   /**
+   * Obtiene todos los slug names de bulletins existentes
+   * GET /bulletins/slug_name
+   */
+  static async getAllSlugNames(): Promise<APIResponse<string[]>> {
+    try {
+      const data = await this.get<any>("/bulletins/slug_name");
+      const slugNames = data.slug_names || data.data || data || [];
+
+      return {
+        success: true,
+        data: slugNames,
+      };
+    } catch (error) {
+      console.error("Error fetching bulletin slug names:", error);
+      return {
+        success: false,
+        data: [],
+        message:
+          error instanceof Error
+            ? error.message
+            : "Error al obtener los nombres máquina",
+      };
+    }
+  }
+
+  /**
    * Crea un nuevo bulletin
    * POST /bulletins/
    */
@@ -315,9 +341,7 @@ export class BulletinAPIService extends BaseAPIService {
     bulletinSlug: string
   ): Promise<APIResponse<BulletinWithCurrentVersion>> {
     try {
-      const data = await this.get<any>(
-        `/bulletins/by-slug/${bulletinSlug}`
-      );
+      const data = await this.get<any>(`/bulletins/by-slug/${bulletinSlug}`);
 
       // La API devuelve { master, current_version, cards_metadata }
       // Normalizar el master para tener _id en lugar de id

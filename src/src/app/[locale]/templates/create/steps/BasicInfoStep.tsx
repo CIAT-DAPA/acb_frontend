@@ -6,6 +6,7 @@ import { CreateTemplateData } from "../../../../../types/template";
 import { ACCESS_TYPES } from "../../../../../types/core";
 import GroupSelector from "../../../components/GroupSelector";
 import { slugify, isValidSlug } from "../../../../../utils/slugify";
+import { TemplateAPIService } from "../../../../../services/templateService";
 
 interface BasicInfoStepProps {
   data: CreateTemplateData;
@@ -25,9 +26,22 @@ export function BasicInfoStep({
   const t = useTranslations("CreateTemplate.basicInfo");
   const allowedGroups: string[] =
     data?.master?.access_config?.allowed_groups ?? [];
-  
+
   // Estado para controlar si el name_machine está siendo editado manualmente
   const [isManualNameMachine, setIsManualNameMachine] = useState(false);
+  // Estado para almacenar los slug names existentes
+  const [existingSlugNames, setExistingSlugNames] = useState<string[]>([]);
+
+  // Cargar los slug names existentes al montar el componente
+  useEffect(() => {
+    const loadSlugNames = async () => {
+      const response = await TemplateAPIService.getAllSlugNames();
+      if (response.success && response.data) {
+        setExistingSlugNames(response.data);
+      }
+    };
+    loadSlugNames();
+  }, []);
 
   const updateMaster = useCallback(
     (updates: Partial<typeof data.master>) => {
@@ -50,9 +64,9 @@ export function BasicInfoStep({
       // Auto-generar name_machine solo si no se ha editado manualmente
       if (!isManualNameMachine) {
         const newNameMachine = slugify(newName);
-        updateMaster({ 
+        updateMaster({
           template_name: newName,
-          name_machine: newNameMachine 
+          name_machine: newNameMachine,
         });
       }
 
@@ -77,9 +91,23 @@ export function BasicInfoStep({
       if (newNameMachine && !isValidSlug(newNameMachine)) {
         onErrorsChange({
           ...errors,
-          name_machine: [t("fields.nameMachine.errors.invalid", {
-            default: "Solo se permiten letras minúsculas, números y guiones. No puede comenzar ni terminar con guión."
-          })],
+          name_machine: [
+            t("fields.nameMachine.errors.invalid", {
+              default:
+                "Solo se permiten letras minúsculas, números y guiones bajos. No puede comenzar ni terminar con guión bajo.",
+            }),
+          ],
+        });
+      } else if (newNameMachine && existingSlugNames.includes(newNameMachine)) {
+        // Validar si el slug ya existe
+        onErrorsChange({
+          ...errors,
+          name_machine: [
+            t("fields.nameMachine.errors.duplicate", {
+              default:
+                "Este nombre máquina ya está en uso. Por favor, elige otro.",
+            }),
+          ],
         });
       } else if (errors.name_machine) {
         onErrorsChange({
@@ -88,7 +116,7 @@ export function BasicInfoStep({
         });
       }
     },
-    [updateMaster, errors, onErrorsChange, t]
+    [updateMaster, errors, onErrorsChange, t, existingSlugNames]
   );
 
   const handleDescriptionChange = useCallback(
@@ -198,7 +226,8 @@ export function BasicInfoStep({
           />
           <p className="mt-1 text-xs text-[#283618]/50">
             {t("fields.nameMachine.help", {
-              default: "Identificador único para URLs y APIs. Se genera automáticamente pero puedes editarlo.",
+              default:
+                "Identificador único para URLs y APIs. Se genera automáticamente pero puedes editarlo.",
             })}
           </p>
           {errors.name_machine?.map((error, index) => (
@@ -282,14 +311,23 @@ export function BasicInfoStep({
             <GroupSelector
               selectedIds={allowedGroups}
               onChange={(newIds) =>
-                updateMaster({ access_config: { ...data.master.access_config, allowed_groups: newIds } })
+                updateMaster({
+                  access_config: {
+                    ...data.master.access_config,
+                    allowed_groups: newIds,
+                  },
+                })
               }
               id="allowed_groups"
               label={t("fields.allowedGroups.label", {
-                      default: "Grupos Permitidos",
-                    })}
-              placeholder={t("fields.allowedGroups.placeholder", { default: "Selecciona un grupo..." })}
-              loadingText={t("fields.allowedGroups.loading", { default: "Cargando grupos..." })}
+                default: "Grupos Permitidos",
+              })}
+              placeholder={t("fields.allowedGroups.placeholder", {
+                default: "Selecciona un grupo...",
+              })}
+              loadingText={t("fields.allowedGroups.loading", {
+                default: "Cargando grupos...",
+              })}
             />
           </div>
         )}

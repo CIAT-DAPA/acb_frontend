@@ -247,10 +247,11 @@
         },
         "nameMachine": {
           "label": "Machine Name",
-          "placeholder": "e.g. agroclimatic-bulletin-january-2025",
+          "placeholder": "e.g. agroclimatic_bulletin_january_2025",
           "help": "Unique identifier for URLs and APIs. Auto-generated but you can edit it.",
           "errors": {
-            "invalid": "Only lowercase letters, numbers, and hyphens allowed. Cannot start or end with a hyphen."
+            "invalid": "Only lowercase letters, numbers, and underscores allowed. Cannot start or end with an underscore.",
+            "duplicate": "This machine name is already in use. Please choose another one."
           }
         }
       }
@@ -476,10 +477,11 @@
         },
         "nameMachine": {
           "label": "Machine Name",
-          "placeholder": "e.g. coffee-agroclimatic-bulletin-narino",
+          "placeholder": "e.g. coffee_agroclimatic_bulletin_narino",
           "help": "Unique identifier for URLs and APIs. Auto-generated but you can edit it.",
           "errors": {
-            "invalid": "Only lowercase letters, numbers, and hyphens allowed. Cannot start or end with a hyphen."
+            "invalid": "Only lowercase letters, numbers, and underscores allowed. Cannot start or end with an underscore.",
+            "duplicate": "This machine name is already in use. Please choose another one."
           }
         },
         "description": {

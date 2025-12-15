@@ -353,10 +353,11 @@
         },
         "nameMachine": {
           "label": "Tên máy",
-          "placeholder": "vd: ban-tin-thoi-tiet-nong-vu-thang-1-nam-2025",
+          "placeholder": "vd: ban_tin_thoi_tiet_nong_vu_thang_1_nam_2025",
           "help": "Mã định danh duy nhất cho URL và API. Tự động tạo nhưng bạn có thể chỉnh sửa.",
           "errors": {
-            "invalid": "Chỉ cho phép chữ thường, số và dấu gạch ngang. Không được bắt đầu hoặc kết thúc bằng dấu gạch ngang."
+            "invalid": "Chỉ cho phép chữ thường, số và dấu gạch dưới. Không được bắt đầu hoặc kết thúc bằng dấu gạch dưới.",
+            "duplicate": "Tên máy này đã được sử dụng. Vui lòng chọn tên khác."
           }
         }
       }
@@ -915,10 +916,11 @@
         },
         "nameMachine": {
           "label": "Tên máy",
-          "placeholder": "ví dụ: ban-tin-khi-hau-nong-nghiep-ca-phe",
+          "placeholder": "ví dụ: ban_tin_khi_hau_nong_nghiep_ca_phe",
           "help": "Mã định danh duy nhất cho URL và API. Tự động tạo nhưng bạn có thể chỉnh sửa.",
           "errors": {
-            "invalid": "Chỉ cho phép chữ thường, số và dấu gạch ngang. Không được bắt đầu hoặc kết thúc bằng dấu gạch ngang."
+            "invalid": "Chỉ cho phép chữ thường, số và dấu gạch dưới. Không được bắt đầu hoặc kết thúc bằng dấu gạch dưới.",
+            "duplicate": "Tên máy này đã được sử dụng. Vui lòng chọn tên khác."
           }
         },
         "allowedGroups": {

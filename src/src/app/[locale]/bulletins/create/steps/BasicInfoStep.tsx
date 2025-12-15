@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { slugify, isValidSlug } from "../../../../../utils/slugify";
 import { CreateBulletinData } from "../../../../../types/bulletin";
 import { Field } from "../../../../../types/template";
+import { BulletinAPIService } from "../../../../../services/bulletinService";
 import {
   ListFieldEditor,
   TextInput,
@@ -29,6 +30,19 @@ export function BasicInfoStep({ bulletinData, onUpdate }: BasicInfoStepProps) {
   // Estado para controlar si el name_machine está siendo editado manualmente
   const [isManualNameMachine, setIsManualNameMachine] = useState(false);
   const [nameMachineError, setNameMachineError] = useState<string>("");
+  // Estado para almacenar los slug names existentes
+  const [existingSlugNames, setExistingSlugNames] = useState<string[]>([]);
+
+  // Cargar los slug names existentes al montar el componente
+  useEffect(() => {
+    const loadSlugNames = async () => {
+      const response = await BulletinAPIService.getAllSlugNames();
+      if (response.success && response.data) {
+        setExistingSlugNames(response.data);
+      }
+    };
+    loadSlugNames();
+  }, []);
 
   const handleNameChange = (value: string) => {
     onUpdate((prev) => ({
@@ -68,7 +82,14 @@ export function BasicInfoStep({ bulletinData, onUpdate }: BasicInfoStepProps) {
       setNameMachineError(
         t("basicInfo.fields.nameMachine.errors.invalid", {
           default:
-            "Solo se permiten letras minúsculas, números y guiones. No puede comenzar ni terminar con guión.",
+            "Solo se permiten letras minúsculas, números y guiones bajos. No puede comenzar ni terminar con guión bajo.",
+        })
+      );
+    } else if (value && existingSlugNames.includes(value)) {
+      // Validar si el slug ya existe
+      setNameMachineError(
+        t("basicInfo.fields.nameMachine.errors.duplicate", {
+          default: "Este nombre máquina ya está en uso. Por favor, elige otro.",
         })
       );
     } else {

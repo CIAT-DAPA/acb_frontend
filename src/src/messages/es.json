@@ -247,10 +247,11 @@
         },
         "nameMachine": {
           "label": "Nombre Máquina",
-          "placeholder": "ej: boletin-agroclimatico-enero-2025",
+          "placeholder": "ej: boletin_agroclimatico_enero_2025",
           "help": "Identificador único para URLs y APIs. Se genera automáticamente pero puedes editarlo.",
           "errors": {
-            "invalid": "Solo se permiten letras minúsculas, números y guiones. No puede comenzar ni terminar con guión."
+            "invalid": "Solo se permiten letras minúsculas, números y guiones bajos. No puede comenzar ni terminar con guión bajo.",
+            "duplicate": "Este nombre máquina ya está en uso. Por favor, elige otro."
           }
         }
       }
@@ -476,10 +477,11 @@
         },
         "nameMachine": {
           "label": "Nombre Máquina",
-          "placeholder": "ej: boletin-agroclimatico-cafe-narino",
+          "placeholder": "ej: boletin_agroclimatico_cafe_narino",
           "help": "Identificador único para URLs y APIs. Se genera automáticamente pero puedes editarlo.",
           "errors": {
-            "invalid": "Solo se permiten letras minúsculas, números y guiones. No puede comenzar ni terminar con guión."
+            "invalid": "Solo se permiten letras minúsculas, números y guiones bajos. No puede comenzar ni terminar con guión bajo.",
+            "duplicate": "Este nombre máquina ya está en uso. Por favor, elige otro."
           }
         },
         "description": {
