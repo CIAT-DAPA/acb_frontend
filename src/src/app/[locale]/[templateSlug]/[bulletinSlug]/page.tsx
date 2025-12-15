@@ -5,26 +5,33 @@ import { useParams, useRouter } from "next/navigation";
 import { CreateTemplateData } from "@/types/template";
 import { Card } from "@/types/card";
 import { ArrowLeft, Loader2, Download } from "lucide-react";
-import { ExportModal, ExportTechnicalConfig } from "@/app/[locale]/components/ExportModal";
+import {
+  ExportModal,
+  ExportTechnicalConfig,
+} from "@/app/[locale]/components/ExportModal";
 import BulletinAPIService from "@/services/bulletinService";
+import { TemplateAPIService } from "@/services/templateService";
 import { useTranslations } from "next-intl";
 import { ScrollView } from "@/app/[locale]/components/ScrollView";
 
 /**
- * Página de preview independiente para boletines
- * Permite visualizar cualquier boletin por su ID publicado
- * 
- * Ruta: /[locale]/bulletins/preview/[id]
- * Ejemplo: /es/bulletins/preview/68d2d1417194ce27a63033b2
+ * Página de preview independiente para boletines con URLs amigables
+ * Permite visualizar cualquier boletín publicado mediante su name_machine y el de su template
+ *
+ * Ruta: /[locale]/[templateSlug]/[bulletinSlug]
+ * Ejemplo: /es/boletin-agroclimatico-cafe/boletin-enero-2025
  */
-export default function TemplatePreviewPage() {
+export default function BulletinPublicPage() {
   const params = useParams();
   const router = useRouter();
-  const bulletinId = params.id as string;
+  const templateSlug = params.templateSlug as string;
+  const bulletinSlug = params.bulletinSlug as string;
   const locale = params.locale as string;
   const t = useTranslations("CreateBulletin.bulletinPreview");
 
-  const [templateData, setTemplateData] = useState<CreateTemplateData | null>(null);
+  const [templateData, setTemplateData] = useState<CreateTemplateData | null>(
+    null
+  );
   const [cardsMetadata, setCardsMetadata] = useState<Record<string, Card>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,14 +52,14 @@ export default function TemplatePreviewPage() {
     checkScreenSize();
 
     // Escuchar cambios de tamaño
-    window.addEventListener('resize', checkScreenSize);
+    window.addEventListener("resize", checkScreenSize);
 
-    return () => window.removeEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
   useEffect(() => {
-    const loadTemplate = async () => {
-      if (!bulletinId) {
+    const loadBulletin = async () => {
+      if (!templateSlug || !bulletinSlug) {
         setError(t("errorNoId"));
         setLoading(false);
         return;
@@ -62,25 +69,32 @@ export default function TemplatePreviewPage() {
         setLoading(true);
         setError(null);
 
-        // Obtener el template master y su versión actual en una sola llamada
-        const response = await BulletinAPIService.getBulletinPublished(bulletinId);
-        
+        // Buscar el boletín por su slug
+        const response = await BulletinAPIService.getBulletinBySlug(
+          bulletinSlug
+        );
+
         if (!response.success || !response.data) {
           throw new Error(t("errorNotFound"));
         }
 
-        const { master: bulletinMaster, current_version: currentVersion, cards_metadata } = response.data;
+        const {
+          master: bulletinMaster,
+          current_version: currentVersion,
+          cards_metadata,
+        } = response.data;
 
         // Validar que la versión tenga contenido
         if (!currentVersion.data || !currentVersion.data.sections) {
           throw new Error(t("errorNoSections"));
         }
-        
+
         // Convertir la respuesta del API al formato CreateTemplateData
         const templateDataFormatted: CreateTemplateData = {
           master: {
-            template_name: bulletinMaster.bulletin_name || t("untitledBulletin"),
-            name_machine: bulletinMaster.name_machine || "",
+            template_name:
+              bulletinMaster.bulletin_name || t("untitledBulletin"),
+            name_machine: bulletinMaster.name_machine || bulletinSlug,
             description: bulletinMaster.description || "",
             log: bulletinMaster.log || {
               created_at: new Date().toISOString(),
@@ -103,7 +117,8 @@ export default function TemplatePreviewPage() {
               creator_first_name: null,
               creator_last_name: null,
             },
-            commit_message: currentVersion.commit_message || t("initialVersion"),
+            commit_message:
+              currentVersion.commit_message || t("initialVersion"),
             content: {
               style_config: currentVersion.data.style_config || {},
               header_config: currentVersion.data.header_config,
@@ -116,17 +131,15 @@ export default function TemplatePreviewPage() {
         setTemplateData(templateDataFormatted);
         setCardsMetadata(cards_metadata || {});
       } catch (err) {
-        console.error("Error cargando boletin:", err);
-        setError(
-          err instanceof Error ? err.message : t("errorLoading")
-        );
+        console.error("Error cargando boletín:", err);
+        setError(err instanceof Error ? err.message : t("errorLoading"));
       } finally {
         setLoading(false);
       }
     };
 
-    loadTemplate();
-  }, [bulletinId]);
+    loadBulletin();
+  }, [templateSlug, bulletinSlug]);
 
   // Función helper para calcular el número total de páginas de una sección
   const getSectionTotalPages = (section: any): number => {
@@ -172,10 +185,10 @@ export default function TemplatePreviewPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin text-[#ffaf68] mx-auto mb-4" />
-          <p className="text-[#283618] text-lg font-medium">
-            {t("loading")}
+          <p className="text-[#283618] text-lg font-medium">{t("loading")}</p>
+          <p className="text-[#283618]/60 text-sm mt-2">
+            {t("loadingWithSlug", { slug: bulletinSlug })}
           </p>
-          <p className="text-[#283618]/60 text-sm mt-2">{t("loadingWithId", { id: bulletinId })}</p>
         </div>
       </div>
     );
@@ -192,15 +205,15 @@ export default function TemplatePreviewPage() {
           <h2 className="text-2xl font-bold text-[#283618] mb-2">
             {t("errorTitle")}
           </h2>
-          <p className="text-[#283618]/70 mb-6">
-            {error || t("errorMessage")}
+          <p className="text-[#283618]/70 mb-6">{error || t("errorMessage")}</p>
+          <p className="text-sm text-[#283618]/50 mb-6">
+            {t("errorSlug", { templateSlug, bulletinSlug })}
           </p>
-          <p className="text-sm text-[#283618]/50 mb-6">{t("errorId", { id: bulletinId })}</p>
           <button
             onClick={() => router.push(`/${locale}/bulletins`)}
             className="px-6 py-3 bg-[#ffaf68] text-white rounded-lg hover:bg-[#ff9d4d] transition-colors flex items-center gap-2 mx-auto"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-5 h-5" />
             {t("backToBulletins")}
           </button>
         </div>
@@ -209,109 +222,57 @@ export default function TemplatePreviewPage() {
   }
 
   return (
-    <div className='min-h-screen'>
-      {/* Header */}
-      <div className='bg-white border-b border-[#283618]/10 shadow-sm top-0 z-10'>
-        <div className='container mx-auto px-4 py-4'>
-          <div className='flex items-center justify-between'>
-            {/* Título y navegación */}
-            <div className='flex items-center gap-4'>
-              <button
-                onClick={() => router.push(`/${locale}/bulletins`)}
-                className='p-2 hover:bg-[#f5f5dc] rounded-lg transition-colors'
-                title={t("backToBulletins")}
-              >
-                <ArrowLeft className='w-5 h-5 text-[#283618]' />
-              </button>
-              <div>
-                <h1 className='text-2xl font-bold text-[#283618]'>
-                  {templateData.master.template_name}
-                </h1>
-                <p className='text-sm text-[#283618]/60'>
-                  {t("previewOf")} •{' '}
-                  {t("sectionCount", {
-                    count: templateData.version.content.sections.length,
-                    plural: templateData.version.content.sections.length === 1 ? t("section") : t("sections")
-                  })}
-                </p>
-              </div>
-            </div>
+    <div className="min-h-screen bg-linear-to-b from-[#f8f9fa] to-white">
+      {/* Header con botón de regreso y exportación */}
+      <div className="bg-white border-b border-[#283618]/10 sticky top-0 z-40 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <button
+              onClick={() => router.push(`/${locale}/bulletins`)}
+              className="flex items-center gap-2 text-[#283618] hover:text-[#606c38] transition-colors font-medium"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span className="hidden sm:inline">{t("backToBulletins")}</span>
+            </button>
 
-            {/* Info del template */}
-            <div className='hidden md:flex items-center gap-4'>
-              {/* Botón de exportación */}
-              <button
-                onClick={() => setIsExportModalOpen(true)}
-                className='flex items-center gap-2 px-4 py-2 bg-[#ffaf68] text-white rounded-lg hover:bg-[#ff9d4d] transition-colors shadow-md hover:shadow-lg'
-                title={t("exportTitle")}
-              >
-                <Download className='w-4 h-4' />
-                <span className='font-medium'>{t("exportButton")}</span>
-              </button>
+            <h1 className="text-lg sm:text-xl font-bold text-[#283618] truncate px-4">
+              {templateData.master.template_name}
+            </h1>
 
-              <div className='text-right'>
-                <p className='text-xs text-[#283618]/50'>{t("bulletinId")}</p>
-                <p className='text-sm font-mono text-[#283618]/70'>
-                  {bulletinId}
-                </p>
-              </div>
-            </div>
+            <button
+              onClick={() => setIsExportModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-[#ffaf68] text-white rounded-lg hover:bg-[#ff9d4d] transition-colors font-medium"
+            >
+              <Download className="w-5 h-5" />
+              <span className="hidden sm:inline">{t("exportButton")}</span>
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Contenido principal */}
-      <div className='container mx-auto px-0 py-4 md:py-0 md:px-4 '>
-        <div className='bg-white md:rounded-xl md:shadow-lg pb-6 md:p-6'>
-          {/* Info y controles - Oculto en móvil para dar más espacio */}
-          <div className='md:block pb-6 border-b border-[#283618]/10'>
-            <div className='bg-white rounded-lg shadow p-4'>
-              <h3 className='text-sm font-semibold text-[#283618] mb-2'>
-                {t("descriptionLabel")}
-              </h3>
-              <p className='text-[#283618]/70 text-sm'>
-                {templateData.master.description || t("noDescription")}
-              </p>
-            </div>
-          </div>
-
-          {/* Componente de Preview - Sin padding en móvil */}
-          <div className='w-full' id="bulletin-export-preview">
-            <ScrollView
-              data={templateData}
-              config={{
-                orientation: "horizontal",
-                showMiniNav: true,
-                highlightActive: true,
-                spacing: 'comfortable',
-                expandAllPages: true,
-              }}
-              cardsMetadata={cardsMetadata}
-            />
-          </div>
+      {/* Preview Container */}
+      <div className="py-8 px-4">
+        <div className="max-w-7xl mx-auto">
+          <ScrollView
+            data={templateData}
+            cardsMetadata={cardsMetadata}
+            config={{
+              orientation: isDesktop ? "horizontal" : "vertical",
+            }}
+          />
         </div>
       </div>
 
-      {/* Modal de exportación en modo auto-export */}
+      {/* Export Modal */}
       <ExportModal
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
-        autoExport={true}
-        exportConfig={exportConfig}
         sections={templateData.version.content.sections}
-        totalSections={templateData.version.content.sections.length}
         contentName={templateData.master.template_name}
+        exportConfig={exportConfig}
         templateData={templateData}
+        autoExport={true}
       />
-
-      {/* Botón flotante de exportación (móvil) */}
-      <button
-        onClick={() => setIsExportModalOpen(true)}
-        className='md:hidden fixed bottom-6 right-6 w-14 h-14 bg-[#ffaf68] text-white rounded-full shadow-lg hover:bg-[#ff9d4d] transition-all hover:scale-110 flex items-center justify-center z-40'
-        title={t("exportButton")}
-      >
-        <Download className='w-6 h-6' />
-      </button>
     </div>
   );
 }

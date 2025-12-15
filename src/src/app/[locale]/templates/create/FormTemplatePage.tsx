@@ -52,6 +52,7 @@ export default function CreateTemplatePage({
     data: initialData || {
       master: {
         template_name: "",
+        name_machine: "",
         description: "",
         status: "active",
         log: {

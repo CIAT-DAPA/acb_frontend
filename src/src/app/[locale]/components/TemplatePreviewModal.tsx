@@ -83,6 +83,7 @@ export function TemplatePreviewModal({
           master: {
             template_name:
               templateMaster.template_name || t("defaults.noName"),
+            name_machine: templateMaster.name_machine || "",
             description: templateMaster.description || "",
             log: templateMaster.log || {
               created_at: new Date().toISOString(),

@@ -16,6 +16,7 @@ export type ContentType = "template" | "bulletin" | "card";
 export interface NormalizedMaster {
   id: string;
   name: string;
+  name_machine?: string; // Machine name para URLs y APIs
   description?: string; // Opcional - Ambos pueden tener description
   status: string;
   log: LogObject;

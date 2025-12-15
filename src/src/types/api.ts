@@ -6,6 +6,7 @@ import { VisualResource } from "./visualResource";
 export interface TemplateMaster {
   _id: string; // ObjectId como string
   template_name: string;
+  name_machine: string; // Identificador único en formato slug (ej: "monthly-climate-bulletin")
   description: string;
   log: LogObject;
   status: TemplateStatus;

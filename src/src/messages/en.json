@@ -8,13 +8,19 @@
     "administration": "Administration",
     "roles": "Roles",
     "groups": "Groups",
+    "partners": "Partners",
     "login": "Login",
     "logout": "Logout",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "loading": "Loading...",
     "user": "User",
-    "defaultInitial": "U"
+    "defaultInitial": "U",
+    "brand": "Bulletin Builder"
+  },
+  "Partners": {
+    "title": "Our Partners",
+    "description": "We work in collaboration with leading organizations in agriculture and climate to strengthen agroclimatic information systems worldwide."
   },
   "Hero": {
     "title": "Create bulletins with",
@@ -238,6 +244,15 @@
           "label": "Bulletin Name",
           "placeholder": "e.g. Agroclimatic Bulletin - January 2025",
           "helper": "Choose a descriptive name to easily identify this bulletin"
+        },
+        "nameMachine": {
+          "label": "Machine Name",
+          "placeholder": "e.g. agroclimatic_bulletin_january_2025",
+          "help": "Unique identifier for URLs and APIs. Auto-generated but you can edit it.",
+          "errors": {
+            "invalid": "Only lowercase letters, numbers, and underscores allowed. Cannot start or end with an underscore.",
+            "duplicate": "This machine name is already in use. Please choose another one."
+          }
         }
       }
     },
@@ -324,9 +339,11 @@
     "bulletinPreview": {
       "loading": "Loading bulletin...",
       "loadingWithId": "ID: {id}",
+      "loadingWithSlug": "Loading: {slug}",
       "errorTitle": "Error loading bulletin",
       "errorMessage": "Could not load the bulletin with the provided ID.",
       "errorId": "ID: {id}",
+      "errorSlug": "Path: {templateSlug}/{bulletinSlug}",
       "errorNoId": "No bulletin ID was provided",
       "errorNotFound": "Bulletin not found",
       "errorNoSections": "The bulletin has no sections defined",
@@ -457,6 +474,15 @@
         "name": {
           "label": "Template Name",
           "placeholder": "e.g. Coffee Agroclimatic Bulletin - Nariño"
+        },
+        "nameMachine": {
+          "label": "Machine Name",
+          "placeholder": "e.g. coffee_agroclimatic_bulletin_narino",
+          "help": "Unique identifier for URLs and APIs. Auto-generated but you can edit it.",
+          "errors": {
+            "invalid": "Only lowercase letters, numbers, and underscores allowed. Cannot start or end with an underscore.",
+            "duplicate": "This machine name is already in use. Please choose another one."
+          }
         },
         "description": {
           "label": "Description",

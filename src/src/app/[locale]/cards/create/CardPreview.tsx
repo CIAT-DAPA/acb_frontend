@@ -56,6 +56,7 @@ export function CardPreview({ data }: CardPreviewProps) {
         template_name: `${getCardTypeIcon(data.card_type)} ${
           data.card_name || t("untitled")
         }`,
+        name_machine: "",
         description: `${t("cardType")}: ${getCardTypeLabel(data.card_type)}`,
         status: data.status || "active",
         log: data.log || defaultLog,

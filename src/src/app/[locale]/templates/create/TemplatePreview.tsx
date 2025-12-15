@@ -653,7 +653,7 @@ export function TemplatePreview({
               </div>
 
               {/* Separador "Y" */}
-              <div className="flex-shrink-0 w-8 h-8 rounded-sm bg-[#525556] text-white flex items-center justify-center font-bold text-sm">
+              <div className="shrink-0 w-8 h-8 rounded-sm bg-[#525556] text-white flex items-center justify-center font-bold text-sm">
                 Y
               </div>
 
@@ -804,7 +804,7 @@ export function TemplatePreview({
                 >
                   {showBullets && (
                     <span
-                      className="flex-shrink-0"
+                      className="shrink-0"
                       style={{
                         color:
                           effectiveStyles.primary_color || fieldStyles.color,
@@ -872,7 +872,7 @@ export function TemplatePreview({
                                   ? `flex gap-1 items-center ${justifyClass} min-w-0`
                                   : shouldExpand
                                   ? "flex-1 min-w-[120px]"
-                                  : "flex-shrink-0"
+                                  : "shrink-0"
                               }
                             >
                               {renderField(

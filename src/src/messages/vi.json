@@ -8,9 +8,19 @@
     "administration": "Quản trị",
     "roles": "Vai trò",
     "groups": "Nhóm",
+    "partners": "Đối tác",
     "login": "Đăng nhập",
     "logout": "Đăng xuất",
-    "openMenu": "Mở menu"
+    "openMenu": "Mở menu",
+    "closeMenu": "Đóng menu",
+    "loading": "Đang tải...",
+    "user": "Người dùng",
+    "defaultInitial": "U",
+    "brand": "Trình tạo Bản tin"
+  },
+  "Partners": {
+    "title": "Đối tác của chúng tôi",
+    "description": "Chúng tôi hợp tác với các tổ chức hàng đầu về nông nghiệp và khí hậu để tăng cường hệ thống thông tin khí hậu nông nghiệp trên toàn thế giới."
   },
   "Roles": {
     "modules": {
@@ -256,11 +266,13 @@
       "backButton": "Mặt sau",
       "descriptionLabel": "Miêu tả",
       "loading": "Đang tải bản tin...",
-      "errorTitle": "Lỗi khi tải bản tin",
-      "exportButton": "Xuất file",
       "loadingWithId": "Đang tải bản tin {id}...",
+      "loadingWithSlug": "Đang tải: {slug}",
+      "errorTitle": "Lỗi khi tải bản tin",
       "errorMessage": "Không thể tải bản tin",
       "errorId": "Mã số: {id}",
+      "errorSlug": "Đường dẫn: {templateSlug}/{bulletinSlug}",
+      "exportButton": "Xuất file",
       "title": "Xem trước bản tin",
       "description": "Bản tin được tạo từ biểu mẫu",
       "previewOf": "Xem trước bản tin",
@@ -338,6 +350,15 @@
           "label": "Tên bản tin",
           "placeholder": "VD: Bản tin thời tiết nông vụ - Tháng 1 năm 2025",
           "helper": "Chọn một tên mô tả để dễ dàng nhận dạng bản tin này"
+        },
+        "nameMachine": {
+          "label": "Tên máy",
+          "placeholder": "vd: ban_tin_thoi_tiet_nong_vu_thang_1_nam_2025",
+          "help": "Mã định danh duy nhất cho URL và API. Tự động tạo nhưng bạn có thể chỉnh sửa.",
+          "errors": {
+            "invalid": "Chỉ cho phép chữ thường, số và dấu gạch dưới. Không được bắt đầu hoặc kết thúc bằng dấu gạch dưới.",
+            "duplicate": "Tên máy này đã được sử dụng. Vui lòng chọn tên khác."
+          }
         }
       }
     },
@@ -892,6 +913,15 @@
         "name": {
           "label": "Tên biểu mẫu",
           "placeholder": "ví dụ: Bản tin khí hậu nông nghiệp cà phê"
+        },
+        "nameMachine": {
+          "label": "Tên máy",
+          "placeholder": "ví dụ: ban_tin_khi_hau_nong_nghiep_ca_phe",
+          "help": "Mã định danh duy nhất cho URL và API. Tự động tạo nhưng bạn có thể chỉnh sửa.",
+          "errors": {
+            "invalid": "Chỉ cho phép chữ thường, số và dấu gạch dưới. Không được bắt đầu hoặc kết thúc bằng dấu gạch dưới.",
+            "duplicate": "Tên máy này đã được sử dụng. Vui lòng chọn tên khác."
+          }
         },
         "allowedGroups": {
           "label": "Nhóm được phép",

@@ -168,7 +168,7 @@ export default function RolesPage() {
           {/* Error State */}
           {error && !loading && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="h-5 w-5 text-red-600 hrink-0 mt-0.5" />
               <div>
                 <h3 className="font-medium text-red-900 mb-1">
                   {t("errorTitle")}
@@ -217,7 +217,7 @@ export default function RolesPage() {
                           <div className="flex items-start justify-between">
                             <div className="flex items-start gap-4 flex-1">
                               {/* Icono */}
-                              <div className="flex-shrink-0 h-12 w-12 bg-[#606c38]/10 rounded-full flex items-center justify-center">
+                              <div className="shrink-0 h-12 w-12 bg-[#606c38]/10 rounded-full flex items-center justify-center">
                                 <Shield className="h-6 w-6 text-[#606c38]" />
                               </div>
 
@@ -263,7 +263,7 @@ export default function RolesPage() {
                             </div>
 
                             {/* Botones de acciones */}
-                            <div className="flex-shrink-0 flex items-center gap-2">
+                            <div className="shrink-0 flex items-center gap-2">
                               <Link
                                 href={`/roles/${roleId}/edit`}
                                 className={btnOutlineSecondary}

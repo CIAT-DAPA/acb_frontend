@@ -301,7 +301,7 @@ export default function VisualResources() {
                 <p className={pageSubtitle}>{t("subtitle")}</p>
               </div>
               <div className="hidden lg:block rotate-12">
-                <div className="w-32 h-32 bg-gradient-to-br from-[#ffaf68] to-[#ff8c42] rounded-lg flex items-center justify-center">
+                <div className="w-32 h-32 bg-linear-to-br from-[#ffaf68] to-[#ff8c42] rounded-lg flex items-center justify-center">
                   <ImageIcon className="h-16 w-16 text-white" />
                 </div>
               </div>
@@ -665,7 +665,7 @@ export default function VisualResources() {
             <div className="p-6">
               <div className="flex gap-4">
                 {/* Vista previa pequeña del recurso */}
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
                     <Image
                       src={resourceToDelete.file_url}

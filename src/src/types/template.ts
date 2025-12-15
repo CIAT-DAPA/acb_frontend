@@ -317,6 +317,7 @@ export interface TemplateVersion {
 export interface TemplateMaster {
   _id?: string;
   template_name: string;
+  name_machine: string; // Identificador único en formato slug (ej: "monthly-climate-bulletin")
   description: string;
   log: LogObject;
   status: TemplateStatus;

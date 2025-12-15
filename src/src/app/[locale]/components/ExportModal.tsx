@@ -20,6 +20,7 @@ function convertToTemplateData(content: NormalizedContent): CreateTemplateData {
   return {
     master: {
       template_name: content.master.name,
+      name_machine: content.master.name_machine || "",
       description: content.master.description || "",
       log: content.master.log,
       status: content.master.status as any,
@@ -61,18 +62,18 @@ export interface ExportTechnicalConfig {
 interface ExportModalProps {
   isOpen: boolean;
   onClose: () => void;
-  
+
   // MODO 1: Callback externo (backward compatible)
   onExport?: (
     config: ExportConfig,
     onSectionChange: (index: number) => void,
     onProgressUpdate: (current: number, message: string) => void
   ) => Promise<void>;
-  
+
   // MODO 2: Auto-export (nuevo)
   autoExport?: boolean;
   exportConfig?: ExportTechnicalConfig;
-  
+
   // Datos comunes
   totalSections?: number;
   contentName?: string;
@@ -297,8 +298,7 @@ export function ExportModal({
 
           // Traducciones
           translations: {
-            sectionGenerating: (current) =>
-              t("sectionGenerating", { current }),
+            sectionGenerating: (current) => t("sectionGenerating", { current }),
             sectionPage: t("sectionPage"),
             toPdf: t("toPdf"),
             toZip: t("toZip"),
@@ -376,7 +376,7 @@ export function ExportModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col">
         {/* Header - Fixed (no hace scroll) */}
-        <div className="flex-shrink-0 bg-white border-b border-[#283618]/10 p-6 flex items-center justify-between rounded-t-xl">
+        <div className="shrink-0 bg-white border-b border-[#283618]/10 p-6 flex items-center justify-between rounded-t-xl">
           <div>
             <h2 className="text-2xl font-bold text-[#283618]">{t("title")}</h2>
             <p className="text-sm text-[#283618]/60 mt-1">{contentName}</p>
@@ -565,7 +565,7 @@ export function ExportModal({
                         title={sectionName}
                       >
                         <div className="flex items-center gap-2">
-                          <span className="font-mono text-[10px] opacity-70 flex-shrink-0">
+                          <span className="font-mono text-[10px] opacity-70 shrink-0">
                             {String(index + 1).padStart(2, "0")}
                           </span>
                           <span className="truncate">{sectionName}</span>
@@ -614,7 +614,7 @@ export function ExportModal({
 
         {/* Footer - Fixed (no hace scroll) */}
         {!loadingContent && !loadError && (
-          <div className="flex flex-col flex-shrink-0 bg-white border-t border-[#283618]/10 p-6 flex items-center justify-between rounded-b-xl">
+          <div className="flex-col shrink-0 bg-white border-t border-[#283618]/10 p-6 flex items-center justify-between rounded-b-xl">
             <div className="text-sm text-[#283618]/60">
               {t("formatLabel")}:{" "}
               <span className="font-semibold uppercase">{config.format}</span> |
