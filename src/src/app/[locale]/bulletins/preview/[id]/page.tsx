@@ -80,6 +80,7 @@ export default function TemplatePreviewPage() {
         const templateDataFormatted: CreateTemplateData = {
           master: {
             template_name: bulletinMaster.bulletin_name || t("untitledBulletin"),
+            name_machine: bulletinMaster.name_machine || "",
             description: bulletinMaster.description || "",
             log: bulletinMaster.log || {
               created_at: new Date().toISOString(),
