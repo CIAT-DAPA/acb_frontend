@@ -31,16 +31,21 @@ export function ExportStep({
 
   // Función helper para calcular el número total de páginas de una sección
   const getSectionTotalPages = (section: any): number => {
+    let maxPages = 1;
+
     // Buscar si hay algún field de tipo list o card que requiera paginación
-    for (const block of section.blocks) {
-      for (const field of block.fields) {
+    section.blocks?.forEach((block: any) => {
+      block.fields?.forEach((field: any) => {
         // Detectar paginación para listas
-        if (field.type === "list" && field.field_config) {
-          const maxItemsPerPage = field.field_config.max_items_per_page;
+        if (field.type === "list") {
+          const rawMax = field.field_config?.max_items_per_page;
+          const maxItemsPerPage = rawMax ? Number(rawMax) : 0;
+
           const items = Array.isArray(field.value) ? field.value : [];
 
-          if (maxItemsPerPage && items.length > maxItemsPerPage) {
-            return Math.ceil(items.length / maxItemsPerPage);
+          if (items.length > 0 && maxItemsPerPage > 0) {
+            const pageCount = Math.ceil(items.length / maxItemsPerPage);
+            maxPages = Math.max(maxPages, pageCount);
           }
         }
 
@@ -48,13 +53,13 @@ export function ExportStep({
         if (field.type === "card" && Array.isArray(field.value)) {
           const cards = field.value;
           if (cards.length > 1) {
-            return cards.length; // Una card por página
+            maxPages = Math.max(maxPages, cards.length);
           }
         }
-      }
-    }
+      });
+    });
 
-    return 1; // Por defecto, 1 página si no hay paginación
+    return maxPages;
   };
 
   // Configuración técnica para el export modal en modo auto

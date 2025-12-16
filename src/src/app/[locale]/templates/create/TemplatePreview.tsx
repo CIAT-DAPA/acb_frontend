@@ -1756,40 +1756,46 @@ export function TemplatePreview({
     paginatedSection: Section;
   } => {
     // Buscar si hay algún field de tipo list o card que requiera paginación
-    let foundInfo: PaginationInfo | undefined;
+    // Iteramos sobre TODOS los campos para encontrar el que requiera más páginas
+    let maxPagesFound = 1;
+    let bestPaginationInfo: PaginationInfo | undefined;
 
     for (let blockIndex = 0; blockIndex < section.blocks.length; blockIndex++) {
       const block = section.blocks[blockIndex];
       for (let fieldIndex = 0; fieldIndex < block.fields.length; fieldIndex++) {
         const field = block.fields[fieldIndex];
+        let currentFieldPages = 1;
+        let currentInfo: PaginationInfo | undefined;
 
         // Detectar paginación para listas
-        if (field.type === "list" && field.field_config) {
-          const maxItemsPerPage = (field.field_config as any)
-            .max_items_per_page;
+        if (field.type === "list") {
+          const rawMax = (field.field_config as any)?.max_items_per_page;
+          const maxItemsPerPage = rawMax ? Number(rawMax) : 0;
+
           const items = Array.isArray(field.value) ? field.value : [];
 
-          if (maxItemsPerPage && items.length > maxItemsPerPage) {
-            foundInfo = {
-              blockIndex,
-              fieldIndex,
-              field,
-              maxItemsPerPage,
-              totalItems: items.length,
-              items,
-              type: "list",
-            };
-            break;
+          if (items.length > 0 && maxItemsPerPage > 0) {
+            currentFieldPages = Math.ceil(items.length / maxItemsPerPage);
+            if (currentFieldPages > 1) {
+              currentInfo = {
+                blockIndex,
+                fieldIndex,
+                field,
+                maxItemsPerPage,
+                totalItems: items.length,
+                items,
+                type: "list",
+              };
+            }
           }
         }
 
         // Detectar paginación para cards (cada card es una página)
         if (field.type === "card" && Array.isArray(field.value)) {
           const cards = field.value;
-
-          // Si hay más de una card, necesitamos paginación (1 card por página)
           if (cards.length > 1) {
-            foundInfo = {
+            currentFieldPages = cards.length;
+            currentInfo = {
               blockIndex,
               fieldIndex,
               field,
@@ -1798,25 +1804,24 @@ export function TemplatePreview({
               items: cards,
               type: "card",
             };
-            break;
           }
         }
+
+        // Si este campo requiere más páginas que el máximo encontrado hasta ahora, lo seleccionamos
+        if (currentFieldPages > maxPagesFound) {
+          maxPagesFound = currentFieldPages;
+          bestPaginationInfo = currentInfo;
+        }
       }
-      if (foundInfo) break;
     }
 
-    if (!foundInfo) {
+    if (!bestPaginationInfo) {
       return { totalPages: 1, paginatedSection: section };
     }
 
-    // Calcular total de páginas
-    const totalPages = Math.ceil(
-      foundInfo.totalItems / foundInfo.maxItemsPerPage
-    );
-
     return {
-      totalPages,
-      fieldWithPagination: foundInfo,
+      totalPages: maxPagesFound,
+      fieldWithPagination: bestPaginationInfo,
       paginatedSection: section,
     };
   };

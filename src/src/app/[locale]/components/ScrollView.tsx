@@ -29,7 +29,7 @@ export function ScrollView({
   cardsMetadata,
 }: ScrollViewProps) {
   const t = useTranslations("ScrollView");
-  
+
   const {
     orientation = "vertical",
     showMiniNav = true,
@@ -211,7 +211,8 @@ export function ScrollView({
                     {String(index + 1).padStart(2, "0")}
                   </span>
                   <span className="truncate text-xs md:text-sm">
-                    {section.display_name || t("section", { number: index + 1 })}
+                    {section.display_name ||
+                      t("section", { number: index + 1 })}
                   </span>
                 </div>
               </button>
@@ -246,17 +247,22 @@ export function ScrollView({
             section.blocks?.forEach((block: any) => {
               block.fields?.forEach((field: any) => {
                 if (field.type === "card" && Array.isArray(field.value)) {
-                  maxPages = Math.max(maxPages, field.value.length);
+                  const cards = field.value;
+                  if (cards.length > 1) {
+                    maxPages = Math.max(maxPages, cards.length);
+                  }
                 } else if (
                   field.type === "list" &&
                   Array.isArray(field.value)
                 ) {
-                  const itemsPerPage =
-                    field.field_config?.max_items_per_page || 5;
-                  const pageCount = Math.ceil(
-                    field.value.length / itemsPerPage
-                  );
-                  maxPages = Math.max(maxPages, pageCount);
+                  const rawMax = field.field_config?.max_items_per_page;
+                  const itemsPerPage = rawMax ? Number(rawMax) : 0;
+
+                  const items = field.value;
+                  if (items.length > 0 && itemsPerPage > 0) {
+                    const pageCount = Math.ceil(items.length / itemsPerPage);
+                    maxPages = Math.max(maxPages, pageCount);
+                  }
                 }
               });
             });
@@ -281,7 +287,7 @@ export function ScrollView({
                   data-section-index={sectionIndex}
                   data-page-index={pageIndex}
                   className={`
-                    scroll-section flex-shrink-0
+                    scroll-section shrink-0
                     ${
                       highlightActive && activeSectionIndex === sectionIndex
                         ? "ring-2 md:ring-4 ring-[#ffaf68] ring-offset-2 md:ring-offset-4 rounded-lg"
@@ -293,9 +299,15 @@ export function ScrollView({
                   {/* Título de sección con número de página */}
                   <div className="mb-1.5 md:mb-2 px-1 md:px-2">
                     <h3 className="text-xs md:text-sm font-semibold text-[#283618]">
-                      {section.display_name || t("section", { number: sectionIndex + 1 })}
+                      {section.display_name ||
+                        t("section", { number: sectionIndex + 1 })}
                       <span className="text-xs ml-2 text-[#606c38]">
-                        ({t("page", { current: pageIndex + 1, total: pageCount })})
+                        (
+                        {t("page", {
+                          current: pageIndex + 1,
+                          total: pageCount,
+                        })}
+                        )
                       </span>
                     </h3>
                   </div>
@@ -321,7 +333,7 @@ export function ScrollView({
               data-section-index={sectionIndex}
               data-page-index={0}
               className={`
-                scroll-section flex-shrink-0
+                scroll-section shrink-0
                 ${
                   highlightActive && activeSectionIndex === sectionIndex
                     ? "ring-2 md:ring-4 ring-[#ffaf68] ring-offset-2 md:ring-offset-4 rounded-lg"
