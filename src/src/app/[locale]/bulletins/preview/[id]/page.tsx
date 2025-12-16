@@ -2,18 +2,49 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { CreateTemplateData } from "@/types/template";
+import { CreateTemplateData, Field, Block, Section } from "@/types/template";
 import { Card } from "@/types/card";
 import { ArrowLeft, Loader2, Download } from "lucide-react";
-import { ExportModal, ExportTechnicalConfig } from "@/app/[locale]/components/ExportModal";
+import {
+  ExportModal,
+  ExportTechnicalConfig,
+} from "@/app/[locale]/components/ExportModal";
 import BulletinAPIService from "@/services/bulletinService";
 import { useTranslations } from "next-intl";
+
+// Función para decodificar valores de campos de texto
+const decodeTextFieldValue = (value: any): any => {
+  if (typeof value === "string" && value.trim() !== "") {
+    try {
+      return decodeURIComponent(value);
+    } catch (e) {
+      return value;
+    }
+  }
+  return value;
+};
+
+// Función para decodificar todos los campos de texto en una estructura
+const decodeFields = (fields: Field[]) => {
+  fields.forEach((field) => {
+    if (field.type === "text" || field.type === "text_with_icon") {
+      field.value = decodeTextFieldValue(field.value);
+    } else if (field.type === "list" && Array.isArray(field.value)) {
+      field.value = field.value.map((item: any) => {
+        if (typeof item === "string") {
+          return decodeTextFieldValue(item);
+        }
+        return item;
+      });
+    }
+  });
+};
 import { ScrollView } from "@/app/[locale]/components/ScrollView";
 
 /**
  * Página de preview independiente para boletines
  * Permite visualizar cualquier boletin por su ID publicado
- * 
+ *
  * Ruta: /[locale]/bulletins/preview/[id]
  * Ejemplo: /es/bulletins/preview/68d2d1417194ce27a63033b2
  */
@@ -24,7 +55,9 @@ export default function TemplatePreviewPage() {
   const locale = params.locale as string;
   const t = useTranslations("CreateBulletin.bulletinPreview");
 
-  const [templateData, setTemplateData] = useState<CreateTemplateData | null>(null);
+  const [templateData, setTemplateData] = useState<CreateTemplateData | null>(
+    null
+  );
   const [cardsMetadata, setCardsMetadata] = useState<Record<string, Card>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,9 +78,9 @@ export default function TemplatePreviewPage() {
     checkScreenSize();
 
     // Escuchar cambios de tamaño
-    window.addEventListener('resize', checkScreenSize);
+    window.addEventListener("resize", checkScreenSize);
 
-    return () => window.removeEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
   useEffect(() => {
@@ -63,23 +96,30 @@ export default function TemplatePreviewPage() {
         setError(null);
 
         // Obtener el template master y su versión actual en una sola llamada
-        const response = await BulletinAPIService.getBulletinPublished(bulletinId);
-        
+        const response = await BulletinAPIService.getBulletinPublished(
+          bulletinId
+        );
+
         if (!response.success || !response.data) {
           throw new Error(t("errorNotFound"));
         }
 
-        const { master: bulletinMaster, current_version: currentVersion, cards_metadata } = response.data;
+        const {
+          master: bulletinMaster,
+          current_version: currentVersion,
+          cards_metadata,
+        } = response.data;
 
         // Validar que la versión tenga contenido
         if (!currentVersion.data || !currentVersion.data.sections) {
           throw new Error(t("errorNoSections"));
         }
-        
+
         // Convertir la respuesta del API al formato CreateTemplateData
         const templateDataFormatted: CreateTemplateData = {
           master: {
-            template_name: bulletinMaster.bulletin_name || t("untitledBulletin"),
+            template_name:
+              bulletinMaster.bulletin_name || t("untitledBulletin"),
             name_machine: bulletinMaster.name_machine || "",
             description: bulletinMaster.description || "",
             log: bulletinMaster.log || {
@@ -103,7 +143,8 @@ export default function TemplatePreviewPage() {
               creator_first_name: null,
               creator_last_name: null,
             },
-            commit_message: currentVersion.commit_message || t("initialVersion"),
+            commit_message:
+              currentVersion.commit_message || t("initialVersion"),
             content: {
               style_config: currentVersion.data.style_config || {},
               header_config: currentVersion.data.header_config,
@@ -113,13 +154,32 @@ export default function TemplatePreviewPage() {
           },
         };
 
+        // Decodificar campos de texto
+        if (templateDataFormatted.version.content.header_config?.fields) {
+          decodeFields(
+            templateDataFormatted.version.content.header_config.fields
+          );
+        }
+        if (templateDataFormatted.version.content.footer_config?.fields) {
+          decodeFields(
+            templateDataFormatted.version.content.footer_config.fields
+          );
+        }
+        templateDataFormatted.version.content.sections?.forEach(
+          (section: Section) => {
+            section.blocks?.forEach((block: Block) => {
+              if (block.fields) {
+                decodeFields(block.fields);
+              }
+            });
+          }
+        );
+
         setTemplateData(templateDataFormatted);
         setCardsMetadata(cards_metadata || {});
       } catch (err) {
         console.error("Error cargando boletin:", err);
-        setError(
-          err instanceof Error ? err.message : t("errorLoading")
-        );
+        setError(err instanceof Error ? err.message : t("errorLoading"));
       } finally {
         setLoading(false);
       }
@@ -172,10 +232,10 @@ export default function TemplatePreviewPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin text-[#ffaf68] mx-auto mb-4" />
-          <p className="text-[#283618] text-lg font-medium">
-            {t("loading")}
+          <p className="text-[#283618] text-lg font-medium">{t("loading")}</p>
+          <p className="text-[#283618]/60 text-sm mt-2">
+            {t("loadingWithId", { id: bulletinId })}
           </p>
-          <p className="text-[#283618]/60 text-sm mt-2">{t("loadingWithId", { id: bulletinId })}</p>
         </div>
       </div>
     );
@@ -192,10 +252,10 @@ export default function TemplatePreviewPage() {
           <h2 className="text-2xl font-bold text-[#283618] mb-2">
             {t("errorTitle")}
           </h2>
-          <p className="text-[#283618]/70 mb-6">
-            {error || t("errorMessage")}
+          <p className="text-[#283618]/70 mb-6">{error || t("errorMessage")}</p>
+          <p className="text-sm text-[#283618]/50 mb-6">
+            {t("errorId", { id: bulletinId })}
           </p>
-          <p className="text-sm text-[#283618]/50 mb-6">{t("errorId", { id: bulletinId })}</p>
           <button
             onClick={() => router.push(`/${locale}/bulletins`)}
             className="px-6 py-3 bg-[#ffaf68] text-white rounded-lg hover:bg-[#ff9d4d] transition-colors flex items-center gap-2 mx-auto"
@@ -209,49 +269,52 @@ export default function TemplatePreviewPage() {
   }
 
   return (
-    <div className='min-h-screen'>
+    <div className="min-h-screen">
       {/* Header */}
-      <div className='bg-white border-b border-[#283618]/10 shadow-sm top-0 z-10'>
-        <div className='container mx-auto px-4 py-4'>
-          <div className='flex items-center justify-between'>
+      <div className="bg-white border-b border-[#283618]/10 shadow-sm top-0 z-10">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
             {/* Título y navegación */}
-            <div className='flex items-center gap-4'>
+            <div className="flex items-center gap-4">
               <button
                 onClick={() => router.push(`/${locale}/bulletins`)}
-                className='p-2 hover:bg-[#f5f5dc] rounded-lg transition-colors'
+                className="p-2 hover:bg-[#f5f5dc] rounded-lg transition-colors"
                 title={t("backToBulletins")}
               >
-                <ArrowLeft className='w-5 h-5 text-[#283618]' />
+                <ArrowLeft className="w-5 h-5 text-[#283618]" />
               </button>
               <div>
-                <h1 className='text-2xl font-bold text-[#283618]'>
+                <h1 className="text-2xl font-bold text-[#283618]">
                   {templateData.master.template_name}
                 </h1>
-                <p className='text-sm text-[#283618]/60'>
-                  {t("previewOf")} •{' '}
+                <p className="text-sm text-[#283618]/60">
+                  {t("previewOf")} •{" "}
                   {t("sectionCount", {
                     count: templateData.version.content.sections.length,
-                    plural: templateData.version.content.sections.length === 1 ? t("section") : t("sections")
+                    plural:
+                      templateData.version.content.sections.length === 1
+                        ? t("section")
+                        : t("sections"),
                   })}
                 </p>
               </div>
             </div>
 
             {/* Info del template */}
-            <div className='hidden md:flex items-center gap-4'>
+            <div className="hidden md:flex items-center gap-4">
               {/* Botón de exportación */}
               <button
                 onClick={() => setIsExportModalOpen(true)}
-                className='flex items-center gap-2 px-4 py-2 bg-[#ffaf68] text-white rounded-lg hover:bg-[#ff9d4d] transition-colors shadow-md hover:shadow-lg'
+                className="flex items-center gap-2 px-4 py-2 bg-[#ffaf68] text-white rounded-lg hover:bg-[#ff9d4d] transition-colors shadow-md hover:shadow-lg"
                 title={t("exportTitle")}
               >
-                <Download className='w-4 h-4' />
-                <span className='font-medium'>{t("exportButton")}</span>
+                <Download className="w-4 h-4" />
+                <span className="font-medium">{t("exportButton")}</span>
               </button>
 
-              <div className='text-right'>
-                <p className='text-xs text-[#283618]/50'>{t("bulletinId")}</p>
-                <p className='text-sm font-mono text-[#283618]/70'>
+              <div className="text-right">
+                <p className="text-xs text-[#283618]/50">{t("bulletinId")}</p>
+                <p className="text-sm font-mono text-[#283618]/70">
                   {bulletinId}
                 </p>
               </div>
@@ -261,29 +324,29 @@ export default function TemplatePreviewPage() {
       </div>
 
       {/* Contenido principal */}
-      <div className='container mx-auto px-0 py-4 md:py-0 md:px-4 '>
-        <div className='bg-white md:rounded-xl md:shadow-lg pb-6 md:p-6'>
+      <div className="container mx-auto px-0 py-4 md:py-0 md:px-4 ">
+        <div className="bg-white md:rounded-xl md:shadow-lg pb-6 md:p-6">
           {/* Info y controles - Oculto en móvil para dar más espacio */}
-          <div className='md:block pb-6 border-b border-[#283618]/10'>
-            <div className='bg-white rounded-lg shadow p-4'>
-              <h3 className='text-sm font-semibold text-[#283618] mb-2'>
+          <div className="md:block pb-6 border-b border-[#283618]/10">
+            <div className="bg-white rounded-lg shadow p-4">
+              <h3 className="text-sm font-semibold text-[#283618] mb-2">
                 {t("descriptionLabel")}
               </h3>
-              <p className='text-[#283618]/70 text-sm'>
+              <p className="text-[#283618]/70 text-sm">
                 {templateData.master.description || t("noDescription")}
               </p>
             </div>
           </div>
 
           {/* Componente de Preview - Sin padding en móvil */}
-          <div className='w-full' id="bulletin-export-preview">
+          <div className="w-full" id="bulletin-export-preview">
             <ScrollView
               data={templateData}
               config={{
                 orientation: "horizontal",
                 showMiniNav: true,
                 highlightActive: true,
-                spacing: 'comfortable',
+                spacing: "comfortable",
                 expandAllPages: true,
               }}
               cardsMetadata={cardsMetadata}
@@ -307,10 +370,10 @@ export default function TemplatePreviewPage() {
       {/* Botón flotante de exportación (móvil) */}
       <button
         onClick={() => setIsExportModalOpen(true)}
-        className='md:hidden fixed bottom-6 right-6 w-14 h-14 bg-[#ffaf68] text-white rounded-full shadow-lg hover:bg-[#ff9d4d] transition-all hover:scale-110 flex items-center justify-center z-40'
+        className="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-[#ffaf68] text-white rounded-full shadow-lg hover:bg-[#ff9d4d] transition-all hover:scale-110 flex items-center justify-center z-40"
         title={t("exportButton")}
       >
-        <Download className='w-6 h-6' />
+        <Download className="w-6 h-6" />
       </button>
     </div>
   );
