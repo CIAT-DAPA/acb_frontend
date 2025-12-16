@@ -39,6 +39,7 @@ export interface ListFieldConfig {
   max_items: number;
   min_items: number;
   item_schema: Record<string, FieldBase>;
+  allow_csv_import?: boolean;
 }
 
 export interface SelectFieldConfig {

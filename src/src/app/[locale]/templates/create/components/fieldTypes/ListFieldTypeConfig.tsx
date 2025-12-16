@@ -422,6 +422,26 @@ export const ListFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
         <p className={helpTextClass}>{t("itemsPerPageHelp")}</p>
       </div>
 
+      {/* Configuración de importación CSV */}
+      {isFormMode && (
+        <div className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            id="allow_csv_import"
+            checked={fieldConfig?.allow_csv_import || false}
+            onChange={(e) =>
+              updateFieldConfig({
+                allow_csv_import: e.target.checked,
+              })
+            }
+            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+          />
+          <label htmlFor="allow_csv_import" className={labelClass}>
+            {t("allowCsvImport")}
+          </label>
+        </div>
+      )}
+
       {/* Configuración del esquema de elementos */}
       <div>
         <h4 className="text-md font-medium text-[#283618] mb-3">

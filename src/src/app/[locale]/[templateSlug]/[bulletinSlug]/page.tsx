@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { CreateTemplateData } from "@/types/template";
+import { CreateTemplateData, Field, Block, Section } from "@/types/template";
 import { Card } from "@/types/card";
 import { ArrowLeft, Loader2, Download } from "lucide-react";
 import {
@@ -13,6 +13,34 @@ import BulletinAPIService from "@/services/bulletinService";
 import { TemplateAPIService } from "@/services/templateService";
 import { useTranslations } from "next-intl";
 import { ScrollView } from "@/app/[locale]/components/ScrollView";
+
+// Función para decodificar valores de campos de texto
+const decodeTextFieldValue = (value: any): any => {
+  if (typeof value === "string" && value.trim() !== "") {
+    try {
+      return decodeURIComponent(value);
+    } catch (e) {
+      return value;
+    }
+  }
+  return value;
+};
+
+// Función para decodificar todos los campos de texto en una estructura
+const decodeFields = (fields: Field[]) => {
+  fields.forEach((field) => {
+    if (field.type === "text" || field.type === "text_with_icon") {
+      field.value = decodeTextFieldValue(field.value);
+    } else if (field.type === "list" && Array.isArray(field.value)) {
+      field.value = field.value.map((item: any) => {
+        if (typeof item === "string") {
+          return decodeTextFieldValue(item);
+        }
+        return item;
+      });
+    }
+  });
+};
 
 /**
  * Página de preview independiente para boletines con URLs amigables
@@ -127,6 +155,27 @@ export default function BulletinPublicPage() {
             },
           },
         };
+
+        // Decodificar campos de texto
+        if (templateDataFormatted.version.content.header_config?.fields) {
+          decodeFields(
+            templateDataFormatted.version.content.header_config.fields
+          );
+        }
+        if (templateDataFormatted.version.content.footer_config?.fields) {
+          decodeFields(
+            templateDataFormatted.version.content.footer_config.fields
+          );
+        }
+        templateDataFormatted.version.content.sections?.forEach(
+          (section: Section) => {
+            section.blocks?.forEach((block: Block) => {
+              if (block.fields) {
+                decodeFields(block.fields);
+              }
+            });
+          }
+        );
 
         setTemplateData(templateDataFormatted);
         setCardsMetadata(cards_metadata || {});
