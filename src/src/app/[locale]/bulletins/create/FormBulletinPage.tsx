@@ -38,6 +38,104 @@ import { BulletinAPIService } from "../../../../services/bulletinService";
 import { useToast } from "../../../../components/Toast";
 import { btnOutlineSecondary, btnPrimary } from "../../components/ui";
 
+// Funciones para codificar/decodificar valores de texto
+const encodeTextFieldValue = (value: any): any => {
+  if (typeof value === "string" && value.trim() !== "") {
+    return encodeURIComponent(value);
+  }
+  return value;
+};
+
+const decodeTextFieldValue = (value: any): any => {
+  if (typeof value === "string" && value.trim() !== "") {
+    try {
+      return decodeURIComponent(value);
+    } catch (e) {
+      // Si falla la decodificación, devolver el valor original
+      return value;
+    }
+  }
+  return value;
+};
+
+// Función para codificar todos los campos de texto en la estructura de datos
+const encodeTextFields = (data: CreateBulletinData): CreateBulletinData => {
+  const encodedData = JSON.parse(JSON.stringify(data)); // Deep clone
+
+  const encodeFieldsArray = (fields: Field[]) => {
+    fields.forEach((field) => {
+      if (field.type === "text" || field.type === "text_with_icon") {
+        field.value = encodeTextFieldValue(field.value);
+      } else if (field.type === "list" && Array.isArray(field.value)) {
+        field.value = field.value.map((item: any) => {
+          if (typeof item === "string") {
+            return encodeTextFieldValue(item);
+          }
+          return item;
+        });
+      }
+    });
+  };
+
+  // Codificar header y footer
+  if (encodedData.version.data.header_config?.fields) {
+    encodeFieldsArray(encodedData.version.data.header_config.fields);
+  }
+  if (encodedData.version.data.footer_config?.fields) {
+    encodeFieldsArray(encodedData.version.data.footer_config.fields);
+  }
+
+  // Codificar secciones
+  encodedData.version.data.sections?.forEach((section: Section) => {
+    section.blocks?.forEach((block: Block) => {
+      if (block.fields) {
+        encodeFieldsArray(block.fields);
+      }
+    });
+  });
+
+  return encodedData;
+};
+
+// Función para decodificar todos los campos de texto en la estructura de datos
+const decodeTextFields = (data: CreateBulletinData): CreateBulletinData => {
+  const decodedData = JSON.parse(JSON.stringify(data)); // Deep clone
+
+  const decodeFieldsArray = (fields: Field[]) => {
+    fields.forEach((field) => {
+      if (field.type === "text" || field.type === "text_with_icon") {
+        field.value = decodeTextFieldValue(field.value);
+      } else if (field.type === "list" && Array.isArray(field.value)) {
+        field.value = field.value.map((item: any) => {
+          if (typeof item === "string") {
+            return decodeTextFieldValue(item);
+          }
+          return item;
+        });
+      }
+    });
+  };
+
+  // Decodificar header y footer
+  if (decodedData.version.data.header_config?.fields) {
+    decodeFieldsArray(decodedData.version.data.header_config.fields);
+  }
+  if (decodedData.version.data.footer_config?.fields) {
+    decodeFieldsArray(decodedData.version.data.footer_config.fields);
+  }
+
+  // Decodificar secciones
+  decodedData.version.data.sections?.forEach((section: Section) => {
+    section.blocks?.forEach((block: Block) => {
+      if (block.fields) {
+        decodeFieldsArray(block.fields);
+      }
+    });
+  });
+
+  return decodedData;
+};
+
 interface FormBulletinPageProps {
   mode?: "create" | "edit";
   bulletinId?: string;
@@ -74,41 +172,43 @@ export default function FormBulletinPage({
     currentSectionIndex: 0,
     selectedTemplateId: initialData?.master.base_template_master_id,
     selectedTemplateVersionId: initialData?.master.base_template_version_id,
-    data: initialData || {
-      master: {
-        bulletin_name: "",
-        name_machine: "",
-        status: "draft",
-        log: {
-          created_at: new Date().toISOString(),
-          creator_user_id: "",
-          creator_first_name: null,
-          creator_last_name: null,
+    data: initialData
+      ? decodeTextFields(initialData)
+      : {
+          master: {
+            bulletin_name: "",
+            name_machine: "",
+            status: "draft",
+            log: {
+              created_at: new Date().toISOString(),
+              creator_user_id: "",
+              creator_first_name: null,
+              creator_last_name: null,
+            },
+            base_template_master_id: "",
+            base_template_version_id: "",
+            access_config: {
+              access_type: "public",
+              allowed_groups: [],
+            },
+          },
+          version: {
+            version_num: 1,
+            commit_message: "",
+            log: {
+              created_at: new Date().toISOString(),
+              creator_user_id: "",
+              creator_first_name: null,
+              creator_last_name: null,
+            },
+            data: {
+              style_config: {},
+              header_config: { fields: [] },
+              footer_config: { fields: [] },
+              sections: [],
+            },
+          },
         },
-        base_template_master_id: "",
-        base_template_version_id: "",
-        access_config: {
-          access_type: "public",
-          allowed_groups: [],
-        },
-      },
-      version: {
-        version_num: 1,
-        commit_message: "",
-        log: {
-          created_at: new Date().toISOString(),
-          creator_user_id: "",
-          creator_first_name: null,
-          creator_last_name: null,
-        },
-        data: {
-          style_config: {},
-          header_config: { fields: [] },
-          footer_config: { fields: [] },
-          sections: [],
-        },
-      },
-    },
     errors: {},
     isValid: false,
   });
@@ -454,10 +554,12 @@ export default function FormBulletinPage({
 
     setIsLoading(true);
     try {
+      // Codificar los campos de texto antes de guardar
+      const encodedData = encodeTextFields(creationState.data);
+
       if (isEditMode && bulletinId) {
         // MODO EDICIÓN: Actualizar bulletin existente
-        const { log: masterLog, ...masterDataWithoutLog } =
-          creationState.data.master;
+        const { log: masterLog, ...masterDataWithoutLog } = encodedData.master;
 
         // 1. Actualizar bulletin master
         const masterResponse = await BulletinAPIService.updateBulletin(
@@ -472,7 +574,7 @@ export default function FormBulletinPage({
         }
 
         const { log: versionLog, ...versionDataWithoutLog } =
-          creationState.data.version;
+          encodedData.version;
 
         // 2. Crear nueva versión del boletín
         const versionResponse = await BulletinAPIService.createBulletinVersion(
@@ -490,8 +592,7 @@ export default function FormBulletinPage({
         showToast(t("updateSuccess"), "success");
       } else {
         // MODO CREACIÓN: Crear nuevo bulletin
-        const { log: masterLog, ...masterDataWithoutLog } =
-          creationState.data.master;
+        const { log: masterLog, ...masterDataWithoutLog } = encodedData.master;
 
         const masterResponse = await BulletinAPIService.createBulletin(
           masterDataWithoutLog
@@ -507,7 +608,7 @@ export default function FormBulletinPage({
           (masterResponse.data as any).id || masterResponse.data._id;
 
         const { log: versionLog, ...versionDataWithoutLog } =
-          creationState.data.version;
+          encodedData.version;
 
         // 2. Crear primera versión del boletín
         const versionResponse = await BulletinAPIService.createBulletinVersion(
@@ -557,9 +658,12 @@ export default function FormBulletinPage({
         },
       };
 
+      // Codificar los campos de texto antes de guardar
+      const encodedData = encodeTextFields(draftData);
+
       if (isEditMode && bulletinId) {
         // MODO EDICIÓN: Actualizar el boletín existente
-        const { log: masterLog, ...masterDataWithoutLog } = draftData.master;
+        const { log: masterLog, ...masterDataWithoutLog } = encodedData.master;
 
         // 1. Actualizar bulletin master con status draft
         const masterResponse = await BulletinAPIService.updateBulletin(
@@ -573,7 +677,8 @@ export default function FormBulletinPage({
           );
         }
 
-        const { log: versionLog, ...versionDataWithoutLog } = draftData.version;
+        const { log: versionLog, ...versionDataWithoutLog } =
+          encodedData.version;
 
         // 2. Crear nueva versión con los cambios
         const versionResponse = await BulletinAPIService.createBulletinVersion(
@@ -590,7 +695,7 @@ export default function FormBulletinPage({
         showToast(t("savedAsDraft") || t("success"), "success");
       } else {
         // MODO CREACIÓN: Crear nuevo bulletin
-        const { log: masterLog, ...masterDataWithoutLog } = draftData.master;
+        const { log: masterLog, ...masterDataWithoutLog } = encodedData.master;
 
         const masterResponse = await BulletinAPIService.createBulletin(
           masterDataWithoutLog
@@ -605,7 +710,8 @@ export default function FormBulletinPage({
         const newBulletinId =
           (masterResponse.data as any).id || masterResponse.data._id;
 
-        const { log: versionLog, ...versionDataWithoutLog } = draftData.version;
+        const { log: versionLog, ...versionDataWithoutLog } =
+          encodedData.version;
 
         const versionResponse = await BulletinAPIService.createBulletinVersion(
           newBulletinId,
@@ -724,10 +830,12 @@ export default function FormBulletinPage({
         },
       };
 
+      // Codificar los campos de texto antes de guardar
+      const encodedData = encodeTextFields(publishedData);
+
       if (isEditMode && bulletinId) {
         // MODO EDICIÓN: Actualizar el boletín existente
-        const { log: masterLog, ...masterDataWithoutLog } =
-          publishedData.master;
+        const { log: masterLog, ...masterDataWithoutLog } = encodedData.master;
 
         // 1. Actualizar bulletin master con status published
         const masterResponse = await BulletinAPIService.updateBulletin(
@@ -742,7 +850,7 @@ export default function FormBulletinPage({
         }
 
         const { log: versionLog, ...versionDataWithoutLog } =
-          publishedData.version;
+          encodedData.version;
 
         // 2. Crear nueva versión con los cambios
         const versionResponse = await BulletinAPIService.createBulletinVersion(
@@ -760,8 +868,7 @@ export default function FormBulletinPage({
         setShowPublishModal(true);
       } else {
         // MODO CREACIÓN: Crear nuevo bulletin
-        const { log: masterLog, ...masterDataWithoutLog } =
-          publishedData.master;
+        const { log: masterLog, ...masterDataWithoutLog } = encodedData.master;
 
         const masterResponse = await BulletinAPIService.createBulletin(
           masterDataWithoutLog
@@ -777,7 +884,7 @@ export default function FormBulletinPage({
           (masterResponse.data as any).id || masterResponse.data._id;
 
         const { log: versionLog, ...versionDataWithoutLog } =
-          publishedData.version;
+          encodedData.version;
 
         const versionResponse = await BulletinAPIService.createBulletinVersion(
           newBulletinId,
