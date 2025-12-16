@@ -1,9 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronUp, Upload } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Field } from "../../../../../../types/template";
+import {
+  Field,
+  ClimateDataFieldConfig,
+} from "../../../../../../types/template";
 import {
   TextField,
   NumberField,
@@ -66,6 +69,103 @@ export function ListFieldEditor({
       }
     });
     return newItem;
+  };
+
+  const allowCsvImport =
+    field.field_config && "allow_csv_import" in field.field_config
+      ? field.field_config.allow_csv_import
+      : false;
+
+  const climateDataFieldId = Object.keys(itemSchema).find(
+    (key) => itemSchema[key].type === "climate_data_puntual"
+  );
+  const dateFieldId = Object.keys(itemSchema).find(
+    (key) => itemSchema[key].type === "date"
+  );
+  const showCsvUpload = allowCsvImport && climateDataFieldId && dateFieldId;
+
+  const handleCsvUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      if (!text) return;
+
+      const lines = text.split(/\r\n|\n/);
+      if (lines.length < 2) return; // Need at least header and one row
+
+      const headers = lines[0].split(",").map((h) => h.trim());
+      const newItems: any[] = [];
+
+      // Get climate data config to map columns
+      const fieldConfig = itemSchema[climateDataFieldId!]
+        ?.field_config as ClimateDataFieldConfig;
+      const climateDataConfig = fieldConfig?.available_parameters || {};
+
+      // Map col_name to parameter key (e.g. "temp_max" -> "t_max")
+      const colNameToParamKey: Record<string, string> = {};
+      Object.entries(climateDataConfig).forEach(
+        ([key, config]: [string, any]) => {
+          if (config.col_name) {
+            colNameToParamKey[config.col_name] = key;
+          }
+        }
+      );
+
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+
+        const values = line.split(",").map((v) => v.trim());
+        const newItem = createEmptyItem();
+
+        // Fill date
+        const dateIndex = headers.indexOf("date");
+        if (dateIndex !== -1 && dateFieldId) {
+          const dateStr = values[dateIndex];
+          // Simple parser for MM/DD/YYYY to YYYY-MM-DD if needed
+          // Assuming input is MM/DD/YYYY based on user example
+          const parts = dateStr.split("/");
+          if (parts.length === 3) {
+            newItem[dateFieldId] = `${parts[2]}-${parts[0].padStart(
+              2,
+              "0"
+            )}-${parts[1].padStart(2, "0")}`;
+          } else {
+            newItem[dateFieldId] = dateStr;
+          }
+        }
+
+        // Fill climate data
+        if (climateDataFieldId) {
+          const climateData: Record<string, string> = {};
+          Object.entries(colNameToParamKey).forEach(([colName, paramKey]) => {
+            const colIndex = headers.indexOf(colName);
+            if (colIndex !== -1) {
+              climateData[paramKey] = values[colIndex];
+            }
+          });
+          newItem[climateDataFieldId] = climateData;
+        }
+
+        newItems.push(newItem);
+      }
+
+      if (newItems.length > 0) {
+        onChange([...value, ...newItems]);
+        // Expand new items
+        const newExpanded = new Set(expandedItems);
+        for (let i = 0; i < newItems.length; i++) {
+          newExpanded.add(value.length + i);
+        }
+        setExpandedItems(newExpanded);
+      }
+    };
+    reader.readAsText(file);
+    // Reset input
+    event.target.value = "";
   };
 
   // Agregar un nuevo item
@@ -242,15 +342,34 @@ export function ListFieldEditor({
           {t("items", { count: value.length })}
           {maxItems && ` ${t("maximum", { max: maxItems })}`}
         </span>
-        <button
-          type="button"
-          onClick={handleAddItem}
-          disabled={maxItems ? value.length >= maxItems : false}
-          className={`${btnOutlineSecondary} text-sm disabled:opacity-50 disabled:cursor-not-allowed`}
-        >
-          <Plus size={16} />
-          {t("addItem")}
-        </button>
+        <div className="flex gap-2">
+          {showCsvUpload && (
+            <div className="relative">
+              <input
+                type="file"
+                accept=".csv"
+                onChange={handleCsvUpload}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+              <button
+                type="button"
+                className={`${btnOutlineSecondary} text-sm flex items-center gap-2`}
+              >
+                <Upload size={16} />
+                {t("importCsv")}
+              </button>
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={handleAddItem}
+            disabled={maxItems ? value.length >= maxItems : false}
+            className={`${btnOutlineSecondary} text-sm disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            <Plus size={16} />
+            {t("addItem")}
+          </button>
+        </div>
       </div>
 
       <div className="space-y-3">
@@ -310,7 +429,9 @@ export function ListFieldEditor({
                         )}
                         {fieldDef.validation?.max_length && (
                           <p className="text-xs text-[#606c38] mt-1">
-                            {t("maxCharacters", { max: fieldDef.validation.max_length })}
+                            {t("maxCharacters", {
+                              max: fieldDef.validation.max_length,
+                            })}
                           </p>
                         )}
                       </div>
@@ -325,9 +446,7 @@ export function ListFieldEditor({
 
       {value.length === 0 && (
         <div className="text-center py-8 text-[#606c38] border border-dashed border-gray-300 rounded-lg">
-          <p className="text-sm">
-            {t("noItems")}
-          </p>
+          <p className="text-sm">{t("noItems")}</p>
         </div>
       )}
     </div>
