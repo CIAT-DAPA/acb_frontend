@@ -531,7 +531,7 @@ export default function CardsPage() {
             <div className="p-6">
               <div className="flex gap-4">
                 {/* Icono de la card */}
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   <div className="w-16 h-16 bg-[#606c38]/20 rounded-lg flex items-center justify-center text-3xl">
                     {getCardTypeIcon(cardToDelete.card_type)}
                   </div>
@@ -675,7 +675,7 @@ export default function CardsPage() {
               <div className="mt-4 p-3 bg-gray-50 rounded-lg">
                 <p className="text-xs text-[#283618]/60 mb-2">Card original:</p>
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-[#606c38]/20 rounded-lg flex items-center justify-center text-2xl flex-shrink-0">
+                  <div className="w-12 h-12 bg-[#606c38]/20 rounded-lg flex items-center justify-center text-2xl shrink-0">
                     {getCardTypeIcon(cardToDuplicate.card_type)}
                   </div>
                   <div className="flex-1 min-w-0">
