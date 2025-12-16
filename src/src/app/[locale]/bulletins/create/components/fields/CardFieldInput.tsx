@@ -42,6 +42,45 @@ interface SelectedCardData {
   fieldValues: { [fieldId: string]: any };
 }
 
+// Helper para extraer valores por defecto de una card
+const getDefaultFieldValues = (card: Card) => {
+  const defaultValues: { [key: string]: any } = {};
+
+  const extractFromFields = (fields: Field[]) => {
+    fields.forEach((field) => {
+      // Si tiene un valor definido, usarlo como default
+      if (
+        field.value !== undefined &&
+        field.value !== null &&
+        field.value !== ""
+      ) {
+        // Para listas, verificar que no esté vacío si es un array
+        if (Array.isArray(field.value) && field.value.length === 0) {
+          return;
+        }
+        defaultValues[field.field_id] = field.value;
+      }
+    });
+  };
+
+  // Extraer de bloques
+  card.content.blocks.forEach((block) => {
+    if (block.fields) {
+      extractFromFields(block.fields);
+    }
+  });
+
+  // Extraer de header/footer si existen
+  if (card.content.header_config?.fields) {
+    extractFromFields(card.content.header_config.fields);
+  }
+  if (card.content.footer_config?.fields) {
+    extractFromFields(card.content.footer_config.fields);
+  }
+
+  return defaultValues;
+};
+
 export function CardFieldInput({
   field,
   value = [],
@@ -94,10 +133,16 @@ export function CardFieldInput({
           const card = availableCards.find((c) => c._id === cardId);
           if (!card) return null;
 
+          // Si no hay valores existentes, usar los valores por defecto de la card
+          const finalFieldValues =
+            Object.keys(existingFieldValues).length > 0
+              ? existingFieldValues
+              : getDefaultFieldValues(card);
+
           return {
             cardId,
             card,
-            fieldValues: existingFieldValues,
+            fieldValues: finalFieldValues,
           };
         })
         .filter((item): item is SelectedCardData => item !== null);
@@ -150,6 +195,9 @@ export function CardFieldInput({
   const handleAddCard = (cardId: string) => {
     if (value.includes(cardId)) return;
 
+    const card = availableCards.find((c) => c._id === cardId);
+    const defaultValues = card ? getDefaultFieldValues(card) : {};
+
     // Notificar al padre con la estructura completa de datos
     const fullData = [
       ...selectedCards.map((sc) => ({
@@ -158,7 +206,7 @@ export function CardFieldInput({
       })),
       {
         cardId: cardId,
-        fieldValues: {},
+        fieldValues: defaultValues,
       },
     ];
     onChange(fullData as any);
@@ -381,9 +429,7 @@ export function CardFieldInput({
     return (
       <div className="flex items-center justify-center py-8">
         <Loader2 className="h-6 w-6 animate-spin text-[#606c38]" />
-        <span className="ml-2 text-sm text-[#283618]/60">
-          {t("loading")}
-        </span>
+        <span className="ml-2 text-sm text-[#283618]/60">{t("loading")}</span>
       </div>
     );
   }
@@ -402,9 +448,7 @@ export function CardFieldInput({
   if (availableCards.length === 0) {
     return (
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <p className="text-sm text-gray-600">
-          {t("noCardsAvailable")}
-        </p>
+        <p className="text-sm text-gray-600">{t("noCardsAvailable")}</p>
       </div>
     );
   }
@@ -559,9 +603,7 @@ export function CardFieldInput({
       {/* Mensaje cuando no hay cards seleccionadas */}
       {selectedCards.length === 0 && (
         <div className="text-center py-8 bg-gray-50 border border-gray-200 rounded-lg">
-          <p className="text-sm text-[#283618]/60">
-            {t("noCardsSelected")}
-          </p>
+          <p className="text-sm text-[#283618]/60">{t("noCardsSelected")}</p>
         </div>
       )}
     </div>
