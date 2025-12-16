@@ -514,136 +514,131 @@ export const ListFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
         </div>
       </div>
 
-      {/* Datos de items (solo cuando form = false) */}
-      {!isFormMode && (
-        <div>
-          <h4 className="text-md font-medium text-[#283618] mb-3">
-            {t("itemsTitle")}
-          </h4>
+      {/* Datos de items (siempre visible, título cambia) */}
+      <div>
+        <h4 className="text-md font-medium text-[#283618] mb-3">
+          {isFormMode ? t("defaultItemsTitle") : t("itemsTitle")}
+        </h4>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-4 space-x-2">
-              <p className="text-sm text-gray-700">{t("itemsDescription")}</p>
-              <button
-                type="button"
-                onClick={() => {
-                  const currentItems = Array.isArray(currentField.value)
-                    ? currentField.value
-                    : [];
-                  const itemSchema = fieldConfig?.item_schema || {};
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-4 space-x-2">
+            <p className="text-sm text-gray-700">{t("itemsDescription")}</p>
+            <button
+              type="button"
+              onClick={() => {
+                const currentItems = Array.isArray(currentField.value)
+                  ? currentField.value
+                  : [];
+                const itemSchema = fieldConfig?.item_schema || {};
 
-                  // Crear un nuevo item con valores vacíos basado en el schema
-                  const newItem: any = {};
-                  Object.keys(itemSchema).forEach((fieldId) => {
-                    newItem[fieldId] = "";
-                  });
+                // Crear un nuevo item con valores vacíos basado en el schema
+                const newItem: any = {};
+                Object.keys(itemSchema).forEach((fieldId) => {
+                  newItem[fieldId] = "";
+                });
 
-                  updateField({
-                    value: [...currentItems, newItem],
-                  });
-                }}
-                className={`${btnOutlineSecondary} text-sm px-2 py-2`}
-                disabled={!Object.keys(fieldConfig?.item_schema || {}).length}
-              >
-                <Plus className="w-4 h-4" />
-                {t("addItem")}
-              </button>
-            </div>
+                updateField({
+                  value: [...currentItems, newItem],
+                });
+              }}
+              className={`${btnOutlineSecondary} text-sm px-2 py-2`}
+              disabled={!Object.keys(fieldConfig?.item_schema || {}).length}
+            >
+              <Plus className="w-4 h-4" />
+              {t("addItem")}
+            </button>
+          </div>
 
-            {/* Lista de items */}
-            <div className="space-y-4">
-              {Array.isArray(currentField.value) &&
-              currentField.value.length > 0 ? (
-                currentField.value.map((item: any, itemIndex: number) => (
-                  <div
-                    key={itemIndex}
-                    className="border rounded-lg p-4 bg-white"
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <h5 className="font-medium text-[#283618]">
-                        {t("itemNumber")} {itemIndex + 1}
-                      </h5>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const currentItems = (
-                            Array.isArray(currentField.value)
-                              ? currentField.value
-                              : []
-                          ) as Record<string, any>[];
-                          const newItems = currentItems.filter(
-                            (_, idx) => idx !== itemIndex
-                          );
-                          updateField({
-                            value: newItems,
-                          });
-                        }}
-                        className={btnDangerIconClass}
-                        title={t("deleteItem")}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-
-                    {/* Campos del item según el schema */}
-                    <div className="space-y-3">
-                      {Object.entries(fieldConfig?.item_schema || {}).map(
-                        ([fieldId, fieldDef]: [string, any]) => (
-                          <div key={fieldId}>
-                            <label className={labelXsClass}>
-                              {fieldDef.label || fieldId}
-                            </label>
-                            <ItemFieldInput
-                              fieldId={fieldId}
-                              fieldDef={fieldDef}
-                              value={item[fieldId]}
-                              onChange={(newValue) => {
-                                const currentItems = (
-                                  Array.isArray(currentField.value)
-                                    ? currentField.value
-                                    : []
-                                ) as Record<string, any>[];
-                                const newItems = [...currentItems];
-                                const currentItem = newItems[itemIndex] || {};
-                                newItems[itemIndex] = {
-                                  ...(typeof currentItem === "object"
-                                    ? currentItem
-                                    : {}),
-                                  [fieldId]: newValue,
-                                };
-                                updateField({
-                                  value: newItems,
-                                });
-                              }}
-                              onFieldDefChange={(updatedFieldDef) => {
-                                // Actualizar el fieldDef en el schema
-                                const currentSchema =
-                                  fieldConfig?.item_schema || {};
-                                updateFieldConfig({
-                                  item_schema: {
-                                    ...currentSchema,
-                                    [fieldId]: updatedFieldDef,
-                                  },
-                                });
-                              }}
-                            />
-                          </div>
-                        )
-                      )}
-                    </div>
+          {/* Lista de items */}
+          <div className="space-y-4">
+            {Array.isArray(currentField.value) &&
+            currentField.value.length > 0 ? (
+              currentField.value.map((item: any, itemIndex: number) => (
+                <div key={itemIndex} className="border rounded-lg p-4 bg-white">
+                  <div className="flex items-center justify-between mb-3">
+                    <h5 className="font-medium text-[#283618]">
+                      {t("itemNumber")} {itemIndex + 1}
+                    </h5>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const currentItems = (
+                          Array.isArray(currentField.value)
+                            ? currentField.value
+                            : []
+                        ) as Record<string, any>[];
+                        const newItems = currentItems.filter(
+                          (_, idx) => idx !== itemIndex
+                        );
+                        updateField({
+                          value: newItems,
+                        });
+                      }}
+                      className={btnDangerIconClass}
+                      title={t("deleteItem")}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
-                ))
-              ) : (
-                <div className="text-center py-8 text-gray-500 text-sm">
-                  {Object.keys(fieldConfig?.item_schema || {}).length === 0
-                    ? t("defineSchemaFirst")
-                    : t("noItemsMessage")}
+
+                  {/* Campos del item según el schema */}
+                  <div className="space-y-3">
+                    {Object.entries(fieldConfig?.item_schema || {}).map(
+                      ([fieldId, fieldDef]: [string, any]) => (
+                        <div key={fieldId}>
+                          <label className={labelXsClass}>
+                            {fieldDef.label || fieldId}
+                          </label>
+                          <ItemFieldInput
+                            fieldId={fieldId}
+                            fieldDef={fieldDef}
+                            value={item[fieldId]}
+                            onChange={(newValue) => {
+                              const currentItems = (
+                                Array.isArray(currentField.value)
+                                  ? currentField.value
+                                  : []
+                              ) as Record<string, any>[];
+                              const newItems = [...currentItems];
+                              const currentItem = newItems[itemIndex] || {};
+                              newItems[itemIndex] = {
+                                ...(typeof currentItem === "object"
+                                  ? currentItem
+                                  : {}),
+                                [fieldId]: newValue,
+                              };
+                              updateField({
+                                value: newItems,
+                              });
+                            }}
+                            onFieldDefChange={(updatedFieldDef) => {
+                              // Actualizar el fieldDef en el schema
+                              const currentSchema =
+                                fieldConfig?.item_schema || {};
+                              updateFieldConfig({
+                                item_schema: {
+                                  ...currentSchema,
+                                  [fieldId]: updatedFieldDef,
+                                },
+                              });
+                            }}
+                          />
+                        </div>
+                      )
+                    )}
+                  </div>
                 </div>
-              )}
-            </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-gray-500 text-sm">
+                {Object.keys(fieldConfig?.item_schema || {}).length === 0
+                  ? t("defineSchemaFirst")
+                  : t("noItemsMessage")}
+              </div>
+            )}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

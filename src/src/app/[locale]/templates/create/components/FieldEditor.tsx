@@ -287,16 +287,17 @@ export function FieldEditor({
         )}
       </div>
 
-      {/* Value - Solo mostrar si form es false y bulletin es true, pero no para page_number, text_with_icon, image y list */}
-      {!currentField.form &&
-        currentField.bulletin &&
+      {/* Value - Mostrar siempre si bulletin es true, excepto para tipos especiales que tienen su propia config */}
+      {currentField.bulletin &&
         currentField.type !== "page_number" &&
         currentField.type !== "text_with_icon" &&
         currentField.type !== "image" &&
         currentField.type !== "list" && (
           <div>
             <h3 className="text-lg font-medium text-[#283618] mb-4">
-              {t("value.title")}
+              {currentField.form
+                ? t("value.defaultValueTitle")
+                : t("value.title")}
             </h3>
             <div>
               <label className="block text-sm font-medium text-[#283618]/70 mb-2">

@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Trash2, ChevronDown, ChevronUp, Upload } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  ChevronDown,
+  ChevronUp,
+  Upload,
+  HelpCircle,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
   Field,
@@ -31,6 +38,7 @@ export function ListFieldEditor({
 }: ListFieldEditorProps) {
   const t = useTranslations("CreateBulletin.listField");
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set([0]));
+  const [showHelp, setShowHelp] = useState(false);
 
   // Obtener el esquema de items de la configuración del campo
   const itemSchema =
@@ -83,6 +91,21 @@ export function ListFieldEditor({
     (key) => itemSchema[key].type === "date"
   );
   const showCsvUpload = allowCsvImport && climateDataFieldId && dateFieldId;
+
+  const getExpectedColumns = () => {
+    const columns = ["date"];
+    if (climateDataFieldId) {
+      const fieldConfig = itemSchema[climateDataFieldId]
+        ?.field_config as ClimateDataFieldConfig;
+      const climateDataConfig = fieldConfig?.available_parameters || {};
+      Object.values(climateDataConfig).forEach((config: any) => {
+        if (config.col_name) {
+          columns.push(config.col_name);
+        }
+      });
+    }
+    return columns;
+  };
 
   const handleCsvUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -344,20 +367,61 @@ export function ListFieldEditor({
         </span>
         <div className="flex gap-2">
           {showCsvUpload && (
-            <div className="relative">
-              <input
-                type="file"
-                accept=".csv"
-                onChange={handleCsvUpload}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              />
-              <button
-                type="button"
-                className={`${btnOutlineSecondary} text-sm flex items-center gap-2`}
+            <div className="flex items-stretch border-2 border-[#bc6c25] rounded bg-white">
+              {/* Upload Button Part */}
+              <div className="relative group hover:bg-[#bc6c25] transition-colors border-r border-[#bc6c25]/20">
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={handleCsvUpload}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                />
+                <div className="flex items-center gap-2 px-4 py-3 text-[#283618] group-hover:text-[#fefae0] text-sm font-medium transition-colors">
+                  <Upload size={16} />
+                  {t("importCsv")}
+                </div>
+              </div>
+
+              {/* Help Icon Part */}
+              <div
+                className="relative flex items-center px-3 hover:bg-[#bc6c25]/10 cursor-help transition-colors"
+                onMouseEnter={() => setShowHelp(true)}
+                onMouseLeave={() => setShowHelp(false)}
               >
-                <Upload size={16} />
-                {t("importCsv")}
-              </button>
+                <HelpCircle size={18} className="text-[#bc6c25]" />
+
+                {showHelp && (
+                  <div className="absolute right-0 top-full mt-2 w-72 bg-white p-4 rounded-lg shadow-xl border border-gray-200 z-50 text-sm cursor-auto">
+                    <h4 className="font-semibold mb-3 text-[#283618] border-b pb-2">
+                      {t("csvRequirements")}
+                    </h4>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="font-medium text-gray-700 mb-1">
+                          {t("dateFormat")}
+                        </p>
+                        <code className="bg-gray-100 px-2 py-1 rounded text-xs text-gray-600 block w-fit">
+                          MM/DD/YYYY
+                        </code>
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-700 mb-1">
+                          {t("requiredColumns")}
+                        </p>
+                        <div className="bg-gray-50 rounded p-2 max-h-40 overflow-y-auto">
+                          <ul className="list-disc pl-4 text-xs text-gray-600 space-y-1">
+                            {getExpectedColumns().map((col) => (
+                              <li key={col} className="font-mono">
+                                {col}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
           <button
