@@ -66,11 +66,6 @@ const archivoNarrow = Archivo_Narrow({
 export const metadata: Metadata = {
   title: "Bulletin builder",
   description: "App to create agroclimatic bulletins",
-  icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.ico",
-    apple: "/favicon.ico",
-  },
 };
 
 export default async function RootLayout({ children, params }: Props) {
@@ -80,7 +75,16 @@ export default async function RootLayout({ children, params }: Props) {
   return (
     <html lang={locale}>
       <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link
+          rel="icon"
+          href="/faviconDark.ico"
+          media="(prefers-color-scheme: light)"
+        />
+        <link
+          rel="icon"
+          href="/favicon.ico"
+          media="(prefers-color-scheme: dark)"
+        />
         {/* Google tag (gtag.js) */}
         <script
           async
