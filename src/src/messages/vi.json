@@ -952,8 +952,15 @@
           "vertical": "Thẳng đứng",
           "horizontal": "Nằm ngang",
           "grid2": "Lưới 2 cột",
-          "grid3": "Lưới 3 cột"
+          "grid3": "Lưới 3 cột",
+          "table": "Bảng"
         },
+        "showTableHeader": "Hiển thị tiêu đề",
+        "headerStyles": "Kiểu tiêu đề",
+        "headerBackgroundColor": "Màu nền",
+        "headerTextColor": "Màu văn bản",
+        "headerFontSize": "Kích thước phông chữ (px)",
+        "headerFontWeight": "Độ đậm phông chữ",
         "colorPickerTitle": "Bộ chọn màu",
         "inherited": "Kế thừa",
         "backgroundImagePreviewAlt": "Xem trước nền",
@@ -1476,12 +1483,6 @@
     "headerFooter": {
       "globalStyles": {
         "previewTitle": "Xem trước",
-        "listLayoutOptions": {
-          "vertical": "Thẳng đứng",
-          "horizontal": "Nằm ngang",
-          "grid2": "Lưới 2 cột",
-          "grid3": "Lưới 3 cột"
-        },
         "title": "Phong cách chung cho toàn bộ bản tin",
         "colorPickerTitle": "Bộ chọn màu",
         "inherited": "Kế thừa",
@@ -1572,6 +1573,19 @@
         "bulletinHeight": "Chiều cao bản tin (px)",
         "listStyleType": "Kiểu trình bày danh sách",
         "listItemsLayout": "Bố trí các phần tử trong Danh sách",
+        "listLayoutOptions": {
+          "vertical": "Thẳng đứng",
+          "horizontal": "Nằm ngang",
+          "grid2": "Lưới 2 cột",
+          "grid3": "Lưới 3 cột",
+          "table": "Bảng"
+        },
+        "showTableHeader": "Hiển thị tiêu đề",
+        "headerStyles": "Kiểu tiêu đề",
+        "headerBackgroundColor": "Màu nền",
+        "headerTextColor": "Màu văn bản",
+        "headerFontSize": "Kích thước phông chữ (px)",
+        "headerFontWeight": "Độ đậm phông chữ",
         "help": "Các kiểu dáng này sẽ được áp dụng cho toàn bộ thành phần. Các kiểu dáng trường riêng lẻ có thể ghi đè (override) các giá trị này."
       },
       "layout": {
@@ -1635,6 +1649,8 @@
       "noCardsAvailable": "Không có thẻ nào có sẵn",
       "selectCard": "Chọn một thẻ",
       "loadingCard": "Đang tải thẻ...",
+      "errorLoadingCard": "Lỗi tải thẻ",
+      "retry": "Thử lại",
       "pageFormat": "Trang {page} trong tổng số {total}",
       "previousPage": "← Trang trước",
       "nextPage": "Trang tiếp theo →",
