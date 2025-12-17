@@ -76,6 +76,7 @@ export interface StyleConfiguratorProps {
     justifyContent?: boolean; // Distribución de campos (justify-content)
     listStyleType?: boolean; // Estilo de bullet points para listas
     listItemsLayout?: boolean; // Layout de items dentro de la lista
+    showTableHeader?: boolean; // Mostrar encabezado en layout de tabla
   };
   title?: string;
   description?: string;
@@ -227,7 +228,7 @@ export function StyleConfigurator({
                 }
                 onStyleChange({ [key]: e.target.value });
               }}
-              className="w-12 h-12 min-w-[48px] border border-gray-300 rounded-md cursor-pointer flex-shrink-0"
+              className="w-12 h-12 <min-w-12></min-w-12> border border-gray-300 rounded-md cursor-pointer shrink-0"
               title={t("colorPickerTitle")}
             />
           </div>
@@ -419,6 +420,29 @@ export function StyleConfigurator({
       {inheritedStyles?.[key] && (
         <p className={INHERITED_TEXT_CLASS}>
           {t("inherited")}: {inheritedStyles[key]}
+        </p>
+      )}
+    </div>
+  );
+
+  const renderCheckboxField = (key: keyof StyleConfig, label: string) => (
+    <div className="flex items-center gap-2 mt-2">
+      <input
+        type="checkbox"
+        id={`checkbox-${key}`}
+        checked={(styleConfig[key] as boolean) || false}
+        onChange={(e) => onStyleChange({ [key]: e.target.checked })}
+        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+      />
+      <label
+        htmlFor={`checkbox-${key}`}
+        className="text-sm font-medium text-[#283618]/70"
+      >
+        {label}
+      </label>
+      {inheritedStyles?.[key] && (
+        <p className={INHERITED_TEXT_CLASS}>
+          {t("inherited")}: {inheritedStyles[key] ? "Yes" : "No"}
         </p>
       )}
     </div>
@@ -752,8 +776,83 @@ export function StyleConfigurator({
               { value: "horizontal", label: t("listLayoutOptions.horizontal") },
               { value: "grid-2", label: t("listLayoutOptions.grid2") },
               { value: "grid-3", label: t("listLayoutOptions.grid3") },
+              { value: "table", label: t("listLayoutOptions.table") },
             ],
             "vertical"
+          )}
+
+        {/* Show Table Header - Only for table layout */}
+        {enabledFields.showTableHeader &&
+          styleConfig.list_items_layout === "table" && (
+            <>
+              {renderCheckboxField("show_table_header", t("showTableHeader"))}
+
+              {/* Estilos del Header de Tabla */}
+              {styleConfig.show_table_header && (
+                <div className="mt-4 pl-4 border-l-2 border-gray-200 space-y-4">
+                  <h5 className="text-sm font-medium text-gray-700">
+                    {t("headerStyles")}
+                  </h5>
+
+                  {renderColorField(
+                    "header_background_color",
+                    t("headerBackgroundColor"),
+                    "#f3f4f6"
+                  )}
+
+                  {renderColorField(
+                    "header_text_color",
+                    t("headerTextColor"),
+                    "#1f2937"
+                  )}
+
+                  {renderNumberField(
+                    "header_font_size",
+                    t("headerFontSize"),
+                    8,
+                    72,
+                    14
+                  )}
+
+                  <div>
+                    <label className={LABEL_CLASS}>
+                      {t("headerFontWeight")}
+                    </label>
+                    <select
+                      value={styleConfig.header_font_weight || "700"}
+                      onChange={(e) =>
+                        onStyleChange({ header_font_weight: e.target.value })
+                      }
+                      className={INPUT_BASE_CLASS}
+                    >
+                      <option value="100">{t("fontWeightOptions.thin")}</option>
+                      <option value="200">
+                        {t("fontWeightOptions.extraLight")}
+                      </option>
+                      <option value="300">
+                        {t("fontWeightOptions.light")}
+                      </option>
+                      <option value="400">
+                        {t("fontWeightOptions.normal")}
+                      </option>
+                      <option value="500">
+                        {t("fontWeightOptions.medium")}
+                      </option>
+                      <option value="600">
+                        {t("fontWeightOptions.semiBold")}
+                      </option>
+                      <option value="700">{t("fontWeightOptions.bold")}</option>
+                      <option value="800">
+                        {t("fontWeightOptions.extraBold")}
+                      </option>
+                      <option value="900">
+                        {t("fontWeightOptions.black")}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+              )}
+            </>
           )}
       </div>
 

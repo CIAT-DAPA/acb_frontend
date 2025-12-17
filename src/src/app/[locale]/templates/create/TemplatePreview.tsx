@@ -14,6 +14,7 @@ import { getEffectiveFieldStyles } from "../../../../utils/styleInheritance";
 import { SmartIcon } from "../../components/AdaptiveSvgIcon";
 import { Card } from "../../../../types/card";
 import { CardAPIService } from "../../../../services/cardService";
+import { RefreshCw } from "lucide-react";
 
 // Mapeo de fuentes a variables CSS de Next.js
 const FONT_CSS_VARS: Record<string, string> = {
@@ -135,6 +136,8 @@ export function TemplatePreview({
 
   // Estado para almacenar las cards cargadas
   const [cardsCache, setCardsCache] = useState<Map<string, Card>>(new Map());
+  const [cardsLoadingError, setCardsLoadingError] = useState(false);
+  const [retryTrigger, setRetryTrigger] = useState(0);
 
   // Estado para controlar la página actual (para paginación de listas)
   const [internalPageIndex, setInternalPageIndex] = useState(0);
@@ -154,7 +157,10 @@ export function TemplatePreview({
 
   // Cargar todas las cards necesarias
   useEffect(() => {
-    const loadCards = async () => {
+    let isMounted = true;
+    setCardsLoadingError(false);
+
+    const loadCards = async (retryCount = 0) => {
       try {
         // Si tenemos cardsMetadata, usarlo directamente (optimización para bulletins publicados)
         if (cardsMetadata && Object.keys(cardsMetadata).length > 0) {
@@ -164,7 +170,7 @@ export function TemplatePreview({
               cache.set(card._id, card);
             }
           });
-          setCardsCache(cache);
+          if (isMounted) setCardsCache(cache);
           return;
         }
 
@@ -177,15 +183,37 @@ export function TemplatePreview({
               cache.set(card._id, card);
             }
           });
-          setCardsCache(cache);
+          if (isMounted) {
+            setCardsCache(cache);
+            setCardsLoadingError(false);
+          }
+        } else {
+          throw new Error(response.message || "Failed to load cards");
         }
       } catch (error) {
-        console.error("Error loading cards:", error);
+        console.error(
+          `Error loading cards (attempt ${retryCount + 1}):`,
+          error
+        );
+
+        if (isMounted) {
+          if (retryCount < 3) {
+            // Retry with exponential backoff
+            const timeout = Math.pow(2, retryCount) * 1000;
+            setTimeout(() => loadCards(retryCount + 1), timeout);
+          } else {
+            setCardsLoadingError(true);
+          }
+        }
       }
     };
 
     loadCards();
-  }, [cardsMetadata]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [cardsMetadata, retryTrigger]);
 
   const styleConfig = data.version.content.style_config;
   const headerConfig = data.version.content.header_config;
@@ -700,6 +728,133 @@ export function TemplatePreview({
         const showBullets = listStyleType !== "none";
         const listItemsLayout = effectiveStyles.list_items_layout || "vertical";
         const isNumbered = listStyleType === "decimal";
+        const showTableHeader = effectiveStyles.show_table_header || false;
+
+        // Obtener el array de items del valor del campo
+        const listItems = Array.isArray(field.value) ? field.value : [];
+
+        // Si no hay items, mostrar un item de ejemplo basado en el schema
+        const itemsToRender = listItems.length > 0 ? listItems : [{}];
+
+        if (listItemsLayout === "table") {
+          return (
+            <div key={key} className="w-full overflow-x-auto">
+              <table
+                className="w-full border-collapse"
+                style={{
+                  ...getBorderStyles(effectiveStyles),
+                  backgroundColor:
+                    effectiveStyles.background_color || "transparent",
+                }}
+              >
+                {showTableHeader && field.field_config?.item_schema && (
+                  <thead
+                    style={{
+                      backgroundColor:
+                        effectiveStyles.header_background_color ||
+                        "transparent",
+                    }}
+                  >
+                    <tr>
+                      {Object.values(field.field_config.item_schema).map(
+                        (schemaField: any, index, array) => (
+                          <th
+                            key={index}
+                            className="p-2 text-left"
+                            style={{
+                              color:
+                                effectiveStyles.header_text_color ||
+                                effectiveStyles.primary_color,
+                              fontFamily: effectiveStyles.font
+                                ? getFontFamily(effectiveStyles.font)
+                                : undefined,
+                              fontSize: effectiveStyles.header_font_size
+                                ? `${effectiveStyles.header_font_size}px`
+                                : effectiveStyles.font_size
+                                ? `${effectiveStyles.font_size}px`
+                                : undefined,
+                              fontWeight:
+                                effectiveStyles.header_font_weight || "bold",
+                              padding: effectiveStyles.padding || "8px",
+                              borderBottomWidth:
+                                effectiveStyles.border_width || "1px",
+                              borderBottomStyle:
+                                (effectiveStyles.border_style as any) ||
+                                "solid",
+                              borderBottomColor:
+                                effectiveStyles.border_color || "#e5e7eb",
+                              borderRightWidth:
+                                index === array.length - 1
+                                  ? "0px"
+                                  : effectiveStyles.border_width || "1px",
+                              borderRightStyle:
+                                (effectiveStyles.border_style as any) ||
+                                "solid",
+                              borderRightColor:
+                                effectiveStyles.border_color || "#e5e7eb",
+                            }}
+                          >
+                            {schemaField.display_name || schemaField.label}
+                          </th>
+                        )
+                      )}
+                    </tr>
+                  </thead>
+                )}
+                <tbody>
+                  {itemsToRender.map((item: any, itemIndex: number) => (
+                    <tr key={itemIndex}>
+                      {field.field_config?.item_schema &&
+                        Object.entries(field.field_config.item_schema).map(
+                          ([fieldKey, itemFieldSchema], fieldIndex, array) => {
+                            const itemFieldValue = item[fieldKey];
+                            const fieldSchema = itemFieldSchema as Field;
+                            return (
+                              <td
+                                key={fieldIndex}
+                                className="p-2 align-top"
+                                style={{
+                                  padding: effectiveStyles.padding || "8px",
+                                  borderBottomWidth:
+                                    itemIndex === itemsToRender.length - 1
+                                      ? "0px"
+                                      : effectiveStyles.border_width || "1px",
+                                  borderBottomStyle:
+                                    (effectiveStyles.border_style as any) ||
+                                    "solid",
+                                  borderBottomColor:
+                                    effectiveStyles.border_color || "#e5e7eb",
+                                  borderRightWidth:
+                                    fieldIndex === array.length - 1
+                                      ? "0px"
+                                      : effectiveStyles.border_width || "1px",
+                                  borderRightStyle:
+                                    (effectiveStyles.border_style as any) ||
+                                    "solid",
+                                  borderRightColor:
+                                    effectiveStyles.border_color || "#e5e7eb",
+                                }}
+                              >
+                                {renderField(
+                                  {
+                                    ...fieldSchema,
+                                    value: itemFieldValue,
+                                  } as Field,
+                                  `${itemIndex}-${fieldIndex}`,
+                                  effectiveStyles,
+                                  "horizontal"
+                                )}
+                              </td>
+                            );
+                          }
+                        )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+        }
 
         // Mapeo de estilos CSS de lista
         const bulletStyles: { [key: string]: string } = {
@@ -766,12 +921,6 @@ export function TemplatePreview({
             ? getFontFamily(effectiveStyles.font)
             : undefined,
         };
-
-        // Obtener el array de items del valor del campo
-        const listItems = Array.isArray(field.value) ? field.value : [];
-
-        // Si no hay items, mostrar un item de ejemplo basado en el schema
-        const itemsToRender = listItems.length > 0 ? listItems : [{}];
 
         // Estilos para el contenedor de items con gap configurable
         const itemsContainerStyle: React.CSSProperties = {
@@ -1156,6 +1305,30 @@ export function TemplatePreview({
         const cardToRender = cardsCache.get(cardData.cardId);
 
         if (!cardToRender) {
+          if (cardsLoadingError) {
+            return (
+              <div
+                key={key}
+                style={fieldStyles}
+                className={`${PLACEHOLDER_CONTAINER_CLASS} p-4 flex flex-col items-center justify-center gap-2`}
+              >
+                <span className="text-red-500 text-sm font-medium text-center">
+                  {t("errorLoadingCard")}
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setRetryTrigger((prev) => prev + 1);
+                  }}
+                  className="flex items-center gap-1 text-xs bg-white border border-gray-300 px-2 py-1 rounded hover:bg-gray-50 text-gray-700"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  {t("retry")}
+                </button>
+              </div>
+            );
+          }
+
           return (
             <div
               key={key}
@@ -1919,7 +2092,7 @@ export function TemplatePreview({
             width: `${styleConfig?.bulletin_width || 366}px`,
             height: `${styleConfig?.bulletin_height || 638}px`,
             padding: 0,
-            overflow: "auto",
+            overflow: "hidden",
             backgroundImage: styleConfig?.background_image
               ? `url("${getBackgroundImageUrl(styleConfig.background_image)}")`
               : undefined,
@@ -2271,11 +2444,11 @@ export function TemplatePreview({
                       {/* Sección con bloques - ocupa todo el espacio disponible */}
                       <div
                         data-section-preview={`section-${sectionIndex}`}
-                        style={sectionStyles}
-                        className="flex-1 overflow-auto flex flex-col"
+                        style={{ ...sectionStyles, overflow: "hidden" }}
+                        className="flex-1 overflow-hidden flex flex-col"
                       >
                         {/* Bloques de la sección */}
-                        <div className="space-y-1 w-full flex-1 flex flex-col">
+                        <div className="space-y-1 w-full flex-1 flex flex-col overflow-hidden">
                           {section.blocks.length === 0 ? (
                             <div className="text-sm text-[#283618]/50 italic pl-4">
                               {t("noBlocksInSection")}
@@ -2374,7 +2547,11 @@ export function TemplatePreview({
                                 <div
                                   key={`preview-block-${sectionIndex}-${blockIndex}`}
                                   className={hasCardField ? "flex-1" : ""}
-                                  style={{ ...blockStyles, ...widthStyle }}
+                                  style={{
+                                    ...blockStyles,
+                                    ...widthStyle,
+                                    overflow: "hidden",
+                                  }}
                                 >
                                   {/* Campos del bloque */}
                                   <div
