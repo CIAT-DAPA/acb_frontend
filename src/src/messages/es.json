@@ -1405,6 +1405,8 @@
       "noCardsAvailable": "No hay cards disponibles",
       "selectCard": "Seleccione una card",
       "loadingCard": "Cargando card...",
+      "errorLoadingCard": "Error cargando la card",
+      "retry": "Reintentar",
       "pageFormat": "Página {page} de {total}",
       "previousPage": "← Página Anterior",
       "nextPage": "Página Siguiente →",

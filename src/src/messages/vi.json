@@ -1635,6 +1635,8 @@
       "noCardsAvailable": "Không có thẻ nào có sẵn",
       "selectCard": "Chọn một thẻ",
       "loadingCard": "Đang tải thẻ...",
+      "errorLoadingCard": "Lỗi tải thẻ",
+      "retry": "Thử lại",
       "pageFormat": "Trang {page} trong tổng số {total}",
       "previousPage": "← Trang trước",
       "nextPage": "Trang tiếp theo →",

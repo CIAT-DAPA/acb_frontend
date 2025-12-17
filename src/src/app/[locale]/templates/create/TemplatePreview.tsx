@@ -1192,7 +1192,7 @@ export function TemplatePreview({
                 className={`${PLACEHOLDER_CONTAINER_CLASS} p-4 flex flex-col items-center justify-center gap-2`}
               >
                 <span className="text-red-500 text-sm font-medium text-center">
-                  Error loading card
+                  {t("errorLoadingCard")}
                 </span>
                 <button
                   onClick={(e) => {
@@ -1202,7 +1202,7 @@ export function TemplatePreview({
                   className="flex items-center gap-1 text-xs bg-white border border-gray-300 px-2 py-1 rounded hover:bg-gray-50 text-gray-700"
                 >
                   <RefreshCw className="w-3 h-3" />
-                  Retry
+                  {t("retry")}
                 </button>
               </div>
             );
