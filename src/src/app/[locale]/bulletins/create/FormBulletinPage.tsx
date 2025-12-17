@@ -37,6 +37,7 @@ import { TemplateAPIService } from "../../../../services/templateService";
 import { BulletinAPIService } from "../../../../services/bulletinService";
 import { useToast } from "../../../../components/Toast";
 import { btnOutlineSecondary, btnPrimary } from "../../components/ui";
+import { slugify, isValidSlug } from "../../../../utils/slugify";
 
 // Funciones para codificar/decodificar valores de texto
 const encodeTextFieldValue = (value: any): any => {
@@ -163,6 +164,9 @@ export default function FormBulletinPage({
   // Estado para guardar el name_machine del template (para generar URLs amigables)
   const [templateNameMachine, setTemplateNameMachine] = useState<string>("");
 
+  // Estado para almacenar los slug names existentes
+  const [existingSlugNames, setExistingSlugNames] = useState<string[]>([]);
+
   // Estado de paginación del preview (para sincronizar con CardFieldInput)
   const [previewPageIndex, setPreviewPageIndex] = useState(0);
 
@@ -214,6 +218,25 @@ export default function FormBulletinPage({
   });
 
   const [isLoading, setIsLoading] = useState(false);
+
+  // Cargar los slug names existentes al montar el componente
+  useEffect(() => {
+    const loadSlugNames = async () => {
+      const response = await BulletinAPIService.getAllSlugNames();
+      if (response.success && response.data) {
+        // Si estamos en modo edición, excluir el slug actual de la lista de existentes
+        // para permitir guardar sin cambios en el slug
+        let slugs = response.data;
+        if (isEditMode && initialData?.master.name_machine) {
+          slugs = slugs.filter(
+            (slug) => slug !== initialData.master.name_machine
+          );
+        }
+        setExistingSlugNames(slugs);
+      }
+    };
+    loadSlugNames();
+  }, [isEditMode, initialData]);
 
   // Cargar el name_machine del template cuando hay initialData (modo edición)
   useEffect(() => {
@@ -320,6 +343,15 @@ export default function FormBulletinPage({
             );
           }
 
+          // Generar nombre por defecto: [Nombre Template] - [Mes Actual]
+          const monthName = new Intl.DateTimeFormat(locale, {
+            month: "long",
+          }).format(new Date());
+          const capitalizedMonth =
+            monthName.charAt(0).toUpperCase() + monthName.slice(1);
+          const defaultBulletinName = `${master.template_name} - ${capitalizedMonth}`;
+          const defaultNameMachine = slugify(defaultBulletinName);
+
           // Helper para inicializar el valor de un campo según su tipo
           const initializeFieldValue = (field: Field) => {
             if (field.type === "list") {
@@ -342,6 +374,8 @@ export default function FormBulletinPage({
               ...prev.data,
               master: {
                 ...prev.data.master,
+                bulletin_name: defaultBulletinName,
+                name_machine: defaultNameMachine,
                 base_template_master_id: templateId,
                 base_template_version_id: versionId,
                 access_config: master.access_config || {
@@ -503,7 +537,14 @@ export default function FormBulletinPage({
       case "select-template":
         return !!creationState.selectedTemplateId;
       case "basic-info":
-        return creationState.data.master.bulletin_name.trim().length > 0;
+        const name = creationState.data.master.bulletin_name.trim();
+        const nameMachine = creationState.data.master.name_machine.trim();
+        const isNameValid = name.length > 0;
+        const isSlugValid =
+          nameMachine.length > 0 &&
+          isValidSlug(nameMachine) &&
+          !existingSlugNames.includes(nameMachine);
+        return isNameValid && isSlugValid;
       case "export":
         return true; // El paso de exportación siempre es válido
       default:
@@ -983,6 +1024,7 @@ export default function FormBulletinPage({
           <BasicInfoStep
             bulletinData={creationState.data}
             onUpdate={updateBulletinData}
+            existingSlugNames={existingSlugNames}
           />
         );
 
