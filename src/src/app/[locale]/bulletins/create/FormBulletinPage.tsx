@@ -23,6 +23,7 @@ import { SectionStep } from "./steps/SectionStep";
 import { ExportStep } from "./steps/ExportStep";
 import { TemplatePreview } from "../../templates/create/TemplatePreview";
 import { CreateTemplateData } from "../../../../types/template";
+import { ExportModal } from "../../components/ExportModal";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -143,6 +144,44 @@ interface FormBulletinPageProps {
   initialData?: CreateBulletinData;
 }
 
+// Configuración para exportación automática (definida fuera del componente)
+const getSectionPages = (section: Section) => {
+  let totalPages = 1;
+
+  section.blocks?.forEach((block) => {
+    block.fields?.forEach((field) => {
+      if (field.type === "list") {
+        // Usar max_items_per_page directamente como en TemplatePreview
+        const config = field.field_config as any;
+        const maxItemsPerPage = config?.max_items_per_page
+          ? Number(config.max_items_per_page)
+          : 0;
+
+        if (maxItemsPerPage > 0) {
+          const items = Array.isArray(field.value) ? field.value : [];
+          if (items.length > 0) {
+            const pages = Math.ceil(items.length / maxItemsPerPage);
+            totalPages = Math.max(totalPages, pages);
+          }
+        }
+      }
+    });
+  });
+
+  return totalPages;
+};
+
+const EXPORT_CONFIG = {
+  containerSelector: "#export-preview-download",
+  itemSelectorTemplate: (sectionIndex: number, pageIndex: number) =>
+    `[data-section-index="${sectionIndex}"][data-page-index="${pageIndex}"]`,
+  getExportElement: (element: Element) => {
+    const container = element.querySelector("#template-preview-container");
+    return container ? container.firstElementChild : null;
+  },
+  getSectionPages,
+};
+
 export default function FormBulletinPage({
   mode = "create",
   bulletinId,
@@ -169,6 +208,9 @@ export default function FormBulletinPage({
 
   // Estado de paginación del preview (para sincronizar con CardFieldInput)
   const [previewPageIndex, setPreviewPageIndex] = useState(0);
+
+  // Estado para el modal de exportación
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   // Estado del wizard
   const [creationState, setCreationState] = useState<BulletinCreationState>({
@@ -1006,6 +1048,39 @@ export default function FormBulletinPage({
     };
   }, [creationState]);
 
+  // Datos completos para exportación (siempre incluye todas las secciones)
+  const exportData = useMemo((): CreateTemplateData | null => {
+    if (!creationState.selectedTemplateId) {
+      return null;
+    }
+
+    return {
+      master: {
+        template_name:
+          creationState.data.master.bulletin_name || "Vista previa",
+        name_machine: creationState.data.master.name_machine || "vista-previa",
+        description: "",
+        status: "active",
+        log: creationState.data.master.log,
+        access_config: {
+          access_type: "public",
+          allowed_groups: [],
+        },
+      },
+      version: {
+        version_num: 1,
+        commit_message: "",
+        log: creationState.data.version.log,
+        content: {
+          style_config: creationState.data.version.data.style_config || {},
+          header_config: creationState.data.version.data.header_config,
+          footer_config: creationState.data.version.data.footer_config,
+          sections: creationState.data.version.data.sections, // SIEMPRE TODAS
+        },
+      },
+    };
+  }, [creationState.data, creationState.selectedTemplateId]);
+
   // Renderizar contenido del paso actual
   const renderStepContent = () => {
     switch (creationState.currentStep) {
@@ -1118,41 +1193,6 @@ export default function FormBulletinPage({
                 <ArrowLeft className="w-4 h-4 mr-1" />{" "}
                 {t("navigation.previous")}
               </button>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={handleSave}
-                  disabled={isLoading}
-                  className={`${btnOutlineSecondary} disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2`}
-                >
-                  <Save className="w-4 h-4" />
-                  {isLoading ? t("navigation.saving") : t("navigation.save")}
-                </button>
-                <button
-                  onClick={handlePublish}
-                  disabled={isLoading}
-                  className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2`}
-                >
-                  <CheckCircle className="w-4 h-4" />
-                  {isLoading
-                    ? t("navigation.publishing")
-                    : t("navigation.publish")}
-                </button>
-                <button
-                  onClick={() => {
-                    if (
-                      typeof window !== "undefined" &&
-                      (window as any).__bulletinExportHandler
-                    ) {
-                      (window as any).__bulletinExportHandler();
-                    }
-                  }}
-                  className={`${btnPrimary} inline-flex items-center gap-2`}
-                >
-                  <Download className="w-4 h-4" />
-                  {t("navigation.export")}
-                </button>
-              </div>
             </div>
           </div>
         ) : (
@@ -1182,26 +1222,28 @@ export default function FormBulletinPage({
                   {t("navigation.previous")}
                 </button>
 
-                {isLastStep ? (
-                  <button
-                    onClick={handleFinish}
-                    disabled={!isCurrentStepValid || isLoading}
-                    className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed`}
-                  >
-                    {isLoading
-                      ? t("navigation.creating")
-                      : t("navigation.finish")}
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleNext}
-                    disabled={!isCurrentStepValid}
-                    className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed`}
-                  >
-                    {t("navigation.next")}{" "}
-                    <ArrowRight className="w-4 h-4 ml-1" />
-                  </button>
-                )}
+                <div className="flex gap-3">
+                  {isLastStep ? (
+                    <button
+                      onClick={handleFinish}
+                      disabled={!isCurrentStepValid || isLoading}
+                      className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      {isLoading
+                        ? t("navigation.creating")
+                        : t("navigation.finish")}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleNext}
+                      disabled={!isCurrentStepValid}
+                      className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      {t("navigation.next")}{" "}
+                      <ArrowRight className="w-4 h-4 ml-1" />
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -1234,7 +1276,47 @@ export default function FormBulletinPage({
             </div>
           </div>
         )}
+
+        {/* Global Actions Footer */}
+        <div className="mt-8 pt-6 border-t border-gray-200 flex flex-wrap justify-end gap-4 bg-white p-4 rounded-lg shadow-sm">
+          <button
+            onClick={handleSave}
+            disabled={isLoading}
+            className={`${btnOutlineSecondary} disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2`}
+          >
+            <Save className="w-4 h-4" />
+            {isLoading ? t("navigation.saving") : t("navigation.save")}
+          </button>
+
+          <button
+            onClick={() => setIsExportModalOpen(true)}
+            className={`${btnPrimary} inline-flex items-center gap-2`}
+          >
+            <Download className="w-4 h-4" />
+            {t("navigation.export")}
+          </button>
+
+          <button
+            onClick={handlePublish}
+            disabled={isLoading}
+            className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2`}
+          >
+            <CheckCircle className="w-4 h-4" />
+            {isLoading ? t("navigation.publishing") : t("navigation.publish")}
+          </button>
+        </div>
       </div>
+
+      {/* Export Modal */}
+      <ExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        templateData={exportData || undefined}
+        contentName={creationState.data.master.bulletin_name}
+        autoExport={true}
+        exportConfig={EXPORT_CONFIG}
+        sections={exportData?.version.content.sections || []}
+      />
 
       {/* Modal de publicación exitosa */}
       {showPublishModal && publishedBulletinId && (
