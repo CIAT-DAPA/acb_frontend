@@ -1971,7 +1971,7 @@ export function TemplatePreview({
             width: `${styleConfig?.bulletin_width || 366}px`,
             height: `${styleConfig?.bulletin_height || 638}px`,
             padding: 0,
-            overflow: "auto",
+            overflow: "hidden",
             backgroundImage: styleConfig?.background_image
               ? `url("${getBackgroundImageUrl(styleConfig.background_image)}")`
               : undefined,
@@ -2323,11 +2323,11 @@ export function TemplatePreview({
                       {/* Sección con bloques - ocupa todo el espacio disponible */}
                       <div
                         data-section-preview={`section-${sectionIndex}`}
-                        style={sectionStyles}
-                        className="flex-1 overflow-auto flex flex-col"
+                        style={{ ...sectionStyles, overflow: "hidden" }}
+                        className="flex-1 overflow-hidden flex flex-col"
                       >
                         {/* Bloques de la sección */}
-                        <div className="space-y-1 w-full flex-1 flex flex-col">
+                        <div className="space-y-1 w-full flex-1 flex flex-col overflow-hidden">
                           {section.blocks.length === 0 ? (
                             <div className="text-sm text-[#283618]/50 italic pl-4">
                               {t("noBlocksInSection")}
@@ -2426,7 +2426,11 @@ export function TemplatePreview({
                                 <div
                                   key={`preview-block-${sectionIndex}-${blockIndex}`}
                                   className={hasCardField ? "flex-1" : ""}
-                                  style={{ ...blockStyles, ...widthStyle }}
+                                  style={{
+                                    ...blockStyles,
+                                    ...widthStyle,
+                                    overflow: "hidden",
+                                  }}
                                 >
                                   {/* Campos del bloque */}
                                   <div
