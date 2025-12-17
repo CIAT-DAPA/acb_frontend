@@ -14,6 +14,7 @@ import { getEffectiveFieldStyles } from "../../../../utils/styleInheritance";
 import { SmartIcon } from "../../components/AdaptiveSvgIcon";
 import { Card } from "../../../../types/card";
 import { CardAPIService } from "../../../../services/cardService";
+import { RefreshCw } from "lucide-react";
 
 // Mapeo de fuentes a variables CSS de Next.js
 const FONT_CSS_VARS: Record<string, string> = {
@@ -135,6 +136,8 @@ export function TemplatePreview({
 
   // Estado para almacenar las cards cargadas
   const [cardsCache, setCardsCache] = useState<Map<string, Card>>(new Map());
+  const [cardsLoadingError, setCardsLoadingError] = useState(false);
+  const [retryTrigger, setRetryTrigger] = useState(0);
 
   // Estado para controlar la página actual (para paginación de listas)
   const [internalPageIndex, setInternalPageIndex] = useState(0);
@@ -154,7 +157,10 @@ export function TemplatePreview({
 
   // Cargar todas las cards necesarias
   useEffect(() => {
-    const loadCards = async () => {
+    let isMounted = true;
+    setCardsLoadingError(false);
+
+    const loadCards = async (retryCount = 0) => {
       try {
         // Si tenemos cardsMetadata, usarlo directamente (optimización para bulletins publicados)
         if (cardsMetadata && Object.keys(cardsMetadata).length > 0) {
@@ -164,7 +170,7 @@ export function TemplatePreview({
               cache.set(card._id, card);
             }
           });
-          setCardsCache(cache);
+          if (isMounted) setCardsCache(cache);
           return;
         }
 
@@ -177,15 +183,37 @@ export function TemplatePreview({
               cache.set(card._id, card);
             }
           });
-          setCardsCache(cache);
+          if (isMounted) {
+            setCardsCache(cache);
+            setCardsLoadingError(false);
+          }
+        } else {
+          throw new Error(response.message || "Failed to load cards");
         }
       } catch (error) {
-        console.error("Error loading cards:", error);
+        console.error(
+          `Error loading cards (attempt ${retryCount + 1}):`,
+          error
+        );
+
+        if (isMounted) {
+          if (retryCount < 3) {
+            // Retry with exponential backoff
+            const timeout = Math.pow(2, retryCount) * 1000;
+            setTimeout(() => loadCards(retryCount + 1), timeout);
+          } else {
+            setCardsLoadingError(true);
+          }
+        }
       }
     };
 
     loadCards();
-  }, [cardsMetadata]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [cardsMetadata, retryTrigger]);
 
   const styleConfig = data.version.content.style_config;
   const headerConfig = data.version.content.header_config;
@@ -1156,6 +1184,30 @@ export function TemplatePreview({
         const cardToRender = cardsCache.get(cardData.cardId);
 
         if (!cardToRender) {
+          if (cardsLoadingError) {
+            return (
+              <div
+                key={key}
+                style={fieldStyles}
+                className={`${PLACEHOLDER_CONTAINER_CLASS} p-4 flex flex-col items-center justify-center gap-2`}
+              >
+                <span className="text-red-500 text-sm font-medium text-center">
+                  Error loading card
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setRetryTrigger((prev) => prev + 1);
+                  }}
+                  className="flex items-center gap-1 text-xs bg-white border border-gray-300 px-2 py-1 rounded hover:bg-gray-50 text-gray-700"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  Retry
+                </button>
+              </div>
+            );
+          }
+
           return (
             <div
               key={key}
