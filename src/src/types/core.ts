@@ -49,7 +49,12 @@ export interface StyleConfig {
     | "around"
     | "evenly"; // Distribución de los campos en layout horizontal
   list_style_type?: "disc" | "circle" | "square" | "none" | "decimal"; // Estilo de bullet points para listas
-  list_items_layout?: "vertical" | "horizontal" | "grid-2" | "grid-3"; // Layout de items dentro de la lista
+  list_items_layout?: "vertical" | "horizontal" | "grid-2" | "grid-3" | "table"; // Layout de items dentro de la lista
+  show_table_header?: boolean; // Mostrar encabezado en layout de tabla
+  header_background_color?: string; // Color de fondo del encabezado de tabla
+  header_text_color?: string; // Color de texto del encabezado de tabla
+  header_font_size?: number; // Tamaño de fuente del encabezado de tabla
+  header_font_weight?: string; // Peso de fuente del encabezado de tabla
   icon_size?: number; // Tamaño de los iconos en píxeles
   icon_use_original_color?: boolean; // Si true, mantiene el color original del icono; si false, usa el color del contexto
   [key: string]: string | number | boolean | undefined; // Para propiedades adicionales

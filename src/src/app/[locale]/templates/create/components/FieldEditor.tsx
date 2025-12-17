@@ -484,6 +484,7 @@ export function FieldEditor({
             gap: true,
             listStyleType: currentField.type === "list",
             listItemsLayout: currentField.type === "list",
+            showTableHeader: currentField.type === "list",
             backgroundImage: true,
           }}
           showPreview={false}

@@ -37,6 +37,16 @@ export function combineStyles(
       combined.list_style_type = parentStyle.list_style_type;
     if (parentStyle.list_items_layout)
       combined.list_items_layout = parentStyle.list_items_layout;
+    if (parentStyle.show_table_header !== undefined)
+      combined.show_table_header = parentStyle.show_table_header;
+    if (parentStyle.header_background_color)
+      combined.header_background_color = parentStyle.header_background_color;
+    if (parentStyle.header_text_color)
+      combined.header_text_color = parentStyle.header_text_color;
+    if (parentStyle.header_font_size)
+      combined.header_font_size = parentStyle.header_font_size;
+    if (parentStyle.header_font_weight)
+      combined.header_font_weight = parentStyle.header_font_weight;
   }
 
   // Luego sobrescribir con estilos del hijo si existen
@@ -79,6 +89,16 @@ export function combineStyles(
       combined.list_style_type = childStyle.list_style_type;
     if (childStyle.list_items_layout)
       combined.list_items_layout = childStyle.list_items_layout;
+    if (childStyle.show_table_header !== undefined)
+      combined.show_table_header = childStyle.show_table_header;
+    if (childStyle.header_background_color)
+      combined.header_background_color = childStyle.header_background_color;
+    if (childStyle.header_text_color)
+      combined.header_text_color = childStyle.header_text_color;
+    if (childStyle.header_font_size)
+      combined.header_font_size = childStyle.header_font_size;
+    if (childStyle.header_font_weight)
+      combined.header_font_weight = childStyle.header_font_weight;
   }
 
   return combined;

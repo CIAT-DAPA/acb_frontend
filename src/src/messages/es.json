@@ -606,8 +606,15 @@
           "vertical": "Vertical",
           "horizontal": "Horizontal",
           "grid2": "Grid 2 columnas",
-          "grid3": "Grid 3 columnas"
+          "grid3": "Grid 3 columnas",
+          "table": "Tabla"
         },
+        "showTableHeader": "Mostrar encabezado",
+        "headerStyles": "Estilos del Encabezado",
+        "headerBackgroundColor": "Color de Fondo",
+        "headerTextColor": "Color del Texto",
+        "headerFontSize": "Tamaño de Fuente (px)",
+        "headerFontWeight": "Peso de Fuente",
         "font": {
           "label": "Fuente"
         },
@@ -1350,8 +1357,15 @@
           "vertical": "Vertical",
           "horizontal": "Horizontal",
           "grid2": "Grid 2 columnas",
-          "grid3": "Grid 3 columnas"
+          "grid3": "Grid 3 columnas",
+          "table": "Tabla"
         },
+        "showTableHeader": "Mostrar encabezado",
+        "headerStyles": "Estilos del Encabezado",
+        "headerBackgroundColor": "Color de Fondo",
+        "headerTextColor": "Color del Texto",
+        "headerFontSize": "Tamaño de Fuente (px)",
+        "headerFontWeight": "Peso de Fuente",
         "alignOptions": {
           "left": "Izquierda",
           "center": "Centro",

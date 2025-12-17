@@ -728,6 +728,133 @@ export function TemplatePreview({
         const showBullets = listStyleType !== "none";
         const listItemsLayout = effectiveStyles.list_items_layout || "vertical";
         const isNumbered = listStyleType === "decimal";
+        const showTableHeader = effectiveStyles.show_table_header || false;
+
+        // Obtener el array de items del valor del campo
+        const listItems = Array.isArray(field.value) ? field.value : [];
+
+        // Si no hay items, mostrar un item de ejemplo basado en el schema
+        const itemsToRender = listItems.length > 0 ? listItems : [{}];
+
+        if (listItemsLayout === "table") {
+          return (
+            <div key={key} className="w-full overflow-x-auto">
+              <table
+                className="w-full border-collapse"
+                style={{
+                  ...getBorderStyles(effectiveStyles),
+                  backgroundColor:
+                    effectiveStyles.background_color || "transparent",
+                }}
+              >
+                {showTableHeader && field.field_config?.item_schema && (
+                  <thead
+                    style={{
+                      backgroundColor:
+                        effectiveStyles.header_background_color ||
+                        "transparent",
+                    }}
+                  >
+                    <tr>
+                      {Object.values(field.field_config.item_schema).map(
+                        (schemaField: any, index, array) => (
+                          <th
+                            key={index}
+                            className="p-2 text-left"
+                            style={{
+                              color:
+                                effectiveStyles.header_text_color ||
+                                effectiveStyles.primary_color,
+                              fontFamily: effectiveStyles.font
+                                ? getFontFamily(effectiveStyles.font)
+                                : undefined,
+                              fontSize: effectiveStyles.header_font_size
+                                ? `${effectiveStyles.header_font_size}px`
+                                : effectiveStyles.font_size
+                                ? `${effectiveStyles.font_size}px`
+                                : undefined,
+                              fontWeight:
+                                effectiveStyles.header_font_weight || "bold",
+                              padding: effectiveStyles.padding || "8px",
+                              borderBottomWidth:
+                                effectiveStyles.border_width || "1px",
+                              borderBottomStyle:
+                                (effectiveStyles.border_style as any) ||
+                                "solid",
+                              borderBottomColor:
+                                effectiveStyles.border_color || "#e5e7eb",
+                              borderRightWidth:
+                                index === array.length - 1
+                                  ? "0px"
+                                  : effectiveStyles.border_width || "1px",
+                              borderRightStyle:
+                                (effectiveStyles.border_style as any) ||
+                                "solid",
+                              borderRightColor:
+                                effectiveStyles.border_color || "#e5e7eb",
+                            }}
+                          >
+                            {schemaField.display_name || schemaField.label}
+                          </th>
+                        )
+                      )}
+                    </tr>
+                  </thead>
+                )}
+                <tbody>
+                  {itemsToRender.map((item: any, itemIndex: number) => (
+                    <tr key={itemIndex}>
+                      {field.field_config?.item_schema &&
+                        Object.entries(field.field_config.item_schema).map(
+                          ([fieldKey, itemFieldSchema], fieldIndex, array) => {
+                            const itemFieldValue = item[fieldKey];
+                            const fieldSchema = itemFieldSchema as Field;
+                            return (
+                              <td
+                                key={fieldIndex}
+                                className="p-2 align-top"
+                                style={{
+                                  padding: effectiveStyles.padding || "8px",
+                                  borderBottomWidth:
+                                    itemIndex === itemsToRender.length - 1
+                                      ? "0px"
+                                      : effectiveStyles.border_width || "1px",
+                                  borderBottomStyle:
+                                    (effectiveStyles.border_style as any) ||
+                                    "solid",
+                                  borderBottomColor:
+                                    effectiveStyles.border_color || "#e5e7eb",
+                                  borderRightWidth:
+                                    fieldIndex === array.length - 1
+                                      ? "0px"
+                                      : effectiveStyles.border_width || "1px",
+                                  borderRightStyle:
+                                    (effectiveStyles.border_style as any) ||
+                                    "solid",
+                                  borderRightColor:
+                                    effectiveStyles.border_color || "#e5e7eb",
+                                }}
+                              >
+                                {renderField(
+                                  {
+                                    ...fieldSchema,
+                                    value: itemFieldValue,
+                                  } as Field,
+                                  `${itemIndex}-${fieldIndex}`,
+                                  effectiveStyles,
+                                  "horizontal"
+                                )}
+                              </td>
+                            );
+                          }
+                        )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+        }
 
         // Mapeo de estilos CSS de lista
         const bulletStyles: { [key: string]: string } = {
@@ -794,12 +921,6 @@ export function TemplatePreview({
             ? getFontFamily(effectiveStyles.font)
             : undefined,
         };
-
-        // Obtener el array de items del valor del campo
-        const listItems = Array.isArray(field.value) ? field.value : [];
-
-        // Si no hay items, mostrar un item de ejemplo basado en el schema
-        const itemsToRender = listItems.length > 0 ? listItems : [{}];
 
         // Estilos para el contenedor de items con gap configurable
         const itemsContainerStyle: React.CSSProperties = {
