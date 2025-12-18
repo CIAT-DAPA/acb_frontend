@@ -31,6 +31,7 @@ export async function POST(request: NextRequest) {
     for (const imageUrl of tempImages) {
       try {
         // Only process temporary images
+        // Check for both static and dynamic paths
         if (!imageUrl.includes("/bulletins/temp/")) {
           // Already permanent or not a bulletin image
           movedImages.push(imageUrl);
@@ -38,9 +39,30 @@ export async function POST(request: NextRequest) {
         }
 
         const fileName = path.basename(imageUrl);
-        const tempPath = path.join(process.cwd(), "public", imageUrl);
+
+        // Determine the relative path within public/assets
+        let relativePathInPublic = "";
+        if (imageUrl.startsWith("/api/dynamic-assets/")) {
+          relativePathInPublic = imageUrl.replace(
+            "/api/dynamic-assets/",
+            "/assets/"
+          );
+        } else if (imageUrl.startsWith("/assets/")) {
+          relativePathInPublic = imageUrl;
+        } else {
+          // Fallback or error
+          relativePathInPublic = imageUrl;
+        }
+
+        const tempPath = path.join(
+          process.cwd(),
+          "public",
+          relativePathInPublic
+        );
         const permanentPath = path.join(permanentDir, fileName);
-        const newRelativePath = `/assets/img/bulletins/permanent/${fileName}`;
+
+        // New URL will be dynamic
+        const newRelativePath = `/api/dynamic-assets/img/bulletins/permanent/${fileName}`;
 
         // Move file from temp to permanent
         await rename(tempPath, permanentPath);

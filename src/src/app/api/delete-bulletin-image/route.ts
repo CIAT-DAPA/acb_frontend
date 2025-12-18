@@ -22,7 +22,20 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const fullPath = path.join(process.cwd(), "public", imageUrl);
+    // Determine the relative path within public/assets
+    let relativePathInPublic = "";
+    if (imageUrl.startsWith("/api/dynamic-assets/")) {
+      relativePathInPublic = imageUrl.replace(
+        "/api/dynamic-assets/",
+        "/assets/"
+      );
+    } else if (imageUrl.startsWith("/assets/")) {
+      relativePathInPublic = imageUrl;
+    } else {
+      relativePathInPublic = imageUrl;
+    }
+
+    const fullPath = path.join(process.cwd(), "public", relativePathInPublic);
 
     // Delete the file
     await unlink(fullPath);

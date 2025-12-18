@@ -66,8 +66,9 @@ export async function POST(request: NextRequest) {
       // Guardar el archivo
       await writeFile(filePath, buffer);
 
-      // Guardar la ruta relativa desde public
-      const relativePath = `/assets/thumbnails/${templateId}/${fileName}`;
+      // Guardar la ruta relativa usando el endpoint dinámico
+      // En lugar de /assets/thumbnails/..., usamos /api/dynamic-assets/thumbnails/...
+      const relativePath = `/api/dynamic-assets/thumbnails/${templateId}/${fileName}`;
       savedFiles.push(relativePath);
     }
 
