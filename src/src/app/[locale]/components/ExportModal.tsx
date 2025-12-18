@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { X, Download, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { CreateTemplateData } from "@/types/template";
-import { TemplatePreview } from "@/app/[locale]/templates/create/TemplatePreview";
+import { ScrollView } from "./ScrollView";
 import { ContentService } from "@/services/contentService";
 import { ContentType, NormalizedContent } from "@/types/content";
 import * as ui from "@/app/[locale]/components/ui";
@@ -598,12 +598,15 @@ export function ExportModal({
                       boxShadow: "none",
                     }}
                   >
-                    <TemplatePreview
+                    <ScrollView
                       data={templateData}
-                      selectedSectionIndex={currentPreviewSection}
-                      moreInfo={config.showMoreInfo}
-                      description={config.showDescription}
-                      forceGlobalHeader={false}
+                      config={{
+                        orientation: "vertical",
+                        showMiniNav: false,
+                        highlightActive: false,
+                        expandAllPages: true,
+                        spacing: "compact",
+                      }}
                     />
                   </div>
                 </div>

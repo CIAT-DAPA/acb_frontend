@@ -322,6 +322,7 @@
       "description": "Điền thông tin cho phần này",
       "noFields": "Phần này không có ô cài đặt",
       "headerFields": "Các ô nhập liệu ở Đầu trang",
+      "footerFields": "Các ô nhập liệu ở Chân trang",
       "notFound": "Không tìm thấy phần này"
     },
     "title": "Tạo bản tin",

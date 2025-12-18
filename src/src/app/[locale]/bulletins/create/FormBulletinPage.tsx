@@ -23,6 +23,7 @@ import { SectionStep } from "./steps/SectionStep";
 import { ExportStep } from "./steps/ExportStep";
 import { TemplatePreview } from "../../templates/create/TemplatePreview";
 import { CreateTemplateData } from "../../../../types/template";
+import { ExportModal } from "../../components/ExportModal";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -37,6 +38,7 @@ import { TemplateAPIService } from "../../../../services/templateService";
 import { BulletinAPIService } from "../../../../services/bulletinService";
 import { useToast } from "../../../../components/Toast";
 import { btnOutlineSecondary, btnPrimary } from "../../components/ui";
+import { slugify, isValidSlug } from "../../../../utils/slugify";
 
 // Funciones para codificar/decodificar valores de texto
 const encodeTextFieldValue = (value: any): any => {
@@ -142,6 +144,50 @@ interface FormBulletinPageProps {
   initialData?: CreateBulletinData;
 }
 
+// Configuración para exportación automática (definida fuera del componente)
+const getSectionPages = (section: Section) => {
+  let totalPages = 1;
+
+  section.blocks?.forEach((block) => {
+    block.fields?.forEach((field) => {
+      if (field.type === "list") {
+        // Usar max_items_per_page directamente como en TemplatePreview
+        const config = field.field_config as any;
+        const maxItemsPerPage = config?.max_items_per_page
+          ? Number(config.max_items_per_page)
+          : 0;
+
+        if (maxItemsPerPage > 0) {
+          const items = Array.isArray(field.value) ? field.value : [];
+          if (items.length > 0) {
+            const pages = Math.ceil(items.length / maxItemsPerPage);
+            totalPages = Math.max(totalPages, pages);
+          }
+        }
+      } else if (field.type === "card" && Array.isArray(field.value)) {
+        // Detectar paginación para cards (cada card es una página)
+        const cards = field.value;
+        if (cards.length > 1) {
+          totalPages = Math.max(totalPages, cards.length);
+        }
+      }
+    });
+  });
+
+  return totalPages;
+};
+
+const EXPORT_CONFIG = {
+  containerSelector: "#export-preview-download",
+  itemSelectorTemplate: (sectionIndex: number, pageIndex: number) =>
+    `[data-section-index="${sectionIndex}"][data-page-index="${pageIndex}"]`,
+  getExportElement: (element: Element) => {
+    const container = element.querySelector("#template-preview-container");
+    return container ? container.firstElementChild : null;
+  },
+  getSectionPages,
+};
+
 export default function FormBulletinPage({
   mode = "create",
   bulletinId,
@@ -163,8 +209,14 @@ export default function FormBulletinPage({
   // Estado para guardar el name_machine del template (para generar URLs amigables)
   const [templateNameMachine, setTemplateNameMachine] = useState<string>("");
 
+  // Estado para almacenar los slug names existentes
+  const [existingSlugNames, setExistingSlugNames] = useState<string[]>([]);
+
   // Estado de paginación del preview (para sincronizar con CardFieldInput)
   const [previewPageIndex, setPreviewPageIndex] = useState(0);
+
+  // Estado para el modal de exportación
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   // Estado del wizard
   const [creationState, setCreationState] = useState<BulletinCreationState>({
@@ -214,6 +266,25 @@ export default function FormBulletinPage({
   });
 
   const [isLoading, setIsLoading] = useState(false);
+
+  // Cargar los slug names existentes al montar el componente
+  useEffect(() => {
+    const loadSlugNames = async () => {
+      const response = await BulletinAPIService.getAllSlugNames();
+      if (response.success && response.data) {
+        // Si estamos en modo edición, excluir el slug actual de la lista de existentes
+        // para permitir guardar sin cambios en el slug
+        let slugs = response.data;
+        if (isEditMode && initialData?.master.name_machine) {
+          slugs = slugs.filter(
+            (slug) => slug !== initialData.master.name_machine
+          );
+        }
+        setExistingSlugNames(slugs);
+      }
+    };
+    loadSlugNames();
+  }, [isEditMode, initialData]);
 
   // Cargar el name_machine del template cuando hay initialData (modo edición)
   useEffect(() => {
@@ -320,6 +391,15 @@ export default function FormBulletinPage({
             );
           }
 
+          // Generar nombre por defecto: [Nombre Template] - [Mes Actual]
+          const monthName = new Intl.DateTimeFormat(locale, {
+            month: "long",
+          }).format(new Date());
+          const capitalizedMonth =
+            monthName.charAt(0).toUpperCase() + monthName.slice(1);
+          const defaultBulletinName = `${master.template_name} - ${capitalizedMonth}`;
+          const defaultNameMachine = slugify(defaultBulletinName);
+
           // Helper para inicializar el valor de un campo según su tipo
           const initializeFieldValue = (field: Field) => {
             if (field.type === "list") {
@@ -342,6 +422,8 @@ export default function FormBulletinPage({
               ...prev.data,
               master: {
                 ...prev.data.master,
+                bulletin_name: defaultBulletinName,
+                name_machine: defaultNameMachine,
                 base_template_master_id: templateId,
                 base_template_version_id: versionId,
                 access_config: master.access_config || {
@@ -503,7 +585,14 @@ export default function FormBulletinPage({
       case "select-template":
         return !!creationState.selectedTemplateId;
       case "basic-info":
-        return creationState.data.master.bulletin_name.trim().length > 0;
+        const name = creationState.data.master.bulletin_name.trim();
+        const nameMachine = creationState.data.master.name_machine.trim();
+        const isNameValid = name.length > 0;
+        const isSlugValid =
+          nameMachine.length > 0 &&
+          isValidSlug(nameMachine) &&
+          !existingSlugNames.includes(nameMachine);
+        return isNameValid && isSlugValid;
       case "export":
         return true; // El paso de exportación siempre es válido
       default:
@@ -965,6 +1054,39 @@ export default function FormBulletinPage({
     };
   }, [creationState]);
 
+  // Datos completos para exportación (siempre incluye todas las secciones)
+  const exportData = useMemo((): CreateTemplateData | null => {
+    if (!creationState.selectedTemplateId) {
+      return null;
+    }
+
+    return {
+      master: {
+        template_name:
+          creationState.data.master.bulletin_name || "Vista previa",
+        name_machine: creationState.data.master.name_machine || "vista-previa",
+        description: "",
+        status: "active",
+        log: creationState.data.master.log,
+        access_config: {
+          access_type: "public",
+          allowed_groups: [],
+        },
+      },
+      version: {
+        version_num: 1,
+        commit_message: "",
+        log: creationState.data.version.log,
+        content: {
+          style_config: creationState.data.version.data.style_config || {},
+          header_config: creationState.data.version.data.header_config,
+          footer_config: creationState.data.version.data.footer_config,
+          sections: creationState.data.version.data.sections, // SIEMPRE TODAS
+        },
+      },
+    };
+  }, [creationState.data, creationState.selectedTemplateId]);
+
   // Renderizar contenido del paso actual
   const renderStepContent = () => {
     switch (creationState.currentStep) {
@@ -983,6 +1105,7 @@ export default function FormBulletinPage({
           <BasicInfoStep
             bulletinData={creationState.data}
             onUpdate={updateBulletinData}
+            existingSlugNames={existingSlugNames}
           />
         );
 
@@ -1076,41 +1199,6 @@ export default function FormBulletinPage({
                 <ArrowLeft className="w-4 h-4 mr-1" />{" "}
                 {t("navigation.previous")}
               </button>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={handleSave}
-                  disabled={isLoading}
-                  className={`${btnOutlineSecondary} disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2`}
-                >
-                  <Save className="w-4 h-4" />
-                  {isLoading ? t("navigation.saving") : t("navigation.save")}
-                </button>
-                <button
-                  onClick={handlePublish}
-                  disabled={isLoading}
-                  className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2`}
-                >
-                  <CheckCircle className="w-4 h-4" />
-                  {isLoading
-                    ? t("navigation.publishing")
-                    : t("navigation.publish")}
-                </button>
-                <button
-                  onClick={() => {
-                    if (
-                      typeof window !== "undefined" &&
-                      (window as any).__bulletinExportHandler
-                    ) {
-                      (window as any).__bulletinExportHandler();
-                    }
-                  }}
-                  className={`${btnPrimary} inline-flex items-center gap-2`}
-                >
-                  <Download className="w-4 h-4" />
-                  {t("navigation.export")}
-                </button>
-              </div>
             </div>
           </div>
         ) : (
@@ -1140,26 +1228,28 @@ export default function FormBulletinPage({
                   {t("navigation.previous")}
                 </button>
 
-                {isLastStep ? (
-                  <button
-                    onClick={handleFinish}
-                    disabled={!isCurrentStepValid || isLoading}
-                    className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed`}
-                  >
-                    {isLoading
-                      ? t("navigation.creating")
-                      : t("navigation.finish")}
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleNext}
-                    disabled={!isCurrentStepValid}
-                    className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed`}
-                  >
-                    {t("navigation.next")}{" "}
-                    <ArrowRight className="w-4 h-4 ml-1" />
-                  </button>
-                )}
+                <div className="flex gap-3">
+                  {isLastStep ? (
+                    <button
+                      onClick={handleFinish}
+                      disabled={!isCurrentStepValid || isLoading}
+                      className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      {isLoading
+                        ? t("navigation.creating")
+                        : t("navigation.finish")}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleNext}
+                      disabled={!isCurrentStepValid}
+                      className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      {t("navigation.next")}{" "}
+                      <ArrowRight className="w-4 h-4 ml-1" />
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -1192,7 +1282,47 @@ export default function FormBulletinPage({
             </div>
           </div>
         )}
+
+        {/* Global Actions Footer */}
+        <div className="mt-8 pt-6 border-t border-gray-200 flex flex-wrap justify-end gap-4 bg-white p-4 rounded-lg shadow-sm">
+          <button
+            onClick={handleSave}
+            disabled={isLoading}
+            className={`${btnOutlineSecondary} disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2`}
+          >
+            <Save className="w-4 h-4" />
+            {isLoading ? t("navigation.saving") : t("navigation.save")}
+          </button>
+
+          <button
+            onClick={() => setIsExportModalOpen(true)}
+            className={`${btnPrimary} inline-flex items-center gap-2`}
+          >
+            <Download className="w-4 h-4" />
+            {t("navigation.export")}
+          </button>
+
+          <button
+            onClick={handlePublish}
+            disabled={isLoading}
+            className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2`}
+          >
+            <CheckCircle className="w-4 h-4" />
+            {isLoading ? t("navigation.publishing") : t("navigation.publish")}
+          </button>
+        </div>
       </div>
+
+      {/* Export Modal */}
+      <ExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        templateData={exportData || undefined}
+        contentName={creationState.data.master.bulletin_name}
+        autoExport={true}
+        exportConfig={EXPORT_CONFIG}
+        sections={exportData?.version.content.sections || []}
+      />
 
       {/* Modal de publicación exitosa */}
       {showPublishModal && publishedBulletinId && (
