@@ -54,10 +54,13 @@ export async function POST(request: NextRequest) {
     // Write file
     await writeFile(fullPath, buffer);
 
+    // Return dynamic URL
+    const dynamicUrl = `/api/dynamic-assets/img/bulletins/temp/${fileName}`;
+
     return NextResponse.json({
       success: true,
       message: "File uploaded successfully",
-      url: relativePath,
+      url: dynamicUrl,
       fileName: fileName,
     });
   } catch (error) {

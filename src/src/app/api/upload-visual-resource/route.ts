@@ -38,10 +38,16 @@ export async function POST(request: NextRequest) {
     // Escribir el archivo
     await writeFile(fullPath, buffer);
 
+    // Construir la URL dinámica para servir el archivo inmediatamente
+    // Reemplazamos /assets/ por /api/dynamic-assets/
+    const dynamicPath = targetPath.startsWith("/assets/")
+      ? targetPath.replace("/assets/", "/api/dynamic-assets/")
+      : `/api/dynamic-assets${targetPath}`;
+
     return NextResponse.json({
       success: true,
       message: "File uploaded successfully",
-      path: targetPath,
+      path: dynamicPath,
     });
   } catch (error) {
     console.error("Error uploading file:", error);

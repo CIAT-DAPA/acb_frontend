@@ -264,30 +264,28 @@ export function CardFieldInput({
     fieldId: string,
     fieldValue: any
   ) => {
-    setSelectedCards((prev) => {
-      const updated = [...prev];
-      if (updated[cardIndex]) {
-        updated[cardIndex] = {
-          ...updated[cardIndex],
-          fieldValues: {
-            ...updated[cardIndex].fieldValues,
-            [fieldId]: fieldValue,
-          },
-        };
-      }
+    const updated = [...selectedCards];
+    if (updated[cardIndex]) {
+      updated[cardIndex] = {
+        ...updated[cardIndex],
+        fieldValues: {
+          ...updated[cardIndex].fieldValues,
+          [fieldId]: fieldValue,
+        },
+      };
+    }
 
-      // Notificar al padre con la estructura completa de datos
-      // Convertir selectedCards a un formato que incluya tanto los IDs como los valores
-      const fullData = updated.map((sc) => ({
-        cardId: sc.cardId,
-        fieldValues: sc.fieldValues,
-      }));
+    setSelectedCards(updated);
 
-      // Llamar onChange con la estructura completa
-      onChange(fullData as any);
+    // Notificar al padre con la estructura completa de datos
+    // Convertir selectedCards a un formato que incluya tanto los IDs como los valores
+    const fullData = updated.map((sc) => ({
+      cardId: sc.cardId,
+      fieldValues: sc.fieldValues,
+    }));
 
-      return updated;
-    });
+    // Llamar onChange con la estructura completa
+    onChange(fullData as any);
   };
 
   // Renderizar un field dentro de una card

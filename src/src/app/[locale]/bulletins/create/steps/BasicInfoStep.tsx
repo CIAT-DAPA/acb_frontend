@@ -21,28 +21,32 @@ import {
 interface BasicInfoStepProps {
   bulletinData: CreateBulletinData;
   onUpdate: (updater: (prev: CreateBulletinData) => CreateBulletinData) => void;
+  existingSlugNames: string[];
 }
 
-export function BasicInfoStep({ bulletinData, onUpdate }: BasicInfoStepProps) {
+export function BasicInfoStep({
+  bulletinData,
+  onUpdate,
+  existingSlugNames,
+}: BasicInfoStepProps) {
   const t = useTranslations("CreateBulletin");
   const tHeader = useTranslations("CreateBulletin.headerFooter");
 
   // Estado para controlar si el name_machine está siendo editado manualmente
   const [isManualNameMachine, setIsManualNameMachine] = useState(false);
   const [nameMachineError, setNameMachineError] = useState<string>("");
-  // Estado para almacenar los slug names existentes
-  const [existingSlugNames, setExistingSlugNames] = useState<string[]>([]);
 
-  // Cargar los slug names existentes al montar el componente
+  // Validar name_machine cuando cambia (ya sea por edición manual o automática)
   useEffect(() => {
-    const loadSlugNames = async () => {
-      const response = await BulletinAPIService.getAllSlugNames();
-      if (response.success && response.data) {
-        setExistingSlugNames(response.data);
-      }
-    };
-    loadSlugNames();
-  }, []);
+    const value = bulletinData.master.name_machine;
+    if (value && !isValidSlug(value)) {
+      setNameMachineError(t("basicInfo.fields.nameMachine.errors.invalid"));
+    } else if (value && existingSlugNames.includes(value)) {
+      setNameMachineError(t("basicInfo.fields.nameMachine.errors.duplicate"));
+    } else {
+      setNameMachineError("");
+    }
+  }, [bulletinData.master.name_machine, existingSlugNames, t]);
 
   const handleNameChange = (value: string) => {
     onUpdate((prev) => ({
@@ -76,25 +80,6 @@ export function BasicInfoStep({ bulletinData, onUpdate }: BasicInfoStepProps) {
         name_machine: value,
       },
     }));
-
-    // Validar el formato
-    if (value && !isValidSlug(value)) {
-      setNameMachineError(
-        t("basicInfo.fields.nameMachine.errors.invalid", {
-          default:
-            "Solo se permiten letras minúsculas, números y guiones bajos. No puede comenzar ni terminar con guión bajo.",
-        })
-      );
-    } else if (value && existingSlugNames.includes(value)) {
-      // Validar si el slug ya existe
-      setNameMachineError(
-        t("basicInfo.fields.nameMachine.errors.duplicate", {
-          default: "Este nombre máquina ya está en uso. Por favor, elige otro.",
-        })
-      );
-    } else {
-      setNameMachineError("");
-    }
   };
 
   const handleHeaderFieldChange = (fieldIndex: number, value: any) => {

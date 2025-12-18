@@ -130,6 +130,33 @@ export function SectionStep({
     }));
   };
 
+  const handleFooterFieldChange = (fieldIndex: number, value: any) => {
+    onUpdate((prev) => ({
+      ...prev,
+      version: {
+        ...prev.version,
+        data: {
+          ...prev.version.data,
+          sections: prev.version.data.sections.map((sec, sIdx) =>
+            sIdx === sectionIndex
+              ? {
+                  ...sec,
+                  footer_config: sec.footer_config
+                    ? {
+                        ...sec.footer_config,
+                        fields: sec.footer_config.fields.map((field, fIdx) =>
+                          fIdx === fieldIndex ? { ...field, value } : field
+                        ),
+                      }
+                    : undefined,
+                }
+              : sec
+          ),
+        },
+      },
+    }));
+  };
+
   // Función unificada para renderizar cualquier tipo de campo
   const renderFieldByType = (field: Field, onChange: (value: any) => void) => {
     if (!field.form) return null;
@@ -271,6 +298,12 @@ export function SectionStep({
     );
   };
 
+  const renderFooterField = (field: Field, fieldIndex: number) => {
+    return renderFieldByType(field, (value) =>
+      handleFooterFieldChange(fieldIndex, value)
+    );
+  };
+
   const renderField = (
     field: Field,
     blockIndex: number,
@@ -358,6 +391,37 @@ export function SectionStep({
           </div>
         );
       })}
+
+      {/* Campos del footer de la sección con form=true */}
+      {section.footer_config?.fields &&
+        section.footer_config.fields.some((field) => field.form) && (
+          <div className="border-t pt-4 mt-6">
+            <h4 className="text-md font-semibold text-[#283618] mb-4">
+              {t("footerFields")}
+            </h4>
+            <div className="space-y-4">
+              {section.footer_config.fields.map((field, fieldIndex) => {
+                if (!field.form) {
+                  return null;
+                }
+
+                return (
+                  <div key={field.field_id}>
+                    <label className="block text-sm font-medium text-[#283618] mb-1">
+                      {field.display_name}
+                    </label>
+                    {renderFooterField(field, fieldIndex)}
+                    {field.description && (
+                      <p className="text-xs text-[#606c38] mt-1">
+                        {field.description}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
       {section.blocks.every(
         (block) => !block.fields.some((field) => field.form)

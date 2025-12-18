@@ -13,6 +13,7 @@ import BulletinAPIService from "@/services/bulletinService";
 import { TemplateAPIService } from "@/services/templateService";
 import { useTranslations } from "next-intl";
 import { ScrollView } from "@/app/[locale]/components/ScrollView";
+import { btnPrimary } from "../../components/ui";
 
 // Función para decodificar valores de campos de texto
 const decodeTextFieldValue = (value: any): any => {
@@ -220,7 +221,7 @@ export default function BulletinPublicPage() {
 
   // Handler para exportación
   const exportConfig: ExportTechnicalConfig = {
-    containerSelector: "#bulletin-export-preview .flex.gap-8",
+    containerSelector: "#export-preview-download .flex.gap-4",
     itemSelectorTemplate: (sectionIndex: number, pageIndex: number) =>
       `[data-section-index="${sectionIndex}"][data-page-index="${pageIndex}"]`,
     getExportElement: (previewElement: Element) =>
@@ -290,7 +291,7 @@ export default function BulletinPublicPage() {
 
             <button
               onClick={() => setIsExportModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-[#ffaf68] text-white rounded-lg hover:bg-[#ff9d4d] transition-colors font-medium"
+              className={btnPrimary}
             >
               <Download className="w-5 h-5" />
               <span className="hidden sm:inline">{t("exportButton")}</span>
