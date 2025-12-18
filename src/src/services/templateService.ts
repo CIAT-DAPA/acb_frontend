@@ -88,8 +88,14 @@ export class TemplateAPIService extends BaseAPIService {
    */
   static async getAllSlugNames(): Promise<APIResponse<string[]>> {
     try {
-      const data = await this.get<any>("/templates/slug_name");
-      const slugNames = data.slug_names || data.data || data || [];
+      // Usamos el endpoint de listado general con un límite alto para obtener todos los templates
+      // ya que el endpoint específico /templates/slug_name tiene conflictos de ruta en el backend
+      const data = await this.get<any>("/templates/?limit=1000");
+      const templates = data.templates || data.data || data || [];
+
+      const slugNames = Array.isArray(templates)
+        ? templates.map((t: any) => t.name_machine).filter(Boolean)
+        : [];
 
       return {
         success: true,
