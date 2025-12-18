@@ -59,7 +59,6 @@ export function BasicInfoStep({
   const handleNameChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const newName = e.target.value;
-      updateMaster({ template_name: newName });
 
       // Auto-generar name_machine solo si no se ha editado manualmente
       if (!isManualNameMachine) {
@@ -68,17 +67,43 @@ export function BasicInfoStep({
           template_name: newName,
           name_machine: newNameMachine,
         });
-      }
 
-      // Limpiar errores del campo
-      if (errors.template_name) {
-        onErrorsChange({
-          ...errors,
-          template_name: [],
-        });
+        // Validar si el slug generado ya existe
+        if (newNameMachine && existingSlugNames.includes(newNameMachine)) {
+          onErrorsChange({
+            ...errors,
+            template_name: [],
+            name_machine: [t("fields.nameMachine.errors.duplicate")],
+          });
+        } else {
+          // Limpiar errores de ambos campos si es necesario
+          if (errors.template_name || errors.name_machine) {
+            onErrorsChange({
+              ...errors,
+              template_name: [],
+              name_machine: [],
+            });
+          }
+        }
+      } else {
+        updateMaster({ template_name: newName });
+        // Limpiar errores del campo nombre
+        if (errors.template_name) {
+          onErrorsChange({
+            ...errors,
+            template_name: [],
+          });
+        }
       }
     },
-    [updateMaster, errors, onErrorsChange, isManualNameMachine]
+    [
+      updateMaster,
+      errors,
+      onErrorsChange,
+      isManualNameMachine,
+      existingSlugNames,
+      t,
+    ]
   );
 
   const handleNameMachineChange = useCallback(
