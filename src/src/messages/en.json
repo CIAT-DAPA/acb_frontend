@@ -274,6 +274,7 @@
       "selectOption": "Select an option...",
       "noFields": "This section has no configurable fields",
       "headerFields": "Header Fields",
+      "footerFields": "Footer Fields",
       "notFound": "Section not found"
     },
     "fillData": {

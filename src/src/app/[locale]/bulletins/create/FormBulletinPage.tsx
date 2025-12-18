@@ -164,6 +164,12 @@ const getSectionPages = (section: Section) => {
             totalPages = Math.max(totalPages, pages);
           }
         }
+      } else if (field.type === "card" && Array.isArray(field.value)) {
+        // Detectar paginación para cards (cada card es una página)
+        const cards = field.value;
+        if (cards.length > 1) {
+          totalPages = Math.max(totalPages, cards.length);
+        }
       }
     });
   });

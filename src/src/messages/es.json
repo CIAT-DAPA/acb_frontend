@@ -274,6 +274,7 @@
       "selectOption": "Selecciona una opción...",
       "noFields": "Esta sección no tiene campos configurables",
       "headerFields": "Campos del Encabezado",
+      "footerFields": "Campos del Pie de Página",
       "notFound": "Sección no encontrada"
     },
     "fillData": {
