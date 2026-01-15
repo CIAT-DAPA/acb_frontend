@@ -12,7 +12,10 @@ import {
   Tag,
   Copy,
 } from "lucide-react";
-import { getStatusBadgeClass, getStatusBadgeConfig } from "@/utils/statusHelpers";
+import {
+  getStatusBadgeClass,
+  getStatusBadgeConfig,
+} from "@/utils/statusHelpers";
 
 // Props base compartidas
 interface BaseItemCardProps {
@@ -91,8 +94,19 @@ export default function ItemCard(props: ItemCardProps) {
   const ICON_CLASS = "h-4 w-4 text-white";
   const IMAGE_FALLBACK = "/assets/img/imageNotFound.png";
 
+  const getSafeImageUrl = (url?: string) => {
+    if (!url) return undefined;
+    if (
+      url.startsWith("/assets/img/visualResources/") ||
+      url.startsWith("/assets/thumbnails/")
+    ) {
+      return url.replace("/assets/", "/api/dynamic-assets/");
+    }
+    return url;
+  };
+
   // Imagen a mostrar
-  let displayImage = props.image || IMAGE_FALLBACK;
+  let displayImage = getSafeImageUrl(props.image) || IMAGE_FALLBACK;
 
   // Para templates, usar el primer thumbnail si existe
   if (
@@ -100,7 +114,7 @@ export default function ItemCard(props: ItemCardProps) {
     props.thumbnailImages &&
     props.thumbnailImages.length > 0
   ) {
-    displayImage = props.thumbnailImages[0];
+    displayImage = getSafeImageUrl(props.thumbnailImages[0]) || IMAGE_FALLBACK;
   }
 
   // Para cards, usar el primer thumbnail si existe (background_url)
@@ -109,7 +123,7 @@ export default function ItemCard(props: ItemCardProps) {
     props.thumbnailImages &&
     props.thumbnailImages.length > 0
   ) {
-    displayImage = props.thumbnailImages[0];
+    displayImage = getSafeImageUrl(props.thumbnailImages[0]) || IMAGE_FALLBACK;
   }
 
   // Helper para manejar errores de imágenes
@@ -214,7 +228,7 @@ export default function ItemCard(props: ItemCardProps) {
               {props.thumbnailImages.slice(0, 3).map((thumbnail, index) => (
                 <div key={index} className="relative bg-gray-50">
                   <Image
-                    src={thumbnail}
+                    src={getSafeImageUrl(thumbnail) || thumbnail}
                     alt={`${props.name} - ${t("section")} ${index + 1}`}
                     fill
                     className="object-contain"
