@@ -248,7 +248,15 @@ export function TemplatePreview({
 
     // Si es una ruta relativa, construir URL completa y codificar
     const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
-    const cleanUrl = imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`;
+    let cleanUrl = imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`;
+
+    // Fix for runtime uploaded assets
+    if (
+      cleanUrl.startsWith("/assets/thumbnails/") ||
+      cleanUrl.startsWith("/assets/img/visualResources/")
+    ) {
+      cleanUrl = cleanUrl.replace("/assets/", "/api/dynamic-assets/");
+    }
 
     // Codificar cada parte del path (excepto las barras)
     const encodedPath = cleanUrl

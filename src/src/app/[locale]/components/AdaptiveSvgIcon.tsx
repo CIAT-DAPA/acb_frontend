@@ -26,7 +26,17 @@ export function AdaptiveSvgIcon({
       try {
         setIsLoading(true);
         setError(false);
-        const response = await fetch(src);
+
+        let fetchSrc = src;
+        // Fix for runtime uploaded assets
+        if (
+          fetchSrc.startsWith("/assets/thumbnails/") ||
+          fetchSrc.startsWith("/assets/img/visualResources/")
+        ) {
+          fetchSrc = fetchSrc.replace("/assets/", "/api/dynamic-assets/");
+        }
+
+        const response = await fetch(fetchSrc);
         if (!response.ok) throw new Error("Failed to load SVG");
 
         const text = await response.text();
