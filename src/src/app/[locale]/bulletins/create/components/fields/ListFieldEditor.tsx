@@ -85,10 +85,10 @@ export function ListFieldEditor({
       : false;
 
   const climateDataFieldId = Object.keys(itemSchema).find(
-    (key) => itemSchema[key].type === "climate_data_puntual"
+    (key) => itemSchema[key].type === "climate_data_puntual",
   );
   const dateFieldId = Object.keys(itemSchema).find(
-    (key) => itemSchema[key].type === "date"
+    (key) => itemSchema[key].type === "date",
   );
   const showCsvUpload = allowCsvImport && climateDataFieldId && dateFieldId;
 
@@ -134,7 +134,7 @@ export function ListFieldEditor({
           if (config.col_name) {
             colNameToParamKey[config.col_name] = key;
           }
-        }
+        },
       );
 
       for (let i = 1; i < lines.length; i++) {
@@ -154,7 +154,7 @@ export function ListFieldEditor({
           if (parts.length === 3) {
             newItem[dateFieldId] = `${parts[2]}-${parts[0].padStart(
               2,
-              "0"
+              "0",
             )}-${parts[1].padStart(2, "0")}`;
           } else {
             newItem[dateFieldId] = dateStr;
@@ -196,7 +196,39 @@ export function ListFieldEditor({
     if (maxItems && value.length >= maxItems) {
       return;
     }
-    const newValue = [...value, createEmptyItem()];
+
+    const newItem = createEmptyItem();
+
+    // Si hay items previos y existe un campo de fecha, autoincrementar la fecha
+    if (value.length > 0 && dateFieldId) {
+      const lastItem = value[value.length - 1];
+      const lastDateVal = lastItem[dateFieldId];
+
+      if (lastDateVal && typeof lastDateVal === "string") {
+        try {
+          // Asumiendo formato YYYY-MM-DD
+          const parts = lastDateVal.split("-");
+          if (parts.length === 3) {
+            const year = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10) - 1; // Meses en JS son 0-11
+            const day = parseInt(parts[2], 10);
+
+            const date = new Date(year, month, day);
+            date.setDate(date.getDate() + 1);
+
+            const nextYear = date.getFullYear();
+            const nextMonth = String(date.getMonth() + 1).padStart(2, "0");
+            const nextDay = String(date.getDate()).padStart(2, "0");
+
+            newItem[dateFieldId] = `${nextYear}-${nextMonth}-${nextDay}`;
+          }
+        } catch (e) {
+          console.error("Error calculating next date", e);
+        }
+      }
+    }
+
+    const newValue = [...value, newItem];
     onChange(newValue);
     setExpandedItems(new Set([...expandedItems, value.length]));
   };
@@ -217,10 +249,10 @@ export function ListFieldEditor({
   const handleFieldChange = (
     itemIndex: number,
     fieldId: string,
-    fieldValue: any
+    fieldValue: any,
   ) => {
     const newValue = value.map((item, idx) =>
-      idx === itemIndex ? { ...item, [fieldId]: fieldValue } : item
+      idx === itemIndex ? { ...item, [fieldId]: fieldValue } : item,
     );
     console.log("ListFieldEditor - Updating value:", {
       itemIndex,
@@ -246,7 +278,7 @@ export function ListFieldEditor({
   const renderItemField = (
     itemIndex: number,
     fieldId: string,
-    fieldDef: any
+    fieldDef: any,
   ) => {
     // Obtener el valor del campo o usar un valor por defecto apropiado según el tipo
     const getDefaultValue = (type: string) => {
@@ -500,7 +532,7 @@ export function ListFieldEditor({
                         )}
                       </div>
                     );
-                  }
+                  },
                 )}
               </div>
             )}
