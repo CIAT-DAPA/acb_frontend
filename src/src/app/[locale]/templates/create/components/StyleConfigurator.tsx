@@ -83,6 +83,7 @@ export interface StyleConfiguratorProps {
   showPreview?: boolean;
   inheritedStyles?: StyleConfig; // Para mostrar estilos heredados
   isFieldStyle?: boolean; // Si es estilo de campo individual
+  singleColumn?: boolean;
 }
 
 export function StyleConfigurator({
@@ -94,6 +95,7 @@ export function StyleConfigurator({
   showPreview = false,
   inheritedStyles,
   isFieldStyle = false,
+  singleColumn = false,
 }: StyleConfiguratorProps) {
   const t = useTranslations(
     isFieldStyle
@@ -487,7 +489,7 @@ export function StyleConfigurator({
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className={`grid gap-4 ${singleColumn ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
         {/* Configuración de Fuente */}
         {enabledFields.font && (
           <div>

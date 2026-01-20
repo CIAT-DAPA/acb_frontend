@@ -2,6 +2,7 @@
   "Navbar": {
     "templates": "Templates",
     "bulletins": "Bulletins",
+    "reviews": "Reviews",
     "cards": "Cards",
     "visualResources": "Visual Resources",
     "content": "Content",
@@ -205,10 +206,29 @@
     "errorTitle": "Error loading bulletins",
     "retry": "Retry",
     "createFirst": "Create New Bulletin",
+    "reviews": {
+      "title": "Reviews",
+      "subtitle": "Bulletins pending review",
+      "loading": "Loading...",
+      "noResults": "No reviews",
+      "retry": "Retry",
+      "searchPlaceholder": "Search reviews...",
+      "approve": "Approve",
+      "reject": "Reject",
+      "comment": "Comment"
+    },
     "by": "by",
     "lastModified": "Last modified",
     "view": "View",
-    "download": "Download"
+    "download": "Download",
+    "status": {
+      "draft": "Draft",
+      "pending_review": "Pending Review",
+      "review": "In Review",
+      "rejected": "Rejected",
+      "published": "Published",
+      "archived": "Archived"
+    }
   },
   "CreateBulletin": {
     "title": "Create Bulletin",
@@ -325,6 +345,7 @@
       "saving": "Saving...",
       "publish": "Publish",
       "publishing": "Publishing...",
+      "sendToReview": "Send to review",
       "export": "Export"
     },
     "publishModal": {
@@ -927,6 +948,55 @@
       "newBlock": "New Block"
     },
     "fieldEditor": {
+      "editor": {
+        "selectionTypes": {
+          "template": "Template",
+          "section": "Section",
+          "block": "Block",
+          "header": "Header",
+          "footer": "Footer",
+          "field": "Field"
+        },
+        "untitled": "Untitled",
+        "displayName": "Display Name",
+        "id": "ID",
+        "addBlock": "Add Block",
+        "addField": "Add Field",
+        "addSection": "+ Add New Section",
+        "styles": {
+          "section": "Section Styles",
+          "block": "Block Styles",
+          "field": "Field Styles",
+          "header": "Header Styles",
+          "footer": "Footer Styles"
+        },
+        "fieldType": "Field Type",
+        "visibility": {
+          "form": "Show in Form",
+          "bulletin": "Show in Bulletin"
+        },
+        "configuration": "Configuration",
+        "optionsLabel": "Options (comma separated)",
+        "subtype": "Subtype",
+        "subtypes": {
+          "short": "Short",
+          "long": "Long"
+        },
+        "formConfig": {
+          "label": "Label",
+          "labelPlaceholder": "User facing label...",
+          "description": "Description",
+          "descriptionPlaceholder": "Help text for the user...",
+          "required": "Required Field"
+        },
+        "bulletinConfig": {
+          "defaultValue": "Default Value",
+          "contentValue": "Content/Value",
+          "valuePlaceholder": "Enter value..."
+        },
+        "saving": "Saving...",
+        "saveTemplate": "Save Template"
+      },
       "title": "Field Editor",
       "basicInfo": "Basic Information",
       "save": "Save Changes",

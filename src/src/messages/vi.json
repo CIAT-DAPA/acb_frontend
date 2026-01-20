@@ -2,6 +2,7 @@
   "Navbar": {
     "templates": "Biểu mẫu",
     "bulletins": "Bản tin",
+    "reviews": "Rà soát",
     "cards": "Thẻ",
     "visualResources": "Tài liệu trực quan",
     "content": "Nội dung",
@@ -307,6 +308,7 @@
       "save": "Lưu bản nháp",
       "publish": "Xuất bản",
       "publishing": "Xuất bản...",
+      "sendToReview": "Gửi để rà soát",
       "export": "Xuất file"
     },
     "selectTemplate": {
@@ -682,7 +684,26 @@
     "noResults": "Không tìm thấy bản tin nào",
     "loading": "Đang tải bản tin...",
     "createFirst": "Tạo bản tin mới",
-    "by": "Bởi"
+    "by": "Bởi",
+    "status": {
+      "draft": "Bản nháp",
+      "pending_review": "Chờ rà soát",
+      "review": "Đang rà soát",
+      "rejected": "Bị từ chối",
+      "published": "Đã xuất bản",
+      "archived": "Đã lưu trữ"
+    },
+    "reviews": {
+      "title": "Rà soát",
+      "subtitle": "Bản tin chờ rà soát",
+      "loading": "Đang tải...",
+      "noResults": "Không có rà soát",
+      "retry": "Thử lại",
+      "searchPlaceholder": "Tìm kiếm rà soát...",
+      "approve": "Phê duyệt",
+      "reject": "Từ chối",
+      "comment": "Bình luận"
+    }
   },
   "CreateRole": {
     "crud": {
@@ -938,6 +959,55 @@
       "description": "Xác định dữ liệu chính cho biểu mẫu của bạn"
     },
     "fieldEditor": {
+      "editor": {
+        "selectionTypes": {
+          "template": "Mẫu",
+          "section": "Phần",
+          "block": "Khối",
+          "header": "Đầu trang",
+          "footer": "Chân trang",
+          "field": "Trường"
+        },
+        "untitled": "Không có tiêu đề",
+        "displayName": "Tên hiển thị",
+        "id": "ID",
+        "addBlock": "Thêm khối",
+        "addField": "Thêm trường",
+        "addSection": "+ Thêm phần mới",
+        "styles": {
+          "section": "Kiểu phần",
+          "block": "Kiểu khối",
+          "field": "Kiểu trường",
+          "header": "Kiểu đầu trang",
+          "footer": "Kiểu chân trang"
+        },
+        "fieldType": "Loại trường",
+        "visibility": {
+          "form": "Hiển thị trong biểu mẫu",
+          "bulletin": "Hiển thị trong bản tin"
+        },
+        "configuration": "Cấu hình",
+        "optionsLabel": "Tùy chọn (ngăn cách bằng dấu phẩy)",
+        "subtype": "Tiểu loại",
+        "subtypes": {
+          "short": "Ngắn",
+          "long": "Dài"
+        },
+        "formConfig": {
+          "label": "Nhãn",
+          "labelPlaceholder": "Nhãn hiển thị cho người dùng...",
+          "description": "Mô tả",
+          "descriptionPlaceholder": "Văn bản trợ giúp cho người dùng...",
+          "required": "Trường bắt buộc"
+        },
+        "bulletinConfig": {
+          "defaultValue": "Giá trị mặc định",
+          "contentValue": "Nội dung/Giá trị",
+          "valuePlaceholder": "Nhập giá trị..."
+        },
+        "saving": "Đang lưu...",
+        "saveTemplate": "Lưu mẫu"
+      },
       "cancel": "Hủy bỏ",
       "actions": {
         "cancel": "Hủy bỏ",

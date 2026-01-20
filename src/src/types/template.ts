@@ -8,6 +8,14 @@ import {
   TemplateStatus,
 } from "./core";
 
+export type {
+  LogObject,
+  AccessConfig,
+  StyleConfig,
+  ValidationRules,
+  TemplateStatus,
+};
+
 // Tipos de campo específicos para field_config
 export interface TextFieldConfig {
   subtype?: "short" | "long";

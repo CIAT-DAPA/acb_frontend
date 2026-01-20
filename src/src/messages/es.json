@@ -2,6 +2,7 @@
   "Navbar": {
     "templates": "Plantillas",
     "bulletins": "Boletines",
+    "reviews": "Revisiones",
     "cards": "Tarjetas",
     "visualResources": "Recursos Visuales",
     "content": "Contenido",
@@ -205,10 +206,29 @@
     "errorTitle": "Error al cargar boletines",
     "retry": "Reintentar",
     "createFirst": "Crear Nuevo Boletín",
+    "reviews": {
+      "title": "Revisiones",
+      "subtitle": "Boletines pendientes de revisión",
+      "loading": "Cargando...",
+      "noResults": "No hay revisiones",
+      "retry": "Reintentar",
+      "searchPlaceholder": "Buscar revisiones...",
+      "approve": "Aprobar",
+      "reject": "Rechazar",
+      "comment": "Comentar"
+    },
     "by": "por",
     "lastModified": "Última modificación",
     "view": "Ver",
-    "download": "Descargar"
+    "download": "Descargar",
+    "status": {
+      "draft": "Borrador",
+      "pending_review": "Pendiente de revisión",
+      "review": "En revisión",
+      "rejected": "Rechazado",
+      "published": "Publicado",
+      "archived": "Archivado"
+    }
   },
   "CreateBulletin": {
     "title": "Crear Boletín",
@@ -325,6 +345,7 @@
       "saving": "Guardando...",
       "publish": "Publicar",
       "publishing": "Publicando...",
+      "sendToReview": "Enviar a revisión",
       "export": "Exportar"
     },
     "publishModal": {
@@ -927,6 +948,55 @@
       "newBlock": "Nuevo Bloque"
     },
     "fieldEditor": {
+      "editor": {
+        "selectionTypes": {
+          "template": "Plantilla",
+          "section": "Sección",
+          "block": "Bloque",
+          "header": "Header",
+          "footer": "Footer",
+          "field": "Campo"
+        },
+        "untitled": "Sin Título",
+        "displayName": "Nombre para mostrar",
+        "id": "ID",
+        "addBlock": "Agregar Bloque",
+        "addField": "Agregar Campo",
+        "addSection": "+ Agregar Nueva Sección",
+        "styles": {
+          "section": "Estilos de Sección",
+          "block": "Estilos de Bloque",
+          "field": "Estilos de Campo",
+          "header": "Estilos del Header",
+          "footer": "Estilos del Footer"
+        },
+        "fieldType": "Tipo de Campo",
+        "visibility": {
+          "form": "Mostrar en Formulario",
+          "bulletin": "Mostrar en Boletín"
+        },
+        "configuration": "Configuración",
+        "optionsLabel": "Opciones (separadas por coma)",
+        "subtype": "Subtipo",
+        "subtypes": {
+          "short": "Corto",
+          "long": "Largo"
+        },
+        "formConfig": {
+          "label": "Etiqueta",
+          "labelPlaceholder": "Etiqueta visible para el usuario...",
+          "description": "Descripción",
+          "descriptionPlaceholder": "Texto de ayuda para el usuario...",
+          "required": "Campo Requerido"
+        },
+        "bulletinConfig": {
+          "defaultValue": "Valor Predeterminado",
+          "contentValue": "Contenido/Valor",
+          "valuePlaceholder": "Ingrese el valor..."
+        },
+        "saving": "Guardando...",
+        "saveTemplate": "Guardar Plantilla"
+      },
       "title": "Editor de Campos",
       "basicInfo": "Información Básica",
       "save": "Guardar Cambios",
