@@ -779,6 +779,9 @@
     "connectionError": "Lỗi kết nối khi tạo vai trò"
   },
   "CreateTemplate": {
+    "autosave": {
+      "lastSaved": "Lần lưu cuối:"
+    },
     "sections": {
       "section": {
         "duplicate": "Tạo bản sao",
@@ -966,7 +969,9 @@
           "block": "Khối",
           "header": "Đầu trang",
           "footer": "Chân trang",
-          "field": "Trường"
+          "field": "Trường",
+          "header_field": "Trường Đầu trang",
+          "footer_field": "Trường Chân trang"
         },
         "untitled": "Không có tiêu đề",
         "displayName": "Tên hiển thị",

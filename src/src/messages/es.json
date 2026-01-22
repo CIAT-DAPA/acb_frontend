@@ -469,6 +469,9 @@
     "updateSuccess": "¡Plantilla actualizada exitosamente!",
     "error": "Error al crear la plantilla: {error}",
     "backToTemplates": "Volver a Plantillas",
+    "autosave": {
+      "lastSaved": "Guardado por última vez:"
+    },
     "steps": {
       "basicInfo": {
         "title": "Info Básica",
@@ -771,7 +774,8 @@
           "vertical": "Vertical",
           "horizontal": "Horizontal",
           "grid2": "Grid 2 columnas",
-          "grid3": "Grid 3 columnas"
+          "grid3": "Grid 3 columnas",
+          "table": "Tabla"
         },
         "alignOptions": {
           "left": "Izquierda",
@@ -802,8 +806,7 @@
         "previewMainTitle": "Título Principal",
         "previewSubtitle": "Subtítulo de Ejemplo",
         "previewText": "Este es un texto de ejemplo que muestra cómo se verán los estilos aplicados.",
-        "previewSmallText": "Texto pequeño para detalles adicionales.",
-        "help": "Estos estilos se aplicarán a todo el componente. Los estilos individuales de los campos pueden sobrescribir estos valores."
+        "previewSmallText": "Texto pequeño para detalles adicionales."
       },
       "layout": {
         "title": "Disposición de Campos",
@@ -940,22 +943,28 @@
         "noIcons": "No hay iconos disponibles",
         "uploadPrompt": "Sube iconos en la sección de Recursos Visuales"
       },
-      "fieldEditor": {
-        "title": "Configurar Campo",
-        "closeEditor": "Cerrar editor"
-      },
       "newSection": "Nueva Sección",
       "newBlock": "Nuevo Bloque"
     },
     "fieldEditor": {
       "editor": {
+        "saving": "Guardando...",
+        "saveTemplate": "Guardar Plantilla",
+        "deleteConfirm": {
+            "title": "Confirmar eliminación",
+            "message": "¿Estás seguro de que deseas eliminar este elemento? Esta acción no se puede deshacer.",
+            "confirm": "Eliminar",
+            "cancel": "Cancelar"
+        },
         "selectionTypes": {
           "template": "Plantilla",
           "section": "Sección",
           "block": "Bloque",
           "header": "Header",
           "footer": "Footer",
-          "field": "Campo"
+          "field": "Campo",
+          "header_field": "Campo de Encabezado",
+          "footer_field": "Campo de Pie de Página"
         },
         "untitled": "Sin Título",
         "displayName": "Nombre para mostrar",
@@ -993,11 +1002,11 @@
           "defaultValue": "Valor Predeterminado",
           "contentValue": "Contenido/Valor",
           "valuePlaceholder": "Ingrese el valor..."
-        },
-        "saving": "Guardando...",
-        "saveTemplate": "Guardar Plantilla"
+        }
       },
+      "closeEditor": "Cerrar editor",
       "title": "Editor de Campos",
+
       "basicInfo": "Información Básica",
       "save": "Guardar Cambios",
       "cancel": "Cancelar",

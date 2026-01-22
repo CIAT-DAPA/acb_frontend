@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useMemo, useEffect } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../../../hooks/useAuth";
 import { useTemplateAutosave } from "../../../../hooks/useTemplateAutosave";
@@ -30,13 +30,14 @@ export default function CreateTemplatePage({
   initialData,
 }: CreateTemplatePageProps) {
   const t = useTranslations("CreateTemplate");
+  const locale = useLocale();
   const { userInfo } = useAuth();
   const router = useRouter();
   const { showToast } = useToast();
   const isEditMode = mode === "edit";
 
   const [creationState, setCreationState] = useState<TemplateCreationState>({
-    currentStep: "sections", 
+    currentStep: "sections",
     data: initialData || {
       master: {
         template_name: "",
@@ -69,8 +70,25 @@ export default function CreateTemplatePage({
             primary_color: "#000000",
             secondary_color: "#666666",
             background_color: "#ffffff",
+            bulletin_width: 800,
+            bulletin_height: 1200,
           },
-          sections: [],
+          sections:
+            initialData &&
+            "version" in initialData &&
+            (initialData as any).version &&
+            (initialData as any).version.content &&
+            (initialData as any).version.content.sections &&
+            (initialData as any).version.content.sections.length > 0
+              ? (initialData as any).version.content.sections
+              : [
+                  {
+                    section_id: crypto.randomUUID(),
+                    display_name: "Sección 1",
+                    blocks: [],
+                    order: 0,
+                  },
+                ],
         },
       },
     },
@@ -125,31 +143,42 @@ export default function CreateTemplatePage({
 
   const handleRestore = useCallback(
     (restoredData: CreateTemplateData, restoredStep: TemplateCreationStep) => {
-      console.log('Restoring data...', restoredData.version.content.sections.length, 'sections');
+      console.log(
+        "Restoring data...",
+        restoredData.version.content.sections.length,
+        "sections",
+      );
       setCreationState((prev) => ({
         ...prev,
         data: restoredData,
       }));
     },
-    []
+    [],
   );
 
   // If initialData loads later (in Edit mode), we need to ensure it updates state if we haven't touched it yet
   useEffect(() => {
-      if (initialData && !creationState.data.master.template_name && initialData.master.template_name) {
-             console.log('Syncing initialData to state', initialData.version.content.sections.length);
-             setCreationState(prev => ({
-                 ...prev,
-                 data: initialData
-             }));
-      }
+    if (
+      initialData &&
+      !creationState.data.master.template_name &&
+      initialData.master.template_name
+    ) {
+      console.log(
+        "Syncing initialData to state",
+        initialData.version.content.sections.length,
+      );
+      setCreationState((prev) => ({
+        ...prev,
+        data: initialData,
+      }));
+    }
   }, [initialData]);
 
   const { saveNow, clearAutosave, lastSaved } = useTemplateAutosave(
     creationState.data,
     creationState.currentStep,
     handleRestore,
-    templateId 
+    templateId,
   );
 
   const updateData = useCallback(
@@ -159,13 +188,13 @@ export default function CreateTemplatePage({
         data: updater(prev.data),
       }));
     },
-    []
+    [],
   );
 
   const handleFinish = useCallback(async () => {
     if (!creationState.data.master.template_name) {
-        showToast("Template Name is required", "error");
-        return;
+      showToast("Template Name is required", "error");
+      return;
     }
 
     setIsLoading(true);
@@ -175,12 +204,12 @@ export default function CreateTemplatePage({
 
         const masterResponse = await TemplateAPIService.updateTemplate(
           templateId,
-          masterDataWithoutLog
+          masterDataWithoutLog,
         );
 
         if (!masterResponse.success) {
           throw new Error(
-            masterResponse.message || "Error al actualizar el template master"
+            masterResponse.message || "Error al actualizar el template master",
           );
         }
 
@@ -189,18 +218,18 @@ export default function CreateTemplatePage({
 
         const versionDataToSend = {
           ...versionDataWithoutLog,
-          version_num: 1, 
+          version_num: 1,
         };
 
         const versionResponse = await TemplateAPIService.createTemplateVersion(
           templateId,
-          versionDataToSend
+          versionDataToSend,
         );
 
         if (!versionResponse.success) {
           throw new Error(
             versionResponse.message ||
-              "Error al crear la nueva versión del template"
+              "Error al crear la nueva versión del template",
           );
         }
 
@@ -213,19 +242,18 @@ export default function CreateTemplatePage({
             errorMessage: "",
           });
 
-          const { generateAndUploadThumbnails } = await import(
-            "../../../../utils/thumbnailCapture"
-          );
+          const { generateAndUploadThumbnails } =
+            await import("../../../../utils/thumbnailCapture");
 
           const sectionCount =
             creationState.data.version.content.sections.length || 1;
-            
+
           const thumbnailPaths = await generateAndUploadThumbnails(
-            "template-preview-container", 
+            "template-preview-container",
             templateId,
             sectionCount,
             (index: number) => {
-               setSelectedSectionIndex(index);
+              setSelectedSectionIndex(index);
             },
             (current: number, total: number, message: string) => {
               setThumbnailModal((prev) => ({
@@ -233,7 +261,7 @@ export default function CreateTemplatePage({
                 progress: Math.round((current / total) * 100),
                 message,
               }));
-            }
+            },
           );
 
           setThumbnailModal({
@@ -260,7 +288,7 @@ export default function CreateTemplatePage({
           }, 1500);
         } catch (thumbnailError) {
           console.error("❌ ERROR capturando thumbnails:", thumbnailError);
-           setThumbnailModal({
+          setThumbnailModal({
             isOpen: true,
             progress: 0,
             message: "Error al generar thumbnails",
@@ -279,7 +307,7 @@ export default function CreateTemplatePage({
         showToast(
           t("updateSuccess") || "Plantilla actualizada exitosamente",
           "success",
-          3000
+          3000,
         );
         setTimeout(() => {
           router.push("/templates");
@@ -287,13 +315,12 @@ export default function CreateTemplatePage({
       } else {
         const { log, ...masterDataWithoutLog } = creationState.data.master;
 
-        const masterResponse = await TemplateAPIService.createTemplate(
-          masterDataWithoutLog
-        );
+        const masterResponse =
+          await TemplateAPIService.createTemplate(masterDataWithoutLog);
 
         if (!masterResponse.success || !masterResponse.data) {
           throw new Error(
-            masterResponse.message || "Error al crear el template master"
+            masterResponse.message || "Error al crear el template master",
           );
         }
 
@@ -311,12 +338,12 @@ export default function CreateTemplatePage({
 
         const versionResponse = await TemplateAPIService.createTemplateVersion(
           newTemplateId,
-          versionDataToSend
+          versionDataToSend,
         );
 
         if (!versionResponse.success) {
           throw new Error(
-            versionResponse.message || "Error al crear la versión del template"
+            versionResponse.message || "Error al crear la versión del template",
           );
         }
 
@@ -329,9 +356,8 @@ export default function CreateTemplatePage({
             errorMessage: "",
           });
 
-          const { generateAndUploadThumbnails } = await import(
-            "../../../../utils/thumbnailCapture"
-          );
+          const { generateAndUploadThumbnails } =
+            await import("../../../../utils/thumbnailCapture");
 
           const sectionCount =
             creationState.data.version.content.sections.length || 1;
@@ -349,7 +375,7 @@ export default function CreateTemplatePage({
                 progress: Math.round((current / total) * 100),
                 message,
               }));
-            }
+            },
           );
 
           setThumbnailModal({
@@ -376,7 +402,7 @@ export default function CreateTemplatePage({
           }, 1500);
         } catch (thumbnailError) {
           console.error("❌ ERROR capturando thumbnails:", thumbnailError);
-           setThumbnailModal({
+          setThumbnailModal({
             isOpen: true,
             progress: 0,
             message: "Error al generar thumbnails",
@@ -395,10 +421,10 @@ export default function CreateTemplatePage({
         showToast(
           t("success") || "Plantilla creada exitosamente",
           "success",
-          3000
+          3000,
         );
         setTimeout(() => {
-          router.push("/templates");
+          router.push(`/${locale}/templates`);
         }, 1000);
       }
     } catch (error) {
@@ -406,7 +432,7 @@ export default function CreateTemplatePage({
         isEditMode
           ? "Error actualizando plantilla:"
           : "Error creando plantilla:",
-        error
+        error,
       );
       const errorMessage =
         error instanceof Error
@@ -425,31 +451,31 @@ export default function CreateTemplatePage({
     showToast,
     router,
   ]);
-  
+
   const handleBack = () => {
-      router.back();
+    router.push(`/${locale}/templates`);
   };
 
   return (
     <>
-        <div id="template-preview-container" className="h-full w-full"> 
-            <EditorLayout 
-                data={creationState.data}
-                onUpdate={updateData}
-                onSave={handleFinish}
-                onBack={handleBack}
-                saving={isLoading}
-                lastSaved={lastSaved}
-            />
-        </div>
-
-        <ThumbnailGenerationModal
-            isOpen={thumbnailModal.isOpen}
-            progress={thumbnailModal.progress}
-            message={thumbnailModal.message}
-            status={thumbnailModal.status}
-            errorMessage={thumbnailModal.errorMessage}
+      <div id="template-preview-container" className="h-full w-full">
+        <EditorLayout
+          data={creationState.data}
+          onUpdate={updateData}
+          onSave={handleFinish}
+          onBack={handleBack}
+          saving={isLoading}
+          lastSaved={lastSaved}
         />
+      </div>
+
+      <ThumbnailGenerationModal
+        isOpen={thumbnailModal.isOpen}
+        progress={thumbnailModal.progress}
+        message={thumbnailModal.message}
+        status={thumbnailModal.status}
+        errorMessage={thumbnailModal.errorMessage}
+      />
     </>
   );
 }

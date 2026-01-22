@@ -53,7 +53,7 @@ function getJustifyClass(justifyContent?: string): string {
  * Helper function para generar estilos de borde según los lados seleccionados
  */
 function getBorderStyles(
-  styleConfig: StyleConfig | undefined
+  styleConfig: StyleConfig | undefined,
 ): React.CSSProperties {
   const styles: React.CSSProperties = {};
 
@@ -110,7 +110,7 @@ interface TemplatePreviewProps {
       | "header_field"
       | "footer_field",
     id: string,
-    e: React.MouseEvent
+    e: React.MouseEvent,
   ) => void;
 }
 
@@ -208,7 +208,7 @@ export function TemplatePreview({
       } catch (error) {
         console.error(
           `Error loading cards (attempt ${retryCount + 1}):`,
-          error
+          error,
         );
 
         if (isMounted) {
@@ -362,7 +362,7 @@ export function TemplatePreview({
     key: string | number,
     containerStyle?: StyleConfig,
     layout: "vertical" | "horizontal" = "vertical",
-    pageInfo?: { currentPage: number; totalPages: number }
+    pageInfo?: { currentPage: number; totalPages: number },
   ) => {
     // Usar herencia de estilos
     const effectiveStyles = getEffectiveFieldStyles(field, containerStyle);
@@ -503,7 +503,7 @@ export function TemplatePreview({
         if (field.value) {
           // Buscar el icono correspondiente al valor seleccionado
           const selectedIndex = selectOptions.findIndex(
-            (opt: string) => opt === field.value
+            (opt: string) => opt === field.value,
           );
           if (selectedIndex !== -1) {
             iconToShow = selectIconsUrl[selectedIndex] || null;
@@ -523,8 +523,8 @@ export function TemplatePreview({
           textAlign === "left"
             ? "justify-start"
             : textAlign === "right"
-            ? "justify-end"
-            : "justify-center";
+              ? "justify-end"
+              : "justify-center";
 
         const selectIconSize = effectiveStyles.icon_size || 32;
         const showLabel = (field.field_config as any)?.show_label !== false;
@@ -632,10 +632,10 @@ export function TemplatePreview({
             field.value.end_date
           ) {
             const startDateVal = parseLocalDate(
-              field.value.start_date as string | Date
+              field.value.start_date as string | Date,
             );
             const endDateVal = parseLocalDate(
-              field.value.end_date as string | Date
+              field.value.end_date as string | Date,
             );
 
             const startDay = startDateVal.getDate();
@@ -670,13 +670,13 @@ export function TemplatePreview({
           if (field.value.start_date) {
             startDateDisplay = formatDateValue(
               field.value.start_date as Date | string,
-              dateRangeFormat
+              dateRangeFormat,
             );
           }
           if (field.value.end_date) {
             endDateDisplay = formatDateValue(
               field.value.end_date as Date | string,
-              dateRangeFormat
+              dateRangeFormat,
             );
           }
         }
@@ -794,8 +794,8 @@ export function TemplatePreview({
                               fontSize: effectiveStyles.header_font_size
                                 ? `${effectiveStyles.header_font_size}px`
                                 : effectiveStyles.font_size
-                                ? `${effectiveStyles.font_size}px`
-                                : undefined,
+                                  ? `${effectiveStyles.font_size}px`
+                                  : undefined,
                               fontWeight:
                                 effectiveStyles.header_font_weight || "bold",
                               padding: effectiveStyles.padding || "8px",
@@ -819,7 +819,7 @@ export function TemplatePreview({
                           >
                             {schemaField.display_name || schemaField.label}
                           </th>
-                        )
+                        ),
                       )}
                     </tr>
                   </thead>
@@ -865,11 +865,11 @@ export function TemplatePreview({
                                   } as Field,
                                   `${itemIndex}-${fieldIndex}`,
                                   effectiveStyles,
-                                  "horizontal"
+                                  "horizontal",
                                 )}
                               </td>
                             );
-                          }
+                          },
                         )}
                     </tr>
                   ))}
@@ -920,7 +920,7 @@ export function TemplatePreview({
           backgroundColor: effectiveStyles.background_color || "transparent",
           backgroundImage: effectiveStyles.background_image
             ? `url("${getBackgroundImageUrl(
-                effectiveStyles.background_image
+                effectiveStyles.background_image,
               )}")`
             : undefined,
           backgroundSize: "cover",
@@ -1043,8 +1043,8 @@ export function TemplatePreview({
                                 isGridLayout
                                   ? `flex gap-1 items-center ${justifyClass} min-w-0`
                                   : shouldExpand
-                                  ? "flex-1 min-w-[120px]"
-                                  : "shrink-0"
+                                    ? "flex-1 min-w-[120px]"
+                                    : "shrink-0"
                               }
                             >
                               {renderField(
@@ -1054,11 +1054,11 @@ export function TemplatePreview({
                                 } as Field,
                                 `${itemIndex}-${fieldIndex}`,
                                 containerStyle,
-                                "horizontal"
+                                "horizontal",
                               )}
                             </div>
                           );
-                        }
+                        },
                       )
                     ) : (
                       <div className="text-sm">{JSON.stringify(item)}</div>
@@ -1096,8 +1096,8 @@ export function TemplatePreview({
                   paramValue !== ""
                     ? paramValue
                     : paramConfig.type === "number"
-                    ? "-"
-                    : "-";
+                      ? "-"
+                      : "-";
 
                 // Estilos individuales del parámetro
                 const paramStyles: React.CSSProperties = {
@@ -1107,8 +1107,8 @@ export function TemplatePreview({
                   fontSize: paramConfig.style_config?.font_size
                     ? `${paramConfig.style_config.font_size}px`
                     : effectiveStyles.font_size
-                    ? `${effectiveStyles.font_size}px`
-                    : undefined,
+                      ? `${effectiveStyles.font_size}px`
+                      : undefined,
                   fontWeight:
                     paramConfig.style_config?.font_weight ||
                     effectiveStyles.font_weight ||
@@ -1139,10 +1139,10 @@ export function TemplatePreview({
           typeof imageValue === "string"
             ? imageValue
             : typeof imageValue === "object" &&
-              imageValue &&
-              "url" in imageValue
-            ? (imageValue as any).url
-            : undefined;
+                imageValue &&
+                "url" in imageValue
+              ? (imageValue as any).url
+              : undefined;
         const itemImageLabel =
           typeof imageValue === "object" && imageValue && "label" in imageValue
             ? (imageValue as any).label
@@ -1419,7 +1419,7 @@ export function TemplatePreview({
                 ...getBorderStyles(block.style_config),
                 ...(effectiveBlockStyles.background_image && {
                   backgroundImage: `url(${getBackgroundImageUrl(
-                    effectiveBlockStyles.background_image
+                    effectiveBlockStyles.background_image,
                   )})`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
@@ -1453,7 +1453,7 @@ export function TemplatePreview({
                       safeField,
                       `card-${cardData.cardId}-block-${blockIndex}-field-${fieldIndex}`,
                       block.style_config,
-                      (block as any).layout || "vertical"
+                      (block as any).layout || "vertical",
                     );
                   })}
                 </div>
@@ -1526,7 +1526,7 @@ export function TemplatePreview({
 
         // Extraer día del mes de una fecha string (YYYY-MM-DD)
         const getDayFromDate = (
-          dateString: string | undefined
+          dateString: string | undefined,
         ): number | null => {
           if (!dateString) return null;
           const parts = dateString.split("-");
@@ -1568,7 +1568,7 @@ export function TemplatePreview({
         // Función para obtener la transición entre dos fases y su número de imágenes
         const getTransitionInfo = (
           fromPhase: MoonPhase,
-          toPhase: MoonPhase
+          toPhase: MoonPhase,
         ): { folder: string; images: number } | null => {
           if (fromPhase === "cuartoCreciente" && toPhase === "llena")
             return { folder: "crecToLlena", images: 7 };
@@ -1616,7 +1616,7 @@ export function TemplatePreview({
           endDay: number,
           transitionFolder: string,
           totalImages: number,
-          reverse: boolean = false
+          reverse: boolean = false,
         ) => {
           const daysBetween = endDay - startDay + 1;
 
@@ -1679,7 +1679,7 @@ export function TemplatePreview({
 
             const transitionInfo = getTransitionInfo(
               previousPhase,
-              firstPhase.phase
+              firstPhase.phase,
             );
             if (transitionInfo) {
               fillTransitionDays(
@@ -1687,7 +1687,7 @@ export function TemplatePreview({
                 firstPhase.day - 1,
                 transitionInfo.folder,
                 transitionInfo.images,
-                true
+                true,
               );
             }
           }
@@ -1705,7 +1705,7 @@ export function TemplatePreview({
             if (endDay >= startDay) {
               const transitionInfo = getTransitionInfo(
                 currentPhase.phase,
-                nextPhase.phase
+                nextPhase.phase,
               );
               if (transitionInfo) {
                 fillTransitionDays(
@@ -1713,7 +1713,7 @@ export function TemplatePreview({
                   endDay,
                   transitionInfo.folder,
                   transitionInfo.images,
-                  false
+                  false,
                 );
               }
             }
@@ -1733,7 +1733,7 @@ export function TemplatePreview({
 
             const transitionInfo = getTransitionInfo(
               lastPhase.phase,
-              nextPhase
+              nextPhase,
             );
             if (transitionInfo) {
               fillTransitionDays(
@@ -1741,7 +1741,7 @@ export function TemplatePreview({
                 daysInMonth,
                 transitionInfo.folder,
                 transitionInfo.images,
-                false
+                false,
               );
             }
           }
@@ -1774,7 +1774,7 @@ export function TemplatePreview({
         const firstDayOfMonth = new Date(
           selectedYear,
           MONTH_INDEX[selectedMonth],
-          1
+          1,
         );
         const startDayOfWeek = firstDayOfMonth.getDay(); // 0 = Domingo, 1 = Lunes, etc.
 
@@ -1945,7 +1945,7 @@ export function TemplatePreview({
 
   // Función para obtener info de paginación de una sección específica
   const getSectionPagination = (
-    section: Section
+    section: Section,
   ): {
     totalPages: number;
     fieldWithPagination?: PaginationInfo;
@@ -2062,7 +2062,7 @@ export function TemplatePreview({
     const startIndex = currentPageIndex * fieldWithPagination.maxItemsPerPage;
     const endIndex = Math.min(
       startIndex + fieldWithPagination.maxItemsPerPage,
-      fieldWithPagination.totalItems
+      fieldWithPagination.totalItems,
     );
 
     // Clonar la sección
@@ -2133,7 +2133,7 @@ export function TemplatePreview({
                   headerConfig.style_config?.fields_layout === "vertical"
                     ? "flex flex-col"
                     : `flex items-center ${getJustifyClass(
-                        headerConfig.style_config?.justify_content
+                        headerConfig.style_config?.justify_content,
                       )}`
                 } ${
                   reviewMode
@@ -2142,12 +2142,7 @@ export function TemplatePreview({
                 }`}
                 onClick={
                   reviewMode && onElementClick
-                    ? (e) =>
-                        onElementClick(
-                          "header",
-                          "header-global",
-                          e
-                        )
+                    ? (e) => onElementClick("header", "header-global", e)
                     : undefined
                 }
                 style={{
@@ -2156,7 +2151,7 @@ export function TemplatePreview({
                     "transparent",
                   backgroundImage: headerConfig.style_config?.background_image
                     ? `url("${getBackgroundImageUrl(
-                        headerConfig.style_config.background_image
+                        headerConfig.style_config.background_image,
                       )}")`
                     : undefined,
                   backgroundSize: "cover",
@@ -2201,7 +2196,7 @@ export function TemplatePreview({
                       {
                         currentPage: absolutePageNumber - 1,
                         totalPages: totalDocumentPages,
-                      }
+                      },
                     );
 
                     if (reviewMode && onElementClick) {
@@ -2267,7 +2262,7 @@ export function TemplatePreview({
                         if (field.value) {
                           // Buscar el fondo correspondiente al valor seleccionado
                           const selectedIndex = bgOptions.findIndex(
-                            (opt: string) => opt === field.value
+                            (opt: string) => opt === field.value,
                           );
                           if (selectedIndex !== -1 && bgUrls[selectedIndex]) {
                             dynamicBackgroundUrl = bgUrls[selectedIndex];
@@ -2299,10 +2294,10 @@ export function TemplatePreview({
                     backgroundImage: dynamicBackgroundUrl
                       ? `url("${getBackgroundImageUrl(dynamicBackgroundUrl)}")`
                       : section.style_config?.background_image
-                      ? `url("${getBackgroundImageUrl(
-                          section.style_config.background_image
-                        )}")`
-                      : undefined,
+                        ? `url("${getBackgroundImageUrl(
+                            section.style_config.background_image,
+                          )}")`
+                        : undefined,
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                     backgroundRepeat: "no-repeat",
@@ -2398,14 +2393,14 @@ export function TemplatePreview({
                   const activeHeaderConfig = cardHeaderConfig
                     ? cardHeaderConfig
                     : forceGlobalHeader
-                    ? hasGlobalHeader
-                      ? headerConfig
-                      : null
-                    : hasSectionHeader
-                    ? section.header_config
-                    : hasGlobalHeader
-                    ? headerConfig
-                    : null;
+                      ? hasGlobalHeader
+                        ? headerConfig
+                        : null
+                      : hasSectionHeader
+                        ? section.header_config
+                        : hasGlobalHeader
+                          ? headerConfig
+                          : null;
 
                   // Determinar qué footer usar: card > sección específica (si no forceGlobalHeader) > global
                   const hasSectionFooter =
@@ -2419,14 +2414,14 @@ export function TemplatePreview({
                   const activeFooterConfig = cardFooterConfig
                     ? cardFooterConfig
                     : forceGlobalHeader
-                    ? hasGlobalFooter
-                      ? footerConfig
-                      : null
-                    : hasSectionFooter
-                    ? section.footer_config
-                    : hasGlobalFooter
-                    ? footerConfig
-                    : null;
+                      ? hasGlobalFooter
+                        ? footerConfig
+                        : null
+                      : hasSectionFooter
+                        ? section.footer_config
+                        : hasGlobalFooter
+                          ? footerConfig
+                          : null;
 
                   return (
                     <>
@@ -2439,7 +2434,7 @@ export function TemplatePreview({
                                   onElementClick(
                                     "header",
                                     `header-${sectionIndex}`,
-                                    e
+                                    e,
                                   )
                               : undefined
                           }
@@ -2449,7 +2444,7 @@ export function TemplatePreview({
                               ? "flex flex-col"
                               : `flex items-center ${getJustifyClass(
                                   activeHeaderConfig.style_config
-                                    ?.justify_content
+                                    ?.justify_content,
                                 )}`
                           } ${
                             reviewMode
@@ -2464,7 +2459,7 @@ export function TemplatePreview({
                               ?.background_image
                               ? `url("${getBackgroundImageUrl(
                                   activeHeaderConfig.style_config
-                                    .background_image
+                                    .background_image,
                                 )}")`
                               : undefined,
                             backgroundSize: "cover",
@@ -2528,7 +2523,7 @@ export function TemplatePreview({
                               {
                                 currentPage: absolutePageNumber - 1,
                                 totalPages: totalDocumentPages,
-                              }
+                              },
                             );
                             if (reviewMode && onElementClick) {
                               return (
@@ -2579,7 +2574,7 @@ export function TemplatePreview({
                                   "section",
                                   section.section_id ||
                                     `section-${sectionIndex}`,
-                                  e
+                                  e,
                                 )
                             : undefined
                         }
@@ -2599,7 +2594,7 @@ export function TemplatePreview({
                             section.blocks.map((block, blockIndex) => {
                               // Verificar si el block contiene un field de tipo card
                               const hasCardField = block.fields.some(
-                                (field) => field.type === "card"
+                                (field) => field.type === "card",
                               );
 
                               // Obtener estilos del bloque
@@ -2610,7 +2605,7 @@ export function TemplatePreview({
                                 backgroundImage: block.style_config
                                   ?.background_image
                                   ? `url("${getBackgroundImageUrl(
-                                      block.style_config.background_image
+                                      block.style_config.background_image,
                                     )}")`
                                   : undefined,
                                 backgroundSize: "cover",
@@ -2700,7 +2695,7 @@ export function TemplatePreview({
                                             "block",
                                             block.block_id ||
                                               `block-${sectionIndex}-${blockIndex}`,
-                                            e
+                                            e,
                                           )
                                       : undefined
                                   }
@@ -2739,7 +2734,7 @@ export function TemplatePreview({
                                             `preview-field-${sectionIndex}-${blockIndex}-${fieldIndex}`,
                                             block.style_config ||
                                               section.style_config, // Los campos heredan del bloque o de la sección
-                                            fieldsLayout
+                                            fieldsLayout,
                                           );
 
                                           if (reviewMode && onElementClick) {
@@ -2753,7 +2748,7 @@ export function TemplatePreview({
                                                   onElementClick(
                                                     "field",
                                                     fieldId,
-                                                    e
+                                                    e,
                                                   )
                                                 }
                                                 className="relative hover:ring-2 hover:ring-yellow-400 cursor-pointer rounded transition-all group/field"
@@ -2797,7 +2792,7 @@ export function TemplatePreview({
                                   onElementClick(
                                     "footer",
                                     `footer-${sectionIndex}`,
-                                    e
+                                    e,
                                   )
                               : undefined
                           }
@@ -2807,7 +2802,7 @@ export function TemplatePreview({
                               ? "flex flex-col"
                               : `flex items-center ${getJustifyClass(
                                   activeFooterConfig.style_config
-                                    ?.justify_content
+                                    ?.justify_content,
                                 )}`
                           } ${
                             reviewMode
@@ -2824,7 +2819,7 @@ export function TemplatePreview({
                               ?.background_image
                               ? `url("${getBackgroundImageUrl(
                                   activeFooterConfig.style_config
-                                    .background_image
+                                    .background_image,
                                 )}")`
                               : undefined,
                             backgroundSize: "cover",
@@ -2888,7 +2883,7 @@ export function TemplatePreview({
                               {
                                 currentPage: absolutePageNumber - 1,
                                 totalPages: totalDocumentPages,
-                              }
+                              },
                             );
                             if (reviewMode && onElementClick) {
                               return (
@@ -2936,19 +2931,14 @@ export function TemplatePreview({
               <div
                 onClick={
                   reviewMode && onElementClick
-                    ? (e) =>
-                        onElementClick(
-                          "footer",
-                          "footer-global",
-                          e
-                        )
+                    ? (e) => onElementClick("footer", "footer-global", e)
                     : undefined
                 }
                 className={`w-full ${
                   footerConfig.style_config?.fields_layout === "vertical"
                     ? "flex flex-col"
                     : `flex items-center ${getJustifyClass(
-                        footerConfig.style_config?.justify_content
+                        footerConfig.style_config?.justify_content,
                       )}`
                 } ${
                   reviewMode
@@ -2961,7 +2951,7 @@ export function TemplatePreview({
                     "transparent",
                   backgroundImage: footerConfig.style_config?.background_image
                     ? `url("${getBackgroundImageUrl(
-                        footerConfig.style_config.background_image
+                        footerConfig.style_config.background_image,
                       )}")`
                     : undefined,
                   backgroundSize: "cover",
@@ -3000,7 +2990,7 @@ export function TemplatePreview({
                     {
                       currentPage: absolutePageNumber - 1,
                       totalPages: totalDocumentPages,
-                    }
+                    },
                   );
 
                   if (reviewMode && onElementClick) {
@@ -3057,7 +3047,7 @@ export function TemplatePreview({
           <button
             onClick={() =>
               handlePageChange(
-                Math.min(paginationInfo.totalPages - 1, currentPageIndex + 1)
+                Math.min(paginationInfo.totalPages - 1, currentPageIndex + 1),
               )
             }
             disabled={currentPageIndex === paginationInfo.totalPages - 1}
@@ -3087,9 +3077,9 @@ export function TemplatePreview({
                 total +
                 section.blocks.reduce(
                   (blockTotal, block) => blockTotal + block.fields.length,
-                  0
+                  0,
                 ),
-              0
+              0,
             ) +
               (headerConfig?.fields?.length || 0) +
               (footerConfig?.fields?.length || 0)}
