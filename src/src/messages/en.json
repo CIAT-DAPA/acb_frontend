@@ -955,11 +955,11 @@
     "fieldEditor": {
       "closeEditor": "Close editor",
       "editor": {
-        "deleteConfirm": {
-            "title": "Confirm Deletion",
-            "message": "Are you sure you want to delete this item? This action cannot be undone.",
-            "confirm": "Delete",
-            "cancel": "Cancel"
+        "deleteDialog": {
+          "title": "Confirm Deletion",
+          "message": "Are you sure you want to delete this item? This action cannot be undone.",
+          "confirm": "Delete",
+          "cancel": "Cancel"
         },
         "selectionTypes": {
           "template": "Template",

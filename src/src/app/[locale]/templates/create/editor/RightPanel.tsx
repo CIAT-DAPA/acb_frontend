@@ -15,6 +15,7 @@ import { StyleConfigurator } from "@/app/[locale]/templates/create/components/St
 import * as ui from "../../../components/ui";
 import { getFieldTypeComponent } from "../components/fieldTypes/FieldTypeRegistry";
 import { ConfirmationModal } from "../../../components/ConfirmationModal";
+import { GroupSelector } from "../../../components/GroupSelector";
 
 const DIMENSION_PRESETS = [
   { label: "Custom", width: 0, height: 0 },
@@ -39,6 +40,10 @@ export const RightPanel: React.FC<RightPanelProps> = ({
 }) => {
   const t = useTranslations("CreateTemplate");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [restoreModalOpen, setRestoreModalOpen] = useState(false);
+  const [restoreType, setRestoreType] = useState<"header" | "footer" | null>(
+    null,
+  );
 
   // Helper to get current object
   const currentObject = useMemo(() => {
@@ -237,6 +242,119 @@ export const RightPanel: React.FC<RightPanelProps> = ({
     });
   };
 
+  const handleAddHeaderField = () => {
+    onUpdate((prev) => {
+      const newData = structuredClone(prev);
+      if (!newData.version.content.header_config) {
+        newData.version.content.header_config = { fields: [] };
+      }
+      newData.version.content.header_config.fields.push({
+        field_id: `header_field_${Date.now()}`,
+        display_name: "New Header Field",
+        type: "text",
+        form: true,
+        bulletin: true,
+        field_config: getFieldConfigDefaults("text"),
+      });
+      return newData;
+    });
+  };
+
+  const handleAddFooterField = () => {
+    onUpdate((prev) => {
+      const newData = structuredClone(prev);
+      if (!newData.version.content.footer_config) {
+        newData.version.content.footer_config = { fields: [] };
+      }
+      newData.version.content.footer_config.fields.push({
+        field_id: `footer_field_${Date.now()}`,
+        display_name: "New Footer Field",
+        type: "text",
+        form: true,
+        bulletin: true,
+        field_config: getFieldConfigDefaults("text"),
+      });
+      return newData;
+    });
+  };
+
+  const handleCreateSectionHeader = () => {
+    onUpdate((prev) => {
+      const newData = structuredClone(prev);
+      const section = newData.version.content.sections[selection.sectionIndex!];
+      // Clone global header if exists, otherwise empty
+      section.header_config = newData.version.content.header_config
+        ? structuredClone(newData.version.content.header_config)
+        : { fields: [] };
+      return newData;
+    });
+  };
+
+  const handleRemoveSectionHeader = () => {
+    onUpdate((prev) => {
+      const newData = structuredClone(prev);
+      const section = newData.version.content.sections[selection.sectionIndex!];
+      delete section.header_config;
+      return newData;
+    });
+  };
+
+  const handleCreateSectionFooter = () => {
+    onUpdate((prev) => {
+      const newData = structuredClone(prev);
+      const section = newData.version.content.sections[selection.sectionIndex!];
+      section.footer_config = newData.version.content.footer_config
+        ? structuredClone(newData.version.content.footer_config)
+        : { fields: [] };
+      return newData;
+    });
+  };
+
+  const handleRemoveSectionFooter = () => {
+    onUpdate((prev) => {
+      const newData = structuredClone(prev);
+      const section = newData.version.content.sections[selection.sectionIndex!];
+      delete section.footer_config;
+      return newData;
+    });
+  };
+
+  const handleAddSectionHeaderField = () => {
+    onUpdate((prev) => {
+      const newData = structuredClone(prev);
+      const section = newData.version.content.sections[selection.sectionIndex!];
+      if (!section.header_config) section.header_config = { fields: [] };
+
+      section.header_config.fields.push({
+        field_id: `header_field_${Date.now()}`,
+        display_name: "New Custom Header Field",
+        type: "text",
+        form: true,
+        bulletin: true,
+        field_config: getFieldConfigDefaults("text"),
+      });
+      return newData;
+    });
+  };
+
+  const handleAddSectionFooterField = () => {
+    onUpdate((prev) => {
+      const newData = structuredClone(prev);
+      const section = newData.version.content.sections[selection.sectionIndex!];
+      if (!section.footer_config) section.footer_config = { fields: [] };
+
+      section.footer_config.fields.push({
+        field_id: `footer_field_${Date.now()}`,
+        display_name: "New Custom Footer Field",
+        type: "text",
+        form: true,
+        bulletin: true,
+        field_config: getFieldConfigDefaults("text"),
+      });
+      return newData;
+    });
+  };
+
   const handleDelete = () => {
     setIsDeleteModalOpen(true);
   };
@@ -281,6 +399,16 @@ export const RightPanel: React.FC<RightPanelProps> = ({
     });
   };
 
+  const handleConfirmRestore = () => {
+    if (restoreType === "header") {
+      handleRemoveSectionHeader();
+    } else if (restoreType === "footer") {
+      handleRemoveSectionFooter();
+    }
+    setRestoreModalOpen(false);
+    setRestoreType(null);
+  };
+
   const handleAddBlock = () => {
     onUpdate((prev) => {
       const newData = structuredClone(prev);
@@ -319,13 +447,31 @@ export const RightPanel: React.FC<RightPanelProps> = ({
     return (
       <div className="w-[320px] min-w-[320px] p-4 h-full flex flex-col bg-white border-l border-gray-200 shadow-xl overflow-hidden">
         <h2 className="font-semibold mb-4 text-base shrink-0">
-          Template Settings
+          {t("basicInfo.title")}
         </h2>
 
         <div className="space-y-4 overflow-y-auto flex-1 pr-2">
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">
-              Status
+              {t("basicInfo.fields.name.label")}
+            </label>
+            <input
+              type="text"
+              className="w-full text-sm border border-gray-200 rounded p-1.5"
+              value={data.master.template_name || ""}
+              onChange={(e) =>
+                onUpdate((prev) => ({
+                  ...prev,
+                  master: { ...prev.master, template_name: e.target.value },
+                }))
+              }
+              placeholder={t("basicInfo.fields.name.placeholder")}
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              {t("basicInfo.fields.status.label")}
             </label>
             <select
               className="w-full text-sm border border-gray-200 rounded p-1.5"
@@ -337,15 +483,19 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                 }))
               }
             >
-              <option value="active">Active</option>
+              <option value="active">
+                {t("basicInfo.fields.status.options.active")}
+              </option>
               <option value="inactive">Inactive</option>
-              <option value="draft">Draft</option>
+              <option value="draft">
+                {t("basicInfo.fields.status.options.draft")}
+              </option>
             </select>
           </div>
 
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">
-              Access Type
+              {t("basicInfo.fields.accessType.label")}
             </label>
             <select
               className="w-full text-sm border border-gray-200 rounded p-1.5"
@@ -363,14 +513,40 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                 }))
               }
             >
-              <option value="public">Public</option>
-              <option value="restricted">Restricted</option>
+              <option value="public">
+                {t("basicInfo.fields.accessType.options.public")}
+              </option>
+              <option value="restricted">
+                {t("basicInfo.fields.accessType.options.restricted")}
+              </option>
             </select>
           </div>
 
+          {data.master.access_config.access_type === "restricted" && (
+            <div className="pt-2">
+              <GroupSelector
+                selectedIds={data.master.access_config.allowed_groups || []}
+                onChange={(newIds) =>
+                  onUpdate((prev) => ({
+                    ...prev,
+                    master: {
+                      ...prev.master,
+                      access_config: {
+                        ...prev.master.access_config,
+                        allowed_groups: newIds,
+                      },
+                    },
+                  }))
+                }
+                label={t("basicInfo.fields.allowedGroups.label")}
+                placeholder={t("basicInfo.fields.allowedGroups.placeholder")}
+              />
+            </div>
+          )}
+
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">
-              Description
+              {t("basicInfo.fields.description.label")}
             </label>
             <textarea
               className="w-full text-sm border border-gray-200 rounded p-2 h-24 resize-none"
@@ -381,12 +557,13 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                   master: { ...prev.master, description: e.target.value },
                 }))
               }
+              placeholder={t("basicInfo.fields.description.placeholder")}
             />
           </div>
 
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">
-              Dimensions
+              {t("generalConfig.dimensions.title")}
             </label>
 
             <div className="mb-2">
@@ -434,7 +611,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <span className="block text-[10px] text-gray-500 mb-0.5">
-                  Width
+                  {t("generalConfig.dimensions.width.label")}
                 </span>
                 <input
                   type="number"
@@ -461,7 +638,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
               </div>
               <div>
                 <span className="block text-[10px] text-gray-500 mb-0.5">
-                  Height
+                  {t("generalConfig.dimensions.height.label")}
                 </span>
                 <input
                   type="number"
@@ -491,64 +668,150 @@ export const RightPanel: React.FC<RightPanelProps> = ({
 
           <div className="pt-4 border-t border-gray-200">
             <h3 className="text-xs uppercase font-bold text-gray-500 mb-2">
-              Global Styles
+              {t("generalConfig.styles.title")}
             </h3>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="block text-[10px] text-gray-500">
-                  Primary Color
-                </label>
-                <input
-                  type="color"
-                  className="w-full h-8 cursor-pointer border border-gray-200 rounded p-0"
-                  value={
-                    data.version.content.style_config?.primary_color ||
-                    "#000000"
-                  }
-                  onChange={(e) =>
-                    onUpdate((prev) => ({
-                      ...prev,
-                      version: {
-                        ...prev.version,
-                        content: {
-                          ...prev.version.content,
-                          style_config: {
-                            ...prev.version.content.style_config,
-                            primary_color: e.target.value,
-                          },
+            <div className="pr-1">
+              <StyleConfigurator
+                styleConfig={data.version.content.style_config || {}}
+                onStyleChange={(updates) =>
+                  onUpdate((prev) => ({
+                    ...prev,
+                    version: {
+                      ...prev.version,
+                      content: {
+                        ...prev.version.content,
+                        style_config: {
+                          ...(prev.version.content.style_config || {}),
+                          ...updates,
                         },
                       },
-                    }))
-                  }
-                />
+                    },
+                  }))
+                }
+                enabledFields={{
+                  font: true,
+                  primaryColor: true,
+                  secondaryColor: true,
+                  backgroundColor: true,
+                  backgroundImage: true,
+                  fontSize: true,
+                  fontWeight: true,
+                  lineHeight: true,
+                  textAlign: true,
+                }}
+                singleColumn={true}
+              />
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-gray-200">
+            <h3 className="text-xs uppercase font-bold text-gray-500 mb-2">
+              {t("headerFooter.title")}
+            </h3>
+
+            <div className="space-y-4">
+              {/* Header */}
+              <div className="border border-gray-200 rounded p-3 bg-gray-50">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs font-semibold">
+                    {t("headerFooter.tabs.header")}
+                  </span>
+                  <button
+                    onClick={handleAddHeaderField}
+                    className="text-blue-600 hover:text-blue-800 text-xs flex items-center gap-1"
+                  >
+                    <Plus size={12} /> {t("headerFooter.addField")}
+                  </button>
+                </div>
+                <div className="text-[10px] text-gray-500 mb-2">
+                  {data.version.content.header_config?.fields?.length || 0}{" "}
+                  {t("headerFooter.fields.title")}
+                </div>
+                <div className="mt-2 pt-2 border-t border-gray-200">
+                  <span className="text-[10px] uppercase font-bold text-gray-400 mb-1 block">
+                    {t("headerFooter.globalStyles.title")}
+                  </span>
+                  <StyleConfigurator
+                    styleConfig={
+                      data.version.content.header_config?.style_config || {}
+                    }
+                    onStyleChange={(updates) =>
+                      onUpdate((prev) => {
+                        const newData = structuredClone(prev);
+                        if (!newData.version.content.header_config)
+                          newData.version.content.header_config = {
+                            fields: [],
+                          };
+                        newData.version.content.header_config.style_config = {
+                          ...newData.version.content.header_config.style_config,
+                          ...updates,
+                        };
+                        return newData;
+                      })
+                    }
+                    enabledFields={{
+                      backgroundColor: true,
+                      font: true,
+                      padding: true,
+                      borderSides: true,
+                      borderWidth: true,
+                      borderColor: true,
+                    }}
+                    singleColumn={true}
+                  />
+                </div>
               </div>
-              <div>
-                <label className="block text-[10px] text-gray-500">
-                  Background
-                </label>
-                <input
-                  type="color"
-                  className="w-full h-8 cursor-pointer border border-gray-200 rounded p-0"
-                  value={
-                    data.version.content.style_config?.background_color ||
-                    "#ffffff"
-                  }
-                  onChange={(e) =>
-                    onUpdate((prev) => ({
-                      ...prev,
-                      version: {
-                        ...prev.version,
-                        content: {
-                          ...prev.version.content,
-                          style_config: {
-                            ...prev.version.content.style_config,
-                            background_color: e.target.value,
-                          },
-                        },
-                      },
-                    }))
-                  }
-                />
+
+              {/* Footer */}
+              <div className="border border-gray-200 rounded p-3 bg-gray-50">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs font-semibold">
+                    {t("headerFooter.tabs.footer")}
+                  </span>
+                  <button
+                    onClick={handleAddFooterField}
+                    className="text-blue-600 hover:text-blue-800 text-xs flex items-center gap-1"
+                  >
+                    <Plus size={12} /> {t("headerFooter.addField")}
+                  </button>
+                </div>
+                <div className="text-[10px] text-gray-500 mb-2">
+                  {data.version.content.footer_config?.fields?.length || 0}{" "}
+                  {t("headerFooter.fields.title")}
+                </div>
+                <div className="mt-2 pt-2 border-t border-gray-200">
+                  <span className="text-[10px] uppercase font-bold text-gray-400 mb-1 block">
+                    {t("headerFooter.globalStyles.title")}
+                  </span>
+                  <StyleConfigurator
+                    styleConfig={
+                      data.version.content.footer_config?.style_config || {}
+                    }
+                    onStyleChange={(updates) =>
+                      onUpdate((prev) => {
+                        const newData = structuredClone(prev);
+                        if (!newData.version.content.footer_config)
+                          newData.version.content.footer_config = {
+                            fields: [],
+                          };
+                        newData.version.content.footer_config.style_config = {
+                          ...newData.version.content.footer_config.style_config,
+                          ...updates,
+                        };
+                        return newData;
+                      })
+                    }
+                    enabledFields={{
+                      backgroundColor: true,
+                      font: true,
+                      padding: true,
+                      borderSides: true,
+                      borderWidth: true,
+                      borderColor: true,
+                    }}
+                    singleColumn={true}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -666,6 +929,228 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                   singleColumn={true}
                 />
               </div>
+            </div>
+
+            {/* Section Specific Header */}
+            <div className="pt-4 border-t border-gray-200">
+              <h3 className="text-xs uppercase font-bold text-gray-500 mb-2">
+                {t("sections.headerTab.title")}
+              </h3>
+              <p className="text-[10px] text-gray-400 mb-2">
+                {t("sections.headerTab.description")}
+              </p>
+
+              {!(currentObject as Section)?.header_config ? (
+                <div className="bg-blue-50 p-2 rounded border border-blue-100">
+                  <span className="text-xs text-blue-700 block mb-1">
+                    {t("sections.headerTab.usingGlobal")}
+                  </span>
+                  <button
+                    onClick={handleCreateSectionHeader}
+                    className="text-xs bg-white border border-blue-200 text-blue-600 px-2 py-1 rounded w-full hover:bg-blue-50"
+                  >
+                    {t("sections.headerTab.customizeButton")}
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="bg-amber-50 p-2 rounded border border-amber-100 flex justify-between items-center">
+                    <span className="text-[10px] text-amber-700 font-medium">
+                      Custom Header Active
+                    </span>
+                    <button
+                      onClick={() => {
+                        setRestoreType("header");
+                        setRestoreModalOpen(true);
+                      }}
+                      className="text-[10px] text-red-500 underline"
+                    >
+                      {t("sections.headerTab.restoreGlobal")}
+                    </button>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-bold text-gray-500">
+                      {t("headerFooter.fields.title")}
+                    </span>
+                    <button
+                      onClick={handleAddSectionHeaderField}
+                      className="text-blue-600 text-[10px] flex items-center"
+                    >
+                      <Plus size={10} className="mr-0.5" />{" "}
+                      {t("headerFooter.fields.add")}
+                    </button>
+                  </div>
+
+                  <div className="space-y-1">
+                    {(
+                      (currentObject as Section).header_config?.fields || []
+                    ).map((field, idx) => (
+                      <div
+                        key={field.field_id}
+                        className="text-xs p-1.5 bg-gray-50 border border-gray-200 rounded flex justify-between"
+                      >
+                        <span>{field.display_name}</span>
+                        <span className="text-[10px] text-gray-400">
+                          {field.type}
+                        </span>
+                      </div>
+                    ))}
+                    {((currentObject as Section).header_config?.fields || [])
+                      .length === 0 && (
+                      <div className="text-[10px] text-gray-400 italic text-center p-2">
+                        {t("headerFooter.noFields")}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-2 border-t border-gray-100">
+                    <span className="text-[10px] uppercase font-bold text-gray-400 mb-1 block">
+                      Style
+                    </span>
+                    <StyleConfigurator
+                      styleConfig={
+                        (currentObject as Section).header_config
+                          ?.style_config || {}
+                      }
+                      onStyleChange={(updates: any) =>
+                        updateSection({
+                          header_config: {
+                            ...((currentObject as Section).header_config || {
+                              fields: [],
+                            }),
+                            style_config: {
+                              ...((currentObject as Section).header_config
+                                ?.style_config || {}),
+                              ...updates,
+                            },
+                          },
+                        })
+                      }
+                      enabledFields={{
+                        backgroundColor: true,
+                        font: true,
+                        padding: true,
+                        borderSides: true,
+                        borderWidth: true,
+                        borderColor: true,
+                      }}
+                      singleColumn={true}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Section Specific Footer */}
+            <div className="pt-4 border-t border-gray-200">
+              <h3 className="text-xs uppercase font-bold text-gray-500 mb-2">
+                {t("sections.footerTab.title")}
+              </h3>
+              <p className="text-[10px] text-gray-400 mb-2">
+                {t("sections.footerTab.description")}
+              </p>
+
+              {!(currentObject as Section)?.footer_config ? (
+                <div className="bg-blue-50 p-2 rounded border border-blue-100">
+                  <span className="text-xs text-blue-700 block mb-1">
+                    {t("sections.footerTab.usingGlobal")}
+                  </span>
+                  <button
+                    onClick={handleCreateSectionFooter}
+                    className="text-xs bg-white border border-blue-200 text-blue-600 px-2 py-1 rounded w-full hover:bg-blue-50"
+                  >
+                    {t("sections.footerTab.customizeButton")}
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="bg-amber-50 p-2 rounded border border-amber-100 flex justify-between items-center">
+                    <span className="text-[10px] text-amber-700 font-medium">
+                      Custom Footer Active
+                    </span>
+                    <button
+                      onClick={() => {
+                        setRestoreType("footer");
+                        setRestoreModalOpen(true);
+                      }}
+                      className="text-[10px] text-red-500 underline"
+                    >
+                      {t("sections.footerTab.restoreGlobal")}
+                    </button>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-bold text-gray-500">
+                      {t("headerFooter.fields.title")}
+                    </span>
+                    <button
+                      onClick={handleAddSectionFooterField}
+                      className="text-blue-600 text-[10px] flex items-center"
+                    >
+                      <Plus size={10} className="mr-0.5" />{" "}
+                      {t("headerFooter.fields.add")}
+                    </button>
+                  </div>
+
+                  <div className="space-y-1">
+                    {(
+                      (currentObject as Section).footer_config?.fields || []
+                    ).map((field, idx) => (
+                      <div
+                        key={field.field_id}
+                        className="text-xs p-1.5 bg-gray-50 border border-gray-200 rounded flex justify-between"
+                      >
+                        <span>{field.display_name}</span>
+                        <span className="text-[10px] text-gray-400">
+                          {field.type}
+                        </span>
+                      </div>
+                    ))}
+                    {((currentObject as Section).footer_config?.fields || [])
+                      .length === 0 && (
+                      <div className="text-[10px] text-gray-400 italic text-center p-2">
+                        {t("headerFooter.noFields")}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-2 border-t border-gray-100">
+                    <span className="text-[10px] uppercase font-bold text-gray-400 mb-1 block">
+                      Style
+                    </span>
+                    <StyleConfigurator
+                      styleConfig={
+                        (currentObject as Section).footer_config
+                          ?.style_config || {}
+                      }
+                      onStyleChange={(updates: any) =>
+                        updateSection({
+                          footer_config: {
+                            ...((currentObject as Section).footer_config || {
+                              fields: [],
+                            }),
+                            style_config: {
+                              ...((currentObject as Section).footer_config
+                                ?.style_config || {}),
+                              ...updates,
+                            },
+                          },
+                        })
+                      }
+                      enabledFields={{
+                        backgroundColor: true,
+                        font: true,
+                        padding: true,
+                        borderSides: true,
+                        borderWidth: true,
+                        borderColor: true,
+                      }}
+                      singleColumn={true}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -987,16 +1472,38 @@ export const RightPanel: React.FC<RightPanelProps> = ({
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={confirmDelete}
         title={
-          t("fieldEditor.editor.deleteConfirm.title") || "Confirmar eliminación"
+          t("fieldEditor.editor.deleteDialog.title") || "Confirmar eliminación"
         }
         message={
-          t("fieldEditor.editor.deleteConfirm.message") ||
+          t("fieldEditor.editor.deleteDialog.message") ||
           "¿Estás seguro de que deseas eliminar este elemento? Esta acción no se puede deshacer."
         }
         confirmLabel={
-          t("fieldEditor.editor.deleteConfirm.confirm") || "Eliminar"
+          t("fieldEditor.editor.deleteDialog.confirm") || "Eliminar"
         }
-        cancelLabel={t("fieldEditor.editor.deleteConfirm.cancel") || "Cancelar"}
+        cancelLabel={t("fieldEditor.editor.deleteDialog.cancel") || "Cancelar"}
+        isDangerous={true}
+      />
+
+      <ConfirmationModal
+        isOpen={restoreModalOpen}
+        onClose={() => {
+          setRestoreModalOpen(false);
+          setRestoreType(null);
+        }}
+        onConfirm={handleConfirmRestore}
+        title={
+          restoreType === "header"
+            ? t("sections.headerTab.restoreGlobal")
+            : t("sections.footerTab.restoreGlobal")
+        }
+        message={
+          restoreType === "header"
+            ? t("sections.headerTab.confirmRestore")
+            : t("sections.footerTab.confirmRestore")
+        }
+        confirmLabel={t("fieldEditor.actions.remove") || "Eliminar"}
+        cancelLabel={t("fieldEditor.actions.cancel") || "Cancelar"}
         isDangerous={true}
       />
     </div>

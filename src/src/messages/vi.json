@@ -905,10 +905,6 @@
         "usingGlobalHelp": "Mục này đang sử dụng chân trang toàn cục. Nhấp vào \"Tùy chỉnh\" để tạo phiên bản cụ thể mà bạn có thể tự chỉnh sửa.",
         "confirmRestore": "Bạn có chắc chắn muốn xóa tùy chỉnh và quay lại chân trang toàn cục không?"
       },
-      "fieldEditor": {
-        "title": "Cấu hình trường thông tin",
-        "closeEditor": "Đóng trình chỉnh sửa"
-      },
       "newSection": "Phần mới",
       "newBlock": "Khối mới"
     },
@@ -962,7 +958,14 @@
       "description": "Xác định dữ liệu chính cho biểu mẫu của bạn"
     },
     "fieldEditor": {
+      "closeEditor": "Đóng trình chỉnh sửa",
       "editor": {
+        "deleteDialog": {
+          "title": "Xác nhận xóa",
+          "message": "Bạn có chắc chắn muốn xóa mục này không? Hành động này không thể hoàn tác.",
+          "confirm": "Xóa",
+          "cancel": "Hủy"
+        },
         "selectionTypes": {
           "template": "Mẫu",
           "section": "Phần",
@@ -1220,17 +1223,29 @@
         }
       },
       "dateRangeConfig": {
-        "startDateDescription": "Miêu tả",
-        "endDateDescription": "Miêu tả",
-        "startDateLabel": "Nhãn",
-        "endDateLabel": "Nhãn",
-        "format": "Định dạng ngày tháng",
+        "showMoonPhases": "Hiển thị chu kỳ mặt trăng",
+        "showMoonPhasesHelp": "Hiển thị biểu tượng chu kỳ mặt trăng bên cạnh mỗi ngày",
+        "moonPhasesConfigTitle": "Cấu hình chu kỳ mặt trăng",
+        "moonPhasesConfigHelp": "Chọn chu kỳ mặt trăng cho mỗi ngày (chỉ khi biểu mẫu bị vô hiệu hóa)",
+        "startMoonPhase": "Chu kỳ mặt trăng ngày bắt đầu",
+        "endMoonPhase": "Chu kỳ mặt trăng ngày kết thúc",
+        "moonPhases": {
+          "full": "Trăng tròn",
+          "new": "Trăng non",
+          "waxingCrescent": "Trăng lưỡi liềm đầu tháng",
+          "waningCrescent": "Trăng lưỡi liềm cuối tháng"
+        },
         "startDateSection": "Ngày bắt đầu",
+        "startDateLabel": "Nhãn",
         "startDateLabelPlaceholder": "Ví dụ: Ngày bắt đầu, Từ, v.v.",
+        "startDateDescription": "Miêu tả",
         "startDateDescriptionPlaceholder": "Mô tả ngày bắt đầu",
         "endDateSection": "Ngày kết thúc",
+        "endDateLabel": "Nhãn",
         "endDateLabelPlaceholder": "Ví dụ: Ngày kết thúc, Đến, v.v.",
-        "endDateDescriptionPlaceholder": "Mô tả ngày kết thúc"
+        "endDateDescription": "Miêu tả",
+        "endDateDescriptionPlaceholder": "Mô tả ngày kết thúc",
+        "format": "Định dạng ngày tháng"
       },
       "basicInfo": "Thông tin cơ bản",
       "pageNumberConfig": {

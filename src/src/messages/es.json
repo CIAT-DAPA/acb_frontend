@@ -948,14 +948,14 @@
     },
     "fieldEditor": {
       "editor": {
+        "deleteDialog": {
+          "title": "Confirmar eliminación",
+          "message": "¿Estás seguro de que deseas eliminar este elemento? Esta acción no se puede deshacer.",
+          "confirm": "Eliminar",
+          "cancel": "Cancelar"
+        },
         "saving": "Guardando...",
         "saveTemplate": "Guardar Plantilla",
-        "deleteConfirm": {
-            "title": "Confirmar eliminación",
-            "message": "¿Estás seguro de que deseas eliminar este elemento? Esta acción no se puede deshacer.",
-            "confirm": "Eliminar",
-            "cancel": "Cancelar"
-        },
         "selectionTypes": {
           "template": "Plantilla",
           "section": "Sección",
