@@ -496,6 +496,14 @@
       "finish": "Crear Plantilla",
       "update": "Actualizar Plantilla"
     },
+    "actions": {
+      "addParameter": "Agregar Parámetro",
+      "add": "Agregar",
+      "delete": "Eliminar",
+      "remove": "Eliminar",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar"
+    },
     "basicInfo": {
       "title": "Información Básica",
       "description": "Define los datos principales de tu plantilla",

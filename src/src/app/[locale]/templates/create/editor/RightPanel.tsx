@@ -16,6 +16,7 @@ import * as ui from "../../../components/ui";
 import { getFieldTypeComponent } from "../components/fieldTypes/FieldTypeRegistry";
 import { ConfirmationModal } from "../../../components/ConfirmationModal";
 import { GroupSelector } from "../../../components/GroupSelector";
+import { slugify } from "@/utils/slugify";
 
 const DIMENSION_PRESETS = [
   { label: "Custom", width: 0, height: 0 },
@@ -67,8 +68,19 @@ export const RightPanel: React.FC<RightPanelProps> = ({
       typeof selection.blockIndex === "number" &&
       typeof selection.fieldIndex === "number"
     ) {
-      return sections[selection.sectionIndex]?.blocks?.[selection.blockIndex]
-        ?.fields?.[selection.fieldIndex];
+      const field =
+        sections[selection.sectionIndex]?.blocks?.[selection.blockIndex]
+          ?.fields?.[selection.fieldIndex];
+
+      if (
+        selection.schemaKey &&
+        field?.type === "list" &&
+        field.field_config?.item_schema
+      ) {
+        return field.field_config.item_schema[selection.schemaKey];
+      }
+
+      return field;
     }
 
     // Header/Footer logic
@@ -118,7 +130,19 @@ export const RightPanel: React.FC<RightPanelProps> = ({
         newData.version.content.sections[selection.sectionIndex!].blocks[
           selection.blockIndex!
         ].fields[selection.fieldIndex!];
-      Object.assign(field, updates);
+
+      if (
+        selection.schemaKey &&
+        field.type === "list" &&
+        field.field_config?.item_schema?.[selection.schemaKey]
+      ) {
+        Object.assign(
+          field.field_config.item_schema[selection.schemaKey],
+          updates,
+        );
+      } else {
+        Object.assign(field, updates);
+      }
       return newData;
     });
   };
@@ -462,7 +486,11 @@ export const RightPanel: React.FC<RightPanelProps> = ({
               onChange={(e) =>
                 onUpdate((prev) => ({
                   ...prev,
-                  master: { ...prev.master, template_name: e.target.value },
+                  master: {
+                    ...prev.master,
+                    template_name: e.target.value,
+                    name_machine: slugify(e.target.value),
+                  },
                 }))
               }
               placeholder={t("basicInfo.fields.name.placeholder")}
@@ -471,26 +499,14 @@ export const RightPanel: React.FC<RightPanelProps> = ({
 
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">
-              {t("basicInfo.fields.status.label")}
+              {t("basicInfo.fields.nameMachine.label")}
             </label>
-            <select
-              className="w-full text-sm border border-gray-200 rounded p-1.5"
-              value={data.master.status}
-              onChange={(e) =>
-                onUpdate((prev) => ({
-                  ...prev,
-                  master: { ...prev.master, status: e.target.value as any },
-                }))
-              }
-            >
-              <option value="active">
-                {t("basicInfo.fields.status.options.active")}
-              </option>
-              <option value="inactive">Inactive</option>
-              <option value="draft">
-                {t("basicInfo.fields.status.options.draft")}
-              </option>
-            </select>
+            <input
+              type="text"
+              readOnly
+              className="w-full text-sm border border-gray-200 rounded p-1.5 bg-gray-50 text-gray-500"
+              value={data.master.name_machine || ""}
+            />
           </div>
 
           <div>
@@ -751,11 +767,17 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                     }
                     enabledFields={{
                       backgroundColor: true,
+                      backgroundImage: true,
                       font: true,
+                      fontSize: true,
                       padding: true,
+                      gap: true,
+                      margin: true,
                       borderSides: true,
                       borderWidth: true,
                       borderColor: true,
+                      fieldsLayout: true,
+                      justifyContent: true,
                     }}
                     singleColumn={true}
                   />
@@ -803,11 +825,17 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                     }
                     enabledFields={{
                       backgroundColor: true,
+                      backgroundImage: true,
                       font: true,
+                      fontSize: true,
                       padding: true,
+                      gap: true,
+                      margin: true,
                       borderSides: true,
                       borderWidth: true,
                       borderColor: true,
+                      fieldsLayout: true,
+                      justifyContent: true,
                     }}
                     singleColumn={true}
                   />
@@ -893,7 +921,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
         </div>
 
         {/* Section Specific */}
-        {selection.type === "section" && (
+        {selection.type === "section" && currentObject && (
           <div className="space-y-6">
             <div>
               <button
@@ -1029,11 +1057,14 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                       }
                       enabledFields={{
                         backgroundColor: true,
+                        backgroundImage: true,
                         font: true,
                         padding: true,
                         borderSides: true,
                         borderWidth: true,
                         borderColor: true,
+                        fieldsLayout: true,
+                        justifyContent: true,
                       }}
                       singleColumn={true}
                     />
@@ -1140,11 +1171,14 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                       }
                       enabledFields={{
                         backgroundColor: true,
+                        backgroundImage: true,
                         font: true,
                         padding: true,
                         borderSides: true,
                         borderWidth: true,
                         borderColor: true,
+                        fieldsLayout: true,
+                        justifyContent: true,
                       }}
                       singleColumn={true}
                     />
@@ -1156,7 +1190,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
         )}
 
         {/* Header/Footer Specific */}
-        {["header", "footer"].includes(selection.type) && (
+        {["header", "footer"].includes(selection.type) && currentObject && (
           <div className="space-y-6">
             <div className="pt-4 border-t border-gray-200">
               <h3 className="text-xs uppercase font-bold text-gray-500 mb-2">
@@ -1191,9 +1225,11 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                     backgroundImage: true,
                     padding: true,
                     gap: true,
+                    margin: true,
                     fontSize: true,
                     primaryColor: true,
                     justifyContent: true,
+                    fieldsLayout: true,
                   }}
                   singleColumn={true}
                 />
@@ -1203,7 +1239,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
         )}
 
         {/* Block Specific */}
-        {selection.type === "block" && (
+        {selection.type === "block" && currentObject && (
           <div className="space-y-6">
             <div>
               <button
@@ -1244,7 +1280,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
         )}
 
         {/* Field Specific (Includes header/footer fields) */}
-        {selection.type.includes("field") && (
+        {selection.type.includes("field") && currentObject && (
           <div className="space-y-6">
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -1451,12 +1487,18 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                     backgroundColor: true,
                     padding: true,
                     margin: true,
+                    gap: true,
                     textAlign: true,
                     borderWidth: true,
                     borderColor: true,
                     borderRadius: true,
                     fontStyle: true,
                     textDecoration: true,
+                    iconSize: true,
+                    // Habilitar campos específicos para ListField
+                    listStyleType: (currentObject as Field).type === "list",
+                    listItemsLayout: (currentObject as Field).type === "list",
+                    showTableHeader: (currentObject as Field).type === "list",
                   }}
                   isFieldStyle={true}
                   singleColumn={true}

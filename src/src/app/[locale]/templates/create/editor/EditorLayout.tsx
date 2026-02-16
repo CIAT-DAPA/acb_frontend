@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { CreateTemplateData } from "@/types/template";
 import { EditorSelection } from "./types";
+import { slugify } from "@/utils/slugify";
 import { TopBar } from "@/app/[locale]/templates/create/editor/TopBar";
 import { Canvas } from "@/app/[locale]/templates/create/editor/Canvas";
 import { RightPanel } from "@/app/[locale]/templates/create/editor/RightPanel";
@@ -82,7 +83,11 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({
         onNameChange={(name) =>
           onUpdate((prev) => ({
             ...prev,
-            master: { ...prev.master, template_name: name },
+            master: {
+              ...prev.master,
+              template_name: name,
+              name_machine: slugify(name),
+            },
           }))
         }
         saving={saving}

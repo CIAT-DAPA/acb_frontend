@@ -255,14 +255,28 @@ export const Canvas: React.FC<CanvasProps> = ({
     }
 
     // Pattern checks for generated IDs
+    const fieldSubmatch = id.match(/^field-(\d+)-(\d+)-(\d+)-subfield-(.+)$/);
+    if (fieldSubmatch) {
+      onSelect({
+        type: "field",
+        id: id,
+        sectionIndex: parseInt(fieldSubmatch[1]),
+        blockIndex: parseInt(fieldSubmatch[2]),
+        fieldIndex: parseInt(fieldSubmatch[3]),
+        schemaKey: fieldSubmatch[4],
+      });
+      return;
+    }
+
     const fieldMatch = id.match(/^field-(\d+)-(\d+)-(\d+)$/);
     if (fieldMatch) {
       onSelect({
         type: "field",
-        id: null,
+        id: id,
         sectionIndex: parseInt(fieldMatch[1]),
         blockIndex: parseInt(fieldMatch[2]),
         fieldIndex: parseInt(fieldMatch[3]),
+        schemaKey: undefined, // Explicitly clear schemaKey
       });
       return;
     }
@@ -271,7 +285,7 @@ export const Canvas: React.FC<CanvasProps> = ({
     if (blockMatch) {
       onSelect({
         type: "block",
-        id: null,
+        id: id,
         sectionIndex: parseInt(blockMatch[1]),
         blockIndex: parseInt(blockMatch[2]),
       });
@@ -282,7 +296,7 @@ export const Canvas: React.FC<CanvasProps> = ({
     if (sectionMatch) {
       onSelect({
         type: "section",
-        id: null,
+        id: id,
         sectionIndex: parseInt(sectionMatch[1]),
       });
       return;
@@ -362,6 +376,7 @@ export const Canvas: React.FC<CanvasProps> = ({
                 reviewMode={true}
                 onElementClick={handleElementClick}
                 selectedSectionIndex={0}
+                selectedElementId={selection.id}
               />
             </div>
           ) : (
@@ -383,6 +398,7 @@ export const Canvas: React.FC<CanvasProps> = ({
                   onElementClick={handleElementClick}
                   selectedSectionIndex={index}
                   hidePagination={true}
+                  selectedElementId={selection.id}
                 />
 
                 <div

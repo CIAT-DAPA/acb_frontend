@@ -496,6 +496,14 @@
       "finish": "Create Template",
       "update": "Update Template"
     },
+    "actions": {
+      "addParameter": "Add Parameter",
+      "add": "Add",
+      "delete": "Delete",
+      "remove": "Remove",
+      "cancel": "Cancel",
+      "confirm": "Confirm"
+    },
     "basicInfo": {
       "title": "Basic Information",
       "description": "Define the main data for your template",
