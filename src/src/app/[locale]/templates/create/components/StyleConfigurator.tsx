@@ -101,7 +101,7 @@ export function StyleConfigurator({
   const t = useTranslations(
     isFieldStyle
       ? "CreateTemplate.fieldEditor.styleConfig"
-      : "CreateTemplate.generalConfig.styles"
+      : "CreateTemplate.generalConfig.styles",
   );
   const tGlobal = useTranslations("CreateTemplate.headerFooter.globalStyles");
 
@@ -140,7 +140,7 @@ export function StyleConfigurator({
 
     if (currentSides === "all") {
       const otherSides = ["top", "bottom", "left", "right"].filter(
-        (s) => s !== side
+        (s) => s !== side,
       );
       onStyleChange({ border_sides: checked ? "all" : otherSides.join(",") });
       return;
@@ -159,7 +159,7 @@ export function StyleConfigurator({
     }
 
     const hasAll = ["top", "bottom", "left", "right"].every((s) =>
-      sides.includes(s)
+      sides.includes(s),
     );
 
     if (hasAll && sides.length === 4) {
@@ -183,7 +183,7 @@ export function StyleConfigurator({
   const renderColorField = (
     key: keyof StyleConfig,
     label: string,
-    placeholder: string = "#000000"
+    placeholder: string = "#000000",
   ) => (
     <div>
       <label className={LABEL_CLASS}>{label}</label>
@@ -277,13 +277,13 @@ export function StyleConfigurator({
                 // Actualizar alpha en rgba existente
                 const newColor = currentColor.replace(
                   /,\s*[\d.]+\)/,
-                  `, ${alpha})`
+                  `, ${alpha})`,
                 );
                 onStyleChange({ [key]: newColor });
               } else if (currentColor.includes("rgb")) {
                 // Convertir rgb a rgba
                 const match = currentColor.match(
-                  /rgb\((\d+),\s*(\d+),\s*(\d+)\)/
+                  /rgb\((\d+),\s*(\d+),\s*(\d+)\)/,
                 );
                 if (match) {
                   const [, r, g, b] = match;
@@ -320,7 +320,7 @@ export function StyleConfigurator({
     label: string,
     min: number,
     max: number,
-    placeholder?: string | number
+    placeholder?: string | number,
   ) => (
     <div>
       <label className={LABEL_CLASS}>{label}</label>
@@ -409,7 +409,7 @@ export function StyleConfigurator({
   const renderTextField = (
     key: keyof StyleConfig,
     label: string,
-    placeholder?: string
+    placeholder?: string,
   ) => (
     <div>
       <label className={LABEL_CLASS}>{label}</label>
@@ -455,7 +455,7 @@ export function StyleConfigurator({
     key: keyof StyleConfig,
     label: string,
     options: { value: string; label: string }[],
-    defaultValue?: string
+    defaultValue?: string,
   ) => (
     <div>
       <label className={LABEL_CLASS}>{label}</label>
@@ -490,7 +490,9 @@ export function StyleConfigurator({
         </div>
       )}
 
-      <div className={`grid gap-4 ${singleColumn ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
+      <div
+        className={`grid gap-4 ${singleColumn ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2"}`}
+      >
         {/* Configuración de Fuente */}
         {enabledFields.font && (
           <div>
@@ -522,14 +524,14 @@ export function StyleConfigurator({
           renderColorField(
             "secondary_color",
             getLabel("secondaryColor"),
-            "#666666"
+            "#666666",
           )}
 
         {enabledFields.backgroundColor &&
           renderColorField(
             "background_color",
             getLabel("backgroundColor"),
-            "#ffffff"
+            "#ffffff",
           )}
 
         {enabledFields.backgroundImage && renderBackgroundImageField()}
@@ -621,7 +623,7 @@ export function StyleConfigurator({
               { value: "normal", label: t("fontStyleOptions.normal") },
               { value: "italic", label: t("fontStyleOptions.italic") },
             ],
-            "normal"
+            "normal",
           )}
 
         {enabledFields.textDecoration &&
@@ -639,7 +641,7 @@ export function StyleConfigurator({
                 label: t("textDecorationOptions.lineThrough"),
               },
             ],
-            "none"
+            "none",
           )}
 
         {enabledFields.textAlign &&
@@ -651,7 +653,7 @@ export function StyleConfigurator({
               { value: "center", label: t("alignOptions.center") },
               { value: "right", label: t("alignOptions.right") },
             ],
-            "left"
+            "left",
           )}
 
         {/* Espaciado y bordes */}
@@ -714,7 +716,7 @@ export function StyleConfigurator({
             t("bulletinWidth"),
             200,
             1200,
-            366
+            366,
           )}
 
         {enabledFields.bulletinHeight &&
@@ -723,7 +725,7 @@ export function StyleConfigurator({
             t("bulletinHeight"),
             200,
             1200,
-            638
+            638,
           )}
 
         {/* Layout de campos */}
@@ -735,7 +737,7 @@ export function StyleConfigurator({
               { value: "horizontal", label: t("layoutOptions.horizontal") },
               { value: "vertical", label: t("layoutOptions.vertical") },
             ],
-            "vertical"
+            "vertical",
           )}
 
         {/* Distribución de campos (justify-content) */}
@@ -751,7 +753,7 @@ export function StyleConfigurator({
               { value: "around", label: t("justifyOptions.around") },
               { value: "evenly", label: t("justifyOptions.evenly") },
             ],
-            "start"
+            "start",
           )}
 
         {/* Alineación de campos en eje transversal (align-items) */}
@@ -765,7 +767,7 @@ export function StyleConfigurator({
               { value: "center", label: t("alignItemsOptions.center") },
               { value: "stretch", label: t("alignItemsOptions.stretch") },
             ],
-            "stretch"
+            "stretch",
           )}
 
         {/* Estilo de lista */}
@@ -780,7 +782,7 @@ export function StyleConfigurator({
               { value: "decimal", label: t("listStyleOptions.decimal") },
               { value: "none", label: t("listStyleOptions.none") },
             ],
-            "disc"
+            "disc",
           )}
 
         {/* Layout de items de lista */}
@@ -795,7 +797,7 @@ export function StyleConfigurator({
               { value: "grid-3", label: t("listLayoutOptions.grid3") },
               { value: "table", label: t("listLayoutOptions.table") },
             ],
-            "vertical"
+            "vertical",
           )}
 
         {/* Show Table Header - Only for table layout */}
@@ -814,13 +816,13 @@ export function StyleConfigurator({
                   {renderColorField(
                     "header_background_color",
                     t("headerBackgroundColor"),
-                    "#f3f4f6"
+                    "#f3f4f6",
                   )}
 
                   {renderColorField(
                     "header_text_color",
                     t("headerTextColor"),
-                    "#1f2937"
+                    "#1f2937",
                   )}
 
                   {renderNumberField(
@@ -828,7 +830,7 @@ export function StyleConfigurator({
                     t("headerFontSize"),
                     8,
                     72,
-                    14
+                    14,
                   )}
 
                   <div>
@@ -889,7 +891,7 @@ export function StyleConfigurator({
               backgroundColor: styleConfig.background_color || "#ffffff",
               backgroundImage: styleConfig.background_image
                 ? `url("${getBackgroundImageUrl(
-                    styleConfig.background_image
+                    styleConfig.background_image,
                   )}")`
                 : undefined,
               backgroundSize: "cover",

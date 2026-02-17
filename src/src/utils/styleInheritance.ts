@@ -11,7 +11,7 @@ import { Field, HeaderFooterConfig } from "../types/template";
  */
 export function combineStyles(
   parentStyle: StyleConfig | undefined,
-  childStyle: StyleConfig | undefined
+  childStyle: StyleConfig | undefined,
 ): StyleConfig {
   const combined: StyleConfig = {};
 
@@ -100,7 +100,8 @@ export function combineStyles(
     if (childStyle.header_font_weight)
       combined.header_font_weight = childStyle.header_font_weight;
     if (childStyle.align_items) combined.align_items = childStyle.align_items;
-    if (childStyle.justify_content) combined.justify_content = childStyle.justify_content;
+    if (childStyle.justify_content)
+      combined.justify_content = childStyle.justify_content;
   }
 
   return combined;
@@ -112,7 +113,7 @@ export function combineStyles(
  */
 export function getEffectiveFieldStyles(
   field: Field,
-  containerStyle: StyleConfig | undefined
+  containerStyle: StyleConfig | undefined,
 ): StyleConfig {
   // Si el campo no ha sido editado manualmente, usar principalmente los estilos del contenedor
   if (!field.style_manually_edited && containerStyle) {
@@ -129,7 +130,7 @@ export function getEffectiveFieldStyles(
  */
 export function inheritStylesFromContainer(
   field: Field,
-  containerStyle: StyleConfig | undefined
+  containerStyle: StyleConfig | undefined,
 ): Field {
   // Solo heredar si el usuario no ha editado manualmente los estilos
   if (field.style_manually_edited) {
@@ -203,7 +204,7 @@ export function inheritStylesFromContainer(
  */
 export function propagateContainerStyleChanges(
   fields: Field[],
-  containerStyle: StyleConfig | undefined
+  containerStyle: StyleConfig | undefined,
 ): Field[] {
   return fields.map((field) => {
     // Solo propagar cambios a campos que no han sido editados manualmente
@@ -238,7 +239,7 @@ export function markFieldStyleAsManuallyEdited(field: Field): Field {
  */
 export function resetFieldStyleInheritance(
   field: Field,
-  containerStyle?: StyleConfig
+  containerStyle?: StyleConfig,
 ): Field {
   // Resetear el flag y limpiar los estilos personalizados
   const resetField = {
@@ -260,7 +261,7 @@ export function resetFieldStyleInheritance(
  * (útil para mostrar preview en la UI)
  */
 export function getInheritableStyles(
-  containerStyle: StyleConfig | undefined
+  containerStyle: StyleConfig | undefined,
 ): StyleConfig {
   if (!containerStyle) return {};
 

@@ -2707,7 +2707,9 @@ export function TemplatePreview({
                                   gap: block.style_config?.gap
                                     ? block.style_config.gap
                                     : "8px",
-                                  alignItems: block.style_config?.align_items || "stretch",
+                                  alignItems:
+                                    block.style_config?.align_items ||
+                                    "stretch",
                                   display: "flex",
                                   flexDirection:
                                     fieldsLayout === "horizontal"
