@@ -11,6 +11,7 @@ interface TopBarProps {
   saving: boolean;
   onBack: () => void;
   onSave: () => void;
+  isCardMode?: boolean;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -20,8 +21,10 @@ export const TopBar: React.FC<TopBarProps> = ({
   saving,
   onBack,
   onSave,
+  isCardMode = false,
 }) => {
   const t = useTranslations("CreateTemplate");
+  const tCards = useTranslations("CreateCard");
 
   return (
     <div className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 z-10 shadow-sm shrink-0">
@@ -29,6 +32,9 @@ export const TopBar: React.FC<TopBarProps> = ({
         <button
           onClick={onBack}
           className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
+          title={
+            isCardMode ? tCards("backToCards") : t("basicInfo.backToDashboard")
+          }
         >
           <ArrowLeft size={20} />
         </button>

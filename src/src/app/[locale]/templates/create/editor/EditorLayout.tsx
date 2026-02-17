@@ -13,6 +13,10 @@ interface EditorLayoutProps {
   lastSaved?: Date | null;
   onBack: () => void;
   onSave: () => void;
+  // Card specific props
+  isCardMode?: boolean;
+  cardType?: string;
+  onCardTypeChange?: (type: string) => void;
 }
 
 export const EditorLayout: React.FC<EditorLayoutProps> = ({
@@ -22,6 +26,9 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({
   lastSaved = null,
   onBack,
   onSave,
+  isCardMode = false,
+  cardType,
+  onCardTypeChange,
 }) => {
   const [selection, setSelection] = useState<EditorSelection>({
     type: "template",
@@ -106,12 +113,21 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({
             selection={selection}
             onSelect={handleSelection}
             onAddSection={handleAddSection}
+            isCardMode={isCardMode}
           />
         </div>
 
         {/* Right Panel - Force Overlay */}
         <div className="absolute top-0 right-0 h-full z-50 shadow-2xl bg-white border-l border-gray-200">
-          <RightPanel selection={selection} data={data} onUpdate={onUpdate} />
+          <RightPanel
+            selection={selection}
+            data={data}
+            onUpdate={onUpdate}
+            // @ts-ignore - Dynamic props for Card Mode
+            isCardMode={isCardMode}
+            cardType={cardType}
+            onCardTypeChange={onCardTypeChange}
+          />
         </div>
       </div>
     </div>

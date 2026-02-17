@@ -17,6 +17,7 @@ import { getFieldTypeComponent } from "../components/fieldTypes/FieldTypeRegistr
 import { ConfirmationModal } from "../../../components/ConfirmationModal";
 import { GroupSelector } from "../../../components/GroupSelector";
 import { slugify } from "@/utils/slugify";
+import { EnumAPIService, EnumValue } from "@/services/enumService";
 
 const DIMENSION_PRESETS = [
   { label: "Custom", width: 0, height: 0 },
@@ -32,19 +33,37 @@ interface RightPanelProps {
   selection: EditorSelection;
   data: CreateTemplateData;
   onUpdate: (updater: (prev: CreateTemplateData) => CreateTemplateData) => void;
+  // Card specific props
+  isCardMode?: boolean;
+  cardType?: string;
+  onCardTypeChange?: (type: string) => void;
 }
 
 export const RightPanel: React.FC<RightPanelProps> = ({
   selection,
   data,
   onUpdate,
+  isCardMode = false,
+  cardType,
+  onCardTypeChange,
 }) => {
   const t = useTranslations("CreateTemplate");
+  const tCards = useTranslations("Cards");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [restoreModalOpen, setRestoreModalOpen] = useState(false);
   const [restoreType, setRestoreType] = useState<"header" | "footer" | null>(
     null,
   );
+
+  // Card Types state
+  const [cardTypes, setCardTypes] = useState<EnumValue[]>([]);
+
+  // Load card types if in card mode
+  React.useEffect(() => {
+    if (isCardMode) {
+      EnumAPIService.getCardTypes().then(setCardTypes).catch(console.error);
+    }
+  }, [isCardMode]);
 
   // Helper to get current object
   const currentObject = useMemo(() => {
@@ -497,17 +516,42 @@ export const RightPanel: React.FC<RightPanelProps> = ({
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
-              {t("basicInfo.fields.nameMachine.label")}
-            </label>
-            <input
-              type="text"
-              readOnly
-              className="w-full text-sm border border-gray-200 rounded p-1.5 bg-gray-50 text-gray-500"
-              value={data.master.name_machine || ""}
-            />
-          </div>
+          {isCardMode && cardType && onCardTypeChange && (
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                {/* Use a translation for Card Type, can fallback to literal for now or reuse existing key */}
+                Card Type
+              </label>
+              <select
+                className="w-full text-sm border border-gray-200 rounded p-1.5"
+                value={cardType}
+                onChange={(e) => onCardTypeChange(e.target.value)}
+              >
+                {cardTypes.map((type) => (
+                  <option key={type.value} value={type.value}>
+                    {tCards(`cardTypes.${type.value}`) !==
+                    `cardTypes.${type.value}`
+                      ? tCards(`cardTypes.${type.value}`)
+                      : type.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {!isCardMode && (
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                {t("basicInfo.fields.nameMachine.label")}
+              </label>
+              <input
+                type="text"
+                readOnly
+                className="w-full text-sm border border-gray-200 rounded p-1.5 bg-gray-50 text-gray-500"
+                value={data.master.name_machine || ""}
+              />
+            </div>
+          )}
 
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -560,127 +604,132 @@ export const RightPanel: React.FC<RightPanelProps> = ({
             </div>
           )}
 
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
-              {t("basicInfo.fields.description.label")}
-            </label>
-            <textarea
-              className="w-full text-sm border border-gray-200 rounded p-2 h-24 resize-none"
-              value={data.master.description}
-              onChange={(e) =>
-                onUpdate((prev) => ({
-                  ...prev,
-                  master: { ...prev.master, description: e.target.value },
-                }))
-              }
-              placeholder={t("basicInfo.fields.description.placeholder")}
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
-              {t("generalConfig.dimensions.title")}
-            </label>
-
-            <div className="mb-2">
-              <select
-                className="w-full text-sm border border-gray-200 rounded p-1.5"
-                value={(() => {
-                  const currentWidth =
-                    data.version.content.style_config?.bulletin_width || 800;
-                  const currentHeight =
-                    data.version.content.style_config?.bulletin_height || 1200;
-                  const match = DIMENSION_PRESETS.findIndex(
-                    (p) =>
-                      p.width === currentWidth && p.height === currentHeight,
-                  );
-                  return match >= 0 ? match : 0;
-                })()}
-                onChange={(e) => {
-                  const preset = DIMENSION_PRESETS[parseInt(e.target.value)];
-                  if (preset && preset.width > 0) {
-                    onUpdate((prev) => ({
-                      ...prev,
-                      version: {
-                        ...prev.version,
-                        content: {
-                          ...prev.version.content,
-                          style_config: {
-                            ...prev.version.content.style_config,
-                            bulletin_width: preset.width,
-                            bulletin_height: preset.height,
-                          },
-                        },
-                      },
-                    }));
-                  }
-                }}
-              >
-                {DIMENSION_PRESETS.map((preset, idx) => (
-                  <option key={idx} value={idx}>
-                    {preset.label}
-                  </option>
-                ))}
-              </select>
+          {!isCardMode && (
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                {t("basicInfo.fields.description.label")}
+              </label>
+              <textarea
+                className="w-full text-sm border border-gray-200 rounded p-2 h-24 resize-none"
+                value={data.master.description}
+                onChange={(e) =>
+                  onUpdate((prev) => ({
+                    ...prev,
+                    master: { ...prev.master, description: e.target.value },
+                  }))
+                }
+                placeholder={t("basicInfo.fields.description.placeholder")}
+              />
             </div>
+          )}
 
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <span className="block text-[10px] text-gray-500 mb-0.5">
-                  {t("generalConfig.dimensions.width.label")}
-                </span>
-                <input
-                  type="number"
+          {!isCardMode && (
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                {t("generalConfig.dimensions.title")}
+              </label>
+
+              <div className="mb-2">
+                <select
                   className="w-full text-sm border border-gray-200 rounded p-1.5"
-                  value={
-                    data.version.content.style_config?.bulletin_width || 800
-                  }
-                  onChange={(e) =>
-                    onUpdate((prev) => ({
-                      ...prev,
-                      version: {
-                        ...prev.version,
-                        content: {
-                          ...prev.version.content,
-                          style_config: {
-                            ...prev.version.content.style_config,
-                            bulletin_width: parseInt(e.target.value) || 800,
+                  value={(() => {
+                    const currentWidth =
+                      data.version.content.style_config?.bulletin_width || 800;
+                    const currentHeight =
+                      data.version.content.style_config?.bulletin_height ||
+                      1200;
+                    const match = DIMENSION_PRESETS.findIndex(
+                      (p) =>
+                        p.width === currentWidth && p.height === currentHeight,
+                    );
+                    return match >= 0 ? match : 0;
+                  })()}
+                  onChange={(e) => {
+                    const preset = DIMENSION_PRESETS[parseInt(e.target.value)];
+                    if (preset && preset.width > 0) {
+                      onUpdate((prev) => ({
+                        ...prev,
+                        version: {
+                          ...prev.version,
+                          content: {
+                            ...prev.version.content,
+                            style_config: {
+                              ...prev.version.content.style_config,
+                              bulletin_width: preset.width,
+                              bulletin_height: preset.height,
+                            },
                           },
                         },
-                      },
-                    }))
-                  }
-                />
+                      }));
+                    }
+                  }}
+                >
+                  {DIMENSION_PRESETS.map((preset, i) => (
+                    <option key={i} value={i}>
+                      {preset.label}
+                    </option>
+                  ))}
+                </select>
               </div>
-              <div>
-                <span className="block text-[10px] text-gray-500 mb-0.5">
-                  {t("generalConfig.dimensions.height.label")}
-                </span>
-                <input
-                  type="number"
-                  className="w-full text-sm border border-gray-200 rounded p-1.5"
-                  value={
-                    data.version.content.style_config?.bulletin_height || 1200
-                  }
-                  onChange={(e) =>
-                    onUpdate((prev) => ({
-                      ...prev,
-                      version: {
-                        ...prev.version,
-                        content: {
-                          ...prev.version.content,
-                          style_config: {
-                            ...prev.version.content.style_config,
-                            bulletin_height: parseInt(e.target.value) || 1200,
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[10px] text-gray-500 mb-1">
+                    W (px)
+                  </label>
+                  <input
+                    type="number"
+                    className="w-full text-sm border border-gray-200 rounded p-1.5"
+                    value={
+                      data.version.content.style_config?.bulletin_width || 800
+                    }
+                    onChange={(e) =>
+                      onUpdate((prev) => ({
+                        ...prev,
+                        version: {
+                          ...prev.version,
+                          content: {
+                            ...prev.version.content,
+                            style_config: {
+                              ...prev.version.content.style_config,
+                              bulletin_width: parseInt(e.target.value) || 800,
+                            },
                           },
                         },
-                      },
-                    }))
-                  }
-                />
+                      }))
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-gray-500 mb-1">
+                    H (px)
+                  </label>
+                  <input
+                    type="number"
+                    className="w-full text-sm border border-gray-200 rounded p-1.5"
+                    value={
+                      data.version.content.style_config?.bulletin_height || 1200
+                    }
+                    onChange={(e) =>
+                      onUpdate((prev) => ({
+                        ...prev,
+                        version: {
+                          ...prev.version,
+                          content: {
+                            ...prev.version.content,
+                            style_config: {
+                              ...prev.version.content.style_config,
+                              bulletin_height: parseInt(e.target.value) || 1200,
+                            },
+                          },
+                        },
+                      }))
+                    }
+                  />
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           <div className="pt-4 border-t border-gray-200">
             <h3 className="text-xs uppercase font-bold text-gray-500 mb-2">

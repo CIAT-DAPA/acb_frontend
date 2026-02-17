@@ -10,9 +10,11 @@ interface CanvasProps {
   selection: EditorSelection;
   onSelect: (selection: EditorSelection) => void;
   onUpdateSection?: any;
+  onUpdate?: any;
   onAddSection?: () => void;
   globalStyleConfig?: any;
   sections?: any;
+  isCardMode?: boolean;
 }
 
 export const Canvas: React.FC<CanvasProps> = ({
@@ -20,6 +22,7 @@ export const Canvas: React.FC<CanvasProps> = ({
   selection,
   onSelect,
   onAddSection,
+  isCardMode = false,
 }) => {
   const t = useTranslations("CreateTemplate.fieldEditor");
   const containerRef = useRef<HTMLDivElement>(null);
@@ -420,7 +423,7 @@ export const Canvas: React.FC<CanvasProps> = ({
           )}
 
           {/* Add Section Button */}
-          {onAddSection && (
+          {!isCardMode && onAddSection && (
             <div className="flex items-center min-h-[600px] px-4">
               <button
                 onClick={(e) => {

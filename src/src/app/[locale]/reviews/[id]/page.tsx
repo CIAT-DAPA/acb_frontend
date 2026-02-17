@@ -72,15 +72,17 @@ export default function ReviewBulletinPage() {
   };
 
   const handleElementClick = (
-    type: "section" | "block" | "field",
+    type: "section" | "block" | "field" | "header" | "footer" | "header_field" | "footer_field",
     id: string,
-    e: any
+    e: React.MouseEvent
   ) => {
     e.preventDefault();
     e.stopPropagation();
-    setSelectedElement({ type, id });
-    setIsCommentModalOpen(true);
-    // alert(`Reviewing ${type}: ${id}`);
+    // Solo permitir comentarios en sections, blocks y fields por ahora
+    if (type === "section" || type === "block" || type === "field") {
+      setSelectedElement({ type, id });
+      setIsCommentModalOpen(true);
+    }
   };
 
   // Transformar datos de boletín a formato compatible con TemplatePreview
