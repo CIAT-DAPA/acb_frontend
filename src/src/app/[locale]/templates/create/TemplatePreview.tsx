@@ -57,15 +57,25 @@ function getBorderStyles(
 ): React.CSSProperties {
   const styles: React.CSSProperties = {};
 
-  if (!styleConfig?.border_width) {
-    // Si hay border_radius sin border_width, aplicarlo igual
-    if (styleConfig?.border_radius) {
-      styles.borderRadius = styleConfig.border_radius;
-    }
+  // If no style config, return empty
+  if (!styleConfig) return styles;
+
+  if (styleConfig.border_radius) {
+    styles.borderRadius = styleConfig.border_radius;
+  }
+
+  // If no border width and no border sides defined, return just radius
+  if (!styleConfig.border_width && !styleConfig.border_sides) {
     return styles;
   }
 
-  const borderValue = `${styleConfig.border_width} ${
+  // Default width to 1px if sides are selected but no width specified
+  const borderWidth =
+    styleConfig.border_width || (styleConfig.border_sides ? "1px" : undefined);
+
+  if (!borderWidth) return styles;
+
+  const borderValue = `${borderWidth} ${
     styleConfig.border_style || "solid"
   } ${styleConfig.border_color || "#000000"}`;
   const borderSides = styleConfig.border_sides || "all";
@@ -80,10 +90,6 @@ function getBorderStyles(
     if (sides.includes("bottom")) styles.borderBottom = borderValue;
     if (sides.includes("left")) styles.borderLeft = borderValue;
     if (sides.includes("right")) styles.borderRight = borderValue;
-  }
-
-  if (styleConfig.border_radius) {
-    styles.borderRadius = styleConfig.border_radius;
   }
 
   return styles;
@@ -397,6 +403,7 @@ export function TemplatePreview({
       padding: effectiveStyles.padding,
       margin: effectiveStyles.margin,
       gap: effectiveStyles.gap,
+      // alignItems is handled specifically in fields like List where it makes sense
       iconSize: effectiveStyles.icon_size, // Propiedad personalizada para referencia
       ...getBorderStyles(effectiveStyles),
     };
@@ -525,15 +532,15 @@ export function TemplatePreview({
         }
 
         // Mapear text-align a justify-content
-        const textAlign = effectiveStyles.text_align || "center";
+        const selectTextAlign = effectiveStyles.text_align || "center";
         const justifyClass =
-          textAlign === "left"
+          selectTextAlign === "left"
             ? "justify-start"
-            : textAlign === "right"
+            : selectTextAlign === "right"
               ? "justify-end"
               : "justify-center";
 
-        const selectIconSize = effectiveStyles.icon_size || 32;
+        const selectIconSize = (field.style_config as any)?.icon_size || 32;
         const showLabel = (field.field_config as any)?.show_label !== false;
         const selectUseOriginalColor =
           effectiveStyles.icon_use_original_color === true;
@@ -541,7 +548,7 @@ export function TemplatePreview({
         return (
           <div
             key={key}
-            style={fieldStyles}
+            style={{ ...fieldStyles, display: "flex", gap: "8px" }}
             className={`flex items-center gap-2 ${justifyClass}`}
           >
             {iconToShow ? (
@@ -927,14 +934,14 @@ export function TemplatePreview({
         const getItemLayoutClasses = () => {
           switch (listItemsLayout) {
             case "horizontal":
-              return "flex flex-wrap items-center justify-between";
+              return "flex flex-wrap justify-between";
             case "grid-2":
               return "grid w-full";
             case "grid-3":
               return "grid w-full";
             case "vertical":
             default:
-              return "";
+              return "flex flex-col";
           }
         };
 
@@ -1002,10 +1009,12 @@ export function TemplatePreview({
                   className={
                     listItemsLayout === "horizontal"
                       ? "flex items-start"
-                      : "flex items-start w-full"
+                      : "flex w-full"
                   }
                   style={{
                     ...listItemStyles,
+                    // Apply alignItems to the list item wrapper (which contains the bullet/number)
+                    alignItems: effectiveStyles.align_items || "start",
                     gap: "8px", // Gap fijo entre bullet y contenido
                   }}
                 >
@@ -1030,6 +1039,7 @@ export function TemplatePreview({
                     style={{
                       ...getGridColumnsStyle(),
                       gap: effectiveStyles.gap || undefined,
+                      // alignItems: effectiveStyles.align_items || "center", // Removed, now applied to parent
                     }}
                   >
                     {field.field_config?.item_schema &&
@@ -2687,15 +2697,52 @@ export function TemplatePreview({
                                 }),
                               };
 
-                              // Determinar layout de campos
+                              // Determine layout of fields
                               const fieldsLayout =
                                 block.style_config?.fields_layout || "vertical";
-                              const fieldsContainerClass =
-                                fieldsLayout === "horizontal"
-                                  ? "flex flex-wrap"
-                                  : "flex flex-col";
 
-                              // Calcular ancho considerando el margin
+                              // Calculate container style for fields
+                              const fieldsContainerStyle: React.CSSProperties =
+                                {
+                                  gap: block.style_config?.gap
+                                    ? block.style_config.gap
+                                    : "8px",
+                                  alignItems: block.style_config?.align_items || "stretch",
+                                  display: "flex",
+                                  flexDirection:
+                                    fieldsLayout === "horizontal"
+                                      ? "row"
+                                      : "column",
+                                  flexWrap:
+                                    fieldsLayout === "horizontal"
+                                      ? "wrap"
+                                      : "nowrap",
+                                };
+
+                              // Fix justifyContent value mapping from Tailwind class logic
+                              if (block.style_config?.justify_content) {
+                                const justifyMap: Record<string, string> = {
+                                  start: "flex-start",
+                                  end: "flex-end",
+                                  center: "center",
+                                  between: "space-between",
+                                  around: "space-around",
+                                  evenly: "space-evenly",
+                                };
+                                const jcValue =
+                                  block.style_config.justify_content.replace(
+                                    "justify-",
+                                    "",
+                                  );
+                                fieldsContainerStyle.justifyContent =
+                                  justifyMap[jcValue] ||
+                                  justifyMap[
+                                    block.style_config.justify_content
+                                  ] ||
+                                  "flex-start";
+                              }
+
+                              // Calculate width considering margin
                               const marginValue =
                                 block.style_config?.margin || "0";
                               let widthStyle = {};
@@ -2704,31 +2751,9 @@ export function TemplatePreview({
                                 marginValue !== "0" &&
                                 marginValue !== "0px"
                               ) {
-                                // Parsear margin que puede tener múltiples valores
-                                const marginParts = marginValue
-                                  .trim()
-                                  .split(/\s+/);
-                                let marginLeft = "0";
-                                let marginRight = "0";
-
-                                if (marginParts.length === 1) {
-                                  // margin: 10px (todos los lados)
-                                  marginLeft = marginRight = marginParts[0];
-                                } else if (marginParts.length === 2) {
-                                  // margin: 10px 20px (vertical horizontal)
-                                  marginLeft = marginRight = marginParts[1];
-                                } else if (marginParts.length === 3) {
-                                  // margin: 10px 20px 30px (top horizontal bottom)
-                                  marginLeft = marginRight = marginParts[1];
-                                } else if (marginParts.length === 4) {
-                                  // margin: 10px 20px 30px 40px (top right bottom left)
-                                  marginRight = marginParts[1];
-                                  marginLeft = marginParts[3];
-                                }
-
-                                widthStyle = {
-                                  width: `calc(100% - ${marginLeft} - ${marginRight})`,
-                                };
+                                // Parse margin to calculate width if possible
+                                // Simple text based parsing or assume full width minus margins
+                                // For now, let's keep it simple as the container handles margin via blockStyles
                               }
 
                               return (
@@ -2752,7 +2777,6 @@ export function TemplatePreview({
                                   }
                                   style={{
                                     ...blockStyles,
-                                    ...widthStyle,
                                     overflow: "hidden",
                                   }}
                                 >
@@ -2761,16 +2785,13 @@ export function TemplatePreview({
                                       Block
                                     </div>
                                   )}
-                                  {/* Campos del bloque */}
+
+                                  {/* Container for fields with specific layout */}
                                   <div
-                                    className={`${fieldsContainerClass} ${
+                                    className={`${
                                       hasCardField ? "flex-1" : ""
                                     }`}
-                                    style={{
-                                      gap: block.style_config?.gap
-                                        ? `${block.style_config.gap}px`
-                                        : "8px",
-                                    }}
+                                    style={fieldsContainerStyle}
                                   >
                                     {block.fields.length === 0 ? (
                                       <div className="text-sm text-[#283618]/50 italic">
@@ -2778,7 +2799,7 @@ export function TemplatePreview({
                                       </div>
                                     ) : (
                                       block.fields
-                                        .filter((field) => field.bulletin) // Solo mostrar campos que van al boletín
+                                        .filter((field) => field.bulletin) // Only show fields for bulletin
                                         .map((field, fieldIndex) => {
                                           const fieldId =
                                             (field as any)._id ||
@@ -2796,6 +2817,29 @@ export function TemplatePreview({
                                           if (reviewMode && onElementClick) {
                                             const isSelected =
                                               selectedElementId === fieldId;
+
+                                            // Determine flex or specific styling for the field-wrapper based on fieldsLayout
+                                            const fieldWrapperStyle: React.CSSProperties =
+                                              {
+                                                // Aplicar el style_config del campo si existe
+                                                ...((field as Field)
+                                                  .style_config?.margin
+                                                  ? {
+                                                      margin: (field as Field)
+                                                        .style_config?.margin,
+                                                    }
+                                                  : {}),
+                                                ...((field as Field)
+                                                  .style_config?.padding
+                                                  ? {
+                                                      padding: (field as Field)
+                                                        .style_config?.padding,
+                                                    }
+                                                  : {}),
+                                                // Asegurar que flex funciona para layouts horizontale
+                                                flexShrink: 0,
+                                              };
+
                                             return (
                                               <div
                                                 key={`review-wrapper-${fieldId}`}
@@ -2806,6 +2850,7 @@ export function TemplatePreview({
                                                     e,
                                                   )
                                                 }
+                                                style={fieldWrapperStyle}
                                                 className={`relative ${isSelected ? "ring-2 ring-blue-500 z-20" : "hover:ring-2 hover:ring-yellow-400"} cursor-pointer rounded transition-all group/field`}
                                               >
                                                 {renderedField}

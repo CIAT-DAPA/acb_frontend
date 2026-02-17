@@ -599,6 +599,13 @@
           "around": "Space Around",
           "evenly": "Space Evenly"
         },
+        "alignItems": "Items Alignment",
+        "alignItemsOptions": {
+          "start": "Start",
+          "end": "End",
+          "center": "Center",
+          "stretch": "Stretch"
+        },
         "alignOptions": {
           "left": "Left",
           "center": "Center",
@@ -1432,6 +1439,13 @@
           "between": "Space Between",
           "around": "Space Around",
           "evenly": "Space Evenly"
+        },
+        "alignItems": "Items Alignment",
+        "alignItemsOptions": {
+          "start": "Start",
+          "end": "End",
+          "center": "Center",
+          "stretch": "Stretch"
         },
         "listStyleType": "List Style",
         "listItemsLayout": "List Items Layout",

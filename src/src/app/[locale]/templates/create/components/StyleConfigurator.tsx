@@ -74,6 +74,7 @@ export interface StyleConfiguratorProps {
     // Layout específico
     fieldsLayout?: boolean;
     justifyContent?: boolean; // Distribución de campos (justify-content)
+    alignItems?: boolean; // Alineación de los campos en el eje transversal
     listStyleType?: boolean; // Estilo de bullet points para listas
     listItemsLayout?: boolean; // Layout de items dentro de la lista
     showTableHeader?: boolean; // Mostrar encabezado en layout de tabla
@@ -751,6 +752,20 @@ export function StyleConfigurator({
               { value: "evenly", label: t("justifyOptions.evenly") },
             ],
             "start"
+          )}
+
+        {/* Alineación de campos en eje transversal (align-items) */}
+        {enabledFields.alignItems &&
+          renderSelectField(
+            "align_items",
+            t("alignItems"),
+            [
+              { value: "start", label: t("alignItemsOptions.start") },
+              { value: "end", label: t("alignItemsOptions.end") },
+              { value: "center", label: t("alignItemsOptions.center") },
+              { value: "stretch", label: t("alignItemsOptions.stretch") },
+            ],
+            "stretch"
           )}
 
         {/* Estilo de lista */}

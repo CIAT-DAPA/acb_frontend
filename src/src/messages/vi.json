@@ -1483,6 +1483,13 @@
           "left": "Bên trái",
           "right": "Phải"
         },
+        "alignItems": "Căn chỉnh mục",
+        "alignItemsOptions": {
+          "start": "Bắt đầu",
+          "end": "Kết thúc",
+          "center": "Trung tâm",
+          "stretch": "Kéo giãn"
+        },
         "textAlign": {
           "options": {
             "center": "Trung tâm",

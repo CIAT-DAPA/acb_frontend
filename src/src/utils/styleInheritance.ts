@@ -99,6 +99,8 @@ export function combineStyles(
       combined.header_font_size = childStyle.header_font_size;
     if (childStyle.header_font_weight)
       combined.header_font_weight = childStyle.header_font_weight;
+    if (childStyle.align_items) combined.align_items = childStyle.align_items;
+    if (childStyle.justify_content) combined.justify_content = childStyle.justify_content;
   }
 
   return combined;

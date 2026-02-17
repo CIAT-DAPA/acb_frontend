@@ -1256,6 +1256,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
               </h3>
               <div className="pr-1">
                 <StyleConfigurator
+                  isFieldStyle={true}
                   styleConfig={(currentObject as Block)?.style_config || {}}
                   onStyleChange={(updates: any) =>
                     updateBlock({
@@ -1267,10 +1268,16 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                   }
                   enabledFields={{
                     backgroundColor: true,
+                    backgroundImage: true,
+                    margin: true,
                     padding: true,
+                    gap: true,
                     borderWidth: true,
                     borderColor: true,
                     borderRadius: true,
+                    fieldsLayout: true,
+                    justifyContent: true,
+                    alignItems: true,
                   }}
                   singleColumn={true}
                 />
@@ -1492,9 +1499,12 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                     borderWidth: true,
                     borderColor: true,
                     borderRadius: true,
+                    borderSides: true,
                     fontStyle: true,
                     textDecoration: true,
                     iconSize: true,
+                    iconUseOriginalColor: true,
+                    alignItems: (currentObject as Field).type === "list",
                     // Habilitar campos específicos para ListField
                     listStyleType: (currentObject as Field).type === "list",
                     listItemsLayout: (currentObject as Field).type === "list",

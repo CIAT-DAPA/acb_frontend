@@ -504,6 +504,9 @@
       "cancel": "Cancelar",
       "confirm": "Confirmar"
     },
+    "validation": {
+      "required": "Requerido"
+    },
     "basicInfo": {
       "title": "Información Básica",
       "description": "Define los datos principales de tu plantilla",
@@ -591,6 +594,7 @@
         "previewSmallText": "Texto pequeño para detalles adicionales.",
         "fieldsLayout": "Organización de Campos",
         "justifyContent": "Distribución de Campos",
+        "alignItems": "Alineación Vertical",
         "justifyOptions": {
           "start": "Inicio",
           "end": "Fin",
@@ -598,6 +602,12 @@
           "between": "Espaciado Entre",
           "around": "Espaciado Alrededor",
           "evenly": "Espaciado Uniforme"
+        },
+        "alignItemsOptions": {
+          "start": "arriba",
+          "end": "abajo",
+          "center": "Centro",
+          "stretch": "Estirar"
         },
         "alignOptions": {
           "left": "Izquierda",
@@ -1427,6 +1437,13 @@
           "between": "Espaciado Entre",
           "around": "Espaciado Alrededor",
           "evenly": "Espaciado Uniforme"
+        },
+        "alignItems": "Alineación de Items",
+        "alignItemsOptions": {
+          "start": "Inicio",
+          "end": "Fin",
+          "center": "Centro",
+          "stretch": "Estirar"
         },
         "listStyleType": "Estilo de Lista",
         "listItemsLayout": "Layout de Items de Lista",
