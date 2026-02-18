@@ -2,6 +2,7 @@
   "Navbar": {
     "templates": "Templates",
     "bulletins": "Bulletins",
+    "reviews": "Reviews",
     "cards": "Cards",
     "visualResources": "Visual Resources",
     "content": "Content",
@@ -205,10 +206,29 @@
     "errorTitle": "Error loading bulletins",
     "retry": "Retry",
     "createFirst": "Create New Bulletin",
+    "reviews": {
+      "title": "Reviews",
+      "subtitle": "Bulletins pending review",
+      "loading": "Loading...",
+      "noResults": "No reviews",
+      "retry": "Retry",
+      "searchPlaceholder": "Search reviews...",
+      "approve": "Approve",
+      "reject": "Reject",
+      "comment": "Comment"
+    },
     "by": "by",
     "lastModified": "Last modified",
     "view": "View",
-    "download": "Download"
+    "download": "Download",
+    "status": {
+      "draft": "Draft",
+      "pending_review": "Pending Review",
+      "review": "In Review",
+      "rejected": "Rejected",
+      "published": "Published",
+      "archived": "Archived"
+    }
   },
   "CreateBulletin": {
     "title": "Create Bulletin",
@@ -325,6 +345,7 @@
       "saving": "Saving...",
       "publish": "Publish",
       "publishing": "Publishing...",
+      "sendToReview": "Send to review",
       "export": "Export"
     },
     "publishModal": {
@@ -448,6 +469,9 @@
     "updateSuccess": "Template updated successfully!",
     "error": "Error creating template: {error}",
     "backToTemplates": "Back to Templates",
+    "autosave": {
+      "lastSaved": "Last saved:"
+    },
     "steps": {
       "basicInfo": {
         "title": "Basic Info",
@@ -471,6 +495,14 @@
       "previous": "Previous",
       "finish": "Create Template",
       "update": "Update Template"
+    },
+    "actions": {
+      "addParameter": "Add Parameter",
+      "add": "Add",
+      "delete": "Delete",
+      "remove": "Remove",
+      "cancel": "Cancel",
+      "confirm": "Confirm"
     },
     "basicInfo": {
       "title": "Basic Information",
@@ -566,6 +598,13 @@
           "between": "Space Between",
           "around": "Space Around",
           "evenly": "Space Evenly"
+        },
+        "alignItems": "Items Alignment",
+        "alignItemsOptions": {
+          "start": "Start",
+          "end": "End",
+          "center": "Center",
+          "stretch": "Stretch"
         },
         "alignOptions": {
           "left": "Left",
@@ -750,8 +789,15 @@
           "vertical": "Vertical",
           "horizontal": "Horizontal",
           "grid2": "Grid 2 columns",
-          "grid3": "Grid 3 columns"
+          "grid3": "Grid 3 columns",
+          "table": "Table"
         },
+        "showTableHeader": "Show Header",
+        "headerStyles": "Header Styles",
+        "headerBackgroundColor": "Background Color",
+        "headerTextColor": "Text Color",
+        "headerFontSize": "Font Size (px)",
+        "headerFontWeight": "Font Weight",
         "alignOptions": {
           "left": "Left",
           "center": "Center",
@@ -781,8 +827,7 @@
         "previewMainTitle": "Main Title",
         "previewSubtitle": "Example Subtitle",
         "previewText": "This is sample text that shows how the applied styles will look.",
-        "previewSmallText": "Small text for additional details.",
-        "help": "These styles will be applied to the entire component. Individual field styles can override these values."
+        "previewSmallText": "Small text for additional details."
       },
       "layout": {
         "title": "Fields Layout",
@@ -919,14 +964,68 @@
         "noIcons": "No icons available",
         "uploadPrompt": "Upload icons in the Visual Resources section"
       },
-      "fieldEditor": {
-        "title": "Configure Field",
-        "closeEditor": "Close editor"
-      },
       "newSection": "New Section",
       "newBlock": "New Block"
     },
     "fieldEditor": {
+      "closeEditor": "Close editor",
+      "editor": {
+        "deleteDialog": {
+          "title": "Confirm Deletion",
+          "message": "Are you sure you want to delete this item? This action cannot be undone.",
+          "confirm": "Delete",
+          "cancel": "Cancel"
+        },
+        "selectionTypes": {
+          "template": "Template",
+          "section": "Section",
+          "block": "Block",
+          "header": "Header",
+          "footer": "Footer",
+          "field": "Field",
+          "header_field": "Header Field",
+          "footer_field": "Footer Field"
+        },
+        "untitled": "Untitled",
+        "displayName": "Display Name",
+        "id": "ID",
+        "addBlock": "Add Block",
+        "addField": "Add Field",
+        "addSection": "+ Add New Section",
+        "styles": {
+          "section": "Section Styles",
+          "block": "Block Styles",
+          "field": "Field Styles",
+          "header": "Header Styles",
+          "footer": "Footer Styles"
+        },
+        "fieldType": "Field Type",
+        "visibility": {
+          "form": "Show in Form",
+          "bulletin": "Show in Bulletin"
+        },
+        "configuration": "Configuration",
+        "optionsLabel": "Options (comma separated)",
+        "subtype": "Subtype",
+        "subtypes": {
+          "short": "Short",
+          "long": "Long"
+        },
+        "formConfig": {
+          "label": "Label",
+          "labelPlaceholder": "User facing label...",
+          "description": "Description",
+          "descriptionPlaceholder": "Help text for the user...",
+          "required": "Required Field"
+        },
+        "bulletinConfig": {
+          "defaultValue": "Default Value",
+          "contentValue": "Content/Value",
+          "valuePlaceholder": "Enter value..."
+        },
+        "saving": "Saving...",
+        "saveTemplate": "Save Template"
+      },
       "title": "Field Editor",
       "basicInfo": "Basic Information",
       "save": "Save Changes",
@@ -1340,6 +1439,13 @@
           "between": "Space Between",
           "around": "Space Around",
           "evenly": "Space Evenly"
+        },
+        "alignItems": "Items Alignment",
+        "alignItemsOptions": {
+          "start": "Start",
+          "end": "End",
+          "center": "Center",
+          "stretch": "Stretch"
         },
         "listStyleType": "List Style",
         "listItemsLayout": "List Items Layout",
@@ -1780,6 +1886,7 @@
       "content": "Content",
       "contentDesc": "Configure card blocks and fields"
     },
+    "untitled": "Untitled",
     "actions": {
       "next": "Next",
       "back": "Back",

@@ -11,16 +11,16 @@ export async function captureTemplateThumbnails(
   previewContainerId: string,
   sectionCount: number = 1,
   onSectionChange?: (index: number) => void,
-  onProgress?: (current: number, total: number, message: string) => void
+  onProgress?: (current: number, total: number, message: string) => void,
 ): Promise<Blob[]> {
   const previewContainer = document.getElementById(previewContainerId);
 
   if (!previewContainer) {
     console.error(
-      `❌ Preview container with id "${previewContainerId}" not found`
+      `❌ Preview container with id "${previewContainerId}" not found`,
     );
     throw new Error(
-      `Preview container with id "${previewContainerId}" not found`
+      `Preview container with id "${previewContainerId}" not found`,
     );
   }
 
@@ -37,7 +37,7 @@ export async function captureTemplateThumbnails(
       onProgress(
         i,
         sectionsToCapture,
-        `Generando thumbnail ${i + 1} de ${sectionsToCapture}...`
+        `Generando thumbnail ${i + 1} de ${sectionsToCapture}...`,
       );
     }
 
@@ -48,11 +48,15 @@ export async function captureTemplateThumbnails(
       await new Promise((resolve) => setTimeout(resolve, 300));
     }
 
+    // Intentar encontrar el elemento específico de la sección
+    const sectionElement = document.getElementById(`template-section-${i}`);
+    const elementToCapture = sectionElement || previewContainer;
+
     try {
       const blob = await captureSingleElement(
-        previewContainer,
+        elementToCapture,
         `section-${i}`,
-        i
+        i,
       );
       thumbnails.push(blob);
     } catch (error) {
@@ -66,7 +70,7 @@ export async function captureTemplateThumbnails(
     onProgress(
       sectionsToCapture,
       sectionsToCapture,
-      "¡Thumbnails generados exitosamente!"
+      "¡Thumbnails generados exitosamente!",
     );
   }
 
@@ -83,7 +87,7 @@ export async function captureTemplateThumbnails(
 async function captureSingleElement(
   element: HTMLElement,
   elementId: string,
-  index: number = 0
+  index: number = 0,
 ): Promise<Blob> {
   try {
     // Importar html-to-image dinámicamente
@@ -94,8 +98,7 @@ async function captureSingleElement(
     if (images.length > 0) {
       await Promise.all(
         Array.from(images).map((img) => {
-          if (img.complete && img.naturalHeight !== 0)
-            return Promise.resolve();
+          if (img.complete && img.naturalHeight !== 0) return Promise.resolve();
           return new Promise((resolve) => {
             img.onload = () => resolve(true);
             img.onerror = () => {
@@ -105,7 +108,7 @@ async function captureSingleElement(
             // Timeout de 5 segundos por imagen
             setTimeout(() => resolve(false), 5000);
           });
-        })
+        }),
       );
     }
 
@@ -143,7 +146,7 @@ async function captureSingleElement(
  */
 export async function uploadThumbnails(
   thumbnails: Blob[],
-  templateId: string
+  templateId: string,
 ): Promise<string[]> {
   const formData = new FormData();
 
@@ -162,7 +165,7 @@ export async function uploadThumbnails(
     const errorText = await response.text();
     console.error("❌ Upload failed:", errorText);
     throw new Error(
-      `Failed to upload thumbnails: ${response.status} ${errorText}`
+      `Failed to upload thumbnails: ${response.status} ${errorText}`,
     );
   }
 
@@ -196,7 +199,7 @@ export async function generateAndUploadThumbnails(
   templateId: string,
   sectionCount: number = 1,
   onSectionChange?: (index: number) => void,
-  onProgress?: (current: number, total: number, message: string) => void
+  onProgress?: (current: number, total: number, message: string) => void,
 ): Promise<string[]> {
   try {
     if (onProgress) {
@@ -216,7 +219,7 @@ export async function generateAndUploadThumbnails(
           const captureProgress = Math.round((current / total) * 50);
           onProgress(captureProgress, 100, message);
         }
-      }
+      },
     );
 
     if (onProgress) {

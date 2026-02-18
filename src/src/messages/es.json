@@ -2,6 +2,7 @@
   "Navbar": {
     "templates": "Plantillas",
     "bulletins": "Boletines",
+    "reviews": "Revisiones",
     "cards": "Tarjetas",
     "visualResources": "Recursos Visuales",
     "content": "Contenido",
@@ -205,10 +206,29 @@
     "errorTitle": "Error al cargar boletines",
     "retry": "Reintentar",
     "createFirst": "Crear Nuevo Boletín",
+    "reviews": {
+      "title": "Revisiones",
+      "subtitle": "Boletines pendientes de revisión",
+      "loading": "Cargando...",
+      "noResults": "No hay revisiones",
+      "retry": "Reintentar",
+      "searchPlaceholder": "Buscar revisiones...",
+      "approve": "Aprobar",
+      "reject": "Rechazar",
+      "comment": "Comentar"
+    },
     "by": "por",
     "lastModified": "Última modificación",
     "view": "Ver",
-    "download": "Descargar"
+    "download": "Descargar",
+    "status": {
+      "draft": "Borrador",
+      "pending_review": "Pendiente de revisión",
+      "review": "En revisión",
+      "rejected": "Rechazado",
+      "published": "Publicado",
+      "archived": "Archivado"
+    }
   },
   "CreateBulletin": {
     "title": "Crear Boletín",
@@ -325,6 +345,7 @@
       "saving": "Guardando...",
       "publish": "Publicar",
       "publishing": "Publicando...",
+      "sendToReview": "Enviar a revisión",
       "export": "Exportar"
     },
     "publishModal": {
@@ -448,6 +469,9 @@
     "updateSuccess": "¡Plantilla actualizada exitosamente!",
     "error": "Error al crear la plantilla: {error}",
     "backToTemplates": "Volver a Plantillas",
+    "autosave": {
+      "lastSaved": "Guardado por última vez:"
+    },
     "steps": {
       "basicInfo": {
         "title": "Info Básica",
@@ -471,6 +495,17 @@
       "previous": "Anterior",
       "finish": "Crear Plantilla",
       "update": "Actualizar Plantilla"
+    },
+    "actions": {
+      "addParameter": "Agregar Parámetro",
+      "add": "Agregar",
+      "delete": "Eliminar",
+      "remove": "Eliminar",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar"
+    },
+    "validation": {
+      "required": "Requerido"
     },
     "basicInfo": {
       "title": "Información Básica",
@@ -559,6 +594,7 @@
         "previewSmallText": "Texto pequeño para detalles adicionales.",
         "fieldsLayout": "Organización de Campos",
         "justifyContent": "Distribución de Campos",
+        "alignItems": "Alineación Vertical",
         "justifyOptions": {
           "start": "Inicio",
           "end": "Fin",
@@ -566,6 +602,12 @@
           "between": "Espaciado Entre",
           "around": "Espaciado Alrededor",
           "evenly": "Espaciado Uniforme"
+        },
+        "alignItemsOptions": {
+          "start": "arriba",
+          "end": "abajo",
+          "center": "Centro",
+          "stretch": "Estirar"
         },
         "alignOptions": {
           "left": "Izquierda",
@@ -750,7 +792,8 @@
           "vertical": "Vertical",
           "horizontal": "Horizontal",
           "grid2": "Grid 2 columnas",
-          "grid3": "Grid 3 columnas"
+          "grid3": "Grid 3 columnas",
+          "table": "Tabla"
         },
         "alignOptions": {
           "left": "Izquierda",
@@ -781,8 +824,7 @@
         "previewMainTitle": "Título Principal",
         "previewSubtitle": "Subtítulo de Ejemplo",
         "previewText": "Este es un texto de ejemplo que muestra cómo se verán los estilos aplicados.",
-        "previewSmallText": "Texto pequeño para detalles adicionales.",
-        "help": "Estos estilos se aplicarán a todo el componente. Los estilos individuales de los campos pueden sobrescribir estos valores."
+        "previewSmallText": "Texto pequeño para detalles adicionales."
       },
       "layout": {
         "title": "Disposición de Campos",
@@ -919,15 +961,70 @@
         "noIcons": "No hay iconos disponibles",
         "uploadPrompt": "Sube iconos en la sección de Recursos Visuales"
       },
-      "fieldEditor": {
-        "title": "Configurar Campo",
-        "closeEditor": "Cerrar editor"
-      },
       "newSection": "Nueva Sección",
       "newBlock": "Nuevo Bloque"
     },
     "fieldEditor": {
+      "editor": {
+        "deleteDialog": {
+          "title": "Confirmar eliminación",
+          "message": "¿Estás seguro de que deseas eliminar este elemento? Esta acción no se puede deshacer.",
+          "confirm": "Eliminar",
+          "cancel": "Cancelar"
+        },
+        "saving": "Guardando...",
+        "saveTemplate": "Guardar Plantilla",
+        "selectionTypes": {
+          "template": "Plantilla",
+          "section": "Sección",
+          "block": "Bloque",
+          "header": "Header",
+          "footer": "Footer",
+          "field": "Campo",
+          "header_field": "Campo de Encabezado",
+          "footer_field": "Campo de Pie de Página"
+        },
+        "untitled": "Sin Título",
+        "displayName": "Nombre para mostrar",
+        "id": "ID",
+        "addBlock": "Agregar Bloque",
+        "addField": "Agregar Campo",
+        "addSection": "+ Agregar Nueva Sección",
+        "styles": {
+          "section": "Estilos de Sección",
+          "block": "Estilos de Bloque",
+          "field": "Estilos de Campo",
+          "header": "Estilos del Header",
+          "footer": "Estilos del Footer"
+        },
+        "fieldType": "Tipo de Campo",
+        "visibility": {
+          "form": "Mostrar en Formulario",
+          "bulletin": "Mostrar en Boletín"
+        },
+        "configuration": "Configuración",
+        "optionsLabel": "Opciones (separadas por coma)",
+        "subtype": "Subtipo",
+        "subtypes": {
+          "short": "Corto",
+          "long": "Largo"
+        },
+        "formConfig": {
+          "label": "Etiqueta",
+          "labelPlaceholder": "Etiqueta visible para el usuario...",
+          "description": "Descripción",
+          "descriptionPlaceholder": "Texto de ayuda para el usuario...",
+          "required": "Campo Requerido"
+        },
+        "bulletinConfig": {
+          "defaultValue": "Valor Predeterminado",
+          "contentValue": "Contenido/Valor",
+          "valuePlaceholder": "Ingrese el valor..."
+        }
+      },
+      "closeEditor": "Cerrar editor",
       "title": "Editor de Campos",
+
       "basicInfo": "Información Básica",
       "save": "Guardar Cambios",
       "cancel": "Cancelar",
@@ -1340,6 +1437,13 @@
           "between": "Espaciado Entre",
           "around": "Espaciado Alrededor",
           "evenly": "Espaciado Uniforme"
+        },
+        "alignItems": "Alineación de Items",
+        "alignItemsOptions": {
+          "start": "Inicio",
+          "end": "Fin",
+          "center": "Centro",
+          "stretch": "Estirar"
         },
         "listStyleType": "Estilo de Lista",
         "listItemsLayout": "Layout de Items de Lista",
@@ -1780,6 +1884,7 @@
       "content": "Contenido",
       "contentDesc": "Configura los bloques y campos de la card"
     },
+    "untitled": "Sin Título",
     "actions": {
       "next": "Siguiente",
       "back": "Atrás",

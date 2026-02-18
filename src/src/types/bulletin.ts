@@ -8,8 +8,14 @@ import type { Field } from "./template";
 
 // Tipo de estado del boletín
 // Los valores posibles vienen de la API (StatusBulletin enum)
-// Valores esperados: "draft" | "published"
-export type BulletinStatus = string;
+// Valores esperados: "draft" | "pending_review" | "review" | "rejected" | "published" | "archived"
+export type BulletinStatus =
+  | "draft"
+  | "pending_review"
+  | "review"
+  | "rejected"
+  | "published"
+  | "archived";
 
 // ============================================
 // BULLETIN DATA STRUCTURES (Similar a Template pero con valores)

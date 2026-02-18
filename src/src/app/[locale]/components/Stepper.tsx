@@ -36,13 +36,13 @@ export function Stepper({
                 onClick={() => onStepClick?.(index)}
                 disabled={!onStepClick}
                 className={`
-                  flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all flex-shrink-0
+                  flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all shrink-0
                   ${
                     index < currentStepIndex
                       ? "bg-[#283618]/70 border-[#283618]/70 text-[#fefae0]"
                       : index === currentStepIndex
-                      ? "border-[#283618] bg-[#283618] text-[#fefae0]"
-                      : "border-gray-300 bg-white text-[#283618]/50"
+                        ? "border-[#283618] bg-[#283618] text-[#fefae0]"
+                        : "border-gray-300 bg-white text-[#283618]/50"
                   }
                   ${
                     onStepClick

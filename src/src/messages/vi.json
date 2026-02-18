@@ -2,6 +2,7 @@
   "Navbar": {
     "templates": "Biểu mẫu",
     "bulletins": "Bản tin",
+    "reviews": "Rà soát",
     "cards": "Thẻ",
     "visualResources": "Tài liệu trực quan",
     "content": "Nội dung",
@@ -307,6 +308,7 @@
       "save": "Lưu bản nháp",
       "publish": "Xuất bản",
       "publishing": "Xuất bản...",
+      "sendToReview": "Gửi để rà soát",
       "export": "Xuất file"
     },
     "selectTemplate": {
@@ -682,7 +684,26 @@
     "noResults": "Không tìm thấy bản tin nào",
     "loading": "Đang tải bản tin...",
     "createFirst": "Tạo bản tin mới",
-    "by": "Bởi"
+    "by": "Bởi",
+    "status": {
+      "draft": "Bản nháp",
+      "pending_review": "Chờ rà soát",
+      "review": "Đang rà soát",
+      "rejected": "Bị từ chối",
+      "published": "Đã xuất bản",
+      "archived": "Đã lưu trữ"
+    },
+    "reviews": {
+      "title": "Rà soát",
+      "subtitle": "Bản tin chờ rà soát",
+      "loading": "Đang tải...",
+      "noResults": "Không có rà soát",
+      "retry": "Thử lại",
+      "searchPlaceholder": "Tìm kiếm rà soát...",
+      "approve": "Phê duyệt",
+      "reject": "Từ chối",
+      "comment": "Bình luận"
+    }
   },
   "CreateRole": {
     "crud": {
@@ -758,6 +779,9 @@
     "connectionError": "Lỗi kết nối khi tạo vai trò"
   },
   "CreateTemplate": {
+    "autosave": {
+      "lastSaved": "Lần lưu cuối:"
+    },
     "sections": {
       "section": {
         "duplicate": "Tạo bản sao",
@@ -881,10 +905,6 @@
         "usingGlobalHelp": "Mục này đang sử dụng chân trang toàn cục. Nhấp vào \"Tùy chỉnh\" để tạo phiên bản cụ thể mà bạn có thể tự chỉnh sửa.",
         "confirmRestore": "Bạn có chắc chắn muốn xóa tùy chỉnh và quay lại chân trang toàn cục không?"
       },
-      "fieldEditor": {
-        "title": "Cấu hình trường thông tin",
-        "closeEditor": "Đóng trình chỉnh sửa"
-      },
       "newSection": "Phần mới",
       "newBlock": "Khối mới"
     },
@@ -938,6 +958,64 @@
       "description": "Xác định dữ liệu chính cho biểu mẫu của bạn"
     },
     "fieldEditor": {
+      "closeEditor": "Đóng trình chỉnh sửa",
+      "editor": {
+        "deleteDialog": {
+          "title": "Xác nhận xóa",
+          "message": "Bạn có chắc chắn muốn xóa mục này không? Hành động này không thể hoàn tác.",
+          "confirm": "Xóa",
+          "cancel": "Hủy"
+        },
+        "selectionTypes": {
+          "template": "Mẫu",
+          "section": "Phần",
+          "block": "Khối",
+          "header": "Đầu trang",
+          "footer": "Chân trang",
+          "field": "Trường",
+          "header_field": "Trường Đầu trang",
+          "footer_field": "Trường Chân trang"
+        },
+        "untitled": "Không có tiêu đề",
+        "displayName": "Tên hiển thị",
+        "id": "ID",
+        "addBlock": "Thêm khối",
+        "addField": "Thêm trường",
+        "addSection": "+ Thêm phần mới",
+        "styles": {
+          "section": "Kiểu phần",
+          "block": "Kiểu khối",
+          "field": "Kiểu trường",
+          "header": "Kiểu đầu trang",
+          "footer": "Kiểu chân trang"
+        },
+        "fieldType": "Loại trường",
+        "visibility": {
+          "form": "Hiển thị trong biểu mẫu",
+          "bulletin": "Hiển thị trong bản tin"
+        },
+        "configuration": "Cấu hình",
+        "optionsLabel": "Tùy chọn (ngăn cách bằng dấu phẩy)",
+        "subtype": "Tiểu loại",
+        "subtypes": {
+          "short": "Ngắn",
+          "long": "Dài"
+        },
+        "formConfig": {
+          "label": "Nhãn",
+          "labelPlaceholder": "Nhãn hiển thị cho người dùng...",
+          "description": "Mô tả",
+          "descriptionPlaceholder": "Văn bản trợ giúp cho người dùng...",
+          "required": "Trường bắt buộc"
+        },
+        "bulletinConfig": {
+          "defaultValue": "Giá trị mặc định",
+          "contentValue": "Nội dung/Giá trị",
+          "valuePlaceholder": "Nhập giá trị..."
+        },
+        "saving": "Đang lưu...",
+        "saveTemplate": "Lưu mẫu"
+      },
       "cancel": "Hủy bỏ",
       "actions": {
         "cancel": "Hủy bỏ",
@@ -1145,17 +1223,29 @@
         }
       },
       "dateRangeConfig": {
-        "startDateDescription": "Miêu tả",
-        "endDateDescription": "Miêu tả",
-        "startDateLabel": "Nhãn",
-        "endDateLabel": "Nhãn",
-        "format": "Định dạng ngày tháng",
+        "showMoonPhases": "Hiển thị chu kỳ mặt trăng",
+        "showMoonPhasesHelp": "Hiển thị biểu tượng chu kỳ mặt trăng bên cạnh mỗi ngày",
+        "moonPhasesConfigTitle": "Cấu hình chu kỳ mặt trăng",
+        "moonPhasesConfigHelp": "Chọn chu kỳ mặt trăng cho mỗi ngày (chỉ khi biểu mẫu bị vô hiệu hóa)",
+        "startMoonPhase": "Chu kỳ mặt trăng ngày bắt đầu",
+        "endMoonPhase": "Chu kỳ mặt trăng ngày kết thúc",
+        "moonPhases": {
+          "full": "Trăng tròn",
+          "new": "Trăng non",
+          "waxingCrescent": "Trăng lưỡi liềm đầu tháng",
+          "waningCrescent": "Trăng lưỡi liềm cuối tháng"
+        },
         "startDateSection": "Ngày bắt đầu",
+        "startDateLabel": "Nhãn",
         "startDateLabelPlaceholder": "Ví dụ: Ngày bắt đầu, Từ, v.v.",
+        "startDateDescription": "Miêu tả",
         "startDateDescriptionPlaceholder": "Mô tả ngày bắt đầu",
         "endDateSection": "Ngày kết thúc",
+        "endDateLabel": "Nhãn",
         "endDateLabelPlaceholder": "Ví dụ: Ngày kết thúc, Đến, v.v.",
-        "endDateDescriptionPlaceholder": "Mô tả ngày kết thúc"
+        "endDateDescription": "Miêu tả",
+        "endDateDescriptionPlaceholder": "Mô tả ngày kết thúc",
+        "format": "Định dạng ngày tháng"
       },
       "basicInfo": "Thông tin cơ bản",
       "pageNumberConfig": {
@@ -1392,6 +1482,13 @@
           "center": "Trung tâm",
           "left": "Bên trái",
           "right": "Phải"
+        },
+        "alignItems": "Căn chỉnh mục",
+        "alignItemsOptions": {
+          "start": "Bắt đầu",
+          "end": "Kết thúc",
+          "center": "Trung tâm",
+          "stretch": "Kéo giãn"
         },
         "textAlign": {
           "options": {

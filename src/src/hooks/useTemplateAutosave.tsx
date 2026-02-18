@@ -25,6 +25,11 @@ export function useTemplateAutosave(
   const isAutosaveEnabled = useRef(true); // Flag para controlar si el autosave está habilitado
   const [lastSaved, setLastSaved] = useState<Date | undefined>(undefined);
 
+  // Asegurar que el autosave se reactive al montar o cambiar el templateId
+  useEffect(() => {
+    isAutosaveEnabled.current = true;
+  }, [templateId]);
+  
   // Guardar en localStorage
   const saveToLocalStorage = useCallback(() => {
     // No guardar si el autosave está deshabilitado
@@ -98,19 +103,24 @@ export function useTemplateAutosave(
     if (!hasRestoredRef.current && onRestore) {
       const saved = restoreFromLocalStorage();
       if (saved && hasSignificantContent(saved.data)) {
-        // Preguntar al usuario si quiere restaurar
-        const shouldRestore = window.confirm(
-          `Se encontró un borrador guardado el ${new Date(
-            saved.lastSaved
-          ).toLocaleString()}.\n\n¿Deseas continuar desde donde lo dejaste?`
-        );
+        // Use setTimeout to ensure this runs after initial render cycle
+        setTimeout(() => {
+            // Preguntar al usuario si quiere restaurar
+            const shouldRestore = window.confirm(
+            `Se encontró un borrador guardado el ${new Date(
+                saved.lastSaved
+            ).toLocaleString()}.\n\n¿Deseas continuar desde donde lo dejaste?`
+            );
 
-        if (shouldRestore) {
-          onRestore(saved.data, saved.currentStep);
-          console.log("♻️ Template restored from autosave");
-        } else {
-          clearAutosave();
-        }
+            if (shouldRestore) {
+            onRestore(saved.data, saved.currentStep);
+            console.log("♻️ Template restored from autosave");
+            } else {
+            clearAutosave();
+             // Important: If declining restoration, we do NOT want to overwrite current correct data with empty state, but UI shouldn't break.
+             // If we decline, we stick to the `data` passed in props (initialData)
+            }
+        }, 100);
       }
       hasRestoredRef.current = true;
     }

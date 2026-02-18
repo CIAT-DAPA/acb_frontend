@@ -53,19 +53,29 @@ function getJustifyClass(justifyContent?: string): string {
  * Helper function para generar estilos de borde según los lados seleccionados
  */
 function getBorderStyles(
-  styleConfig: StyleConfig | undefined
+  styleConfig: StyleConfig | undefined,
 ): React.CSSProperties {
   const styles: React.CSSProperties = {};
 
-  if (!styleConfig?.border_width) {
-    // Si hay border_radius sin border_width, aplicarlo igual
-    if (styleConfig?.border_radius) {
-      styles.borderRadius = styleConfig.border_radius;
-    }
+  // If no style config, return empty
+  if (!styleConfig) return styles;
+
+  if (styleConfig.border_radius) {
+    styles.borderRadius = styleConfig.border_radius;
+  }
+
+  // If no border width and no border sides defined, return just radius
+  if (!styleConfig.border_width && !styleConfig.border_sides) {
     return styles;
   }
 
-  const borderValue = `${styleConfig.border_width} ${
+  // Default width to 1px if sides are selected but no width specified
+  const borderWidth =
+    styleConfig.border_width || (styleConfig.border_sides ? "1px" : undefined);
+
+  if (!borderWidth) return styles;
+
+  const borderValue = `${borderWidth} ${
     styleConfig.border_style || "solid"
   } ${styleConfig.border_color || "#000000"}`;
   const borderSides = styleConfig.border_sides || "all";
@@ -82,10 +92,6 @@ function getBorderStyles(
     if (sides.includes("right")) styles.borderRight = borderValue;
   }
 
-  if (styleConfig.border_radius) {
-    styles.borderRadius = styleConfig.border_radius;
-  }
-
   return styles;
 }
 
@@ -99,6 +105,20 @@ interface TemplatePreviewProps {
   onPageChange?: (pageIndex: number) => void; // Callback cuando cambia la página
   hidePagination?: boolean; // Ocultar controles de paginación
   cardsMetadata?: Record<string, Card>; // Diccionario de cards precargadas para evitar HTTP calls
+  reviewMode?: boolean;
+  onElementClick?: (
+    type:
+      | "section"
+      | "block"
+      | "field"
+      | "header"
+      | "footer"
+      | "header_field"
+      | "footer_field",
+    id: string,
+    e: React.MouseEvent,
+  ) => void;
+  selectedElementId?: string | null;
 }
 
 // Constantes para estilos repetidos
@@ -118,6 +138,9 @@ export function TemplatePreview({
   onPageChange,
   hidePagination = false,
   cardsMetadata,
+  reviewMode = false,
+  onElementClick,
+  selectedElementId,
 }: TemplatePreviewProps) {
   const t = useTranslations("CreateTemplate.preview");
   const pathname = usePathname();
@@ -193,7 +216,7 @@ export function TemplatePreview({
       } catch (error) {
         console.error(
           `Error loading cards (attempt ${retryCount + 1}):`,
-          error
+          error,
         );
 
         if (isMounted) {
@@ -347,7 +370,8 @@ export function TemplatePreview({
     key: string | number,
     containerStyle?: StyleConfig,
     layout: "vertical" | "horizontal" = "vertical",
-    pageInfo?: { currentPage: number; totalPages: number }
+    pageInfo?: { currentPage: number; totalPages: number },
+    fieldId?: string,
   ) => {
     // Usar herencia de estilos
     const effectiveStyles = getEffectiveFieldStyles(field, containerStyle);
@@ -379,6 +403,8 @@ export function TemplatePreview({
       padding: effectiveStyles.padding,
       margin: effectiveStyles.margin,
       gap: effectiveStyles.gap,
+      // alignItems is handled specifically in fields like List where it makes sense
+      iconSize: effectiveStyles.icon_size, // Propiedad personalizada para referencia
       ...getBorderStyles(effectiveStyles),
     };
 
@@ -447,7 +473,10 @@ export function TemplatePreview({
               selectedIcon.startsWith("/") ? (
                 <SmartIcon
                   src={selectedIcon}
-                  style={{ width: `${iconSize}px` }}
+                  style={{
+                    width: `${iconSize}px`,
+                    height: `${iconSize}px`, // Asegurar altura igual al ancho
+                  }}
                   color={useOriginalColor ? undefined : fieldStyles.color}
                   preserveOriginalColors={useOriginalColor}
                   alt="Icon"
@@ -488,7 +517,7 @@ export function TemplatePreview({
         if (field.value) {
           // Buscar el icono correspondiente al valor seleccionado
           const selectedIndex = selectOptions.findIndex(
-            (opt: string) => opt === field.value
+            (opt: string) => opt === field.value,
           );
           if (selectedIndex !== -1) {
             iconToShow = selectIconsUrl[selectedIndex] || null;
@@ -503,15 +532,15 @@ export function TemplatePreview({
         }
 
         // Mapear text-align a justify-content
-        const textAlign = effectiveStyles.text_align || "center";
+        const selectTextAlign = effectiveStyles.text_align || "center";
         const justifyClass =
-          textAlign === "left"
+          selectTextAlign === "left"
             ? "justify-start"
-            : textAlign === "right"
-            ? "justify-end"
-            : "justify-center";
+            : selectTextAlign === "right"
+              ? "justify-end"
+              : "justify-center";
 
-        const selectIconSize = effectiveStyles.icon_size || 32;
+        const selectIconSize = (field.style_config as any)?.icon_size || 32;
         const showLabel = (field.field_config as any)?.show_label !== false;
         const selectUseOriginalColor =
           effectiveStyles.icon_use_original_color === true;
@@ -519,7 +548,7 @@ export function TemplatePreview({
         return (
           <div
             key={key}
-            style={fieldStyles}
+            style={{ ...fieldStyles, display: "flex", gap: "8px" }}
             className={`flex items-center gap-2 ${justifyClass}`}
           >
             {iconToShow ? (
@@ -617,10 +646,10 @@ export function TemplatePreview({
             field.value.end_date
           ) {
             const startDateVal = parseLocalDate(
-              field.value.start_date as string | Date
+              field.value.start_date as string | Date,
             );
             const endDateVal = parseLocalDate(
-              field.value.end_date as string | Date
+              field.value.end_date as string | Date,
             );
 
             const startDay = startDateVal.getDate();
@@ -655,13 +684,13 @@ export function TemplatePreview({
           if (field.value.start_date) {
             startDateDisplay = formatDateValue(
               field.value.start_date as Date | string,
-              dateRangeFormat
+              dateRangeFormat,
             );
           }
           if (field.value.end_date) {
             endDateDisplay = formatDateValue(
               field.value.end_date as Date | string,
-              dateRangeFormat
+              dateRangeFormat,
             );
           }
         }
@@ -764,47 +793,65 @@ export function TemplatePreview({
                     }}
                   >
                     <tr>
-                      {Object.values(field.field_config.item_schema).map(
-                        (schemaField: any, index, array) => (
-                          <th
-                            key={index}
-                            className="p-2 text-left"
-                            style={{
-                              color:
-                                effectiveStyles.header_text_color ||
-                                effectiveStyles.primary_color,
-                              fontFamily: effectiveStyles.font
-                                ? getFontFamily(effectiveStyles.font)
-                                : undefined,
-                              fontSize: effectiveStyles.header_font_size
-                                ? `${effectiveStyles.header_font_size}px`
-                                : effectiveStyles.font_size
-                                ? `${effectiveStyles.font_size}px`
-                                : undefined,
-                              fontWeight:
-                                effectiveStyles.header_font_weight || "bold",
-                              padding: effectiveStyles.padding || "8px",
-                              borderBottomWidth:
-                                effectiveStyles.border_width || "1px",
-                              borderBottomStyle:
-                                (effectiveStyles.border_style as any) ||
-                                "solid",
-                              borderBottomColor:
-                                effectiveStyles.border_color || "#e5e7eb",
-                              borderRightWidth:
-                                index === array.length - 1
-                                  ? "0px"
-                                  : effectiveStyles.border_width || "1px",
-                              borderRightStyle:
-                                (effectiveStyles.border_style as any) ||
-                                "solid",
-                              borderRightColor:
-                                effectiveStyles.border_color || "#e5e7eb",
-                            }}
-                          >
-                            {schemaField.display_name || schemaField.label}
-                          </th>
-                        )
+                      {Object.entries(field.field_config.item_schema).map(
+                        (
+                          [schemaKey, schemaField]: [string, any],
+                          index,
+                          array,
+                        ) => {
+                          const subfieldId = `${fieldId}-subfield-${schemaKey}`;
+                          const isSubfieldSelected =
+                            selectedElementId === subfieldId;
+
+                          return (
+                            <th
+                              key={index}
+                              className={`p-2 text-left ${reviewMode ? "cursor-pointer hover:bg-black/5" : ""} ${isSubfieldSelected ? "ring-2 ring-emerald-500 bg-emerald-50 relative z-30" : ""}`}
+                              onDoubleClick={(e) => {
+                                if (reviewMode && fieldId && onElementClick) {
+                                  e.stopPropagation();
+                                  // Usamos un formato especial para indicar que es un sub-field del schema
+                                  // ID format: field-{s}-{b}-{f}-subfield-{schemaKey}
+                                  onElementClick("field", subfieldId, e);
+                                }
+                              }}
+                              style={{
+                                color:
+                                  effectiveStyles.header_text_color ||
+                                  effectiveStyles.primary_color,
+                                fontFamily: effectiveStyles.font
+                                  ? getFontFamily(effectiveStyles.font)
+                                  : undefined,
+                                fontSize: effectiveStyles.header_font_size
+                                  ? `${effectiveStyles.header_font_size}px`
+                                  : effectiveStyles.font_size
+                                    ? `${effectiveStyles.font_size}px`
+                                    : undefined,
+                                fontWeight:
+                                  effectiveStyles.header_font_weight || "bold",
+                                padding: effectiveStyles.padding || "8px",
+                                borderBottomWidth:
+                                  effectiveStyles.border_width || "1px",
+                                borderBottomStyle:
+                                  (effectiveStyles.border_style as any) ||
+                                  "solid",
+                                borderBottomColor:
+                                  effectiveStyles.border_color || "#e5e7eb",
+                                borderRightWidth:
+                                  index === array.length - 1
+                                    ? "0px"
+                                    : effectiveStyles.border_width || "1px",
+                                borderRightStyle:
+                                  (effectiveStyles.border_style as any) ||
+                                  "solid",
+                                borderRightColor:
+                                  effectiveStyles.border_color || "#e5e7eb",
+                              }}
+                            >
+                              {schemaField.display_name || schemaField.label}
+                            </th>
+                          );
+                        },
                       )}
                     </tr>
                   </thead>
@@ -817,10 +864,20 @@ export function TemplatePreview({
                           ([fieldKey, itemFieldSchema], fieldIndex, array) => {
                             const itemFieldValue = item[fieldKey];
                             const fieldSchema = itemFieldSchema as Field;
+                            const subfieldId = `${fieldId}-subfield-${fieldKey}`;
+                            const isSubfieldSelected =
+                              selectedElementId === subfieldId;
+
                             return (
                               <td
                                 key={fieldIndex}
-                                className="p-2 align-top"
+                                className={`p-2 align-top ${reviewMode ? "cursor-pointer hover:bg-black/5" : ""} ${isSubfieldSelected ? "ring-2 ring-emerald-500 bg-emerald-50 relative z-30" : ""}`}
+                                onDoubleClick={(e) => {
+                                  if (reviewMode && fieldId && onElementClick) {
+                                    e.stopPropagation();
+                                    onElementClick("field", subfieldId, e);
+                                  }
+                                }}
                                 style={{
                                   padding: effectiveStyles.padding || "8px",
                                   borderBottomWidth:
@@ -850,11 +907,11 @@ export function TemplatePreview({
                                   } as Field,
                                   `${itemIndex}-${fieldIndex}`,
                                   effectiveStyles,
-                                  "horizontal"
+                                  "horizontal",
                                 )}
                               </td>
                             );
-                          }
+                          },
                         )}
                     </tr>
                   ))}
@@ -877,14 +934,14 @@ export function TemplatePreview({
         const getItemLayoutClasses = () => {
           switch (listItemsLayout) {
             case "horizontal":
-              return "flex flex-wrap items-center justify-between";
+              return "flex flex-wrap justify-between";
             case "grid-2":
               return "grid w-full";
             case "grid-3":
               return "grid w-full";
             case "vertical":
             default:
-              return "";
+              return "flex flex-col";
           }
         };
 
@@ -905,7 +962,7 @@ export function TemplatePreview({
           backgroundColor: effectiveStyles.background_color || "transparent",
           backgroundImage: effectiveStyles.background_image
             ? `url("${getBackgroundImageUrl(
-                effectiveStyles.background_image
+                effectiveStyles.background_image,
               )}")`
             : undefined,
           backgroundSize: "cover",
@@ -952,10 +1009,12 @@ export function TemplatePreview({
                   className={
                     listItemsLayout === "horizontal"
                       ? "flex items-start"
-                      : "flex items-start w-full"
+                      : "flex w-full"
                   }
                   style={{
                     ...listItemStyles,
+                    // Apply alignItems to the list item wrapper (which contains the bullet/number)
+                    alignItems: effectiveStyles.align_items || "start",
                     gap: "8px", // Gap fijo entre bullet y contenido
                   }}
                 >
@@ -980,6 +1039,7 @@ export function TemplatePreview({
                     style={{
                       ...getGridColumnsStyle(),
                       gap: effectiveStyles.gap || undefined,
+                      // alignItems: effectiveStyles.align_items || "center", // Removed, now applied to parent
                     }}
                   >
                     {field.field_config?.item_schema &&
@@ -1021,16 +1081,32 @@ export function TemplatePreview({
                             }
                           }
 
+                          const subfieldId = `${fieldId}-subfield-${fieldKey}`;
+                          const isSubfieldSelected =
+                            selectedElementId === subfieldId;
+
                           return (
                             <div
                               key={fieldIndex}
                               className={
-                                isGridLayout
-                                  ? `flex gap-1 items-center ${justifyClass} min-w-0`
+                                (isGridLayout
+                                  ? `flex gap-1 items-center ${justifyClass} min-w-0 ${reviewMode ? "cursor-pointer hover:bg-black/5 p-1 rounded transition-colors" : ""}`
                                   : shouldExpand
-                                  ? "flex-1 min-w-[120px]"
-                                  : "shrink-0"
+                                    ? `flex-1 min-w-[120px] ${reviewMode ? "cursor-pointer hover:bg-black/5 p-1 rounded transition-colors" : ""}`
+                                    : `shrink-0 ${reviewMode ? "cursor-pointer hover:bg-black/5 p-1 rounded transition-colors" : ""}`) +
+                                (isSubfieldSelected
+                                  ? " ring-2 ring-emerald-500 bg-emerald-50 relative z-30"
+                                  : "")
                               }
+                              onClick={(e) => {
+                                // Dejar que el click se propague para seleccionar el padre (Lista)
+                              }}
+                              onDoubleClick={(e) => {
+                                if (reviewMode && fieldId && onElementClick) {
+                                  e.stopPropagation();
+                                  onElementClick("field", subfieldId, e);
+                                }
+                              }}
                             >
                               {renderField(
                                 {
@@ -1039,11 +1115,11 @@ export function TemplatePreview({
                                 } as Field,
                                 `${itemIndex}-${fieldIndex}`,
                                 containerStyle,
-                                "horizontal"
+                                "horizontal",
                               )}
                             </div>
                           );
-                        }
+                        },
                       )
                     ) : (
                       <div className="text-sm">{JSON.stringify(item)}</div>
@@ -1081,8 +1157,8 @@ export function TemplatePreview({
                   paramValue !== ""
                     ? paramValue
                     : paramConfig.type === "number"
-                    ? "-"
-                    : "-";
+                      ? "-"
+                      : "-";
 
                 // Estilos individuales del parámetro
                 const paramStyles: React.CSSProperties = {
@@ -1092,8 +1168,8 @@ export function TemplatePreview({
                   fontSize: paramConfig.style_config?.font_size
                     ? `${paramConfig.style_config.font_size}px`
                     : effectiveStyles.font_size
-                    ? `${effectiveStyles.font_size}px`
-                    : undefined,
+                      ? `${effectiveStyles.font_size}px`
+                      : undefined,
                   fontWeight:
                     paramConfig.style_config?.font_weight ||
                     effectiveStyles.font_weight ||
@@ -1124,10 +1200,10 @@ export function TemplatePreview({
           typeof imageValue === "string"
             ? imageValue
             : typeof imageValue === "object" &&
-              imageValue &&
-              "url" in imageValue
-            ? (imageValue as any).url
-            : undefined;
+                imageValue &&
+                "url" in imageValue
+              ? (imageValue as any).url
+              : undefined;
         const itemImageLabel =
           typeof imageValue === "object" && imageValue && "label" in imageValue
             ? (imageValue as any).label
@@ -1404,7 +1480,7 @@ export function TemplatePreview({
                 ...getBorderStyles(block.style_config),
                 ...(effectiveBlockStyles.background_image && {
                   backgroundImage: `url(${getBackgroundImageUrl(
-                    effectiveBlockStyles.background_image
+                    effectiveBlockStyles.background_image,
                   )})`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
@@ -1438,7 +1514,7 @@ export function TemplatePreview({
                       safeField,
                       `card-${cardData.cardId}-block-${blockIndex}-field-${fieldIndex}`,
                       block.style_config,
-                      (block as any).layout || "vertical"
+                      (block as any).layout || "vertical",
                     );
                   })}
                 </div>
@@ -1511,7 +1587,7 @@ export function TemplatePreview({
 
         // Extraer día del mes de una fecha string (YYYY-MM-DD)
         const getDayFromDate = (
-          dateString: string | undefined
+          dateString: string | undefined,
         ): number | null => {
           if (!dateString) return null;
           const parts = dateString.split("-");
@@ -1553,7 +1629,7 @@ export function TemplatePreview({
         // Función para obtener la transición entre dos fases y su número de imágenes
         const getTransitionInfo = (
           fromPhase: MoonPhase,
-          toPhase: MoonPhase
+          toPhase: MoonPhase,
         ): { folder: string; images: number } | null => {
           if (fromPhase === "cuartoCreciente" && toPhase === "llena")
             return { folder: "crecToLlena", images: 7 };
@@ -1601,7 +1677,7 @@ export function TemplatePreview({
           endDay: number,
           transitionFolder: string,
           totalImages: number,
-          reverse: boolean = false
+          reverse: boolean = false,
         ) => {
           const daysBetween = endDay - startDay + 1;
 
@@ -1664,7 +1740,7 @@ export function TemplatePreview({
 
             const transitionInfo = getTransitionInfo(
               previousPhase,
-              firstPhase.phase
+              firstPhase.phase,
             );
             if (transitionInfo) {
               fillTransitionDays(
@@ -1672,7 +1748,7 @@ export function TemplatePreview({
                 firstPhase.day - 1,
                 transitionInfo.folder,
                 transitionInfo.images,
-                true
+                true,
               );
             }
           }
@@ -1690,7 +1766,7 @@ export function TemplatePreview({
             if (endDay >= startDay) {
               const transitionInfo = getTransitionInfo(
                 currentPhase.phase,
-                nextPhase.phase
+                nextPhase.phase,
               );
               if (transitionInfo) {
                 fillTransitionDays(
@@ -1698,7 +1774,7 @@ export function TemplatePreview({
                   endDay,
                   transitionInfo.folder,
                   transitionInfo.images,
-                  false
+                  false,
                 );
               }
             }
@@ -1718,7 +1794,7 @@ export function TemplatePreview({
 
             const transitionInfo = getTransitionInfo(
               lastPhase.phase,
-              nextPhase
+              nextPhase,
             );
             if (transitionInfo) {
               fillTransitionDays(
@@ -1726,7 +1802,7 @@ export function TemplatePreview({
                 daysInMonth,
                 transitionInfo.folder,
                 transitionInfo.images,
-                false
+                false,
               );
             }
           }
@@ -1759,7 +1835,7 @@ export function TemplatePreview({
         const firstDayOfMonth = new Date(
           selectedYear,
           MONTH_INDEX[selectedMonth],
-          1
+          1,
         );
         const startDayOfWeek = firstDayOfMonth.getDay(); // 0 = Domingo, 1 = Lunes, etc.
 
@@ -1930,7 +2006,7 @@ export function TemplatePreview({
 
   // Función para obtener info de paginación de una sección específica
   const getSectionPagination = (
-    section: Section
+    section: Section,
   ): {
     totalPages: number;
     fieldWithPagination?: PaginationInfo;
@@ -2047,7 +2123,7 @@ export function TemplatePreview({
     const startIndex = currentPageIndex * fieldWithPagination.maxItemsPerPage;
     const endIndex = Math.min(
       startIndex + fieldWithPagination.maxItemsPerPage,
-      fieldWithPagination.totalItems
+      fieldWithPagination.totalItems,
     );
 
     // Clonar la sección
@@ -2118,16 +2194,25 @@ export function TemplatePreview({
                   headerConfig.style_config?.fields_layout === "vertical"
                     ? "flex flex-col"
                     : `flex items-center ${getJustifyClass(
-                        headerConfig.style_config?.justify_content
+                        headerConfig.style_config?.justify_content,
                       )}`
+                } ${
+                  reviewMode
+                    ? "hover:ring-2 hover:ring-purple-400 cursor-pointer relative group/header box-decoration-slice"
+                    : ""
                 }`}
+                onClick={
+                  reviewMode && onElementClick
+                    ? (e) => onElementClick("header", "header-global", e)
+                    : undefined
+                }
                 style={{
                   backgroundColor:
                     headerConfig.style_config?.background_color ||
                     "transparent",
                   backgroundImage: headerConfig.style_config?.background_image
                     ? `url("${getBackgroundImageUrl(
-                        headerConfig.style_config.background_image
+                        headerConfig.style_config.background_image,
                       )}")`
                     : undefined,
                   backgroundSize: "cover",
@@ -2156,19 +2241,55 @@ export function TemplatePreview({
                   ...getBorderStyles(headerConfig.style_config),
                 }}
               >
+                {reviewMode && (
+                  <div className="absolute top-0 left-0 bg-purple-400 text-white text-[10px] px-1 rounded-br opacity-0 group-hover/header:opacity-100 transition-opacity z-20 pointer-events-none">
+                    Header
+                  </div>
+                )}
                 {(() => {
-                  return headerConfig.fields.map((field, index) =>
-                    renderField(
+                  return headerConfig.fields.map((field, index) => {
+                    const fieldId = `header-global-${index}`;
+                    const rendered = renderField(
                       field,
-                      `header-global-${index}`,
+                      fieldId,
                       headerConfig.style_config,
                       headerConfig.style_config?.fields_layout || "horizontal",
                       {
                         currentPage: absolutePageNumber - 1,
                         totalPages: totalDocumentPages,
-                      }
-                    )
-                  );
+                      },
+                    );
+
+                    if (reviewMode && onElementClick) {
+                      return (
+                        <div
+                          key={`review-wrapper-${fieldId}`}
+                          onClick={(e) =>
+                            onElementClick("header_field", fieldId, e)
+                          }
+                          className="relative hover:ring-2 hover:ring-yellow-400 cursor-pointer rounded transition-all group/field"
+                        >
+                          {rendered}
+                          <div className="absolute -top-2 -right-2 bg-yellow-400 text-white rounded-full p-1 opacity-0 group-hover/field:opacity-100 transition-opacity z-10 shadow-sm">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="12"
+                              height="12"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return rendered;
+                  });
                 })()}
               </div>
             )}
@@ -2202,7 +2323,7 @@ export function TemplatePreview({
                         if (field.value) {
                           // Buscar el fondo correspondiente al valor seleccionado
                           const selectedIndex = bgOptions.findIndex(
-                            (opt: string) => opt === field.value
+                            (opt: string) => opt === field.value,
                           );
                           if (selectedIndex !== -1 && bgUrls[selectedIndex]) {
                             dynamicBackgroundUrl = bgUrls[selectedIndex];
@@ -2234,10 +2355,10 @@ export function TemplatePreview({
                     backgroundImage: dynamicBackgroundUrl
                       ? `url("${getBackgroundImageUrl(dynamicBackgroundUrl)}")`
                       : section.style_config?.background_image
-                      ? `url("${getBackgroundImageUrl(
-                          section.style_config.background_image
-                        )}")`
-                      : undefined,
+                        ? `url("${getBackgroundImageUrl(
+                            section.style_config.background_image,
+                          )}")`
+                        : undefined,
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                     backgroundRepeat: "no-repeat",
@@ -2333,14 +2454,14 @@ export function TemplatePreview({
                   const activeHeaderConfig = cardHeaderConfig
                     ? cardHeaderConfig
                     : forceGlobalHeader
-                    ? hasGlobalHeader
-                      ? headerConfig
-                      : null
-                    : hasSectionHeader
-                    ? section.header_config
-                    : hasGlobalHeader
-                    ? headerConfig
-                    : null;
+                      ? hasGlobalHeader
+                        ? headerConfig
+                        : null
+                      : hasSectionHeader
+                        ? section.header_config
+                        : hasGlobalHeader
+                          ? headerConfig
+                          : null;
 
                   // Determinar qué footer usar: card > sección específica (si no forceGlobalHeader) > global
                   const hasSectionFooter =
@@ -2354,28 +2475,42 @@ export function TemplatePreview({
                   const activeFooterConfig = cardFooterConfig
                     ? cardFooterConfig
                     : forceGlobalHeader
-                    ? hasGlobalFooter
-                      ? footerConfig
-                      : null
-                    : hasSectionFooter
-                    ? section.footer_config
-                    : hasGlobalFooter
-                    ? footerConfig
-                    : null;
+                      ? hasGlobalFooter
+                        ? footerConfig
+                        : null
+                      : hasSectionFooter
+                        ? section.footer_config
+                        : hasGlobalFooter
+                          ? footerConfig
+                          : null;
 
                   return (
                     <>
                       {/* Header con lógica de prioridad */}
                       {activeHeaderConfig && (
                         <div
+                          onClick={
+                            reviewMode && onElementClick
+                              ? (e) =>
+                                  onElementClick(
+                                    "header",
+                                    `header-${sectionIndex}`,
+                                    e,
+                                  )
+                              : undefined
+                          }
                           className={`w-full ${
-                            activeHeaderConfig.style_config?.fields_layout ===
-                            "vertical"
+                            activeHeaderConfig.style_config?.fields_layout !==
+                            "horizontal"
                               ? "flex flex-col"
                               : `flex items-center ${getJustifyClass(
                                   activeHeaderConfig.style_config
-                                    ?.justify_content
+                                    ?.justify_content,
                                 )}`
+                          } ${
+                            reviewMode
+                              ? "hover:ring-2 hover:ring-purple-400 cursor-pointer relative group/header box-decoration-slice"
+                              : ""
                           }`}
                           style={{
                             backgroundColor:
@@ -2385,7 +2520,7 @@ export function TemplatePreview({
                               ?.background_image
                               ? `url("${getBackgroundImageUrl(
                                   activeHeaderConfig.style_config
-                                    .background_image
+                                    .background_image,
                                 )}")`
                               : undefined,
                             backgroundSize: "cover",
@@ -2422,6 +2557,11 @@ export function TemplatePreview({
                             ...getBorderStyles(activeHeaderConfig.style_config),
                           }}
                         >
+                          {reviewMode && (
+                            <div className="absolute top-0 left-0 bg-purple-400 text-white text-[10px] px-1 rounded-br opacity-0 group-hover/header:opacity-100 transition-opacity z-20 pointer-events-none">
+                              Header
+                            </div>
+                          )}
                           {activeHeaderConfig.fields.map((field, index) => {
                             // Si estamos renderizando el header de una card y el campo tiene form: true, usar fieldValues
                             const fieldToRender =
@@ -2434,17 +2574,47 @@ export function TemplatePreview({
                                   }
                                 : field;
 
-                            return renderField(
+                            const fieldId = `header-${sectionIndex}-${index}`;
+                            const rendered = renderField(
                               fieldToRender,
-                              `header-${sectionIndex}-${index}`,
+                              fieldId,
                               activeHeaderConfig.style_config,
                               activeHeaderConfig.style_config?.fields_layout ||
-                                "horizontal",
+                                "vertical",
                               {
                                 currentPage: absolutePageNumber - 1,
                                 totalPages: totalDocumentPages,
-                              }
+                              },
                             );
+                            if (reviewMode && onElementClick) {
+                              return (
+                                <div
+                                  key={`review-wrapper-${fieldId}`}
+                                  onClick={(e) =>
+                                    onElementClick("header_field", fieldId, e)
+                                  }
+                                  className="relative hover:ring-2 hover:ring-yellow-400 cursor-pointer rounded transition-all group/field"
+                                >
+                                  {rendered}
+                                  <div className="absolute -top-2 -right-2 bg-yellow-400 text-white rounded-full p-1 opacity-0 group-hover/field:opacity-100 transition-opacity z-10 shadow-sm">
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="12"
+                                      height="12"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    >
+                                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                    </svg>
+                                  </div>
+                                </div>
+                              );
+                            }
+                            return rendered;
                           })}
                         </div>
                       )}
@@ -2453,8 +2623,28 @@ export function TemplatePreview({
                       <div
                         data-section-preview={`section-${sectionIndex}`}
                         style={{ ...sectionStyles, overflow: "hidden" }}
-                        className="flex-1 overflow-hidden flex flex-col"
+                        className={`flex-1 overflow-hidden flex flex-col ${
+                          reviewMode
+                            ? "hover:ring-2 hover:ring-green-400 cursor-pointer relative group/section box-decoration-slice"
+                            : ""
+                        }`}
+                        onClick={
+                          reviewMode && onElementClick
+                            ? (e) =>
+                                onElementClick(
+                                  "section",
+                                  section.section_id ||
+                                    `section-${sectionIndex}`,
+                                  e,
+                                )
+                            : undefined
+                        }
                       >
+                        {reviewMode && (
+                          <div className="absolute top-0 right-0 bg-green-400 text-white text-[10px] px-1 rounded-bl opacity-0 group-hover/section:opacity-100 transition-opacity z-20 pointer-events-none">
+                            Section
+                          </div>
+                        )}
                         {/* Bloques de la sección */}
                         <div className="space-y-1 w-full flex-1 flex flex-col overflow-hidden">
                           {section.blocks.length === 0 ? (
@@ -2465,7 +2655,7 @@ export function TemplatePreview({
                             section.blocks.map((block, blockIndex) => {
                               // Verificar si el block contiene un field de tipo card
                               const hasCardField = block.fields.some(
-                                (field) => field.type === "card"
+                                (field) => field.type === "card",
                               );
 
                               // Obtener estilos del bloque
@@ -2476,7 +2666,7 @@ export function TemplatePreview({
                                 backgroundImage: block.style_config
                                   ?.background_image
                                   ? `url("${getBackgroundImageUrl(
-                                      block.style_config.background_image
+                                      block.style_config.background_image,
                                     )}")`
                                   : undefined,
                                 backgroundSize: "cover",
@@ -2507,15 +2697,54 @@ export function TemplatePreview({
                                 }),
                               };
 
-                              // Determinar layout de campos
+                              // Determine layout of fields
                               const fieldsLayout =
                                 block.style_config?.fields_layout || "vertical";
-                              const fieldsContainerClass =
-                                fieldsLayout === "horizontal"
-                                  ? "flex flex-wrap"
-                                  : "flex flex-col";
 
-                              // Calcular ancho considerando el margin
+                              // Calculate container style for fields
+                              const fieldsContainerStyle: React.CSSProperties =
+                                {
+                                  gap: block.style_config?.gap
+                                    ? block.style_config.gap
+                                    : "8px",
+                                  alignItems:
+                                    block.style_config?.align_items ||
+                                    "stretch",
+                                  display: "flex",
+                                  flexDirection:
+                                    fieldsLayout === "horizontal"
+                                      ? "row"
+                                      : "column",
+                                  flexWrap:
+                                    fieldsLayout === "horizontal"
+                                      ? "wrap"
+                                      : "nowrap",
+                                };
+
+                              // Fix justifyContent value mapping from Tailwind class logic
+                              if (block.style_config?.justify_content) {
+                                const justifyMap: Record<string, string> = {
+                                  start: "flex-start",
+                                  end: "flex-end",
+                                  center: "center",
+                                  between: "space-between",
+                                  around: "space-around",
+                                  evenly: "space-evenly",
+                                };
+                                const jcValue =
+                                  block.style_config.justify_content.replace(
+                                    "justify-",
+                                    "",
+                                  );
+                                fieldsContainerStyle.justifyContent =
+                                  justifyMap[jcValue] ||
+                                  justifyMap[
+                                    block.style_config.justify_content
+                                  ] ||
+                                  "flex-start";
+                              }
+
+                              // Calculate width considering margin
                               const marginValue =
                                 block.style_config?.margin || "0";
                               let widthStyle = {};
@@ -2524,53 +2753,47 @@ export function TemplatePreview({
                                 marginValue !== "0" &&
                                 marginValue !== "0px"
                               ) {
-                                // Parsear margin que puede tener múltiples valores
-                                const marginParts = marginValue
-                                  .trim()
-                                  .split(/\s+/);
-                                let marginLeft = "0";
-                                let marginRight = "0";
-
-                                if (marginParts.length === 1) {
-                                  // margin: 10px (todos los lados)
-                                  marginLeft = marginRight = marginParts[0];
-                                } else if (marginParts.length === 2) {
-                                  // margin: 10px 20px (vertical horizontal)
-                                  marginLeft = marginRight = marginParts[1];
-                                } else if (marginParts.length === 3) {
-                                  // margin: 10px 20px 30px (top horizontal bottom)
-                                  marginLeft = marginRight = marginParts[1];
-                                } else if (marginParts.length === 4) {
-                                  // margin: 10px 20px 30px 40px (top right bottom left)
-                                  marginRight = marginParts[1];
-                                  marginLeft = marginParts[3];
-                                }
-
-                                widthStyle = {
-                                  width: `calc(100% - ${marginLeft} - ${marginRight})`,
-                                };
+                                // Parse margin to calculate width if possible
+                                // Simple text based parsing or assume full width minus margins
+                                // For now, let's keep it simple as the container handles margin via blockStyles
                               }
 
                               return (
                                 <div
                                   key={`preview-block-${sectionIndex}-${blockIndex}`}
-                                  className={hasCardField ? "flex-1" : ""}
+                                  className={`${hasCardField ? "flex-1" : ""} ${
+                                    reviewMode
+                                      ? "hover:ring-2 hover:ring-blue-400 cursor-pointer relative group/block transition-all"
+                                      : ""
+                                  }`}
+                                  onClick={
+                                    reviewMode && onElementClick
+                                      ? (e) =>
+                                          onElementClick(
+                                            "block",
+                                            block.block_id ||
+                                              `block-${sectionIndex}-${blockIndex}`,
+                                            e,
+                                          )
+                                      : undefined
+                                  }
                                   style={{
                                     ...blockStyles,
-                                    ...widthStyle,
                                     overflow: "hidden",
                                   }}
                                 >
-                                  {/* Campos del bloque */}
+                                  {reviewMode && (
+                                    <div className="absolute top-0 left-0 bg-blue-400 text-white text-[10px] px-1 rounded-br opacity-0 group-hover/block:opacity-100 transition-opacity z-10 pointer-events-none">
+                                      Block
+                                    </div>
+                                  )}
+
+                                  {/* Container for fields with specific layout */}
                                   <div
-                                    className={`${fieldsContainerClass} ${
+                                    className={`${
                                       hasCardField ? "flex-1" : ""
                                     }`}
-                                    style={{
-                                      gap: block.style_config?.gap
-                                        ? `${block.style_config.gap}px`
-                                        : "8px",
-                                    }}
+                                    style={fieldsContainerStyle}
                                   >
                                     {block.fields.length === 0 ? (
                                       <div className="text-sm text-[#283618]/50 italic">
@@ -2578,16 +2801,89 @@ export function TemplatePreview({
                                       </div>
                                     ) : (
                                       block.fields
-                                        .filter((field) => field.bulletin) // Solo mostrar campos que van al boletín
-                                        .map((field, fieldIndex) =>
-                                          renderField(
+                                        .filter((field) => field.bulletin) // Only show fields for bulletin
+                                        .map((field, fieldIndex) => {
+                                          const fieldId =
+                                            (field as any)._id ||
+                                            `field-${sectionIndex}-${blockIndex}-${fieldIndex}`;
+                                          const renderedField = renderField(
                                             field,
-                                            `preview-field-${sectionIndex}-${blockIndex}-${fieldIndex}`,
+                                            `preview-${fieldId}`, // Use consistent key
                                             block.style_config ||
                                               section.style_config, // Los campos heredan del bloque o de la sección
-                                            fieldsLayout
-                                          )
-                                        )
+                                            fieldsLayout,
+                                            undefined, // pageInfo
+                                            fieldId, // Pass fieldId here
+                                          );
+
+                                          if (reviewMode && onElementClick) {
+                                            const isSelected =
+                                              selectedElementId === fieldId;
+
+                                            // Determine flex or specific styling for the field-wrapper based on fieldsLayout
+                                            const fieldWrapperStyle: React.CSSProperties =
+                                              {
+                                                // Aplicar el style_config del campo si existe
+                                                ...((field as Field)
+                                                  .style_config?.margin
+                                                  ? {
+                                                      margin: (field as Field)
+                                                        .style_config?.margin,
+                                                    }
+                                                  : {}),
+                                                ...((field as Field)
+                                                  .style_config?.padding
+                                                  ? {
+                                                      padding: (field as Field)
+                                                        .style_config?.padding,
+                                                    }
+                                                  : {}),
+                                                // Asegurar que flex funciona para layouts horizontale
+                                                flexShrink: 0,
+                                              };
+
+                                            return (
+                                              <div
+                                                key={`review-wrapper-${fieldId}`}
+                                                onClick={(e) =>
+                                                  onElementClick(
+                                                    "field",
+                                                    fieldId,
+                                                    e,
+                                                  )
+                                                }
+                                                style={fieldWrapperStyle}
+                                                className={`relative ${isSelected ? "ring-2 ring-blue-500 z-20" : "hover:ring-2 hover:ring-yellow-400"} cursor-pointer rounded transition-all group/field`}
+                                              >
+                                                {renderedField}
+                                                {/* Selection Badge for Parent */}
+                                                {isSelected && (
+                                                  <div className="absolute -top-3 -left-1 bg-blue-500 text-white text-[10px] px-2 py-0.5 rounded-t font-semibold shadow-sm z-30">
+                                                    List
+                                                  </div>
+                                                )}
+                                                <div
+                                                  className={`absolute -top-2 -right-2 ${isSelected ? "bg-blue-500" : "bg-yellow-400"} text-white rounded-full p-1 ${isSelected ? "opacity-100" : "opacity-0 group-hover/field:opacity-100"} transition-opacity z-10 shadow-sm`}
+                                                >
+                                                  <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="12"
+                                                    height="12"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    strokeWidth="2"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                  >
+                                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                                  </svg>
+                                                </div>
+                                              </div>
+                                            );
+                                          }
+                                          return renderedField;
+                                        })
                                     )}
                                   </div>
                                 </div>
@@ -2600,14 +2896,28 @@ export function TemplatePreview({
                       {/* Footer con lógica de prioridad */}
                       {activeFooterConfig && (
                         <div
+                          onClick={
+                            reviewMode && onElementClick
+                              ? (e) =>
+                                  onElementClick(
+                                    "footer",
+                                    `footer-${sectionIndex}`,
+                                    e,
+                                  )
+                              : undefined
+                          }
                           className={`w-full ${
-                            activeFooterConfig.style_config?.fields_layout ===
-                            "vertical"
+                            activeFooterConfig.style_config?.fields_layout !==
+                            "horizontal"
                               ? "flex flex-col"
                               : `flex items-center ${getJustifyClass(
                                   activeFooterConfig.style_config
-                                    ?.justify_content
+                                    ?.justify_content,
                                 )}`
+                          } ${
+                            reviewMode
+                              ? "hover:ring-2 hover:ring-purple-400 cursor-pointer relative group/footer box-decoration-slice"
+                              : ""
                           }`}
                           style={{
                             backgroundColor:
@@ -2619,7 +2929,7 @@ export function TemplatePreview({
                               ?.background_image
                               ? `url("${getBackgroundImageUrl(
                                   activeFooterConfig.style_config
-                                    .background_image
+                                    .background_image,
                                 )}")`
                               : undefined,
                             backgroundSize: "cover",
@@ -2656,6 +2966,11 @@ export function TemplatePreview({
                             ...getBorderStyles(activeFooterConfig.style_config),
                           }}
                         >
+                          {reviewMode && (
+                            <div className="absolute top-0 left-0 bg-purple-400 text-white text-[10px] px-1 rounded-br opacity-0 group-hover/footer:opacity-100 transition-opacity z-20 pointer-events-none">
+                              Footer
+                            </div>
+                          )}
                           {activeFooterConfig.fields.map((field, index) => {
                             // Si estamos renderizando el footer de una card y el campo tiene form: true, usar fieldValues
                             const fieldToRender =
@@ -2668,17 +2983,47 @@ export function TemplatePreview({
                                   }
                                 : field;
 
-                            return renderField(
+                            const fieldId = `footer-${sectionIndex}-${index}`;
+                            const rendered = renderField(
                               fieldToRender,
-                              `footer-${sectionIndex}-${index}`,
+                              fieldId,
                               activeFooterConfig.style_config,
                               activeFooterConfig.style_config?.fields_layout ||
-                                "horizontal",
+                                "vertical",
                               {
                                 currentPage: absolutePageNumber - 1,
                                 totalPages: totalDocumentPages,
-                              }
+                              },
                             );
+                            if (reviewMode && onElementClick) {
+                              return (
+                                <div
+                                  key={`review-wrapper-${fieldId}`}
+                                  onClick={(e) =>
+                                    onElementClick("footer_field", fieldId, e)
+                                  }
+                                  className="relative hover:ring-2 hover:ring-yellow-400 cursor-pointer rounded transition-all group/field"
+                                >
+                                  {rendered}
+                                  <div className="absolute -top-2 -right-2 bg-yellow-400 text-white rounded-full p-1 opacity-0 group-hover/field:opacity-100 transition-opacity z-10 shadow-sm">
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="12"
+                                      height="12"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    >
+                                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                    </svg>
+                                  </div>
+                                </div>
+                              );
+                            }
+                            return rendered;
                           })}
                         </div>
                       )}
@@ -2694,12 +3039,21 @@ export function TemplatePreview({
             footerConfig?.fields &&
             footerConfig.fields.length > 0 && (
               <div
+                onClick={
+                  reviewMode && onElementClick
+                    ? (e) => onElementClick("footer", "footer-global", e)
+                    : undefined
+                }
                 className={`w-full ${
                   footerConfig.style_config?.fields_layout === "vertical"
                     ? "flex flex-col"
                     : `flex items-center ${getJustifyClass(
-                        footerConfig.style_config?.justify_content
+                        footerConfig.style_config?.justify_content,
                       )}`
+                } ${
+                  reviewMode
+                    ? "hover:ring-2 hover:ring-purple-400 cursor-pointer relative group/footer box-decoration-slice"
+                    : ""
                 }`}
                 style={{
                   backgroundColor:
@@ -2707,7 +3061,7 @@ export function TemplatePreview({
                     "transparent",
                   backgroundImage: footerConfig.style_config?.background_image
                     ? `url("${getBackgroundImageUrl(
-                        footerConfig.style_config.background_image
+                        footerConfig.style_config.background_image,
                       )}")`
                     : undefined,
                   backgroundSize: "cover",
@@ -2736,18 +3090,49 @@ export function TemplatePreview({
                   ...getBorderStyles(footerConfig.style_config),
                 }}
               >
-                {footerConfig.fields.map((field, index) =>
-                  renderField(
+                {footerConfig.fields.map((field, index) => {
+                  const fieldId = `footer-global-${index}`;
+                  const rendered = renderField(
                     field,
-                    `footer-global-${index}`,
+                    fieldId,
                     footerConfig.style_config,
                     footerConfig.style_config?.fields_layout || "horizontal",
                     {
                       currentPage: absolutePageNumber - 1,
                       totalPages: totalDocumentPages,
-                    }
-                  )
-                )}
+                    },
+                  );
+
+                  if (reviewMode && onElementClick) {
+                    return (
+                      <div
+                        key={`review-wrapper-${fieldId}`}
+                        onClick={(e) =>
+                          onElementClick("footer_field", fieldId, e)
+                        }
+                        className="relative hover:ring-2 hover:ring-yellow-400 cursor-pointer rounded transition-all group/field"
+                      >
+                        {rendered}
+                        <div className="absolute -top-2 -right-2 bg-yellow-400 text-white rounded-full p-1 opacity-0 group-hover/field:opacity-100 transition-opacity z-10 shadow-sm">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                          </svg>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return rendered;
+                })}
               </div>
             )}
         </div>
@@ -2772,7 +3157,7 @@ export function TemplatePreview({
           <button
             onClick={() =>
               handlePageChange(
-                Math.min(paginationInfo.totalPages - 1, currentPageIndex + 1)
+                Math.min(paginationInfo.totalPages - 1, currentPageIndex + 1),
               )
             }
             disabled={currentPageIndex === paginationInfo.totalPages - 1}
@@ -2802,9 +3187,9 @@ export function TemplatePreview({
                 total +
                 section.blocks.reduce(
                   (blockTotal, block) => blockTotal + block.fields.length,
-                  0
+                  0,
                 ),
-              0
+              0,
             ) +
               (headerConfig?.fields?.length || 0) +
               (footerConfig?.fields?.length || 0)}
