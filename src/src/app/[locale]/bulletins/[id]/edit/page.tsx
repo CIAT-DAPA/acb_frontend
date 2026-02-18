@@ -6,7 +6,10 @@ import { useTranslations } from "next-intl";
 import { Loader2 } from "lucide-react";
 import FormBulletinPage from "../../create/FormBulletinPage";
 import { BulletinAPIService } from "../../../../../services/bulletinService";
-import { CreateBulletinData } from "../../../../../types/bulletin";
+import {
+  CreateBulletinData,
+  BulletinStatus,
+} from "../../../../../types/bulletin";
 import { ProtectedRoute } from "../../../../../components/ProtectedRoute";
 import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
 import { useAuth } from "@/hooks/useAuth";
@@ -65,7 +68,7 @@ export default function EditBulletinPage() {
         master: {
           bulletin_name: master.bulletin_name,
           name_machine: master.name_machine || slugify(master.bulletin_name), // Generar automáticamente si no existe
-          status: master.status,
+          status: master.status as BulletinStatus,
           log: master.log,
           base_template_master_id: master.base_template_master_id,
           base_template_version_id: master.base_template_version_id,

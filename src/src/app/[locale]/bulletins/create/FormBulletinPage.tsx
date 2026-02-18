@@ -9,6 +9,7 @@ import {
   CreateBulletinData,
   BulletinCreationStep,
   BulletinCreationState,
+  BulletinStatus,
 } from "../../../../types/bulletin";
 import {
   TemplateVersion,
@@ -743,7 +744,7 @@ export default function FormBulletinPage({
         ...creationState.data,
         master: {
           ...creationState.data.master,
-          status: "draft",
+          status: "draft" as BulletinStatus,
         },
       };
 
@@ -915,7 +916,7 @@ export default function FormBulletinPage({
         ...finalizedData,
         master: {
           ...finalizedData.master,
-          status: "published",
+          status: "published" as BulletinStatus,
         },
       };
 
@@ -1292,6 +1293,18 @@ export default function FormBulletinPage({
           >
             <Save className="w-4 h-4" />
             {isLoading ? t("navigation.saving") : t("navigation.save")}
+          </button>
+
+          <button
+            onClick={() => {
+              // TODO: Implement pending review logic
+              alert("Pending implementation: Send to review");
+            }}
+            disabled={isLoading}
+            className={`${btnOutlineSecondary} disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2`}
+          >
+            <CheckCircle className="w-4 h-4" />
+            {t("navigation.sendToReview")}
           </button>
 
           <button

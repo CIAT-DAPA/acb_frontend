@@ -48,6 +48,7 @@ export interface StyleConfig {
     | "between"
     | "around"
     | "evenly"; // Distribución de los campos en layout horizontal
+  align_items?: "start" | "end" | "center" | "stretch"; // Alineación de los campos en el eje transversal
   list_style_type?: "disc" | "circle" | "square" | "none" | "decimal"; // Estilo de bullet points para listas
   list_items_layout?: "vertical" | "horizontal" | "grid-2" | "grid-3" | "table"; // Layout de items dentro de la lista
   show_table_header?: boolean; // Mostrar encabezado en layout de tabla

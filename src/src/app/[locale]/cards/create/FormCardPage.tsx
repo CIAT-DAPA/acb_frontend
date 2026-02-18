@@ -17,7 +17,7 @@ import {
 } from "../../../../types/card";
 
 import { BasicInfoStep } from "./steps/BasicInfoStep";
-import { ContentStep } from "./steps/ContentStep";
+import { CardEditorAdapter } from "./editor/CardEditorAdapter";
 import { CardPreview } from "./CardPreview";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -46,7 +46,7 @@ export default function FormCardPage({
 
   // Estado del wizard
   const [creationState, setCreationState] = useState<CardCreationState>({
-    currentStep: "basic-info",
+    currentStep: "content", // Start directly in editor
     data: initialData || {
       card_name: "",
       card_type: "general",
@@ -75,7 +75,7 @@ export default function FormCardPage({
         data: updater(prev.data),
       }));
     },
-    []
+    [],
   );
 
   // Función para actualizar errores
@@ -154,7 +154,18 @@ export default function FormCardPage({
 
   // Función para guardar la card
   const handleSave = useCallback(async () => {
-    if (!validateCurrentStep()) {
+    // Validate everything before saving
+    const { data } = creationState;
+    if (!data.card_name.trim()) {
+      showToast(t("basicInfo.errors.nameRequired"), "error");
+      return;
+    }
+    if (!data.card_type) {
+      showToast(t("basicInfo.errors.typeRequired"), "error");
+      return;
+    }
+    if (data.content.blocks.length === 0) {
+      showToast(t("content.errors.blocksRequired"), "error");
       return;
     }
 
@@ -176,14 +187,13 @@ export default function FormCardPage({
       }
 
       try {
-        const { generateAndUploadThumbnails } = await import(
-          "../../../../utils/thumbnailCapture"
-        );
+        const { generateAndUploadThumbnails } =
+          await import("../../../../utils/thumbnailCapture");
         const thumbnailPaths = await generateAndUploadThumbnails(
           "template-preview-container",
           savedCardId,
           1,
-          undefined
+          undefined,
         );
 
         if (thumbnailPaths.length > 0) {
@@ -200,7 +210,7 @@ export default function FormCardPage({
       showToast(
         isEditMode ? t("messages.updateSuccess") : t("messages.createSuccess"),
         "success",
-        3000
+        3000,
       );
       router.push("/cards");
     } catch (error) {
@@ -245,6 +255,22 @@ export default function FormCardPage({
     },
   ];
 
+  /*
+   * Si estamos en el paso de "content", usamos el CardEditorAdapter (reutiliza el editor de templates).
+   * Este componente toma el control de toda la pantalla, reemplazando el layout de wizard estándar.
+   */
+  if (creationState.currentStep === "content") {
+    return (
+      <CardEditorAdapter
+        data={creationState.data}
+        onUpdate={handleDataChange}
+        saving={isLoading}
+        onBack={() => router.push("/cards")} // Directly back to list
+        onSave={handleSave}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -282,23 +308,19 @@ export default function FormCardPage({
           <div className="flex-1 max-w-2xl">
             <div className="bg-white rounded-lg shadow-lg p-6">
               <StepContent currentStep={getCurrentStepIndex()}>
-                {creationState.currentStep === "basic-info" && (
+                {/* Ensure multiple children to satisfy StepContent prop type */}
+                {creationState.currentStep === "basic-info" ? (
                   <BasicInfoStep
+                    key="basic-info"
                     data={creationState.data}
                     errors={creationState.errors}
                     onDataChange={handleDataChange}
                     onErrorsChange={handleErrorsChange}
                   />
+                ) : (
+                  <div key="basic-info-hidden" />
                 )}
-
-                {creationState.currentStep === "content" && (
-                  <ContentStep
-                    data={creationState.data}
-                    errors={creationState.errors}
-                    onDataChange={handleDataChange}
-                    onErrorsChange={handleErrorsChange}
-                  />
-                )}
+                <div key="content-placeholder" />
               </StepContent>
               {/* Navigation */}
               <StepNavigation
