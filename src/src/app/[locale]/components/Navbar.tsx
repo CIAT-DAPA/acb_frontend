@@ -51,11 +51,14 @@ export function Navbar() {
 
   // Filtrar items de configuración según permisos
   const VISIBLE_CONFIG_ITEMS = CONFIG_ITEMS.filter(
-    (item) => !item.requiresAuth || (authenticated && can("r", item.module))
+    (item) => !item.requiresAuth || (authenticated && can("r", item.module)),
   );
 
   // Verificar si el usuario puede ver bulletins
   const canSeeBulletins = authenticated && can("r", MODULES.BULLETINS_COMPOSER);
+
+  // Verificar si el usuario puede ver reviews
+  const canSeeReviews = authenticated && can("r", MODULES.REVIEW);
 
   // Función para toggle del menú móvil
   const toggleMenu = () => setIsOpen(!isOpen);
@@ -212,6 +215,15 @@ export function Navbar() {
               </li>
             )}
 
+            {/* Link de Reviews */}
+            {canSeeReviews && (
+              <li>
+                <Link href="/reviews" className={`${NAV_BASE} ${NAV_INACTIVE}`}>
+                  {t("reviews")}
+                </Link>
+              </li>
+            )}
+
             {/* Dropdown de Content */}
             {authenticated && VISIBLE_CONFIG_ITEMS.length > 0 ? (
               <DropdownMenu
@@ -264,7 +276,7 @@ export function Navbar() {
                 >
                   {getInitials(
                     userInfo?.given_name || "",
-                    userInfo?.family_name || ""
+                    userInfo?.family_name || "",
                   )}
                 </button>
 
@@ -307,6 +319,19 @@ export function Navbar() {
                   className={`${btnPrimary} justify-center text-center`}
                 >
                   {t("bulletins")}
+                </Link>
+              </li>
+            )}
+
+            {/* Link de Reviews - Móvil */}
+            {canSeeReviews && (
+              <li>
+                <Link
+                  href="/reviews"
+                  onClick={() => setIsOpen(false)}
+                  className="text-[#fefae0]/80 hover:text-[#ffaf68] transition-colors"
+                >
+                  {t("reviews")}
                 </Link>
               </li>
             )}
@@ -371,7 +396,7 @@ export function Navbar() {
                   <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#bc6c25] text-[#fefae0] font-semibold cursor-pointer">
                     {getInitials(
                       userInfo?.given_name || "",
-                      userInfo?.family_name || ""
+                      userInfo?.family_name || "",
                     )}
                   </div>
                   <div>

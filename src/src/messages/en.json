@@ -239,6 +239,7 @@
     "success": "Bulletin created successfully",
     "updateSuccess": "Bulletin updated successfully",
     "savedAsDraft": "Bulletin saved as draft",
+    "sentToReview": "Bulletin sent for review successfully",
     "error": "Error creating bulletin",
     "errorLoadingTemplate": "Error loading template",
     "editBulletin": {

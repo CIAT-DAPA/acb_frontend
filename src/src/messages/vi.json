@@ -335,6 +335,7 @@
     "success": "Bản tin đã được tạo thành công",
     "updateSuccess": "Bản tin đã được cập nhật thành công",
     "savedAsDraft": "Bản tin được lưu dưới dạng bản nháp",
+    "sentToReview": "Bản tin đã được gửi duyệt thành công",
     "error": "Lỗi khi tạo bản tin",
     "errorLoadingTemplate": "Lỗi khi tải biểu mẫu",
     "editBulletin": {

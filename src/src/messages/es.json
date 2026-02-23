@@ -239,6 +239,7 @@
     "success": "Boletín creado exitosamente",
     "updateSuccess": "Boletín actualizado exitosamente",
     "savedAsDraft": "Boletín guardado como borrador",
+    "sentToReview": "Boletín enviado a revisión exitosamente",
     "error": "Error al crear el boletín",
     "errorLoadingTemplate": "Error al cargar la plantilla",
     "editBulletin": {
