@@ -61,7 +61,7 @@ export function Toast({ message, type, duration = 5000, onClose }: ToastProps) {
       `}
     >
       {/* Icono */}
-      <Icon className={`w-5 h-5 flex-shrink-0 mt-0.5 ${iconColor}`} />
+      <Icon className={`w-5 h-5 shrink-0 mt-0.5 ${iconColor}`} />
 
       {/* Mensaje */}
       <div className={`flex-1 ${textColor}`}>
@@ -72,7 +72,7 @@ export function Toast({ message, type, duration = 5000, onClose }: ToastProps) {
       <button
         onClick={handleClose}
         className={`
-          flex-shrink-0 p-1 rounded-md
+          shrink-0 p-1 rounded-md
           ${textColor} hover:bg-black/5
           transition-colors
         `}
@@ -90,7 +90,7 @@ interface ToastContextValue {
 }
 
 const ToastContext = React.createContext<ToastContextValue | undefined>(
-  undefined
+  undefined,
 );
 
 interface ToastItem {

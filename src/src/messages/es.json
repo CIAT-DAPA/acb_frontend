@@ -152,6 +152,8 @@
     "view": "Ver",
     "preview": "Vista Previa",
     "edit": "Editar",
+    "share": "Compartir",
+    "duplicate": "Duplicar",
     "download": "Descargar",
     "delete": "Archivar",
     "deleteConfirmTitle": "Archivar Plantilla",
@@ -175,6 +177,7 @@
     "statusPublished": "Publicado",
     "statusArchived": "Archivado",
     "statusPendingReview": "Pendiente de revisión",
+    "statusReview": "En revisión",
     "statusRejected": "Rechazado",
     "statusActive": "Activo",
     "statusUnknown": "Desconocido",
@@ -199,6 +202,8 @@
   "Bulletins": {
     "title": "Gestiona y crea boletines agroclimáticos fácilmente",
     "subtitle": "Crea, revisa y exporta boletines profesionales con un flujo de trabajo colaborativo.",
+    "reviewsPageTitle": "Revisiones",
+    "reviewsPageSubtitle": "Administra boletines pendientes de revisión",
     "searchPlaceholder": "Buscar boletines...",
     "createNew": "Crear Nuevo",
     "noResults": "No se encontraron boletines",
@@ -206,6 +211,15 @@
     "errorTitle": "Error al cargar boletines",
     "retry": "Reintentar",
     "createFirst": "Crear Nuevo Boletín",
+    "shareModal": {
+      "title": "Boletín Publicado",
+      "message": "Este boletín ya está publicado. Puedes usar el siguiente enlace para compartirlo.",
+      "urlLabel": "Enlace público:",
+      "copied": "Copiado",
+      "copyUrl": "Copiar",
+      "close": "Cerrar",
+      "viewLink": "Ver Boletín"
+    },
     "reviews": {
       "title": "Revisiones",
       "subtitle": "Boletines pendientes de revisión",
@@ -231,6 +245,9 @@
     }
   },
   "CreateBulletin": {
+    "comments": {
+      "generalTitle": "Comentarios Generales"
+    },
     "title": "Crear Boletín",
     "subtitle": "Crea un nuevo boletín agroclimático utilizando una plantilla",
     "titleEdit": "Editar Boletín",
@@ -239,6 +256,7 @@
     "success": "Boletín creado exitosamente",
     "updateSuccess": "Boletín actualizado exitosamente",
     "savedAsDraft": "Boletín guardado como borrador",
+    "sentToReview": "Boletín enviado a revisión exitosamente",
     "error": "Error al crear el boletín",
     "errorLoadingTemplate": "Error al cargar la plantilla",
     "editBulletin": {
@@ -1024,7 +1042,6 @@
       },
       "closeEditor": "Cerrar editor",
       "title": "Editor de Campos",
-
       "basicInfo": "Información Básica",
       "save": "Guardar Cambios",
       "cancel": "Cancelar",
@@ -1226,7 +1243,7 @@
         "imageLabelPlaceholder": "ej. Figura 1: Descripción",
         "imageLabelHelp": "Texto que aparecerá debajo de la imagen",
         "iconLabel": "Icono",
-        "changeIcon": "Cambiar icono",
+        "changeIcon": "Cambiar",
         "selectIcon": "Seleccionar icono",
         "selectIconTitle": "Seleccionar Icono"
       },
@@ -2089,5 +2106,67 @@
     "closeModal": "Cerrar modal",
     "previous": "Anterior",
     "next": "Siguiente"
+  },
+  "Review": {
+    "comments": "Comentarios",
+    "noComments": "Sin comentarios aún",
+    "selectElementToComment": "Selecciona un elemento para comentar",
+    "general": "General",
+    "section": "Sección",
+    "block": "Bloque",
+    "field": "Campo",
+    "element": "Elemento",
+    "user": "Usuario",
+    "commentFor": "Comentario para:",
+    "newGeneralComment": "Nuevo comentario general",
+    "cancelSelection": "Cancelar selección",
+    "writeAboutElement": "Escribe sobre este elemento...",
+    "writeGeneralComment": "Escribe un comentario general...",
+    "pressEnter": "Presiona Enter para enviar",
+    "send": "Enviar",
+    "resolve": "Resolver",
+    "newComment": "Nuevo comentario",
+    "reject": "Rechazar",
+    "rejectSuccess": "Boletín rechazado exitosamente",
+    "approveAndPublish": "Aprobar y Publicar",
+    "back": "Volver",
+    "pressEnterToSend": "Presiona Enter para enviar",
+    "inReview": "In review",
+    "successModal": {
+      "title": "Boletín Publicado Exitosamente",
+      "message": "El boletín ha sido aprobado y publicado correctamente. Ahora es visible para todos los usuarios con acceso.",
+      "publicLinkRaw": "Enlace público del boletín:",
+      "copyLinkTitle": "Copiar enlace",
+      "openLinkTitle": "Abrir enlace",
+      "goToBulletins": "Ir a mis boletines",
+      "linkCopied": "Enlace copiado al portapapeles"
+    }
+  },
+  "ReviewPage": {
+    "errorLoadingComments": "Error al cargar comentarios:",
+    "errorLoadingBulletin": "Error al cargar el boletín",
+    "connectionError": "Error de conexión",
+    "errorSavingComment": "Error al guardar comentario",
+    "pressEnterToSend": "Presiona Enter para enviar",
+    "approvedAndPublished": "Boletín aprobado y publicado (Simulado)",
+    "rejectedAndDrafted": "Boletín rechazado y devuelto a borrador (Simulado)",
+    "back": "Volver",
+    "inReview": "En revisión",
+    "newGeneralComment": "Nuevo comentario general",
+    "commentFor": "Comentario para:",
+    "noCommentsYet": "Sin comentarios aún",
+    "selectElementToComment": "Selecciona un elemento para comentar",
+    "writeAboutElement": "Escribe sobre este elemento...",
+    "writeGeneralComment": "Escribe un comentario general...",
+    "comments": "Comentarios",
+    "showComments": "Mostrar comentarios",
+    "pendingReview": "Pendiente de revisión",
+    "review": "En revisión"
+  },
+  "Common": {
+    "header": "Encabezado",
+    "footer": "Pie de página",
+    "generalComment": "Comentario General",
+    "close": "Cerrar"
   }
 }

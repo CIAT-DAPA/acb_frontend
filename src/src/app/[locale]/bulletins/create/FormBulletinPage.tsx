@@ -4,6 +4,7 @@ import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "../../../../hooks/useAuth";
+import usePermissions from "../../../../hooks/usePermissions";
 import { Stepper, StepConfig } from "../../components/Stepper";
 import {
   CreateBulletinData,
@@ -37,9 +38,11 @@ import {
 } from "lucide-react";
 import { TemplateAPIService } from "../../../../services/templateService";
 import { BulletinAPIService } from "../../../../services/bulletinService";
+import { ReviewService } from "../../../../services/reviewService";
 import { useToast } from "../../../../components/Toast";
 import { btnOutlineSecondary, btnPrimary } from "../../components/ui";
 import { slugify, isValidSlug } from "../../../../utils/slugify";
+import { BulletinComment } from "@/types/bulletin"; // Updated to use renamed BulletinComment type
 
 // Funciones para codificar/decodificar valores de texto
 const encodeTextFieldValue = (value: any): any => {
@@ -143,6 +146,7 @@ interface FormBulletinPageProps {
   mode?: "create" | "edit";
   bulletinId?: string;
   initialData?: CreateBulletinData;
+  comments?: BulletinComment[]; // Updated type to BulletinComment[]
 }
 
 // Configuración para exportación automática (definida fuera del componente)
@@ -193,9 +197,11 @@ export default function FormBulletinPage({
   mode = "create",
   bulletinId,
   initialData,
+  comments,
 }: FormBulletinPageProps) {
   const t = useTranslations("CreateBulletin");
   const { userInfo } = useAuth();
+  const { isAdminAnywhere } = usePermissions();
   const router = useRouter();
   const params = useParams();
   const locale = (params.locale as string) || "es";
@@ -203,7 +209,7 @@ export default function FormBulletinPage({
   const isEditMode = mode === "edit";
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [publishedBulletinId, setPublishedBulletinId] = useState<string | null>(
-    null
+    null,
   );
   const [urlCopied, setUrlCopied] = useState(false);
 
@@ -268,6 +274,65 @@ export default function FormBulletinPage({
 
   const [isLoading, setIsLoading] = useState(false);
 
+  // Group comments by target_element
+  const groupedComments = useMemo(() => {
+    const generalComments: BulletinComment[] = [];
+    const fieldComments: Record<string, BulletinComment[]> = {};
+
+    comments?.forEach((comment) => {
+      // If no valid target or generic target, treat as general
+      if (!comment.target_element?.field_id) {
+        generalComments.push(comment);
+      } else {
+        const fieldId = comment.target_element.field_id;
+        if (!fieldComments[fieldId]) {
+          fieldComments[fieldId] = [];
+        }
+        fieldComments[fieldId].push(comment);
+      }
+    });
+
+    return { generalComments, fieldComments };
+  }, [comments]);
+
+  // Render general comments
+  const renderGeneralComments = useCallback(() => {
+    if (groupedComments.generalComments.length === 0) return null;
+
+    return (
+      <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <h3 className="text-sm font-semibold text-yellow-800 mb-2">
+          {t("comments.generalTitle") || "Comentarios Generales"}
+        </h3>
+        <ul className="list-disc pl-5 space-y-1">
+          {groupedComments.generalComments.map((comment) => (
+            <li key={comment.comment_id} className="text-sm text-yellow-900">
+              <span className="font-medium text-xs text-yellow-700 block mb-0.5">
+                {comment.author_first_name || "Reviewer"}:
+              </span>
+              {comment.text}
+              {comment.replies && comment.replies.length > 0 && (
+                <ul className="list-circle pl-4 mt-1 border-l-2 border-yellow-200">
+                  {comment.replies.map((reply) => (
+                    <li
+                      key={reply.comment_id}
+                      className="text-xs text-gray-600 mt-1"
+                    >
+                      <span className="font-medium">
+                        {reply.author_first_name}:{" "}
+                      </span>
+                      {reply.text}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  }, [groupedComments.generalComments, t]);
+
   // Cargar los slug names existentes al montar el componente
   useEffect(() => {
     const loadSlugNames = async () => {
@@ -278,7 +343,7 @@ export default function FormBulletinPage({
         let slugs = response.data;
         if (isEditMode && initialData?.master.name_machine) {
           slugs = slugs.filter(
-            (slug) => slug !== initialData.master.name_machine
+            (slug) => slug !== initialData.master.name_machine,
           );
         }
         setExistingSlugNames(slugs);
@@ -293,7 +358,7 @@ export default function FormBulletinPage({
       if (initialData && initialData.master.base_template_master_id) {
         try {
           const response = await TemplateAPIService.getCurrentVersion(
-            initialData.master.base_template_master_id
+            initialData.master.base_template_master_id,
           );
           if (response.success && response.data?.master.name_machine) {
             setTemplateNameMachine(response.data.master.name_machine);
@@ -373,10 +438,10 @@ export default function FormBulletinPage({
           if (!current_version.content) {
             console.error(
               "Response does not have content property:",
-              current_version
+              current_version,
             );
             throw new Error(
-              "La respuesta del template no tiene la estructura esperada"
+              "La respuesta del template no tiene la estructura esperada",
             );
           }
 
@@ -388,7 +453,7 @@ export default function FormBulletinPage({
           if (!versionId) {
             console.error("Template version ID is missing");
             throw new Error(
-              "No se pudo obtener el ID de la versión del template"
+              "No se pudo obtener el ID de la versión del template",
             );
           }
 
@@ -443,7 +508,7 @@ export default function FormBulletinPage({
                           (field: Field) => ({
                             ...field,
                             value: initializeFieldValue(field),
-                          })
+                          }),
                         ),
                       }
                     : { fields: [] },
@@ -454,7 +519,7 @@ export default function FormBulletinPage({
                           (field: Field) => ({
                             ...field,
                             value: initializeFieldValue(field),
-                          })
+                          }),
                         ),
                       }
                     : { fields: [] },
@@ -467,7 +532,7 @@ export default function FormBulletinPage({
                             (field: Field) => ({
                               ...field,
                               value: initializeFieldValue(field),
-                            })
+                            }),
                           ),
                         }
                       : undefined,
@@ -478,7 +543,7 @@ export default function FormBulletinPage({
                             (field: Field) => ({
                               ...field,
                               value: initializeFieldValue(field),
-                            })
+                            }),
                           ),
                         }
                       : undefined,
@@ -502,7 +567,7 @@ export default function FormBulletinPage({
         setIsLoading(false);
       }
     },
-    [showToast, t]
+    [showToast, t],
   );
 
   // Función para actualizar datos del boletín
@@ -513,7 +578,7 @@ export default function FormBulletinPage({
         data: updater(prev.data),
       }));
     },
-    []
+    [],
   );
 
   // Navegar a un paso específico
@@ -576,7 +641,7 @@ export default function FormBulletinPage({
   // Obtener índice del paso actual
   const currentStepIndex = useMemo(() => {
     return stepConfigs.findIndex(
-      (step) => step.id === creationState.currentStep
+      (step) => step.id === creationState.currentStep,
     );
   }, [stepConfigs, creationState.currentStep]);
 
@@ -635,7 +700,7 @@ export default function FormBulletinPage({
         goToStep(stepConfigs[stepIndex].id as BulletinCreationStep);
       }
     },
-    [stepConfigs, goToStep, creationState.selectedTemplateId]
+    [stepConfigs, goToStep, creationState.selectedTemplateId],
   );
 
   // Finalizar creación del boletín
@@ -651,31 +716,46 @@ export default function FormBulletinPage({
         // MODO EDICIÓN: Actualizar bulletin existente
         const { log: masterLog, ...masterDataWithoutLog } = encodedData.master;
 
+        // Eliminar status y otros campos sensibles del payload de actualización
+        const {
+          _id,
+          status,
+          current_version_id,
+          base_template_master_id,
+          base_template_version_id,
+          ...updateDataPayload
+        } = masterDataWithoutLog as any;
+
         // 1. Actualizar bulletin master
         const masterResponse = await BulletinAPIService.updateBulletin(
           bulletinId,
-          masterDataWithoutLog
+          updateDataPayload,
         );
 
         if (!masterResponse.success) {
           throw new Error(
-            masterResponse.message || "Error al actualizar el boletín"
+            masterResponse.message || "Error al actualizar el boletín",
           );
         }
 
-        const { log: versionLog, ...versionDataWithoutLog } =
-          encodedData.version;
+        const {
+          _id: _,
+          log: versionLog,
+          bulletin_master_id: __,
+          previous_version_id: ___,
+          ...versionDataClean
+        } = encodedData.version as any;
 
         // 2. Crear nueva versión del boletín
         const versionResponse = await BulletinAPIService.createBulletinVersion(
           bulletinId,
-          versionDataWithoutLog
+          versionDataClean as any,
         );
 
         if (!versionResponse.success) {
           throw new Error(
             versionResponse.message ||
-              "Error al crear la versión del boletín actualizado"
+              "Error al crear la versión del boletín actualizado",
           );
         }
 
@@ -684,13 +764,12 @@ export default function FormBulletinPage({
         // MODO CREACIÓN: Crear nuevo bulletin
         const { log: masterLog, ...masterDataWithoutLog } = encodedData.master;
 
-        const masterResponse = await BulletinAPIService.createBulletin(
-          masterDataWithoutLog
-        );
+        const masterResponse =
+          await BulletinAPIService.createBulletin(masterDataWithoutLog);
 
         if (!masterResponse.success || !masterResponse.data) {
           throw new Error(
-            masterResponse.message || "Error al crear el boletín"
+            masterResponse.message || "Error al crear el boletín",
           );
         }
 
@@ -700,15 +779,14 @@ export default function FormBulletinPage({
         const { log: versionLog, ...versionDataWithoutLog } =
           encodedData.version;
 
-        // 2. Crear primera versión del boletín
         const versionResponse = await BulletinAPIService.createBulletinVersion(
           newBulletinId,
-          versionDataWithoutLog
+          versionDataWithoutLog,
         );
 
         if (!versionResponse.success) {
           throw new Error(
-            versionResponse.message || "Error al crear la versión del boletín"
+            versionResponse.message || "Error al crear la versión del boletín",
           );
         }
 
@@ -755,30 +833,46 @@ export default function FormBulletinPage({
         // MODO EDICIÓN: Actualizar el boletín existente
         const { log: masterLog, ...masterDataWithoutLog } = encodedData.master;
 
-        // 1. Actualizar bulletin master con status draft
+        // Eliminar status y otros campos sensibles del payload de actualización
+        // para evitar conflictos con el backend (especialmente en PUT /bulletins/{id})
+        const {
+          _id,
+          status,
+          current_version_id,
+          base_template_master_id,
+          base_template_version_id,
+          ...updateDataPayload
+        } = masterDataWithoutLog as any;
+
+        // 1. Actualizar bulletin master (sin status ni campos de sistema)
         const masterResponse = await BulletinAPIService.updateBulletin(
           bulletinId,
-          masterDataWithoutLog
+          updateDataPayload,
         );
 
         if (!masterResponse.success) {
           throw new Error(
-            masterResponse.message || "Error al actualizar el boletín"
+            masterResponse.message || "Error al actualizar el boletín",
           );
         }
 
-        const { log: versionLog, ...versionDataWithoutLog } =
-          encodedData.version;
+        const {
+          _id: _,
+          log: versionLog,
+          bulletin_master_id: __,
+          previous_version_id: ___,
+          ...versionDataClean
+        } = encodedData.version as any;
 
         // 2. Crear nueva versión con los cambios
         const versionResponse = await BulletinAPIService.createBulletinVersion(
           bulletinId,
-          versionDataWithoutLog
+          versionDataClean as any,
         );
 
         if (!versionResponse.success) {
           throw new Error(
-            versionResponse.message || "Error al crear la versión del boletín"
+            versionResponse.message || "Error al crear la versión del boletín",
           );
         }
 
@@ -787,13 +881,12 @@ export default function FormBulletinPage({
         // MODO CREACIÓN: Crear nuevo bulletin
         const { log: masterLog, ...masterDataWithoutLog } = encodedData.master;
 
-        const masterResponse = await BulletinAPIService.createBulletin(
-          masterDataWithoutLog
-        );
+        const masterResponse =
+          await BulletinAPIService.createBulletin(masterDataWithoutLog);
 
         if (!masterResponse.success || !masterResponse.data) {
           throw new Error(
-            masterResponse.message || "Error al crear el boletín"
+            masterResponse.message || "Error al crear el boletín",
           );
         }
 
@@ -805,12 +898,12 @@ export default function FormBulletinPage({
 
         const versionResponse = await BulletinAPIService.createBulletinVersion(
           newBulletinId,
-          versionDataWithoutLog
+          versionDataWithoutLog,
         );
 
         if (!versionResponse.success) {
           throw new Error(
-            versionResponse.message || "Error al crear la versión del boletín"
+            versionResponse.message || "Error al crear la versión del boletín",
           );
         }
 
@@ -834,6 +927,139 @@ export default function FormBulletinPage({
     router,
   ]);
 
+  // Función para enviar a revisión
+  const handleSubmitForReview = useCallback(async () => {
+    if (isLoading) return;
+
+    setIsLoading(true);
+    try {
+      // 1. Primero guardar el boletín como borrador (DRAFT)
+      // Asegurarse de que el estado sea draft para que el endpoint de review lo acepte
+      const draftData = {
+        ...creationState.data,
+        master: {
+          ...creationState.data.master,
+          status: "draft" as BulletinStatus,
+        },
+      };
+
+      // Codificar los campos de texto antes de guardar
+      const encodedData = encodeTextFields(draftData);
+
+      let currentBulletinId = bulletinId;
+
+      if (isEditMode && bulletinId) {
+        // MODO EDICIÓN: Actualizar el boletín existente
+        const { log: masterLog, ...masterDataWithoutLog } = encodedData.master;
+
+        // Eliminar status y otros campos sensibles del payload de actualización
+        // ya que el cambio de estado se debe hacer solo por los endpoints de workflow
+        const {
+          _id,
+          status,
+          current_version_id,
+          base_template_master_id,
+          base_template_version_id,
+          ...updateDataPayload
+        } = masterDataWithoutLog as any;
+
+        // Actualizar bulletin master
+        const masterResponse = await BulletinAPIService.updateBulletin(
+          bulletinId,
+          updateDataPayload,
+        );
+
+        if (!masterResponse.success) {
+          throw new Error(
+            masterResponse.message || "Error al actualizar el boletín",
+          );
+        }
+
+        const {
+          _id: versionId,
+          log: versionLog,
+          bulletin_master_id,
+          previous_version_id,
+          ...versionDataClean
+        } = encodedData.version as any;
+
+        // Crear nueva versión con los cambios
+        const versionResponse = await BulletinAPIService.createBulletinVersion(
+          bulletinId,
+          versionDataClean as any,
+        );
+
+        if (!versionResponse.success) {
+          throw new Error(
+            versionResponse.message || "Error al crear la versión del boletín",
+          );
+        }
+      } else {
+        // MODO CREACIÓN: Crear nuevo bulletin
+        const { log: masterLog, ...masterDataWithoutLog } = encodedData.master;
+
+        const masterResponse =
+          await BulletinAPIService.createBulletin(masterDataWithoutLog);
+
+        if (!masterResponse.success || !masterResponse.data) {
+          throw new Error(
+            masterResponse.message || "Error al crear el boletín",
+          );
+        }
+
+        currentBulletinId =
+          (masterResponse.data as any).id || masterResponse.data._id;
+
+        const {
+          _id: _,
+          log: versionLog,
+          bulletin_master_id: __,
+          previous_version_id: ___,
+          ...versionDataClean
+        } = encodedData.version as any;
+
+        if (currentBulletinId) {
+          const versionResponse =
+            await BulletinAPIService.createBulletinVersion(
+              currentBulletinId,
+              versionDataClean as any,
+            );
+
+          if (!versionResponse.success) {
+            throw new Error(
+              versionResponse.message ||
+                "Error al crear la versión del boletín",
+            );
+          }
+        } else {
+          throw new Error("No se pudo obtener el ID del boletín creado");
+        }
+      }
+
+      // 2. Enviar a revisión usando el servicio de review
+      if (currentBulletinId) {
+        await ReviewService.submitForReview(currentBulletinId);
+        showToast(t("sentToReview") || t("success"), "success");
+        router.push("/bulletins");
+      } else {
+        throw new Error("ID de boletín no válido para enviar a revisión");
+      }
+    } catch (error) {
+      console.error("Error submitting for review:", error);
+      showToast(error instanceof Error ? error.message : t("error"), "error");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [
+    isLoading,
+    creationState.data,
+    isEditMode,
+    bulletinId,
+    showToast,
+    t,
+    router,
+  ]);
+
   // Función para publicar
   const handlePublish = useCallback(async () => {
     if (isLoading) return;
@@ -842,7 +1068,7 @@ export default function FormBulletinPage({
     try {
       // Extraer todas las imágenes temporales para moverlas a permanentes
       const tempImages = extractImageUrls(creationState.data).filter((url) =>
-        url.includes("/bulletins/temp/")
+        url.includes("/bulletins/temp/"),
       );
 
       // Mover imágenes a almacenamiento permanente
@@ -860,7 +1086,7 @@ export default function FormBulletinPage({
           // Actualizar las URLs en los datos del boletín
           const updateImageUrls = (
             data: CreateBulletinData,
-            urlMap: Map<string, string>
+            urlMap: Map<string, string>,
           ) => {
             const updateFields = (fields: Field[]) => {
               fields.forEach((field) => {
@@ -928,14 +1154,25 @@ export default function FormBulletinPage({
         const { log: masterLog, ...masterDataWithoutLog } = encodedData.master;
 
         // 1. Actualizar bulletin master con status published
+        // Filtramos campos inmutables o problemáticos
+        const {
+          _id,
+          current_version_id,
+          base_template_master_id,
+          base_template_version_id,
+          name_machine,
+          thumbnail_images,
+          ...updateDataPayload
+        } = masterDataWithoutLog as any;
+
         const masterResponse = await BulletinAPIService.updateBulletin(
           bulletinId,
-          masterDataWithoutLog
+          updateDataPayload,
         );
 
         if (!masterResponse.success) {
           throw new Error(
-            masterResponse.message || "Error al publicar el boletín"
+            masterResponse.message || "Error al publicar el boletín",
           );
         }
 
@@ -945,12 +1182,12 @@ export default function FormBulletinPage({
         // 2. Crear nueva versión con los cambios
         const versionResponse = await BulletinAPIService.createBulletinVersion(
           bulletinId,
-          versionDataWithoutLog
+          versionDataWithoutLog,
         );
 
         if (!versionResponse.success) {
           throw new Error(
-            versionResponse.message || "Error al crear la versión del boletín"
+            versionResponse.message || "Error al crear la versión del boletín",
           );
         }
 
@@ -960,13 +1197,12 @@ export default function FormBulletinPage({
         // MODO CREACIÓN: Crear nuevo bulletin
         const { log: masterLog, ...masterDataWithoutLog } = encodedData.master;
 
-        const masterResponse = await BulletinAPIService.createBulletin(
-          masterDataWithoutLog
-        );
+        const masterResponse =
+          await BulletinAPIService.createBulletin(masterDataWithoutLog);
 
         if (!masterResponse.success || !masterResponse.data) {
           throw new Error(
-            masterResponse.message || "Error al crear el boletín"
+            masterResponse.message || "Error al crear el boletín",
           );
         }
 
@@ -978,12 +1214,12 @@ export default function FormBulletinPage({
 
         const versionResponse = await BulletinAPIService.createBulletinVersion(
           newBulletinId,
-          versionDataWithoutLog
+          versionDataWithoutLog,
         );
 
         if (!versionResponse.success) {
           throw new Error(
-            versionResponse.message || "Error al crear la versión del boletín"
+            versionResponse.message || "Error al crear la versión del boletín",
           );
         }
 
@@ -1107,6 +1343,7 @@ export default function FormBulletinPage({
             bulletinData={creationState.data}
             onUpdate={updateBulletinData}
             existingSlugNames={existingSlugNames}
+            fieldComments={groupedComments.fieldComments}
           />
         );
 
@@ -1125,7 +1362,7 @@ export default function FormBulletinPage({
         // Pasos de sección
         if (creationState.currentStep.startsWith("section-")) {
           const sectionIndex = parseInt(
-            creationState.currentStep.replace("section-", "")
+            creationState.currentStep.replace("section-", ""),
           );
 
           return (
@@ -1135,6 +1372,7 @@ export default function FormBulletinPage({
               onUpdate={updateBulletinData}
               currentPageIndex={previewPageIndex}
               onPageChange={setPreviewPageIndex}
+              fieldComments={groupedComments.fieldComments}
             />
           );
         }
@@ -1256,6 +1494,7 @@ export default function FormBulletinPage({
 
             {/* Right: Preview */}
             <div className="bg-white rounded-lg shadow-lg p-6 sticky top-8 self-start">
+              {renderGeneralComments()}
               <h3 className="text-xl font-semibold text-[#283618] mb-4">
                 {t("preview.title")}
               </h3>
@@ -1296,10 +1535,7 @@ export default function FormBulletinPage({
           </button>
 
           <button
-            onClick={() => {
-              // TODO: Implement pending review logic
-              alert("Pending implementation: Send to review");
-            }}
+            onClick={handleSubmitForReview}
             disabled={isLoading}
             className={`${btnOutlineSecondary} disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2`}
           >
@@ -1315,14 +1551,16 @@ export default function FormBulletinPage({
             {t("navigation.export")}
           </button>
 
-          <button
-            onClick={handlePublish}
-            disabled={isLoading}
-            className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2`}
-          >
-            <CheckCircle className="w-4 h-4" />
-            {isLoading ? t("navigation.publishing") : t("navigation.publish")}
-          </button>
+          {isAdminAnywhere && (
+            <button
+              onClick={handlePublish}
+              disabled={isLoading}
+              className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2`}
+            >
+              <CheckCircle className="w-4 h-4" />
+              {isLoading ? t("navigation.publishing") : t("navigation.publish")}
+            </button>
+          )}
         </div>
       </div>
 
@@ -1362,7 +1600,7 @@ export default function FormBulletinPage({
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(
-                      `${window.location.origin}/${locale}/${templateNameMachine}/${creationState.data.master.name_machine}`
+                      `${window.location.origin}/${locale}/${templateNameMachine}/${creationState.data.master.name_machine}`,
                     );
                     setUrlCopied(true);
                     setTimeout(() => setUrlCopied(false), 2000);

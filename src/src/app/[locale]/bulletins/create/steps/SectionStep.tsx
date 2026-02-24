@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useTranslations } from "next-intl";
-import { CreateBulletinData } from "../../../../../types/bulletin";
+import { CreateBulletinData, BulletinComment } from "../../../../../types/bulletin";
 import { Field } from "../../../../../types/template";
 import {
   ListFieldEditor,
@@ -25,6 +25,7 @@ interface SectionStepProps {
   onUpdate: (updater: (prev: CreateBulletinData) => CreateBulletinData) => void;
   currentPageIndex?: number;
   onPageChange?: (pageIndex: number) => void;
+  fieldComments?: Record<string, BulletinComment[]>;
 }
 
 // Helper para normalizar valores de date_range
@@ -61,6 +62,7 @@ export function SectionStep({
   onUpdate,
   currentPageIndex,
   onPageChange,
+  fieldComments = {},
 }: SectionStepProps) {
   const t = useTranslations("CreateBulletin.section");
 
@@ -158,6 +160,44 @@ export function SectionStep({
   };
 
   // Función unificada para renderizar cualquier tipo de campo
+  const renderComments = (fieldId: string) => {
+    const comments = fieldComments[fieldId];
+    if (!comments || comments.length === 0) return null;
+
+    return (
+      <div className="mt-2 bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded-r-md text-sm shadow-sm">
+        <div className="text-xs font-bold text-yellow-800 mb-1 uppercase tracking-wide">
+          Comentarios
+        </div>
+        {comments.map((comment, idx) => (
+          <div key={idx} className="mb-2 last:mb-0 border-b border-yellow-200 last:border-0 pb-2 last:pb-0">
+            <div className="flex justify-between items-start mb-0.5">
+              <span className="font-semibold text-yellow-900 text-xs">
+                {comment.author_first_name || "Reviewer"}
+              </span>
+              <span className="text-[10px] text-yellow-700 opacity-70">
+                {new Date(comment.created_at).toLocaleDateString()}
+              </span>
+            </div>
+            <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-wrap">{comment.text}</p>
+            {comment.replies && comment.replies.length > 0 && (
+                <div className="ml-3 mt-2 border-l-2 border-yellow-300 pl-3 bg-white/50 p-2 rounded-sm">
+                  {comment.replies.map((reply, rIdx) => (
+                    <div key={rIdx} className="mb-1 last:mb-0">
+                      <div className="flex gap-1 items-baseline">
+                         <span className="font-semibold text-xs text-yellow-800">{reply.author_first_name}: </span>
+                         <p className="text-xs text-gray-600">{reply.text}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   const renderFieldByType = (field: Field, onChange: (value: any) => void) => {
     if (!field.form) return null;
 
@@ -342,6 +382,7 @@ export function SectionStep({
                       {field.display_name}
                     </label>
                     {renderHeaderField(field, fieldIndex)}
+                    {renderComments(field.field_id)}
                     {field.description && (
                       <p className="text-xs text-[#606c38] mt-1">
                         {field.description}
@@ -379,6 +420,7 @@ export function SectionStep({
                       {field.display_name}
                     </label>
                     {renderField(field, blockIndex, fieldIndex)}
+                    {renderComments(field.field_id)}
                     {field.description && (
                       <p className="text-xs text-[#606c38] mt-1">
                         {field.description}
@@ -411,6 +453,7 @@ export function SectionStep({
                       {field.display_name}
                     </label>
                     {renderFooterField(field, fieldIndex)}
+                    {renderComments(field.field_id)}
                     {field.description && (
                       <p className="text-xs text-[#606c38] mt-1">
                         {field.description}

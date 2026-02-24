@@ -14,6 +14,9 @@ import { ProtectedRoute } from "../../../../../components/ProtectedRoute";
 import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
 import { useAuth } from "@/hooks/useAuth";
 import { slugify } from "../../../../../utils/slugify";
+import { ReviewService } from "@/services/reviewService";
+import { ReviewComment } from "@/types/review";
+import { BulletinComment } from "@/types/bulletin"; // Ensure alias is used consistently
 
 export default function EditBulletinPage() {
   const params = useParams();
@@ -25,12 +28,28 @@ export default function EditBulletinPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [initialData, setInitialData] = useState<CreateBulletinData | null>(
-    null
+    null,
   );
+  const [comments, setComments] = useState<BulletinComment[]>([]);
 
   useEffect(() => {
     loadBulletinData();
   }, [bulletinId]);
+
+  useEffect(() => {
+    const reopenIfRejected = async () => {
+      if (initialData?.master.status === "rejected") {
+        try {
+          await ReviewService.reopenBulletin(bulletinId);
+          console.log("Bulletin reopened successfully.");
+        } catch (error) {
+          console.error("Failed to reopen bulletin:", error);
+        }
+      }
+    };
+
+    reopenIfRejected();
+  }, [initialData, bulletinId]);
 
   const loadBulletinData = async () => {
     if (!bulletinId) {
@@ -58,7 +77,7 @@ export default function EditBulletinPage() {
 
       if (!currentVersion || !currentVersion.data) {
         console.warn(
-          "La versión actual no tiene data, usando valores por defecto"
+          "La versión actual no tiene data, usando valores por defecto",
         );
         setError(t("editBulletin.errorNoVersion"));
         return;
@@ -95,12 +114,84 @@ export default function EditBulletinPage() {
     } catch (err) {
       console.error("Error loading bulletin:", err);
       setError(
-        err instanceof Error ? err.message : t("editBulletin.errorGeneric")
+        err instanceof Error ? err.message : t("editBulletin.errorGeneric"),
       );
     } finally {
       setLoading(false);
     }
   };
+
+  const loadComments = async () => {
+    try {
+      const response = await ReviewService.getReviewHistory(bulletinId);
+
+      // 1. Normalizamos la respuesta: si viene en .data bien, si no, usamos el objeto completo
+      const historyData = (response as any).data || response;
+
+      // 2. Cambiamos la validación: verificamos si existen comentarios o ciclos
+      if (historyData && (historyData.comments || historyData.active_cycle)) {
+        const transformReviewCommentToComment = (
+          reviewComment: any,
+        ): BulletinComment => ({
+          comment_id: reviewComment.comment_id,
+          target_element: {
+            section_id: reviewComment.target_element?.section_id || undefined,
+            block_id: reviewComment.target_element?.block_id || undefined,
+            field_id: reviewComment.target_element?.field_id || undefined,
+          },
+          text: reviewComment.text,
+          author_id: reviewComment.author_id,
+          author_first_name: reviewComment.author_first_name || reviewComment.reviewer_first_name, // Fallback to reviewer name if author name is missing
+          author_last_name: reviewComment.author_last_name || reviewComment.reviewer_last_name,
+          created_at: new Date(reviewComment.created_at),
+          replies: reviewComment.replies?.map(transformReviewCommentToComment) || [],
+          bulletin_version_id: reviewComment.bulletin_version_id || "",
+        });
+
+        // Use Set to avoid duplicate comments
+        const processedCommentsMap = new Map<string, BulletinComment>();
+
+        const addCommentsToMap = (commentsToAdd: any[]) => {
+            commentsToAdd.forEach(c => {
+                 if(c && c.comment_id) {
+                     processedCommentsMap.set(c.comment_id, transformReviewCommentToComment(c));
+                 }
+            });
+        };
+
+
+        if (Array.isArray(historyData.comments)) {
+          addCommentsToMap(historyData.comments);
+        }
+        
+        if (historyData.active_cycle?.comments && Array.isArray(historyData.active_cycle.comments)) {
+            addCommentsToMap(historyData.active_cycle.comments);
+        }
+
+        // Also check if there are comments in other cycles if needed, or if the backend returns them all in root
+        if(historyData.review_cycles && Array.isArray(historyData.review_cycles)) {
+            historyData.review_cycles.forEach((cycle: any) => {
+                if(cycle.comments && Array.isArray(cycle.comments)) {
+                    addCommentsToMap(cycle.comments);
+                }
+            });
+        }
+
+        const processedComments = Array.from(processedCommentsMap.values());
+        
+        console.log("✅ Comentarios encontrados y procesados:", processedComments);
+        setComments(processedComments);
+      } else {
+        console.warn("⚠️ No se encontraron comentarios en la respuesta:", response);
+      }
+    } catch (error) {
+      console.error("❌ Error en la petición de comentarios:", error);
+    }
+  };
+
+  useEffect(() => {
+    loadComments();
+  }, [bulletinId]);
 
   if (loading) {
     return (
@@ -151,6 +242,7 @@ export default function EditBulletinPage() {
         mode="edit"
         bulletinId={bulletinId}
         initialData={initialData}
+        comments={comments as any} // Temporary cast to resolve type mismatch
       />
     </ProtectedRoute>
   );

@@ -1,16 +1,9 @@
 "use client";
 
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import {
-  btnPrimary,
-  container,
-  pageSubtitle,
-  pageTitle,
-  searchField,
-} from "../components/ui";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { Loader2, Plus, Search } from "lucide-react";
+import { Loader2, Plus, Search, Check, Copy } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { BulletinMaster } from "@/types/bulletin";
@@ -19,20 +12,40 @@ import { TemplateAPIService } from "@/services/templateService";
 import ItemCard from "../components/ItemCard";
 import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useParams, useRouter } from "next/navigation";
+import {
+  btnOutlineSecondary,
+  btnPrimary,
+  container,
+  pageSubtitle,
+  pageTitle,
+  searchField,
+} from "../components/ui";
 
 export default function Bulletins() {
   const t = useTranslations("Bulletins");
+  const params = useParams();
+  const locale = (params.locale as string) || "es";
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [bulletins, setBulletins] = useState<BulletinMaster[]>([]);
   const [filteredBulletins, setFilteredBulletins] = useState<BulletinMaster[]>(
-    []
+    [],
   );
   const [templatesMap, setTemplatesMap] = useState<Record<string, string>>({});
+  const [templateNameMachineMap, setTemplateNameMachineMap] = useState<
+    Record<string, string>
+  >({});
   const [templateThumbnailsMap, setTemplateThumbnailsMap] = useState<
     Record<string, string[]>
   >({});
+
+  // State for Share Modal
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareData, setShareData] = useState<{ url: string } | null>(null);
+  const [urlCopied, setUrlCopied] = useState(false);
+
   const { can } = usePermissions();
 
   // Cargar bulletins al montar el componente
@@ -59,20 +72,23 @@ export default function Bulletins() {
         ];
         const templatesResponse = await Promise.all(
           templateIds.map((id) =>
-            TemplateAPIService.getTemplateById(id).catch(() => null)
-          )
+            TemplateAPIService.getTemplateById(id).catch(() => null),
+          ),
         );
 
         const newTemplatesMap: Record<string, string> = {};
+        const newTemplateNameMachineMap: Record<string, string> = {};
         const newThumbnailsMap: Record<string, string[]> = {};
         templatesResponse.forEach((res) => {
           if (res?.success && res.data) {
             const template = res.data as any;
             newTemplatesMap[template._id!] = template.template_name;
+            newTemplateNameMachineMap[template._id!] = template.name_machine;
             newThumbnailsMap[template._id!] = template.thumbnail_images || [];
           }
         });
         setTemplatesMap(newTemplatesMap);
+        setTemplateNameMachineMap(newTemplateNameMachineMap);
         setTemplateThumbnailsMap(newThumbnailsMap);
       } else {
         setError(response.message || "Error al cargar los boletines");
@@ -193,13 +209,35 @@ export default function Bulletins() {
                   const canEdit = can(
                     PERMISSION_ACTIONS.Update,
                     MODULES.BULLETINS_COMPOSER,
-                    allowedGroups
+                    allowedGroups,
                   );
                   const canDelete = can(
                     PERMISSION_ACTIONS.Delete,
                     MODULES.BULLETINS_COMPOSER,
-                    allowedGroups
+                    allowedGroups,
                   );
+
+                  const status = bulletin.status;
+                  const isPublished = status === "published";
+                  // Draft, rejected: enable edit
+                  // Pending review, in review: disable edit
+                  // Published: disable edit (show Share instead)
+
+                  const isEditableStatus =
+                    status === "draft" || status === "rejected";
+                  const showEditBtn = canEdit && isEditableStatus;
+                  const showShareBtn = isPublished;
+
+                  const handleShare = () => {
+                    const templateNameMachine =
+                      templateNameMachineMap[bulletin.base_template_master_id];
+                    if (templateNameMachine && bulletin.name_machine) {
+                      const url = `${window.location.origin}/${locale}/${templateNameMachine}/${bulletin.name_machine}`;
+                      setShareData({ url });
+                      setShowShareModal(true);
+                    }
+                  };
+
                   const creatorName =
                     bulletin.log.creator_first_name &&
                     bulletin.log.creator_last_name
@@ -216,7 +254,7 @@ export default function Bulletins() {
                       name={bulletin.bulletin_name}
                       author={creatorName}
                       lastModified={new Date(
-                        bulletin.log.updated_at!
+                        bulletin.log.updated_at!,
                       ).toLocaleDateString()}
                       templateBaseName={
                         templatesMap[bulletin.base_template_master_id]
@@ -227,13 +265,84 @@ export default function Bulletins() {
                           bulletin.base_template_master_id
                         ] || []
                       }
-                      editBtn={canEdit}
+                      editBtn={showEditBtn}
                       onEdit={() =>
                         (window.location.href = `/bulletins/${bulletin._id}/edit`)
                       }
+                      shareBtn={showShareBtn}
+                      onShare={handleShare}
                     />
                   );
                 })}
+            </div>
+          )}
+
+          {/* Share Modal */}
+          {showShareModal && shareData && (
+            <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full">
+                <h2 className="text-2xl font-bold text-[#283618] mb-4">
+                  {t("shareModal.title")}
+                </h2>
+                <p className="text-[#606c38] mb-6">{t("shareModal.message")}</p>
+
+                {/* URL Section */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-[#283618] mb-2">
+                    {t("shareModal.urlLabel")}
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      value={shareData.url}
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-[#283618] text-sm"
+                      onClick={(e) => e.currentTarget.select()}
+                    />
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(shareData.url);
+                        setUrlCopied(true);
+                        setTimeout(() => setUrlCopied(false), 2000);
+                      }}
+                      className={`${btnOutlineSecondary}`}
+                    >
+                      {urlCopied ? (
+                        <>
+                          <Check className="w-4 h-4" />
+                          {t("shareModal.copied")}
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-4 h-4" />
+                          {t("shareModal.copyUrl")}
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col justify-between sm:flex-row gap-3">
+                  <button
+                    onClick={() => {
+                      setShowShareModal(false);
+                      setShareData(null);
+                      setUrlCopied(false);
+                    }}
+                    className={`${btnOutlineSecondary} `}
+                  >
+                    {t("shareModal.close")}
+                  </button>
+                  <Link
+                    href={shareData.url}
+                    className={`${btnPrimary}`}
+                    target="_blank"
+                  >
+                    {t("shareModal.viewLink")}
+                  </Link>
+                </div>
+              </div>
             </div>
           )}
 

@@ -27,7 +27,7 @@ export default function ReviewsPage() {
   const [error, setError] = useState<string | null>(null);
   const [bulletins, setBulletins] = useState<BulletinMaster[]>([]);
   const [filteredBulletins, setFilteredBulletins] = useState<BulletinMaster[]>(
-    []
+    [],
   );
   const [templatesMap, setTemplatesMap] = useState<Record<string, string>>({});
   const [templateThumbnailsMap, setTemplateThumbnailsMap] = useState<
@@ -53,7 +53,7 @@ export default function ReviewsPage() {
         console.log("Fetched bulletins for review:", response);
         // Filter only bulletins in review or pending_review
         const reviewBulletins = response.data.filter((b) =>
-          ["pending_review", "review"].includes(b.status)
+          ["pending_review", "review"].includes(b.status),
         );
 
         setBulletins(reviewBulletins);
@@ -67,8 +67,8 @@ export default function ReviewsPage() {
         if (templateIds.length > 0) {
           const templatesResponse = await Promise.all(
             templateIds.map((id) =>
-              TemplateAPIService.getTemplateById(id).catch(() => null)
-            )
+              TemplateAPIService.getTemplateById(id).catch(() => null),
+            ),
           );
 
           const newTemplatesMap: Record<string, string> = {};
@@ -116,7 +116,7 @@ export default function ReviewsPage() {
     <ProtectedRoute
       requiredPermission={{
         action: PERMISSION_ACTIONS.Read, // Asumiendo que leer es suficiente para ver la lista, pero para revisar se validará al entrar
-        module: MODULES.BULLETINS_COMPOSER,
+        module: MODULES.REVIEW,
       }}
     >
       <main>
@@ -124,8 +124,8 @@ export default function ReviewsPage() {
           <div className={container}>
             <div className="flex justify-between items-center">
               <div>
-                <h1 className={pageTitle}>Revisiones</h1>
-                <p className={pageSubtitle}>Boletines pendientes de revisión</p>
+                <h1 className={pageTitle}>{t("reviewsPageTitle")}</h1>
+                <p className={pageSubtitle}>{t("reviewsPageSubtitle")}</p>
               </div>
               <div className="hidden lg:block -rotate-12">
                 <Image
@@ -201,7 +201,7 @@ export default function ReviewsPage() {
                       name={bulletin.bulletin_name}
                       author={creatorName}
                       lastModified={new Date(
-                        bulletin.log.updated_at!
+                        bulletin.log.updated_at!,
                       ).toLocaleDateString()}
                       templateBaseName={
                         templatesMap[bulletin.base_template_master_id]
