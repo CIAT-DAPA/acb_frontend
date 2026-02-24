@@ -18,7 +18,7 @@ export function Footer() {
   const hasPermission = (
     module?: string,
     requiresSuperadmin?: boolean,
-    requiresAdmin?: boolean
+    requiresAdmin?: boolean,
   ) => {
     if (!authenticated) return false;
     if (requiresSuperadmin && !isSuperadmin) return false;
@@ -50,6 +50,11 @@ export function Footer() {
       module: MODULES.BULLETINS_COMPOSER,
     },
     {
+      name: tNavbar("reviews"),
+      path: "/reviews",
+      module: MODULES.REVIEW,
+    },
+    {
       name: tNavbar("roles"),
       path: "/roles",
       requiresSuperadmin: true,
@@ -67,7 +72,7 @@ export function Footer() {
 
   // Filtrar links según permisos
   const VISIBLE_LINKS = ALL_LINKS.filter((link) =>
-    hasPermission(link.module, link.requiresSuperadmin, link.requiresAdmin)
+    hasPermission(link.module, link.requiresSuperadmin, link.requiresAdmin),
   );
 
   return (

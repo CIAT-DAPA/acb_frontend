@@ -3,12 +3,12 @@
  * Reutiliza la lógica del ItemCard para mantener consistencia
  */
 
-export type StatusType = 
-  | "draft" 
-  | "published" 
-  | "archived" 
-  | "pending_review" 
-  | "rejected" 
+export type StatusType =
+  | "draft"
+  | "published"
+  | "archived"
+  | "pending_review"
+  | "rejected"
   | "active";
 
 export interface StatusBadge {
@@ -23,47 +23,54 @@ export interface StatusBadge {
  */
 export const getStatusBadgeConfig = (status: string): StatusBadge => {
   const normalizedStatus = status.toLowerCase();
-  
+
   const badges: Record<string, StatusBadge> = {
     // Estados de boletines
     draft: {
       bg: "bg-gray-200",
       text: "text-gray-700",
-      translationKey: "statusDraft"
+      translationKey: "statusDraft",
     },
     published: {
       bg: "bg-green-100",
       text: "text-green-700",
-      translationKey: "statusPublished"
+      translationKey: "statusPublished",
     },
     pending_review: {
       bg: "bg-orange-100",
       text: "text-orange-700",
-      translationKey: "statusPendingReview"
+      translationKey: "statusPendingReview",
+    },
+    review: {
+      bg: "bg-purple-100",
+      text: "text-purple-700",
+      translationKey: "statusReview",
     },
     rejected: {
       bg: "bg-red-100",
       text: "text-red-700",
-      translationKey: "statusRejected"
+      translationKey: "statusRejected",
     },
     archived: {
       bg: "bg-gray-100",
       text: "text-gray-600",
-      translationKey: "statusArchived"
+      translationKey: "statusArchived",
     },
     // Estados de templates/cards
     active: {
       bg: "bg-blue-100",
       text: "text-blue-700",
-      translationKey: "statusActive"
+      translationKey: "statusActive",
     },
   };
-  
-  return badges[normalizedStatus] || {
-    bg: "bg-gray-100",
-    text: "text-gray-800",
-    translationKey: "statusUnknown"
-  };
+
+  return (
+    badges[normalizedStatus] || {
+      bg: "bg-gray-100",
+      text: "text-gray-800",
+      translationKey: "statusUnknown",
+    }
+  );
 };
 
 /**

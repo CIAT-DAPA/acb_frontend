@@ -224,9 +224,18 @@
     "pages": "các trang",
     "section": "Phần",
     "statusDraft": "Bản nháp",
-    "statusPublished": "Đã xuất bản"
+    "statusPublished": "Đã xuất bản",
+    "statusArchived": "Đã lưu trữ",
+    "statusPendingReview": "Đang chờ xem xét",
+    "statusReview": "Đang xem xét",
+    "statusRejected": "Từ chối",
+    "statusActive": "Hoạt động",
+    "statusUnknown": "Không xác định"
   },
   "CreateBulletin": {
+    "comments": {
+      "generalTitle": "Bình luận chung"
+    },
     "exportModal": {
       "contentLabel": "Nội dung",
       "loadError": "Lỗi",
@@ -335,6 +344,7 @@
     "success": "Bản tin đã được tạo thành công",
     "updateSuccess": "Bản tin đã được cập nhật thành công",
     "savedAsDraft": "Bản tin được lưu dưới dạng bản nháp",
+    "sentToReview": "Bản tin đã được gửi duyệt thành công",
     "error": "Lỗi khi tạo bản tin",
     "errorLoadingTemplate": "Lỗi khi tải biểu mẫu",
     "editBulletin": {
@@ -680,6 +690,8 @@
     "view": "Xem",
     "title": "Quản lý và tạo bản tin thời tiết nông vụ",
     "subtitle": "Tạo, hiệu đính và xuất bản bản tin thời tiết nông vụ bằng các biểu mẫu có thể tùy chỉnh.",
+    "reviewsPageTitle": "Rà soát",
+    "reviewsPageSubtitle": "Quản lý bản tin đang chờ rà soát",
     "searchPlaceholder": "Tìm kiếm bản tin...",
     "noResults": "Không tìm thấy bản tin nào",
     "loading": "Đang tải bản tin...",
@@ -1906,6 +1918,24 @@
     "previous": "Trước",
     "closeModal": "Đóng cửa sổ"
   },
+  "Review": {
+    "newComment": "Bình luận mới",
+    "reject": "Từ chối",
+    "rejectSuccess": "Bản tin đã bị từ chối thành công",
+    "approveAndPublish": "Phê duyệt và xuất bản",
+    "back": "Trở lại",
+    "pressEnterToSend": "Nhấn Enter để gửi",
+    "inReview": "Đang xem xét",
+    "successModal": {
+      "title": "Bản tin đã được xuất bản thành công",
+      "message": "Bản tin đã được phê duyệt và xuất bản thành công. Hiện tại nó đã hiển thị cho tất cả người dùng có quyền truy cập.",
+      "publicLinkRaw": "Liên kết công khai của bản tin:",
+      "copyLinkTitle": "Sao chép liên kết",
+      "openLinkTitle": "Mở liên kết",
+      "goToBulletins": "Đi đến bản tin của tôi",
+      "linkCopied": "Đã sao chép liên kết vào bộ nhớ tạm"
+    }
+  },
   "Authentication": {
     "verification": "Đang xác minh...",
     "accessRestrictedTitle": "Truy cập bị hạn chế",
@@ -1913,5 +1943,11 @@
     "redirecting": "Đang chuyển hướng đến trang đăng nhập...",
     "accessDeniedTitle": "Truy cập bị từ chối",
     "accessDeniedMessage": "Bạn không có quyền truy cập vào phần này."
+  },
+  "Common": {
+    "header": "Đầu trang",
+    "footer": "Chân trang",
+    "generalComment": "Bình luận chung",
+    "close": "Đóng"
   }
 }

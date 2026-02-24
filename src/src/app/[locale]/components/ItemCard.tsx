@@ -11,6 +11,7 @@ import {
   User,
   Tag,
   Copy,
+  Share2,
 } from "lucide-react";
 import {
   getStatusBadgeClass,
@@ -39,6 +40,9 @@ interface BaseItemCardProps {
   duplicateBtn?: boolean;
   onDuplicate?: () => void;
   isDuplicating?: boolean;
+
+  shareBtn?: boolean;
+  onShare?: () => void;
 
   deleteBtn?: boolean;
   onDelete?: () => void;
@@ -82,8 +86,8 @@ export default function ItemCard(props: ItemCardProps) {
     props.type === "template"
       ? "Templates"
       : props.type === "card"
-      ? "Cards"
-      : "VisualResources"
+        ? "Cards"
+        : "VisualResources",
   );
 
   // Constantes reutilizables
@@ -184,6 +188,16 @@ export default function ItemCard(props: ItemCardProps) {
         </button>
       )}
 
+      {props.shareBtn && props.onShare && (
+        <button
+          onClick={props.onShare}
+          className={ACTION_BUTTON_CLASS}
+          title={t("share")}
+        >
+          <Share2 className={ICON_CLASS} />
+        </button>
+      )}
+
       {props.deleteBtn && props.onDelete && (
         <button
           onClick={props.onDelete}
@@ -221,7 +235,7 @@ export default function ItemCard(props: ItemCardProps) {
               style={{
                 gridTemplateColumns: `repeat(${Math.min(
                   props.thumbnailImages.length,
-                  3
+                  3,
                 )}, 1fr)`,
               }}
             >
