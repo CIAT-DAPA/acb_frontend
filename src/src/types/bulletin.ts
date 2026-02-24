@@ -91,8 +91,21 @@ export interface BulletinMaster {
 
 export interface CommentTargetElement {
   section_id?: string;
-  block_id?: string;
-  field_id?: string;
+  block_id?: string | null;
+  field_id?: string | null;
+  type?:
+    | "section"
+    | "block"
+    | "field"
+    | "header"
+    | "footer"
+    | "header_field"
+    | "footer_field";
+  id?: string;
+  section_index?: number;
+  block_index?: number;
+  field_index?: number;
+  display_name?: string;
 }
 
 export interface CommentReply {
@@ -103,9 +116,16 @@ export interface CommentReply {
   created_at: Date;
 }
 
-export interface Comment extends CommentReply {
-  target_element?: CommentTargetElement; // Solo el comentario principal tiene target
-  replies: CommentReply[]; // Array de respuestas recursivas
+export interface BulletinComment {
+  comment_id: string;
+  text: string;
+  author_id: string;
+  author_first_name?: string;
+  author_last_name?: string;
+  created_at: Date;
+  target_element?: CommentTargetElement; // Ensure compatibility with target_element
+  replies?: BulletinComment[]; // Added replies for nested comments
+  bulletin_version_id?: string; // Added bulletin_version_id for compatibility
 }
 
 export interface BulletinReview {

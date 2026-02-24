@@ -233,6 +233,9 @@
     "statusUnknown": "Không xác định"
   },
   "CreateBulletin": {
+    "comments": {
+      "generalTitle": "Bình luận chung"
+    },
     "exportModal": {
       "contentLabel": "Nội dung",
       "loadError": "Lỗi",

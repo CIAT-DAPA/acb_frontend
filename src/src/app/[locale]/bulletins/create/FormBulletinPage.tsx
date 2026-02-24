@@ -41,6 +41,7 @@ import { ReviewService } from "../../../../services/reviewService";
 import { useToast } from "../../../../components/Toast";
 import { btnOutlineSecondary, btnPrimary } from "../../components/ui";
 import { slugify, isValidSlug } from "../../../../utils/slugify";
+import { BulletinComment } from "@/types/bulletin"; // Updated to use renamed BulletinComment type
 
 // Funciones para codificar/decodificar valores de texto
 const encodeTextFieldValue = (value: any): any => {
@@ -144,6 +145,7 @@ interface FormBulletinPageProps {
   mode?: "create" | "edit";
   bulletinId?: string;
   initialData?: CreateBulletinData;
+  comments?: BulletinComment[]; // Updated type to BulletinComment[]
 }
 
 // Configuración para exportación automática (definida fuera del componente)
@@ -194,6 +196,7 @@ export default function FormBulletinPage({
   mode = "create",
   bulletinId,
   initialData,
+  comments,
 }: FormBulletinPageProps) {
   const t = useTranslations("CreateBulletin");
   const { userInfo } = useAuth();
@@ -268,6 +271,60 @@ export default function FormBulletinPage({
   });
 
   const [isLoading, setIsLoading] = useState(false);
+
+  // Group comments by target_element
+  const groupedComments = useMemo(() => {
+    const generalComments: BulletinComment[] = [];
+    const fieldComments: Record<string, BulletinComment[]> = {};
+
+    comments?.forEach((comment) => {
+      // If no valid target or generic target, treat as general
+      if (!comment.target_element?.field_id) {
+        generalComments.push(comment);
+      } else {
+        const fieldId = comment.target_element.field_id;
+        if (!fieldComments[fieldId]) {
+          fieldComments[fieldId] = [];
+        }
+        fieldComments[fieldId].push(comment);
+      }
+    });
+
+    return { generalComments, fieldComments };
+  }, [comments]);
+
+  // Render general comments
+  const renderGeneralComments = useCallback(() => {
+    if (groupedComments.generalComments.length === 0) return null;
+
+    return (
+      <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <h3 className="text-sm font-semibold text-yellow-800 mb-2">
+          {t("comments.generalTitle") || "Comentarios Generales"}
+        </h3>
+        <ul className="list-disc pl-5 space-y-1">
+          {groupedComments.generalComments.map((comment) => (
+            <li key={comment.comment_id} className="text-sm text-yellow-900">
+              <span className="font-medium text-xs text-yellow-700 block mb-0.5">
+                {comment.author_first_name || "Reviewer"}:
+              </span>
+              {comment.text}
+              {comment.replies && comment.replies.length > 0 && (
+                <ul className="list-circle pl-4 mt-1 border-l-2 border-yellow-200">
+                  {comment.replies.map((reply) => (
+                    <li key={reply.comment_id} className="text-xs text-gray-600 mt-1">
+                      <span className="font-medium">{reply.author_first_name}: </span>
+                      {reply.text}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  }, [groupedComments.generalComments, t]);
 
   // Cargar los slug names existentes al montar el componente
   useEffect(() => {
@@ -659,30 +716,13 @@ export default function FormBulletinPage({
           current_version_id,
           base_template_master_id,
           base_template_version_id,
-          name_machine, // Excluir slug de la actualización
-          thumbnail_images, // Procesar imágenes aparte
-          ...restUpdateData
+          ...updateDataPayload
         } = masterDataWithoutLog as any;
-
-        // Validar thumbnail_images (eliminar blobs locales)
-        const cleanThumbnailImages = Array.isArray(thumbnail_images)
-          ? thumbnail_images.filter(
-              (img: string) =>
-                img && !img.startsWith("blob:") && img.trim() !== "",
-            )
-          : undefined;
-
-        const updateData = {
-          ...restUpdateData,
-          ...(cleanThumbnailImages && cleanThumbnailImages.length > 0
-            ? { thumbnail_images: cleanThumbnailImages }
-            : {}),
-        };
 
         // 1. Actualizar bulletin master
         const masterResponse = await BulletinAPIService.updateBulletin(
           bulletinId,
-          updateData,
+          updateDataPayload,
         );
 
         if (!masterResponse.success) {
@@ -729,18 +769,12 @@ export default function FormBulletinPage({
         const newBulletinId =
           (masterResponse.data as any).id || masterResponse.data._id;
 
-        const {
-          _id: _,
-          log: versionLog,
-          bulletin_master_id: __,
-          previous_version_id: ___,
-          ...versionDataClean
-        } = encodedData.version as any;
+        const { log: versionLog, ...versionDataWithoutLog } =
+          encodedData.version;
 
-        // 2. Crear primera versión del boletín
         const versionResponse = await BulletinAPIService.createBulletinVersion(
           newBulletinId,
-          versionDataClean as any,
+          versionDataWithoutLog,
         );
 
         if (!versionResponse.success) {
@@ -800,13 +834,13 @@ export default function FormBulletinPage({
           current_version_id,
           base_template_master_id,
           base_template_version_id,
-          ...updateData
+          ...updateDataPayload
         } = masterDataWithoutLog as any;
 
         // 1. Actualizar bulletin master (sin status ni campos de sistema)
         const masterResponse = await BulletinAPIService.updateBulletin(
           bulletinId,
-          updateData,
+          updateDataPayload,
         );
 
         if (!masterResponse.success) {
@@ -919,13 +953,13 @@ export default function FormBulletinPage({
           current_version_id,
           base_template_master_id,
           base_template_version_id,
-          ...updateData
+          ...updateDataPayload
         } = masterDataWithoutLog as any;
 
         // Actualizar bulletin master
         const masterResponse = await BulletinAPIService.updateBulletin(
           bulletinId,
-          updateData,
+          updateDataPayload,
         );
 
         if (!masterResponse.success) {
@@ -1121,12 +1155,12 @@ export default function FormBulletinPage({
           base_template_version_id,
           name_machine,
           thumbnail_images,
-          ...updateData
+          ...updateDataPayload
         } = masterDataWithoutLog as any;
 
         const masterResponse = await BulletinAPIService.updateBulletin(
           bulletinId,
-          updateData,
+          updateDataPayload,
         );
 
         if (!masterResponse.success) {
@@ -1283,6 +1317,8 @@ export default function FormBulletinPage({
     };
   }, [creationState.data, creationState.selectedTemplateId]);
 
+
+
   // Renderizar contenido del paso actual
   const renderStepContent = () => {
     switch (creationState.currentStep) {
@@ -1302,6 +1338,7 @@ export default function FormBulletinPage({
             bulletinData={creationState.data}
             onUpdate={updateBulletinData}
             existingSlugNames={existingSlugNames}
+            fieldComments={groupedComments.fieldComments}
           />
         );
 
@@ -1330,6 +1367,7 @@ export default function FormBulletinPage({
               onUpdate={updateBulletinData}
               currentPageIndex={previewPageIndex}
               onPageChange={setPreviewPageIndex}
+              fieldComments={groupedComments.fieldComments}
             />
           );
         }
@@ -1451,6 +1489,7 @@ export default function FormBulletinPage({
 
             {/* Right: Preview */}
             <div className="bg-white rounded-lg shadow-lg p-6 sticky top-8 self-start">
+              {renderGeneralComments()}
               <h3 className="text-xl font-semibold text-[#283618] mb-4">
                 {t("preview.title")}
               </h3>

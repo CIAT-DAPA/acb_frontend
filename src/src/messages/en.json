@@ -234,6 +234,9 @@
     }
   },
   "CreateBulletin": {
+    "comments": {
+      "generalTitle": "General Comments"
+    },
     "title": "Create Bulletin",
     "subtitle": "Create a new agroclimatic bulletin using a template",
     "titleEdit": "Edit Bulletin",

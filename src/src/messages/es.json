@@ -234,6 +234,9 @@
     }
   },
   "CreateBulletin": {
+    "comments": {
+      "generalTitle": "Comentarios Generales"
+    },
     "title": "Crear Boletín",
     "subtitle": "Crea un nuevo boletín agroclimático utilizando una plantilla",
     "titleEdit": "Editar Boletín",
