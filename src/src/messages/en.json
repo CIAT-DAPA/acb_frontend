@@ -586,11 +586,19 @@
         "changeImage": "Change image",
         "selectImage": "Select image",
         "selectBackgroundImageTitle": "Select Background Image",
-        "previewTitle": "Preview",
-        "previewMainTitle": "Main Title",
-        "previewSubtitle": "Example Subtitle",
-        "previewText": "This is sample text that shows how the applied styles will look.",
-        "previewSmallText": "Small text for additional details.",
+        "borderWidth": "Border Width",
+        "borderRadius": "Border Radius",
+        "borderSides": "Border Sides",
+        "borderSidesHelp": "Select which sides should display the border",
+        "borderTop": "Top",
+        "borderBottom": "Bottom",
+        "borderLeft": "Left",
+        "borderRight": "Right",
+        "padding": "Padding (CSS)",
+        "margin": "Margin (CSS)",
+        "gap": "Gap between Fields",
+        "bulletinWidth": "Bulletin Width (px)",
+        "bulletinHeight": "Bulletin Height (px)",
         "fieldsLayout": "Fields Layout",
         "justifyContent": "Field Distribution",
         "justifyOptions": {
@@ -608,6 +616,32 @@
           "center": "Center",
           "stretch": "Stretch"
         },
+        "listStyleType": "List Style",
+        "listItemsLayout": "List Items Layout",
+        "layoutOptions": {
+          "horizontal": "Horizontal (side by side)",
+          "vertical": "Vertical (stacked)"
+        },
+        "listStyleOptions": {
+          "disc": "• Filled circle",
+          "circle": "○ Empty circle",
+          "square": "■ Square",
+          "decimal": "1. Numbered",
+          "none": "No bullets"
+        },
+        "listLayoutOptions": {
+          "vertical": "Vertical",
+          "horizontal": "Horizontal",
+          "grid2": "Grid 2 columns",
+          "grid3": "Grid 3 columns",
+          "table": "Table"
+        },
+        "showTableHeader": "Show Header",
+        "headerStyles": "Header Styles",
+        "headerBackgroundColor": "Background Color",
+        "headerTextColor": "Text Color",
+        "headerFontSize": "Font Size (px)",
+        "headerFontWeight": "Font Weight",
         "alignOptions": {
           "left": "Left",
           "center": "Center",
@@ -633,53 +667,11 @@
           "underline": "Underline",
           "lineThrough": "Line Through"
         },
-        "layoutOptions": {
-          "horizontal": "Horizontal (side by side)",
-          "vertical": "Vertical (stacked)"
-        },
-        "listStyleOptions": {
-          "disc": "• Filled circle",
-          "circle": "○ Empty circle",
-          "square": "■ Square",
-          "decimal": "1. Numbered",
-          "none": "No bullets"
-        },
-        "listLayoutOptions": {
-          "vertical": "Vertical",
-          "horizontal": "Horizontal",
-          "grid2": "Grid 2 columns",
-          "grid3": "Grid 3 columns",
-          "table": "Table"
-        },
-        "showTableHeader": "Show Header",
-        "headerStyles": "Header Styles",
-        "headerBackgroundColor": "Background Color",
-        "headerTextColor": "Text Color",
-        "headerFontSize": "Font Size (px)",
-        "headerFontWeight": "Font Weight",
-        "font": {
-          "label": "Font"
-        },
-        "primaryColor": {
-          "label": "Primary Color"
-        },
-        "secondaryColor": {
-          "label": "Secondary Color"
-        },
-        "backgroundColor": {
-          "label": "Background Color"
-        },
-        "fontSize": {
-          "label": "Font Size (px)"
-        },
-        "textAlign": {
-          "label": "Text Alignment",
-          "options": {
-            "left": "Left",
-            "center": "Center",
-            "right": "Right"
-          }
-        }
+        "previewTitle": "Preview",
+        "previewMainTitle": "Main Title",
+        "previewSubtitle": "Example Subtitle",
+        "previewText": "This is sample text that shows how the applied styles will look.",
+        "previewSmallText": "Small text for additional details."
       },
       "preview": {
         "title": "Style Preview",
@@ -759,8 +751,8 @@
         "borderBottom": "Bottom",
         "borderLeft": "Left",
         "borderRight": "Right",
-        "padding": "Padding",
-        "margin": "Margin",
+        "padding": "Padding (CSS)",
+        "margin": "Margin (CSS)",
         "gap": "Gap between Fields",
         "bulletinWidth": "Bulletin Width (px)",
         "bulletinHeight": "Bulletin Height (px)",
@@ -773,6 +765,13 @@
           "between": "Space Between",
           "around": "Space Around",
           "evenly": "Space Evenly"
+        },
+        "alignItems": "Items Alignment",
+        "alignItemsOptions": {
+          "start": "Start",
+          "end": "End",
+          "center": "Center",
+          "stretch": "Stretch"
         },
         "listStyleType": "List Style",
         "listItemsLayout": "List Items Layout",
@@ -1545,11 +1544,7 @@
         "dateField": "Date: {date}",
         "dateRange": "Period: {start} - {end}",
         "listTitle": "Sample List:",
-        "listItems": [
-          "Item 1",
-          "Item 2",
-          "Item 3"
-        ],
+        "listItems": ["Item 1", "Item 2", "Item 3"],
         "climateTitle": "Climate Data:",
         "climateData": [
           "Temperature: 25°C",
@@ -2101,7 +2096,7 @@
   "Review": {
     "comments": "Comments",
     "noComments": "No comments yet",
-    "selectElement": "Select an element to comment",
+    "selectElementToComment": "Select an element to comment",
     "general": "General",
     "section": "Section",
     "block": "Block",
@@ -2116,7 +2111,33 @@
     "pressEnter": "Press Enter to send",
     "send": "Send",
     "resolve": "Resolve",
-    "newComment": "New Comment"
+    "newComment": "New Comment",    
+    "reject": "Reject",
+    "approveAndPublish": "Approve and Publish",
+    "back": "Back",
+    "pressEnterToSend": "Press Enter to send",
+    "inReview": "In review"
+  },
+  "ReviewPage": {
+    "errorLoadingComments": "Error loading comments:",
+    "errorLoadingBulletin": "Error loading bulletin",
+    "connectionError": "Connection error",
+    "errorSavingComment": "Error saving comment",
+    "pressEnterToSend": "Press Enter to send",
+    "approvedAndPublished": "Bulletin approved and published (Simulated)",
+    "rejectedAndDrafted": "Bulletin rejected and returned to draft (Simulated)",
+    "back": "Back",
+    "inReview": "In review",
+    "newGeneralComment": "New general comment",
+    "commentFor": "Comment for:",
+    "noCommentsYet": "No comments yet",
+    "selectElementToComment": "Select an element to comment",
+    "writeAboutElement": "Write about this element...",
+    "writeGeneralComment": "Write a general comment...",
+    "comments": "Comments",
+    "showComments": "Show Comments",
+    "pendingReview": "Pending review",
+    "review": "In review"
   },
   "Common": {
     "header": "Header",

@@ -1227,7 +1227,7 @@
         "imageLabelPlaceholder": "ej. Figura 1: Descripción",
         "imageLabelHelp": "Texto que aparecerá debajo de la imagen",
         "iconLabel": "Icono",
-        "changeIcon": "Cambiar icono",
+        "changeIcon": "Cambiar",
         "selectIcon": "Seleccionar icono",
         "selectIconTitle": "Seleccionar Icono"
       },
@@ -1542,11 +1542,7 @@
         "dateField": "Fecha: {date}",
         "dateRange": "Período: {start} - {end}",
         "listTitle": "Lista de Ejemplo:",
-        "listItems": [
-          "Elemento 1",
-          "Elemento 2",
-          "Elemento 3"
-        ],
+        "listItems": ["Elemento 1", "Elemento 2", "Elemento 3"],
         "climateTitle": "Datos Climáticos:",
         "climateData": [
           "Temperatura: 25°C",
@@ -2098,7 +2094,7 @@
   "Review": {
     "comments": "Comentarios",
     "noComments": "Sin comentarios aún",
-    "selectElement": "Selecciona un elemento para comentar",
+    "selectElementToComment": "Selecciona un elemento para comentar",
     "general": "General",
     "section": "Sección",
     "block": "Bloque",
@@ -2113,7 +2109,33 @@
     "pressEnter": "Presiona Enter para enviar",
     "send": "Enviar",
     "resolve": "Resolver",
-    "newComment": "Nuevo comentario"
+    "newComment": "Nuevo comentario",
+    "reject": "Rechazar",
+    "approveAndPublish": "Aprobar y Publicar",
+    "back": "Volver",
+    "pressEnterToSend": "Presiona Enter para enviar",
+    "inReview": "In review"
+  },
+  "ReviewPage": {
+    "errorLoadingComments": "Error al cargar comentarios:",
+    "errorLoadingBulletin": "Error al cargar el boletín",
+    "connectionError": "Error de conexión",
+    "errorSavingComment": "Error al guardar comentario",
+    "pressEnterToSend": "Presiona Enter para enviar",
+    "approvedAndPublished": "Boletín aprobado y publicado (Simulado)",
+    "rejectedAndDrafted": "Boletín rechazado y devuelto a borrador (Simulado)",
+    "back": "Volver",
+    "inReview": "En revisión",
+    "newGeneralComment": "Nuevo comentario general",
+    "commentFor": "Comentario para:",
+    "noCommentsYet": "Sin comentarios aún",
+    "selectElementToComment": "Selecciona un elemento para comentar",
+    "writeAboutElement": "Escribe sobre este elemento...",
+    "writeGeneralComment": "Escribe un comentario general...",
+    "comments": "Comentarios",
+    "showComments": "Mostrar comentarios",
+    "pendingReview": "Pendiente de revisión",
+    "review": "En revisión"
   },
   "Common": {
     "header": "Encabezado",

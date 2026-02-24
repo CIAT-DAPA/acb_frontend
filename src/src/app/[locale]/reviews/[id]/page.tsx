@@ -94,9 +94,8 @@ const decodeTextFields = (data: any): any => {
 export default function ReviewBulletinPage() {
   const params = useParams();
   const router = useRouter();
-  const t = useTranslations("Bulletins");
+  const t = useTranslations("Review");
   const tCommon = useTranslations("Common");
-  const tReview = useTranslations("Review");
   const locale = useLocale();
   const bulletinId = params.id as string;
 
@@ -121,6 +120,8 @@ export default function ReviewBulletinPage() {
   let sIndex: number | undefined;
   let bIndex: number | undefined;
   let fIndex: number | undefined;
+
+  const tReview = useTranslations("Review");
 
   const mappedComments = useMemo(() => {
     if (!bulletin || !comments.length) return comments;
@@ -447,14 +448,24 @@ export default function ReviewBulletinPage() {
 
   const handleApprove = async () => {
     // Mock approval
-    alert("Boletín aprobado y publicado (Simulado)");
+    alert(t("approveMessage"));
     router.push("/reviews");
   };
 
   const handleReject = async () => {
-    // Mock rejection
-    alert("Boletín rechazado y devuelto a borrador (Simulado)");
-    router.push("/reviews");
+    try {
+      // Call the reject service
+      await ReviewService.rejectBulletin(bulletinId);
+
+      // Show a popup indicating the bulletin was rejected
+      alert(t("rejectMessage"));
+
+      // Redirect to the reviews page
+      router.push("/reviews");
+    } catch (error) {
+      console.error("Error rejecting bulletin:", error);
+      alert("Error al rechazar el boletín");
+    }
   };
 
   const handleSelection = (newSelection: EditorSelection, rect?: DOMRect) => {
@@ -707,7 +718,7 @@ export default function ReviewBulletinPage() {
       <div className="flex flex-col items-center justify-center min-h-screen">
         <p className="text-red-500 mb-4">{error || "No data found"}</p>
         <Link href="/reviews" className={btnPrimary}>
-          Volver
+          {t("back")}
         </Link>
       </div>
     );
@@ -723,7 +734,7 @@ export default function ReviewBulletinPage() {
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600 flex items-center gap-2"
           >
             <ArrowLeft className="h-5 w-5" />
-            <span className="font-medium">Volver</span>
+            <span className="font-medium">{t("back")}</span>
           </Link>
 
           <div className="h-8 w-px bg-gray-200 mx-2" />
@@ -743,7 +754,7 @@ export default function ReviewBulletinPage() {
                 }`}
               >
                 {bulletin.master.status === "review"
-                  ? "En revisión"
+                  ? t("inReview")
                   : bulletin.master.status}
               </span>
             </div>
@@ -756,14 +767,14 @@ export default function ReviewBulletinPage() {
             className="px-4 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 flex items-center gap-2 font-medium transition-colors"
           >
             <XCircle className="h-5 w-5" />
-            Rechazar
+            {t("reject")}
           </button>
           <button
             onClick={handleApprove}
             className={`${btnPrimary} flex items-center gap-2 shadow-md`}
           >
             <CheckCircle className="h-5 w-5" />
-            Aprobar y Publicar
+            {t("approveAndPublish")}
           </button>
         </div>
       </div>
@@ -807,7 +818,9 @@ export default function ReviewBulletinPage() {
               <div className="h-14 border-b border-gray-100 flex items-center justify-between px-4 bg-gray-50/50 shrink-0">
                 <div className="flex items-center gap-2 font-semibold text-gray-700">
                   <MessageSquare className="h-4 w-4" />
-                  <span>Comentarios ({mappedComments.length})</span>
+                  <span>
+                    {t("comments")} ({mappedComments.length})
+                  </span>
                 </div>
                 <button
                   onClick={() => setIsSidebarOpen(false)}
@@ -822,9 +835,9 @@ export default function ReviewBulletinPage() {
                 {sortedComments.length === 0 ? (
                   <div className="text-center py-10 text-gray-400">
                     <MessageSquare className="h-10 w-10 mx-auto mb-2 opacity-20" />
-                    <p className="text-sm">Sin comentarios aún</p>
+                    <p className="text-sm">{t("noComments")}</p>
                     <p className="text-xs mt-1">
-                      Selecciona un elemento para comentar
+                      {t("selectElementToComment")}
                     </p>
                   </div>
                 ) : (
@@ -940,8 +953,8 @@ export default function ReviewBulletinPage() {
                 <div className="mb-2 flex items-center justify-between">
                   <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
                     {selection.id
-                      ? `Comentario para: ${getElementName()}`
-                      : "Nuevo comentario general"}
+                      ? `${t("commentFor")} ${getElementName()}`
+                      : t("newGeneralComment")}
                   </span>
                   {selection.id && (
                     <button
@@ -950,7 +963,7 @@ export default function ReviewBulletinPage() {
                       }
                       className="text-[10px] text-gray-400 hover:text-gray-600 underline"
                     >
-                      Cancelar selección
+                      {t("cancelSelection")}
                     </button>
                   )}
                 </div>
@@ -960,8 +973,8 @@ export default function ReviewBulletinPage() {
                     className="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 pr-10 min-h-20 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none resize-none text-gray-700 transition-all placeholder:text-gray-400"
                     placeholder={
                       selection.id
-                        ? "Escribe sobre este elemento..."
-                        : "Escribe un comentario general..."
+                        ? t("writeAboutElement")
+                        : t("writeGeneralComment")
                     }
                     value={commentText}
                     onChange={(e) => setCommentText(e.target.value)}
@@ -985,7 +998,7 @@ export default function ReviewBulletinPage() {
                   </button>
                 </div>
                 <div className="mt-2 text-[10px] text-gray-400 flex justify-end">
-                  Presiona Enter para enviar
+                  {t("pressEnterToSend")}
                 </div>
               </div>
             </>
