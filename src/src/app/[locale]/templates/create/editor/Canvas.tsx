@@ -8,13 +8,15 @@ import { useTranslations } from "next-intl";
 interface CanvasProps {
   data: CreateTemplateData;
   selection: EditorSelection;
-  onSelect: (selection: EditorSelection) => void;
+  onSelect: (selection: EditorSelection, rect?: DOMRect) => void;
   onUpdateSection?: any;
   onUpdate?: any;
   onAddSection?: () => void;
   globalStyleConfig?: any;
   sections?: any;
   isCardMode?: boolean;
+  onCanvasChange?: () => void;
+  commentCounts?: Record<string, number>;
 }
 
 export const Canvas: React.FC<CanvasProps> = ({
@@ -23,6 +25,8 @@ export const Canvas: React.FC<CanvasProps> = ({
   onSelect,
   onAddSection,
   isCardMode = false,
+  onCanvasChange,
+  commentCounts,
 }) => {
   const t = useTranslations("CreateTemplate.fieldEditor");
   const containerRef = useRef<HTMLDivElement>(null);
@@ -35,6 +39,12 @@ export const Canvas: React.FC<CanvasProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 });
   const spacePressed = useRef(false);
+
+  useEffect(() => {
+    if (onCanvasChange) {
+      onCanvasChange();
+    }
+  }, [canvasState, onCanvasChange]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -167,11 +177,16 @@ export const Canvas: React.FC<CanvasProps> = ({
   ) => {
     e.stopPropagation();
 
+    // Helper to call onSelect with rect
+    const select = (selection: EditorSelection) => {
+      onSelect(selection, e.currentTarget.getBoundingClientRect());
+    };
+
     // Header Global Container
     if (id === "header-global") {
-      onSelect({
+      select({
         type: "header",
-        id: null,
+        id: id,
         sectionIndex: -1, // Global
       });
       return;
@@ -180,9 +195,9 @@ export const Canvas: React.FC<CanvasProps> = ({
     // Header Global Field
     const headerGlobalFieldMatch = id.match(/^header-global-(\d+)$/);
     if (headerGlobalFieldMatch) {
-      onSelect({
+      select({
         type: "header_field",
-        id: null,
+        id: id,
         sectionIndex: -1,
         fieldIndex: parseInt(headerGlobalFieldMatch[1]),
       });
@@ -192,9 +207,9 @@ export const Canvas: React.FC<CanvasProps> = ({
     // Header Section Field (Priority: check this first because it matches header-(\d+) prefix logic if not careful, but regex is strict)
     const headerFieldMatch = id.match(/^header-(\d+)-(\d+)$/);
     if (headerFieldMatch) {
-      onSelect({
+      select({
         type: "header_field",
-        id: null,
+        id: id,
         sectionIndex: parseInt(headerFieldMatch[1]),
         fieldIndex: parseInt(headerFieldMatch[2]),
       });
@@ -204,9 +219,9 @@ export const Canvas: React.FC<CanvasProps> = ({
     // Header Section Container
     const headerSectionMatch = id.match(/^header-(\d+)$/);
     if (headerSectionMatch) {
-      onSelect({
+      select({
         type: "header",
-        id: null,
+        id: id,
         sectionIndex: parseInt(headerSectionMatch[1]),
       });
       return;
@@ -214,9 +229,9 @@ export const Canvas: React.FC<CanvasProps> = ({
 
     // Footer Global Container
     if (id === "footer-global") {
-      onSelect({
+      select({
         type: "footer",
-        id: null,
+        id: id,
         sectionIndex: -1, // Global
       });
       return;
@@ -225,9 +240,9 @@ export const Canvas: React.FC<CanvasProps> = ({
     // Footer Global Field
     const footerGlobalFieldMatch = id.match(/^footer-global-(\d+)$/);
     if (footerGlobalFieldMatch) {
-      onSelect({
+      select({
         type: "footer_field",
-        id: null,
+        id: id,
         sectionIndex: -1,
         fieldIndex: parseInt(footerGlobalFieldMatch[1]),
       });
@@ -237,9 +252,9 @@ export const Canvas: React.FC<CanvasProps> = ({
     // Footer Section Field
     const footerFieldMatch = id.match(/^footer-(\d+)-(\d+)$/);
     if (footerFieldMatch) {
-      onSelect({
+      select({
         type: "footer_field",
-        id: null,
+        id: id,
         sectionIndex: parseInt(footerFieldMatch[1]),
         fieldIndex: parseInt(footerFieldMatch[2]),
       });
@@ -249,9 +264,9 @@ export const Canvas: React.FC<CanvasProps> = ({
     // Footer Section Container
     const footerSectionMatch = id.match(/^footer-(\d+)$/);
     if (footerSectionMatch) {
-      onSelect({
+      select({
         type: "footer",
-        id: null,
+        id: id,
         sectionIndex: parseInt(footerSectionMatch[1]),
       });
       return;
@@ -260,7 +275,7 @@ export const Canvas: React.FC<CanvasProps> = ({
     // Pattern checks for generated IDs
     const fieldSubmatch = id.match(/^field-(\d+)-(\d+)-(\d+)-subfield-(.+)$/);
     if (fieldSubmatch) {
-      onSelect({
+      select({
         type: "field",
         id: id,
         sectionIndex: parseInt(fieldSubmatch[1]),
@@ -273,7 +288,7 @@ export const Canvas: React.FC<CanvasProps> = ({
 
     const fieldMatch = id.match(/^field-(\d+)-(\d+)-(\d+)$/);
     if (fieldMatch) {
-      onSelect({
+      select({
         type: "field",
         id: id,
         sectionIndex: parseInt(fieldMatch[1]),
@@ -286,7 +301,7 @@ export const Canvas: React.FC<CanvasProps> = ({
 
     const blockMatch = id.match(/^block-(\d+)-(\d+)$/);
     if (blockMatch) {
-      onSelect({
+      select({
         type: "block",
         id: id,
         sectionIndex: parseInt(blockMatch[1]),
@@ -297,7 +312,7 @@ export const Canvas: React.FC<CanvasProps> = ({
 
     const sectionMatch = id.match(/^section-(\d+)$/);
     if (sectionMatch) {
-      onSelect({
+      select({
         type: "section",
         id: id,
         sectionIndex: parseInt(sectionMatch[1]),
@@ -310,14 +325,14 @@ export const Canvas: React.FC<CanvasProps> = ({
     for (let sIdx = 0; sIdx < sections.length; sIdx++) {
       const section = sections[sIdx];
       if (section.section_id === id || (section as any)._id === id) {
-        onSelect({ type: "section", id, sectionIndex: sIdx });
+        select({ type: "section", id, sectionIndex: sIdx });
         return;
       }
 
       for (let bIdx = 0; bIdx < section.blocks.length; bIdx++) {
         const block = section.blocks[bIdx];
         if (block.block_id === id || (block as any)._id === id) {
-          onSelect({ type: "block", id, sectionIndex: sIdx, blockIndex: bIdx });
+          select({ type: "block", id, sectionIndex: sIdx, blockIndex: bIdx });
           return;
         }
 
@@ -325,7 +340,7 @@ export const Canvas: React.FC<CanvasProps> = ({
           for (let fIdx = 0; fIdx < block.fields.length; fIdx++) {
             const field = block.fields[fIdx];
             if (field.field_id === id || (field as any)._id === id) {
-              onSelect({
+              select({
                 type: "field",
                 id,
                 sectionIndex: sIdx,
@@ -380,6 +395,7 @@ export const Canvas: React.FC<CanvasProps> = ({
                 onElementClick={handleElementClick}
                 selectedSectionIndex={0}
                 selectedElementId={selection.id}
+                commentCounts={commentCounts}
               />
             </div>
           ) : (
@@ -402,6 +418,7 @@ export const Canvas: React.FC<CanvasProps> = ({
                   selectedSectionIndex={index}
                   hidePagination={true}
                   selectedElementId={selection.id}
+                  commentCounts={commentCounts}
                 />
 
                 <div

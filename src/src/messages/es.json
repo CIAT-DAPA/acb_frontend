@@ -175,6 +175,7 @@
     "statusPublished": "Publicado",
     "statusArchived": "Archivado",
     "statusPendingReview": "Pendiente de revisión",
+    "statusReview": "En revisión",
     "statusRejected": "Rechazado",
     "statusActive": "Activo",
     "statusUnknown": "Desconocido",
@@ -1025,7 +1026,6 @@
       },
       "closeEditor": "Cerrar editor",
       "title": "Editor de Campos",
-
       "basicInfo": "Información Básica",
       "save": "Guardar Cambios",
       "cancel": "Cancelar",
@@ -1542,7 +1542,11 @@
         "dateField": "Fecha: {date}",
         "dateRange": "Período: {start} - {end}",
         "listTitle": "Lista de Ejemplo:",
-        "listItems": ["Elemento 1", "Elemento 2", "Elemento 3"],
+        "listItems": [
+          "Elemento 1",
+          "Elemento 2",
+          "Elemento 3"
+        ],
         "climateTitle": "Datos Climáticos:",
         "climateData": [
           "Temperatura: 25°C",
@@ -2090,5 +2094,30 @@
     "closeModal": "Cerrar modal",
     "previous": "Anterior",
     "next": "Siguiente"
+  },
+  "Review": {
+    "comments": "Comentarios",
+    "noComments": "Sin comentarios aún",
+    "selectElement": "Selecciona un elemento para comentar",
+    "general": "General",
+    "section": "Sección",
+    "block": "Bloque",
+    "field": "Campo",
+    "element": "Elemento",
+    "user": "Usuario",
+    "commentFor": "Comentario para:",
+    "newGeneralComment": "Nuevo comentario general",
+    "cancelSelection": "Cancelar selección",
+    "writeAboutElement": "Escribe sobre este elemento...",
+    "writeGeneralComment": "Escribe un comentario general...",
+    "pressEnter": "Presiona Enter para enviar",
+    "send": "Enviar",
+    "resolve": "Resolver",
+    "newComment": "Nuevo comentario"
+  },
+  "Common": {
+    "header": "Encabezado",
+    "footer": "Pie de página",
+    "generalComment": "Comentario General"
   }
 }

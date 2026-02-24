@@ -1,6 +1,12 @@
 import { BaseAPIService } from "./apiConfig";
 import { ReviewHistory, ReviewComment, CommentPayload } from "../types/review";
 
+export interface APIResponse<T = any> {
+  success: boolean;
+  data?: T;
+  message?: string;
+}
+
 export class ReviewService extends BaseAPIService {
   /**
    * Submit bulletin for review (DRAFT → PENDING_REVIEW)
@@ -77,8 +83,8 @@ export class ReviewService extends BaseAPIService {
   static async addComment(
     bulletinId: string,
     payload: CommentPayload,
-  ): Promise<ReviewComment> {
-    return this.post<ReviewComment>(
+  ): Promise<APIResponse<ReviewComment>> {
+    return this.post<APIResponse<ReviewComment>>(
       `/bulletins/reviews/${bulletinId}/comments`,
       payload,
     );
@@ -115,8 +121,10 @@ export class ReviewService extends BaseAPIService {
   /**
    * Get complete review history including all cycles and comments
    */
-  static async getReviewHistory(bulletinId: string): Promise<ReviewHistory> {
-    return this.get<ReviewHistory>(
+  static async getReviewHistory(
+    bulletinId: string,
+  ): Promise<APIResponse<ReviewHistory>> {
+    return this.get<APIResponse<ReviewHistory>>(
       `/bulletins/reviews/${bulletinId}/review-history`,
     );
   }

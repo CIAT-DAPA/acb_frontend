@@ -175,6 +175,7 @@
     "statusPublished": "Published",
     "statusArchived": "Archived",
     "statusPendingReview": "Pending review",
+    "statusReview": "In review",
     "statusRejected": "Rejected",
     "statusActive": "Active",
     "statusUnknown": "Unknown",
@@ -1544,7 +1545,11 @@
         "dateField": "Date: {date}",
         "dateRange": "Period: {start} - {end}",
         "listTitle": "Sample List:",
-        "listItems": ["Item 1", "Item 2", "Item 3"],
+        "listItems": [
+          "Item 1",
+          "Item 2",
+          "Item 3"
+        ],
         "climateTitle": "Climate Data:",
         "climateData": [
           "Temperature: 25°C",
@@ -2092,5 +2097,30 @@
     "closeModal": "Close modal",
     "previous": "Previous",
     "next": "Next"
+  },
+  "Review": {
+    "comments": "Comments",
+    "noComments": "No comments yet",
+    "selectElement": "Select an element to comment",
+    "general": "General",
+    "section": "Section",
+    "block": "Block",
+    "field": "Field",
+    "element": "Element",
+    "user": "User",
+    "commentFor": "Comment for:",
+    "newGeneralComment": "New general comment",
+    "cancelSelection": "Cancel selection",
+    "writeAboutElement": "Write about this element...",
+    "writeGeneralComment": "Write a general comment...",
+    "pressEnter": "Press Enter to send",
+    "send": "Send",
+    "resolve": "Resolve",
+    "newComment": "New Comment"
+  },
+  "Common": {
+    "header": "Header",
+    "footer": "Footer",
+    "generalComment": "General Comment"
   }
 }

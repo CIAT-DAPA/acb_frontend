@@ -119,6 +119,7 @@ interface TemplatePreviewProps {
     e: React.MouseEvent,
   ) => void;
   selectedElementId?: string | null;
+  commentCounts?: Record<string, number>;
 }
 
 // Constantes para estilos repetidos
@@ -141,9 +142,23 @@ export function TemplatePreview({
   reviewMode = false,
   onElementClick,
   selectedElementId,
+  commentCounts,
 }: TemplatePreviewProps) {
   const t = useTranslations("CreateTemplate.preview");
   const pathname = usePathname();
+
+  // Helper para renderizar el badge de comentarios
+  const renderCommentBadge = (elementId: string) => {
+    const count = commentCounts?.[elementId];
+    if (!count || count <= 0) return null;
+
+    return (
+      <div className="absolute -top-2 -right-2 bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow-md z-30 ring-1 ring-white">
+        {count > 9 ? "9+" : count}
+      </div>
+    );
+  };
+
   const hookLocale = useLocale();
 
   // Extraer el locale actual del pathname como backup (igual que LanguageSelector)
@@ -2270,6 +2285,7 @@ export function TemplatePreview({
                           className="relative hover:ring-2 hover:ring-yellow-400 cursor-pointer rounded transition-all group/field"
                         >
                           {rendered}
+                          {renderCommentBadge(fieldId)}
                           <div className="absolute -top-2 -right-2 bg-yellow-400 text-white rounded-full p-1 opacity-0 group-hover/field:opacity-100 transition-opacity z-10 shadow-sm">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -2489,6 +2505,7 @@ export function TemplatePreview({
                       {/* Header con lógica de prioridad */}
                       {activeHeaderConfig && (
                         <div
+                          data-review-id={`header-${sectionIndex}`}
                           onClick={
                             reviewMode && onElementClick
                               ? (e) =>
@@ -2590,12 +2607,14 @@ export function TemplatePreview({
                               return (
                                 <div
                                   key={`review-wrapper-${fieldId}`}
+                                  data-review-id={fieldId}
                                   onClick={(e) =>
                                     onElementClick("header_field", fieldId, e)
                                   }
                                   className="relative hover:ring-2 hover:ring-yellow-400 cursor-pointer rounded transition-all group/field"
                                 >
                                   {rendered}
+                                  {renderCommentBadge(fieldId)}
                                   <div className="absolute -top-2 -right-2 bg-yellow-400 text-white rounded-full p-1 opacity-0 group-hover/field:opacity-100 transition-opacity z-10 shadow-sm">
                                     <svg
                                       xmlns="http://www.w3.org/2000/svg"
@@ -2622,6 +2641,9 @@ export function TemplatePreview({
                       {/* Sección con bloques - ocupa todo el espacio disponible */}
                       <div
                         data-section-preview={`section-${sectionIndex}`}
+                        data-review-id={
+                          reviewMode ? `section-${sectionIndex}` : undefined
+                        }
                         style={{ ...sectionStyles, overflow: "hidden" }}
                         className={`flex-1 overflow-hidden flex flex-col ${
                           reviewMode
@@ -2633,8 +2655,7 @@ export function TemplatePreview({
                             ? (e) =>
                                 onElementClick(
                                   "section",
-                                  section.section_id ||
-                                    `section-${sectionIndex}`,
+                                  `section-${sectionIndex}`,
                                   e,
                                 )
                             : undefined
@@ -2645,6 +2666,7 @@ export function TemplatePreview({
                             Section
                           </div>
                         )}
+                        {renderCommentBadge(`section-${sectionIndex}`)}
                         {/* Bloques de la sección */}
                         <div className="space-y-1 w-full flex-1 flex flex-col overflow-hidden">
                           {section.blocks.length === 0 ? (
@@ -2761,6 +2783,12 @@ export function TemplatePreview({
                               return (
                                 <div
                                   key={`preview-block-${sectionIndex}-${blockIndex}`}
+                                  data-review-id={
+                                    reviewMode
+                                      ? block.block_id ||
+                                        `block-${sectionIndex}-${blockIndex}`
+                                      : undefined
+                                  }
                                   className={`${hasCardField ? "flex-1" : ""} ${
                                     reviewMode
                                       ? "hover:ring-2 hover:ring-blue-400 cursor-pointer relative group/block transition-all"
@@ -2771,8 +2799,7 @@ export function TemplatePreview({
                                       ? (e) =>
                                           onElementClick(
                                             "block",
-                                            block.block_id ||
-                                              `block-${sectionIndex}-${blockIndex}`,
+                                            `block-${sectionIndex}-${blockIndex}`,
                                             e,
                                           )
                                       : undefined
@@ -2786,6 +2813,9 @@ export function TemplatePreview({
                                     <div className="absolute top-0 left-0 bg-blue-400 text-white text-[10px] px-1 rounded-br opacity-0 group-hover/block:opacity-100 transition-opacity z-10 pointer-events-none">
                                       Block
                                     </div>
+                                  )}
+                                  {renderCommentBadge(
+                                    `block-${sectionIndex}-${blockIndex}`,
                                   )}
 
                                   {/* Container for fields with specific layout */}
@@ -2803,9 +2833,7 @@ export function TemplatePreview({
                                       block.fields
                                         .filter((field) => field.bulletin) // Only show fields for bulletin
                                         .map((field, fieldIndex) => {
-                                          const fieldId =
-                                            (field as any)._id ||
-                                            `field-${sectionIndex}-${blockIndex}-${fieldIndex}`;
+                                          const fieldId = `field-${sectionIndex}-${blockIndex}-${fieldIndex}`;
                                           const renderedField = renderField(
                                             field,
                                             `preview-${fieldId}`, // Use consistent key
@@ -2845,6 +2873,7 @@ export function TemplatePreview({
                                             return (
                                               <div
                                                 key={`review-wrapper-${fieldId}`}
+                                                data-review-id={fieldId}
                                                 onClick={(e) =>
                                                   onElementClick(
                                                     "field",
@@ -2856,6 +2885,7 @@ export function TemplatePreview({
                                                 className={`relative ${isSelected ? "ring-2 ring-blue-500 z-20" : "hover:ring-2 hover:ring-yellow-400"} cursor-pointer rounded transition-all group/field`}
                                               >
                                                 {renderedField}
+                                                {renderCommentBadge(fieldId)}
                                                 {/* Selection Badge for Parent */}
                                                 {isSelected && (
                                                   <div className="absolute -top-3 -left-1 bg-blue-500 text-white text-[10px] px-2 py-0.5 rounded-t font-semibold shadow-sm z-30">
@@ -2896,6 +2926,7 @@ export function TemplatePreview({
                       {/* Footer con lógica de prioridad */}
                       {activeFooterConfig && (
                         <div
+                          data-review-id={`footer-${sectionIndex}`}
                           onClick={
                             reviewMode && onElementClick
                               ? (e) =>
@@ -2999,12 +3030,14 @@ export function TemplatePreview({
                               return (
                                 <div
                                   key={`review-wrapper-${fieldId}`}
+                                  data-review-id={fieldId}
                                   onClick={(e) =>
                                     onElementClick("footer_field", fieldId, e)
                                   }
                                   className="relative hover:ring-2 hover:ring-yellow-400 cursor-pointer rounded transition-all group/field"
                                 >
                                   {rendered}
+                                  {renderCommentBadge(fieldId)}
                                   <div className="absolute -top-2 -right-2 bg-yellow-400 text-white rounded-full p-1 opacity-0 group-hover/field:opacity-100 transition-opacity z-10 shadow-sm">
                                     <svg
                                       xmlns="http://www.w3.org/2000/svg"
@@ -3113,6 +3146,7 @@ export function TemplatePreview({
                         className="relative hover:ring-2 hover:ring-yellow-400 cursor-pointer rounded transition-all group/field"
                       >
                         {rendered}
+                        {renderCommentBadge(fieldId)}
                         <div className="absolute -top-2 -right-2 bg-yellow-400 text-white rounded-full p-1 opacity-0 group-hover/field:opacity-100 transition-opacity z-10 shadow-sm">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"

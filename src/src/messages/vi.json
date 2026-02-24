@@ -224,7 +224,13 @@
     "pages": "các trang",
     "section": "Phần",
     "statusDraft": "Bản nháp",
-    "statusPublished": "Đã xuất bản"
+    "statusPublished": "Đã xuất bản",
+    "statusArchived": "Đã lưu trữ",
+    "statusPendingReview": "Đang chờ xem xét",
+    "statusReview": "Đang xem xét",
+    "statusRejected": "Từ chối",
+    "statusActive": "Hoạt động",
+    "statusUnknown": "Không xác định"
   },
   "CreateBulletin": {
     "exportModal": {
@@ -1765,9 +1771,17 @@
         "dateField": "Ngày: {date}",
         "dateRange": "Giai đoạn: {start} - {end}",
         "listTitle": "Danh sách mẫu:",
-        "listItems": ["Mục 1", "Mục 2", "Mục 3"],
+        "listItems": [
+          "Mục 1",
+          "Mục 2",
+          "Mục 3"
+        ],
         "climateTitle": "Dữ liệu khí hậu:",
-        "climateData": ["Nhiệt độ: 25°C", "Độ ẩm: 65%", "Lượng mưa: 15mm"]
+        "climateData": [
+          "Nhiệt độ: 25°C",
+          "Độ ẩm: 65%",
+          "Lượng mưa: 15mm"
+        ]
       }
     },
     "finish": "Tạo biểu mẫu",
@@ -1914,5 +1928,10 @@
     "redirecting": "Đang chuyển hướng đến trang đăng nhập...",
     "accessDeniedTitle": "Truy cập bị từ chối",
     "accessDeniedMessage": "Bạn không có quyền truy cập vào phần này."
+  },
+  "Common": {
+    "header": "Đầu trang",
+    "footer": "Chân trang",
+    "generalComment": "Bình luận chung"
   }
 }
