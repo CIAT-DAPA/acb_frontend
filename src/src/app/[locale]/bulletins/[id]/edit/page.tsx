@@ -14,6 +14,7 @@ import { ProtectedRoute } from "../../../../../components/ProtectedRoute";
 import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
 import { useAuth } from "@/hooks/useAuth";
 import { slugify } from "../../../../../utils/slugify";
+import { ReviewService } from "@/services/reviewService";
 
 export default function EditBulletinPage() {
   const params = useParams();
@@ -31,6 +32,21 @@ export default function EditBulletinPage() {
   useEffect(() => {
     loadBulletinData();
   }, [bulletinId]);
+
+  useEffect(() => {
+    const reopenIfRejected = async () => {
+      if (initialData?.master.status === "rejected") {
+        try {
+          await ReviewService.reopenBulletin(bulletinId);
+          console.log("Bulletin reopened successfully.");
+        } catch (error) {
+          console.error("Failed to reopen bulletin:", error);
+        }
+      }
+    };
+
+    reopenIfRejected();
+  }, [initialData, bulletinId]);
 
   const loadBulletinData = async () => {
     if (!bulletinId) {
