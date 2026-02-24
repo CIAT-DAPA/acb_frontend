@@ -2118,10 +2118,20 @@
     "resolve": "Resolve",
     "newComment": "New Comment",    
     "reject": "Reject",
+    "rejectSuccess": "Bulletin rejected successfully",
     "approveAndPublish": "Approve and Publish",
     "back": "Back",
     "pressEnterToSend": "Press Enter to send",
-    "inReview": "In review"
+    "inReview": "In review",
+    "successModal": {
+      "title": "Bulletin Published Successfully",
+      "message": "The bulletin has been approved and published successfully. It is now visible to all users with access.",
+      "publicLinkRaw": "Public link of the bulletin:",
+      "copyLinkTitle": "Copy link",
+      "openLinkTitle": "Open link",
+      "goToBulletins": "Go to my bulletins",
+      "linkCopied": "Link copied to clipboard"
+    }
   },
   "ReviewPage": {
     "errorLoadingComments": "Error loading comments:",
@@ -2147,6 +2157,7 @@
   "Common": {
     "header": "Header",
     "footer": "Footer",
-    "generalComment": "General Comment"
+    "generalComment": "General Comment",
+    "close": "Close"
   }
 }

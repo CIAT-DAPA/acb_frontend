@@ -13,11 +13,15 @@ import {
   ChevronsRight,
   Send,
   MoreVertical,
-  Maximize2,
-  Minimize2,
+  ExternalLink,
+  Copy,
+  AlertTriangle,
 } from "lucide-react";
 import { BulletinAPIService } from "@/services/bulletinService";
 import { ReviewService } from "@/services/reviewService";
+import { TemplateAPIService } from "@/services/templateService";
+import { Modal } from "@/components/Modal";
+import { useToast } from "@/components/Toast";
 import { Canvas } from "../../templates/create/editor/Canvas";
 import { EditorSelection } from "../../templates/create/editor/types";
 import {
@@ -94,6 +98,8 @@ const decodeTextFields = (data: any): any => {
 export default function ReviewBulletinPage() {
   const params = useParams();
   const router = useRouter();
+  const { showToast } = useToast();
+
   const t = useTranslations("Review");
   const tCommon = useTranslations("Common");
   const locale = useLocale();
@@ -114,6 +120,14 @@ export default function ReviewBulletinPage() {
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [comments, setComments] = useState<ReviewComment[]>([]);
   const [reviewHistory, setReviewHistory] = useState<any>(null); // To store full history
+
+  // Modal states
+  const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalTitle, setModalTitle] = useState("");
+  const [isRejecting, setIsRejecting] = useState(false);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
@@ -431,6 +445,15 @@ export default function ReviewBulletinPage() {
                 ...prev,
                 master: { ...prev.master, status: "review" },
               }));
+            } else if (
+              e.message &&
+              e.message.includes(
+                "Only assigned reviewer or admin can open review",
+              )
+            ) {
+              console.warn(
+                "User is not the assigned reviewer. Review mode remains closed.",
+              );
             } else {
               console.error("Error opening review:", e);
             }
@@ -447,24 +470,80 @@ export default function ReviewBulletinPage() {
   };
 
   const handleApprove = async () => {
-    // Mock approval
-    alert(t("approveMessage"));
-    router.push("/reviews");
+    try {
+      setLoading(true);
+      await ReviewService.approveBulletin(bulletinId);
+
+      // Successfully approved. Now let's try to get the public URL.
+      let url = "";
+
+      try {
+        if (bulletin?.master?.base_template_master_id) {
+          const tempRes = await TemplateAPIService.getTemplateById(
+            bulletin.master.base_template_master_id,
+          );
+          if (tempRes.success && tempRes.data) {
+            const templateSlug = tempRes.data.name_machine;
+            const bulletinSlug = bulletin.master.name_machine;
+            // Construct absolute URL if possible or relative
+            const origin = window.location.origin;
+            url = `${origin}/${locale}/${templateSlug}/${bulletinSlug}`;
+          }
+        }
+      } catch (e) {
+        console.error("Error constructing public URL", e);
+      }
+
+      setPublishedUrl(
+        url || `${window.location.origin}/bulletins/${bulletin.master._id}`,
+      );
+      setModalTitle(t("successModal.title"));
+      setModalMessage(t("successModal.message"));
+      setIsSuccessModalOpen(true);
+      showToast(t("successModal.title"), "success");
+    } catch (error: any) {
+      console.error("Error approving bulletin:", error);
+      showToast(
+        error.message ||
+          "Ocurrió un error al intentar aprobar el boletín. Por favor intenta nuevamente.",
+        "error",
+      );
+      setModalTitle("Error al aprobar");
+      setModalMessage(
+        error.message ||
+          "Ocurrió un error al intentar aprobar el boletín. Por favor intenta nuevamente.",
+      );
+      // setIsErrorModalOpen(true); // Disable modal since we use Toast now
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleReject = async () => {
     try {
+      setLoading(true);
       // Call the reject service
       await ReviewService.rejectBulletin(bulletinId);
 
-      // Show a popup indicating the bulletin was rejected
-      alert(t("rejectMessage"));
+      showToast(t("rejectSuccess"), "success");
 
       // Redirect to the reviews page
       router.push("/reviews");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error rejecting bulletin:", error);
-      alert("Error al rechazar el boletín");
+      // setModalTitle("Error al rechazar");
+      // setModalMessage(
+      //   error.message ||
+      //     "Ocurrió un error al intentar rechazr el boletín. Asegúrate de haber dejado al menos un comentario.",
+      // );
+      // setIsErrorModalOpen(true);
+      showToast(
+        error.message ||
+          "Ocurrió un error al intentar rechazar el boletín. Asegúrate de haber dejado al menos un comentario.",
+        "error",
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -1005,6 +1084,92 @@ export default function ReviewBulletinPage() {
           )}
         </div>
       </div>
+
+      {/* Success Modal (Approval with Link) */}
+      <Modal
+        isOpen={isSuccessModalOpen}
+        onClose={() => {
+          setIsSuccessModalOpen(false);
+          router.push("/bulletins"); // Redirect after closing
+        }}
+        title={t("successModal.title")}
+        type="success"
+        footer={
+          <button
+            onClick={() => router.push("/bulletins")}
+            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors shadow-sm"
+          >
+            {t("successModal.goToBulletins")}
+          </button>
+        }
+      >
+        <div className="flex flex-col gap-4 items-center text-center">
+          <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600 mb-2">
+            <CheckCircle className="w-6 h-6" />
+          </div>
+          <p className="text-gray-600">
+            {t("successModal.message")}
+          </p>
+          {publishedUrl && (
+            <div className="w-full mt-2">
+              <label className="block text-xs font-medium text-gray-500 mb-1 text-left">
+                {t("successModal.publicLinkRaw")}
+              </label>
+              <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 group hover:border-green-200 transition-colors">
+                <span className="flex-1 text-sm text-gray-600 truncate font-mono select-all">
+                  {publishedUrl}
+                </span>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(publishedUrl);
+                    showToast(t("successModal.linkCopied"), "success");
+                  }}
+                  className="p-1.5 hover:bg-white rounded-md text-gray-400 hover:text-green-600 border border-transparent hover:border-gray-200 transition-all"
+                  title={t("successModal.copyLinkTitle")}
+                >
+                  <Copy className="w-4 h-4" />
+                </button>
+                <a
+                  href={publishedUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-1.5 hover:bg-white rounded-md text-gray-400 hover:text-green-600 border border-transparent hover:border-gray-200 transition-all"
+                  title={t("successModal.openLinkTitle")}
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
+          )}
+        </div>
+      </Modal>
+
+      {/* Error Modal */}
+      {/* 
+      <Modal
+        isOpen={isErrorModalOpen}
+        onClose={() => setIsErrorModalOpen(false)}
+        title={modalTitle || "Error"}
+        type="error"
+        footer={
+          <button
+            onClick={() => setIsErrorModalOpen(false)}
+            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors"
+          >
+            Cerrar
+          </button>
+        }
+      >
+        <div className="flex flex-col gap-4 items-center text-center">
+          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-red-600 mb-2">
+            <AlertTriangle className="w-6 h-6" />
+          </div>
+          <p className="text-gray-600 whitespace-pre-line">
+            {modalMessage || "Ha ocurrido un error inesperado."}
+          </p>
+        </div>
+      </Modal> 
+      */}
     </div>
   );
 }

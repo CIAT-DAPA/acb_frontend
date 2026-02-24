@@ -2116,10 +2116,20 @@
     "resolve": "Resolver",
     "newComment": "Nuevo comentario",
     "reject": "Rechazar",
+    "rejectSuccess": "Boletín rechazado exitosamente",
     "approveAndPublish": "Aprobar y Publicar",
     "back": "Volver",
     "pressEnterToSend": "Presiona Enter para enviar",
-    "inReview": "In review"
+    "inReview": "In review",
+    "successModal": {
+      "title": "Boletín Publicado Exitosamente",
+      "message": "El boletín ha sido aprobado y publicado correctamente. Ahora es visible para todos los usuarios con acceso.",
+      "publicLinkRaw": "Enlace público del boletín:",
+      "copyLinkTitle": "Copiar enlace",
+      "openLinkTitle": "Abrir enlace",
+      "goToBulletins": "Ir a mis boletines",
+      "linkCopied": "Enlace copiado al portapapeles"
+    }
   },
   "ReviewPage": {
     "errorLoadingComments": "Error al cargar comentarios:",
@@ -2145,6 +2155,7 @@
   "Common": {
     "header": "Encabezado",
     "footer": "Pie de página",
-    "generalComment": "Comentario General"
+    "generalComment": "Comentario General",
+    "close": "Cerrar"
   }
 }

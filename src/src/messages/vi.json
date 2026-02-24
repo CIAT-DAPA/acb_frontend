@@ -1918,6 +1918,24 @@
     "previous": "Trước",
     "closeModal": "Đóng cửa sổ"
   },
+  "Review": {
+    "newComment": "Bình luận mới",
+    "reject": "Từ chối",
+    "rejectSuccess": "Bản tin đã bị từ chối thành công",
+    "approveAndPublish": "Phê duyệt và xuất bản",
+    "back": "Trở lại",
+    "pressEnterToSend": "Nhấn Enter để gửi",
+    "inReview": "Đang xem xét",
+    "successModal": {
+      "title": "Bản tin đã được xuất bản thành công",
+      "message": "Bản tin đã được phê duyệt và xuất bản thành công. Hiện tại nó đã hiển thị cho tất cả người dùng có quyền truy cập.",
+      "publicLinkRaw": "Liên kết công khai của bản tin:",
+      "copyLinkTitle": "Sao chép liên kết",
+      "openLinkTitle": "Mở liên kết",
+      "goToBulletins": "Đi đến bản tin của tôi",
+      "linkCopied": "Đã sao chép liên kết vào bộ nhớ tạm"
+    }
+  },
   "Authentication": {
     "verification": "Đang xác minh...",
     "accessRestrictedTitle": "Truy cập bị hạn chế",
@@ -1929,6 +1947,7 @@
   "Common": {
     "header": "Đầu trang",
     "footer": "Chân trang",
-    "generalComment": "Bình luận chung"
+    "generalComment": "Bình luận chung",
+    "close": "Đóng"
   }
 }
