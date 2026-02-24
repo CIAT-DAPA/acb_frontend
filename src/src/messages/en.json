@@ -200,6 +200,8 @@
   "Bulletins": {
     "title": "Manage and create agroclimatic bulletins",
     "subtitle": "Create, review and export agroclimatic bulletins using customizable templates.",
+    "reviewsPageTitle": "Reviews",
+    "reviewsPageSubtitle": "Manage bulletins pending review",
     "searchPlaceholder": "Search bulletins...",
     "createNew": "Create New",
     "noResults": "No bulletins found",

@@ -687,6 +687,8 @@
     "view": "Xem",
     "title": "Quản lý và tạo bản tin thời tiết nông vụ",
     "subtitle": "Tạo, hiệu đính và xuất bản bản tin thời tiết nông vụ bằng các biểu mẫu có thể tùy chỉnh.",
+    "reviewsPageTitle": "Rà soát",
+    "reviewsPageSubtitle": "Quản lý bản tin đang chờ rà soát",
     "searchPlaceholder": "Tìm kiếm bản tin...",
     "noResults": "Không tìm thấy bản tin nào",
     "loading": "Đang tải bản tin...",
