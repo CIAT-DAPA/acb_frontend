@@ -152,6 +152,8 @@
     "view": "View",
     "preview": "Preview",
     "edit": "Edit",
+    "share": "Share",
+    "duplicate": "Duplicate",
     "download": "Download",
     "delete": "Archive",
     "deleteConfirmTitle": "Archive Template",
@@ -209,6 +211,15 @@
     "errorTitle": "Error loading bulletins",
     "retry": "Retry",
     "createFirst": "Create New Bulletin",
+    "shareModal": {
+      "title": "Published Bulletin",
+      "message": "This bulletin is already published. You can use the following link to share it.",
+      "urlLabel": "Public link:",
+      "copied": "Copied",
+      "copyUrl": "Copy",
+      "close": "Close",
+      "viewLink": "View"
+    },
     "reviews": {
       "title": "Reviews",
       "subtitle": "Bulletins pending review",

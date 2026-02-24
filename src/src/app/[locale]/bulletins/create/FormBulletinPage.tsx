@@ -4,6 +4,7 @@ import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "../../../../hooks/useAuth";
+import usePermissions from "../../../../hooks/usePermissions";
 import { Stepper, StepConfig } from "../../components/Stepper";
 import {
   CreateBulletinData,
@@ -200,6 +201,7 @@ export default function FormBulletinPage({
 }: FormBulletinPageProps) {
   const t = useTranslations("CreateBulletin");
   const { userInfo } = useAuth();
+  const { isAdminAnywhere } = usePermissions();
   const router = useRouter();
   const params = useParams();
   const locale = (params.locale as string) || "es";
@@ -312,8 +314,13 @@ export default function FormBulletinPage({
               {comment.replies && comment.replies.length > 0 && (
                 <ul className="list-circle pl-4 mt-1 border-l-2 border-yellow-200">
                   {comment.replies.map((reply) => (
-                    <li key={reply.comment_id} className="text-xs text-gray-600 mt-1">
-                      <span className="font-medium">{reply.author_first_name}: </span>
+                    <li
+                      key={reply.comment_id}
+                      className="text-xs text-gray-600 mt-1"
+                    >
+                      <span className="font-medium">
+                        {reply.author_first_name}:{" "}
+                      </span>
                       {reply.text}
                     </li>
                   ))}
@@ -1317,8 +1324,6 @@ export default function FormBulletinPage({
     };
   }, [creationState.data, creationState.selectedTemplateId]);
 
-
-
   // Renderizar contenido del paso actual
   const renderStepContent = () => {
     switch (creationState.currentStep) {
@@ -1546,14 +1551,16 @@ export default function FormBulletinPage({
             {t("navigation.export")}
           </button>
 
-          <button
-            onClick={handlePublish}
-            disabled={isLoading}
-            className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2`}
-          >
-            <CheckCircle className="w-4 h-4" />
-            {isLoading ? t("navigation.publishing") : t("navigation.publish")}
-          </button>
+          {isAdminAnywhere && (
+            <button
+              onClick={handlePublish}
+              disabled={isLoading}
+              className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2`}
+            >
+              <CheckCircle className="w-4 h-4" />
+              {isLoading ? t("navigation.publishing") : t("navigation.publish")}
+            </button>
+          )}
         </div>
       </div>
 

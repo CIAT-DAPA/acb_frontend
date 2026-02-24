@@ -152,6 +152,8 @@
     "view": "Ver",
     "preview": "Vista Previa",
     "edit": "Editar",
+    "share": "Compartir",
+    "duplicate": "Duplicar",
     "download": "Descargar",
     "delete": "Archivar",
     "deleteConfirmTitle": "Archivar Plantilla",
@@ -209,6 +211,15 @@
     "errorTitle": "Error al cargar boletines",
     "retry": "Reintentar",
     "createFirst": "Crear Nuevo Boletín",
+    "shareModal": {
+      "title": "Boletín Publicado",
+      "message": "Este boletín ya está publicado. Puedes usar el siguiente enlace para compartirlo.",
+      "urlLabel": "Enlace público:",
+      "copied": "Copiado",
+      "copyUrl": "Copiar",
+      "close": "Cerrar",
+      "viewLink": "Ver Boletín"
+    },
     "reviews": {
       "title": "Revisiones",
       "subtitle": "Boletines pendientes de revisión",
