@@ -563,28 +563,31 @@ export default function ReviewBulletinPage() {
         // Si llegamos aquí, la creación fue exitosa (el servicio lanza error si falla)
         // Relax checks to support direct object returns or wrapped responses
         // e.g. { success: true, data: comment } OR { id: "...", text: "..." }
-        if (
+        console.log("Response from addComment:", response);
+        const isSuccessful =
           response &&
-          (response.success ||
-            response.data ||
-            (response as any).id ||
-            (response as any)._id)
-        ) {
-          console.log("Comment created successfully:", response);
-          const commentData = response.data || (response as any);
+          (response.success === true || // Explicit success flag
+            response.data || // Data object exists
+            (response as any).comment_id); // Check for comment_id in response
 
-          // Add comment with a temporary ID mapping if needed, or rely on reload.
-          // For immediate feedback, we push the response data.
-          // Note: response.data might have backend IDs in target_element.
-          // To ensure it displays correctly in the filtered list (which uses selection.id),
-          // we might need to manually attach the current selection.id to the comment object in state
-          // or improve the filter logic.
+        if (isSuccessful) {
+          console.log("Comment created successfully:", response);
+          const commentData = response.data
+            ? response.data
+            : {
+                comment_id: (response as any).comment_id,
+                text: (response as any).text,
+                target_element: (response as any).target_element,
+                created_at: (response as any).created_at,
+                author_id: (response as any).author_id,
+                author_first_name: (response as any).author_first_name,
+                author_last_name: (response as any).author_last_name,
+              };
+
           const newComment = {
             ...commentData,
             target_element: {
-              ...(commentData.target_element || {}),
-              // Manually attach frontend context for immediate display,
-              // though mappedComments logic would likely resolve it too.
+              ...(commentData?.target_element || {}),
               id: selection.id,
               type: selection.type,
             },
@@ -592,7 +595,6 @@ export default function ReviewBulletinPage() {
 
           setComments((prev) => [...prev, newComment]);
           setCommentText("");
-          // No cerramos la caja, permitimos ver el comentario recién creado
         } else {
           console.error("Save comment failed:", response);
           alert("Error al guardar comentario");
@@ -712,7 +714,7 @@ export default function ReviewBulletinPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen w-full bg-gray-100 overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-100px)] w-full bg-gray-100 overflow-hidden">
       {/* Top Bar - Estilo tipo Editor */}
       <div className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 z-10 shadow-sm shrink-0">
         <div className="flex items-center gap-4 flex-1">
