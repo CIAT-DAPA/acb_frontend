@@ -17,11 +17,11 @@ export interface ExportContentOptions {
   getExportElement: (previewElement: Element) => Element | null; // Función para obtener el elemento a exportar
 
   // Datos del contenido
-  sections: any[]; // Array de secciones del contenido
+  sections: unknown[]; // Array de secciones del contenido
   contentName: string; // Nombre del archivo a exportar
 
   // Funciones helper
-  getSectionPages: (section: any) => number; // Función para calcular páginas de una sección
+  getSectionPages: (section: unknown) => number; // Función para calcular páginas de una sección
 
   // Callbacks de progreso
   onSectionChange?: (index: number) => void; // Se llama al cambiar de sección
@@ -50,7 +50,7 @@ const defaultTranslations = {
  * Exporta contenido visual a imagen o PDF
  */
 export async function exportContent(
-  options: ExportContentOptions
+  options: ExportContentOptions,
 ): Promise<void> {
   const JSZip = (await import("jszip")).default;
   const { toPng, toJpeg } = await import("html-to-image");
@@ -67,20 +67,11 @@ export async function exportContent(
 
   try {
     const zip = new JSZip();
-    
+
     // Para PDF, generamos PNG de alta calidad y luego convertimos
     const imageFormat = options.format === "pdf" ? "png" : options.format;
     const finalFormat = options.format;
 
-    // PRE-CALCULAR: Total de páginas a exportar para progreso preciso
-    let totalPagesToExport = 0;
-    for (const sectionIndex of sectionsToExport) {
-      const section = options.sections[sectionIndex];
-      totalPagesToExport += options.getSectionPages(section);
-    }
-
-    // Total de pasos = páginas + 1 paso de compresión/conversión final
-    const totalSteps = totalPagesToExport + 1;
     let currentStep = 0;
 
     // Notificar cambio inicial de sección
@@ -96,17 +87,89 @@ export async function exportContent(
 
     if (!scrollContainer) {
       throw new Error(
-        `No se encontró el contenedor: ${options.containerSelector}`
+        `No se encontró el contenedor: ${options.containerSelector}`,
       );
     }
+
+    const getRenderedSectionPages = (sectionIndex: number) => {
+      const renderedPages = scrollContainer.querySelectorAll(
+        `[data-section-index="${sectionIndex}"][data-page-index]`,
+      );
+
+      const uniquePageIndexes = new Set<number>();
+
+      renderedPages.forEach((pageElement) => {
+        const pageIndex = Number(pageElement.getAttribute("data-page-index"));
+
+        if (!Number.isNaN(pageIndex)) {
+          uniquePageIndexes.add(pageIndex);
+        }
+      });
+
+      return uniquePageIndexes.size;
+    };
+
+    const resolveSectionPageCounts = async () => {
+      let previousSignature = "";
+      let stableIterations = 0;
+      let latestCounts = new Map<number, number>();
+
+      for (let attempt = 0; attempt < 10; attempt++) {
+        const nextCounts = new Map<number, number>();
+
+        sectionsToExport.forEach((sectionIndex) => {
+          const section = options.sections[sectionIndex];
+          const renderedCount = getRenderedSectionPages(sectionIndex);
+          const fallbackCount = options.getSectionPages(section);
+
+          nextCounts.set(
+            sectionIndex,
+            renderedCount > 0 ? renderedCount : fallbackCount,
+          );
+        });
+
+        const signature = sectionsToExport
+          .map(
+            (sectionIndex) => `${sectionIndex}:${nextCounts.get(sectionIndex)}`,
+          )
+          .join("|");
+
+        latestCounts = nextCounts;
+
+        if (signature === previousSignature) {
+          stableIterations += 1;
+
+          if (stableIterations >= 1) {
+            return latestCounts;
+          }
+        } else {
+          stableIterations = 0;
+          previousSignature = signature;
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 250));
+      }
+
+      return latestCounts;
+    };
+
+    const sectionPageCounts = await resolveSectionPageCounts();
+
+    // PRE-CALCULAR: Total de páginas a exportar para progreso preciso
+    let totalPagesToExport = 0;
+    for (const sectionIndex of sectionsToExport) {
+      totalPagesToExport += sectionPageCounts.get(sectionIndex) || 1;
+    }
+
+    // Total de pasos = páginas + 1 paso de compresión/conversión final
+    const totalSteps = totalPagesToExport + 1;
 
     // Exportar cada sección (y sus páginas si tiene múltiples)
     for (let i = 0; i < sectionsToExport.length; i++) {
       const sectionIndex = sectionsToExport[i];
-      const section = options.sections[sectionIndex];
 
       // Detectar cuántas páginas tiene esta sección
-      const totalPages = options.getSectionPages(section);
+      const totalPages = sectionPageCounts.get(sectionIndex) || 1;
 
       // Exportar cada página de la sección
       for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
@@ -119,7 +182,7 @@ export async function exportContent(
           percentage,
           `${t.sectionGenerating(sectionIndex + 1)}, ${t.sectionPage} ${
             pageIndex + 1
-          }/${totalPages}...`
+          }/${totalPages}...`,
         );
 
         // Pequeño delay para asegurar que la sección esté renderizada
@@ -128,7 +191,7 @@ export async function exportContent(
         // Buscar el elemento de preview específico
         const itemSelector = options.itemSelectorTemplate(
           sectionIndex,
-          pageIndex
+          pageIndex,
         );
         const previewElement = scrollContainer.querySelector(itemSelector);
 
@@ -136,7 +199,7 @@ export async function exportContent(
           console.warn(
             `⚠️ No se encontró preview para sección ${
               sectionIndex + 1
-            }, página ${pageIndex + 1}`
+            }, página ${pageIndex + 1}`,
           );
           continue;
         }
@@ -148,7 +211,7 @@ export async function exportContent(
           console.warn(
             `⚠️ No se encontró elemento de exportación en sección ${
               sectionIndex + 1
-            }, página ${pageIndex + 1}`
+            }, página ${pageIndex + 1}`,
           );
           continue;
         }
@@ -169,7 +232,7 @@ export async function exportContent(
                 // Timeout de 8 segundos por imagen
                 setTimeout(() => resolve(false), 8000);
               });
-            })
+            }),
           );
         }
 
@@ -221,8 +284,8 @@ export async function exportContent(
                   pageIndex + 1
                 }.${imageFormat}`
               : sectionsToExport.length > 1
-              ? `seccion_${sectionIndex + 1}.${imageFormat}`
-              : `${options.contentName}.${imageFormat}`;
+                ? `seccion_${sectionIndex + 1}.${imageFormat}`
+                : `${options.contentName}.${imageFormat}`;
 
           zip.file(filename, blob);
         } catch (error) {
@@ -230,7 +293,7 @@ export async function exportContent(
             `Error al exportar sección ${sectionIndex + 1}, página ${
               pageIndex + 1
             }:`,
-            error
+            error,
           );
           throw error;
         }
@@ -256,7 +319,7 @@ export async function exportContent(
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "px",
-        format: pageFormat as any,
+        format: pageFormat,
       });
 
       let isFirstPage = true;
@@ -272,10 +335,10 @@ export async function exportContent(
         // Micro-progreso durante conversión a PDF (dentro del último paso)
         // Progreso va de 99% a 100% mientras se agregan imágenes
         if (files.length > 1) {
-          const pdfMicroProgress = 99 + (fileIndex / files.length);
+          const pdfMicroProgress = 99 + fileIndex / files.length;
           options.onProgressUpdate(
             Math.round(pdfMicroProgress),
-            `${t.toPdf} (${fileIndex + 1}/${files.length})`
+            `${t.toPdf} (${fileIndex + 1}/${files.length})`,
           );
         }
 
@@ -303,7 +366,7 @@ export async function exportContent(
             pdf.internal.pageSize.width = img.width;
             pdf.internal.pageSize.height = img.height;
           }
-          
+
           // En modo auto, la imagen ocupa toda la página
           pdf.addImage(
             dataUrl,
@@ -311,7 +374,7 @@ export async function exportContent(
             0,
             0,
             img.width,
-            img.height
+            img.height,
           );
         } else {
           // Modo con tamaño de página fijo (a4, letter, legal)
@@ -344,10 +407,10 @@ export async function exportContent(
             0,
             0,
             finalWidth,
-            finalHeight
+            finalHeight,
           );
         }
-        
+
         isFirstPage = false;
       }
 

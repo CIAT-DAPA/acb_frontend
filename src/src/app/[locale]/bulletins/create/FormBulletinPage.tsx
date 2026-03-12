@@ -645,6 +645,10 @@ export default function FormBulletinPage({
     );
   }, [stepConfigs, creationState.currentStep]);
 
+  useEffect(() => {
+    setPreviewPageIndex(0);
+  }, [creationState.currentStep]);
+
   // Validar paso actual
   const isCurrentStepValid = useMemo(() => {
     switch (creationState.currentStep) {
@@ -1381,6 +1385,21 @@ export default function FormBulletinPage({
   };
 
   const isLastStep = currentStepIndex === stepConfigs.length - 1;
+  const isSingleSectionPreview =
+    creationState.currentStep.startsWith("section-");
+  const parsedPreviewSectionIndex = creationState.currentStep.startsWith(
+    "section-",
+  )
+    ? Number.parseInt(creationState.currentStep.replace("section-", ""), 10)
+    : 0;
+  const previewSectionIndex = isSingleSectionPreview
+    ? 0
+    : Number.isNaN(parsedPreviewSectionIndex)
+      ? 0
+      : Math.min(
+          Math.max(parsedPreviewSectionIndex, 0),
+          Math.max(creationState.data.version.data.sections.length - 1, 0),
+        );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -1510,6 +1529,7 @@ export default function FormBulletinPage({
                     forceGlobalHeader={
                       creationState.currentStep === "basic-info"
                     }
+                    selectedSectionIndex={previewSectionIndex}
                     currentPageIndex={previewPageIndex}
                     onPageChange={setPreviewPageIndex}
                   />
