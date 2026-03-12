@@ -4,7 +4,12 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { CarouselConfig } from "@/types/templatePreview";
 import { CreateTemplateData } from "@/types/template";
 import { TemplatePreview } from "../templates/create/TemplatePreview";
-import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
 
 interface CarouselViewProps {
   data: CreateTemplateData;
@@ -39,10 +44,10 @@ export function CarouselView({
   const totalSections = sections.length;
 
   const [currentSection, setCurrentSection] = useState(
-    Math.min(initialSection, totalSections - 1)
+    Math.min(initialSection, totalSections - 1),
   );
   const [isAutoPlaying, setIsAutoPlaying] = useState(autoPlay);
-  
+
   // Refs para swipe detection
   const containerRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number>(0);
@@ -69,11 +74,14 @@ export function CarouselView({
     });
   }, [totalSections, loop]);
 
-  const goToSection = useCallback((index: number) => {
-    if (index >= 0 && index < totalSections) {
-      setCurrentSection(index);
-    }
-  }, [totalSections]);
+  const goToSection = useCallback(
+    (index: number) => {
+      if (index >= 0 && index < totalSections) {
+        setCurrentSection(index);
+      }
+    },
+    [totalSections],
+  );
 
   // Auto-play
   useEffect(() => {
@@ -175,25 +183,26 @@ export function CarouselView({
       onTouchEnd={handleTouchEnd}
     >
       {/* Preview de la(s) sección(es) actual(es) */}
-      <div 
-        className={`carousel-content w-full flex ${isHorizontal ? 'flex-row' : 'flex-col'} items-center justify-center`}
+      <div
+        className={`carousel-content w-full flex ${isHorizontal ? "flex-row" : "flex-col"} items-center justify-center`}
         style={{ gap }}
       >
         {itemsPerView === 1 ? (
           // Modo tradicional: una sola sección
-          <TemplatePreview
-            data={data}
-            selectedSectionIndex={currentSection}
-          />
+          <TemplatePreview data={data} selectedSectionIndex={currentSection} />
         ) : (
           // Modo múltiple: varias secciones
           visibleSections.map((sectionIndex) => (
-            <div 
+            <div
               key={sectionIndex}
-              className="flex-shrink-0"
-              style={{ 
-                width: isHorizontal ? `calc((100% - ${gap} * ${effectiveItemsPerView - 1}) / ${effectiveItemsPerView})` : '100%',
-                height: !isHorizontal ? `calc((100% - ${gap} * ${effectiveItemsPerView - 1}) / ${effectiveItemsPerView})` : 'auto'
+              className="shrink-0"
+              style={{
+                width: isHorizontal
+                  ? `calc((100% - ${gap} * ${effectiveItemsPerView - 1}) / ${effectiveItemsPerView})`
+                  : "100%",
+                height: !isHorizontal
+                  ? `calc((100% - ${gap} * ${effectiveItemsPerView - 1}) / ${effectiveItemsPerView})`
+                  : "auto",
               }}
             >
               <TemplatePreview

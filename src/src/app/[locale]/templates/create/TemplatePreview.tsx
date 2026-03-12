@@ -1,14 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname } from "next/navigation";
-import {
-  CreateTemplateData,
-  Field,
-  Section,
-  Block,
-} from "../../../../types/template";
+import { CreateTemplateData, Field, Section } from "../../../../types/template";
 import { StyleConfig } from "../../../../types/core";
 import { getEffectiveFieldStyles } from "../../../../utils/styleInheritance";
 import { SmartIcon } from "../../components/AdaptiveSvgIcon";
@@ -95,16 +90,339 @@ function getBorderStyles(
   return styles;
 }
 
+type OverflowSlice = {
+  offset: number;
+  height: number;
+};
+
+type PaginatedBlockPage = {
+  blockIndexes: number[];
+  blockSlices?: Record<number, OverflowSlice>;
+  usedHeight: number;
+};
+
+type OverflowPageInfo = {
+  blockIndexes: number[];
+  blockSlices?: Record<number, OverflowSlice>;
+  cardBlockPages?: Record<number, PaginatedBlockPage>;
+};
+
+type BlockMeasurement = {
+  height: number;
+  cardBlockHeights?: number[];
+  cardStaticHeight?: number;
+};
+
+type FieldOverflowContext = {
+  cardBlockPage?: PaginatedBlockPage;
+};
+
+type CompositePageDescriptor = {
+  basePageIndex: number;
+  overflowPageIndex: number;
+};
+
+function getOverflowPages(
+  blockMeasurements: BlockMeasurement[],
+  availableHeight: number,
+): OverflowPageInfo[] {
+  const defaultPage: OverflowPageInfo = {
+    blockIndexes: blockMeasurements.map((_, index) => index),
+  };
+
+  if (blockMeasurements.length === 0 || availableHeight <= 0) {
+    return [defaultPage];
+  }
+
+  const paginateBlockHeights = (
+    blockHeights: number[],
+    firstPageAvailableHeight: number,
+    fullPageAvailableHeight: number,
+  ): PaginatedBlockPage[] => {
+    if (blockHeights.length === 0 || fullPageAvailableHeight <= 0) {
+      return [{ blockIndexes: [], usedHeight: 0 }];
+    }
+
+    const pages: PaginatedBlockPage[] = [];
+    let currentBlockIndex = 0;
+    let currentBlockOffset = 0;
+    let previousCompletedBlockIndex: number | undefined;
+    let isFirstPage = true;
+
+    while (currentBlockIndex < blockHeights.length) {
+      let availableHeightForPage = Math.max(
+        isFirstPage ? firstPageAvailableHeight : fullPageAvailableHeight,
+        0,
+      );
+
+      if (availableHeightForPage <= 0) {
+        if (isFirstPage) {
+          isFirstPage = false;
+          continue;
+        }
+        break;
+      }
+
+      const pageBlockIndexes: number[] = [];
+      const pageBlockSlices: Record<number, OverflowSlice> = {};
+      let usedHeight = 0;
+
+      if (!isFirstPage && previousCompletedBlockIndex !== undefined) {
+        const previousBlockHeight = blockHeights[previousCompletedBlockIndex];
+
+        if (previousBlockHeight < availableHeightForPage) {
+          pageBlockIndexes.push(previousCompletedBlockIndex);
+          availableHeightForPage -= previousBlockHeight;
+          usedHeight += previousBlockHeight;
+        }
+      }
+
+      while (
+        currentBlockIndex < blockHeights.length &&
+        availableHeightForPage > 0
+      ) {
+        const currentBlockHeight = blockHeights[currentBlockIndex];
+        const remainingBlockHeight = Math.max(
+          currentBlockHeight - currentBlockOffset,
+          0,
+        );
+
+        if (remainingBlockHeight <= 0) {
+          previousCompletedBlockIndex = currentBlockIndex;
+          currentBlockIndex += 1;
+          currentBlockOffset = 0;
+          continue;
+        }
+
+        pageBlockIndexes.push(currentBlockIndex);
+
+        if (remainingBlockHeight <= availableHeightForPage) {
+          if (currentBlockOffset > 0) {
+            pageBlockSlices[currentBlockIndex] = {
+              offset: currentBlockOffset,
+              height: remainingBlockHeight,
+            };
+          }
+
+          availableHeightForPage -= remainingBlockHeight;
+          usedHeight += remainingBlockHeight;
+          previousCompletedBlockIndex = currentBlockIndex;
+          currentBlockIndex += 1;
+          currentBlockOffset = 0;
+        } else {
+          pageBlockSlices[currentBlockIndex] = {
+            offset: currentBlockOffset,
+            height: availableHeightForPage,
+          };
+          currentBlockOffset += availableHeightForPage;
+          usedHeight += availableHeightForPage;
+          availableHeightForPage = 0;
+        }
+      }
+
+      pages.push({
+        blockIndexes: [...new Set(pageBlockIndexes)],
+        blockSlices:
+          Object.keys(pageBlockSlices).length > 0 ? pageBlockSlices : undefined,
+        usedHeight,
+      });
+
+      isFirstPage = false;
+    }
+
+    return pages.length > 0
+      ? pages
+      : [
+          {
+            blockIndexes: blockHeights.map((_, index) => index),
+            usedHeight: 0,
+          },
+        ];
+  };
+
+  const pages: OverflowPageInfo[] = [];
+  let currentPageBlocks: number[] = [];
+  let currentHeight = 0;
+
+  blockMeasurements.forEach((blockMeasurement, blockIndex) => {
+    const blockHeight = blockMeasurement.height;
+    const fitsOnCurrentPage = currentHeight + blockHeight <= availableHeight;
+
+    if (fitsOnCurrentPage) {
+      currentPageBlocks.push(blockIndex);
+      currentHeight += blockHeight;
+      return;
+    }
+
+    if (blockMeasurement.cardBlockHeights?.length) {
+      const remainingSpace = Math.max(availableHeight - currentHeight, 0);
+      const cardStaticHeight = Math.max(
+        blockMeasurement.cardStaticHeight || 0,
+        0,
+      );
+      const shouldShareCurrentPage =
+        currentPageBlocks.length > 0 && remainingSpace > cardStaticHeight;
+      const cardPages = paginateBlockHeights(
+        blockMeasurement.cardBlockHeights,
+        Math.max(
+          (shouldShareCurrentPage ? remainingSpace : availableHeight) -
+            cardStaticHeight,
+          0,
+        ),
+        Math.max(availableHeight - cardStaticHeight, 0),
+      );
+
+      if (shouldShareCurrentPage) {
+        const [firstCardPage, ...remainingCardPages] = cardPages;
+
+        pages.push({
+          blockIndexes: [...currentPageBlocks, blockIndex],
+          cardBlockPages: {
+            [blockIndex]: firstCardPage,
+          },
+        });
+
+        remainingCardPages.forEach((cardPage) => {
+          pages.push({
+            blockIndexes: [blockIndex],
+            cardBlockPages: {
+              [blockIndex]: cardPage,
+            },
+          });
+        });
+      } else {
+        if (currentPageBlocks.length > 0) {
+          pages.push({ blockIndexes: [...currentPageBlocks] });
+        }
+
+        cardPages.forEach((cardPage) => {
+          pages.push({
+            blockIndexes: [blockIndex],
+            cardBlockPages: {
+              [blockIndex]: cardPage,
+            },
+          });
+        });
+      }
+
+      currentPageBlocks = [];
+      currentHeight = 0;
+      return;
+    }
+
+    const previousBlockIndex = currentPageBlocks[currentPageBlocks.length - 1];
+    const remainingSpace = Math.max(availableHeight - currentHeight, 0);
+    let remainingHeight = blockHeight;
+    let sliceOffset = 0;
+
+    if (currentPageBlocks.length > 0) {
+      if (remainingSpace > 0) {
+        const firstSliceHeight = Math.min(remainingHeight, remainingSpace);
+
+        pages.push({
+          blockIndexes: [...currentPageBlocks, blockIndex],
+          blockSlices: {
+            [blockIndex]: {
+              offset: sliceOffset,
+              height: firstSliceHeight,
+            },
+          },
+        });
+
+        remainingHeight -= firstSliceHeight;
+        sliceOffset += firstSliceHeight;
+      } else {
+        pages.push({ blockIndexes: [...currentPageBlocks] });
+      }
+    }
+
+    while (remainingHeight > 0) {
+      let sliceAvailableHeight = availableHeight;
+      const nextPageBlocks: number[] = [];
+
+      if (previousBlockIndex !== undefined) {
+        const previousBlockHeight =
+          blockMeasurements[previousBlockIndex]?.height || 0;
+
+        if (previousBlockHeight < sliceAvailableHeight) {
+          nextPageBlocks.push(previousBlockIndex);
+          sliceAvailableHeight -= previousBlockHeight;
+        }
+      }
+
+      if (sliceAvailableHeight <= 0) {
+        nextPageBlocks.length = 0;
+        sliceAvailableHeight = availableHeight;
+      }
+
+      const sliceHeight = Math.min(remainingHeight, sliceAvailableHeight);
+
+      pages.push({
+        blockIndexes: [...nextPageBlocks, blockIndex],
+        blockSlices: {
+          [blockIndex]: {
+            offset: sliceOffset,
+            height: sliceHeight,
+          },
+        },
+      });
+
+      remainingHeight -= sliceHeight;
+      sliceOffset += sliceHeight;
+    }
+
+    currentPageBlocks = [];
+    currentHeight = 0;
+  });
+
+  if (currentPageBlocks.length > 0) {
+    pages.push({ blockIndexes: [...currentPageBlocks] });
+  }
+
+  return pages.length > 0 ? pages : [defaultPage];
+}
+
+function getCompositePageDescriptor(
+  pageSizes: number[],
+  compositePageIndex: number,
+): CompositePageDescriptor {
+  let remainingPages = compositePageIndex;
+
+  for (let pageIndex = 0; pageIndex < pageSizes.length; pageIndex++) {
+    const pageSize = Math.max(pageSizes[pageIndex] || 1, 1);
+
+    if (remainingPages < pageSize) {
+      return {
+        basePageIndex: pageIndex,
+        overflowPageIndex: remainingPages,
+      };
+    }
+
+    remainingPages -= pageSize;
+  }
+
+  const lastBasePageIndex = Math.max(pageSizes.length - 1, 0);
+  const lastPageSize = Math.max(pageSizes[lastBasePageIndex] || 1, 1);
+
+  return {
+    basePageIndex: lastBasePageIndex,
+    overflowPageIndex: lastPageSize - 1,
+  };
+}
+
 interface TemplatePreviewProps {
   data: CreateTemplateData;
   selectedSectionIndex?: number;
   moreInfo?: boolean;
   description?: boolean;
   forceGlobalHeader?: boolean; // Forzar uso del header global en lugar del header de sección
-  currentPageIndex?: number; // Control externo del índice de página
+  currentPageIndex?: number; // Control externo del índice base de página
+  currentResolvedPageIndex?: number; // Control externo del índice real de página dentro de la sección
   onPageChange?: (pageIndex: number) => void; // Callback cuando cambia la página
+  onResolvedPageCount?: (pageCount: number) => void; // Callback cuando se resuelve el total real de páginas de la sección
   hidePagination?: boolean; // Ocultar controles de paginación
   cardsMetadata?: Record<string, Card>; // Diccionario de cards precargadas para evitar HTTP calls
+  resolvedSectionPageCounts?: number[]; // Cantidad de páginas reales por sección para page numbers globales
   reviewMode?: boolean;
   onElementClick?: (
     type:
@@ -137,8 +455,11 @@ export function TemplatePreview({
   forceGlobalHeader = false,
   currentPageIndex: externalPageIndex,
   onPageChange,
+  currentResolvedPageIndex,
+  onResolvedPageCount,
   hidePagination = false,
   cardsMetadata,
+  resolvedSectionPageCounts,
   reviewMode = false,
   onElementClick,
   selectedElementId,
@@ -183,6 +504,21 @@ export function TemplatePreview({
   // Usar el índice externo si está disponible, sino usar el interno
   const currentPageIndex =
     externalPageIndex !== undefined ? externalPageIndex : internalPageIndex;
+
+  const [overflowPagesByBasePage, setOverflowPagesByBasePage] = useState<
+    OverflowPageInfo[][]
+  >([]);
+  const [currentOverflowPageIndex, setCurrentOverflowPageIndex] = useState(0);
+  const [isMeasuringOverflow, setIsMeasuringOverflow] = useState(false);
+  const [measurementBasePageIndex, setMeasurementBasePageIndex] = useState(0);
+
+  const headerMeasureRef = useRef<HTMLDivElement | null>(null);
+  const footerMeasureRef = useRef<HTMLDivElement | null>(null);
+  const blockMeasureRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const pendingOverflowPageRef = useRef<number | null>(null);
+  const previousMeasuredSectionIdRef = useRef<string | null>(null);
+  const previousBasePageIndexRef = useRef(0);
+  const overflowCollapseTimeoutRef = useRef<number | null>(null);
 
   // Función para cambiar de página
   const handlePageChange = (newPageIndex: number) => {
@@ -387,6 +723,7 @@ export function TemplatePreview({
     layout: "vertical" | "horizontal" = "vertical",
     pageInfo?: { currentPage: number; totalPages: number },
     fieldId?: string,
+    overflowContext?: FieldOverflowContext,
   ) => {
     // Usar herencia de estilos
     const effectiveStyles = getEffectiveFieldStyles(field, containerStyle);
@@ -1349,6 +1686,7 @@ export function TemplatePreview({
         );
 
       case "card":
+        const cardBlockPage = overflowContext?.cardBlockPage;
         // Obtener los IDs de cards disponibles desde field_config
         const availableCardIds =
           (field.field_config as any)?.available_cards || [];
@@ -1472,7 +1810,18 @@ export function TemplatePreview({
         return (
           <div key={key} style={cardContainerStyles} className="flex flex-col">
             {/* Blocks del contenido de la card */}
-            {cardContent.blocks.map((block, blockIndex) => {
+            {(
+              cardBlockPage?.blockIndexes ||
+              cardContent.blocks.map((_, blockIndex) => blockIndex)
+            ).flatMap((cardBlockIndex) => {
+              const block = cardContent.blocks[cardBlockIndex];
+
+              if (!block) {
+                return [];
+              }
+
+              const cardBlockSlice =
+                cardBlockPage?.blockSlices?.[cardBlockIndex];
               const blockStyleConfig = block.style_config || {};
               const contentStyleConfig = cardContentStyleConfig || {};
 
@@ -1504,34 +1853,53 @@ export function TemplatePreview({
 
               return (
                 <div
-                  key={`card-block-${blockIndex}`}
-                  style={blockContainerStyles}
+                  key={`card-block-${cardBlockIndex}`}
+                  data-card-content-block-index={cardBlockIndex}
+                  style={
+                    cardBlockSlice
+                      ? {
+                          overflow: "hidden",
+                          height: `${cardBlockSlice.height}px`,
+                        }
+                      : blockContainerStyles
+                  }
                 >
-                  {block.fields.map((blockField, fieldIndex) => {
-                    // Asegurar que el field tenga todas las propiedades necesarias
-                    const safeField: Field = {
-                      ...blockField,
-                      style_manually_edited:
-                        blockField.style_manually_edited ?? false,
-                    } as Field;
-
-                    // Si el field tiene form: true, usar el valor de fieldValues
-                    if (
-                      blockField.form &&
-                      cardData.fieldValues[blockField.field_id]
-                    ) {
-                      safeField.value =
-                        cardData.fieldValues[blockField.field_id];
+                  <div
+                    style={
+                      cardBlockSlice
+                        ? {
+                            ...blockContainerStyles,
+                            transform: `translateY(-${cardBlockSlice.offset}px)`,
+                          }
+                        : undefined
                     }
+                  >
+                    {block.fields.map((blockField, fieldIndex) => {
+                      // Asegurar que el field tenga todas las propiedades necesarias
+                      const safeField: Field = {
+                        ...blockField,
+                        style_manually_edited:
+                          blockField.style_manually_edited ?? false,
+                      } as Field;
 
-                    // Renderizar cada field del block
-                    return renderField(
-                      safeField,
-                      `card-${cardData.cardId}-block-${blockIndex}-field-${fieldIndex}`,
-                      block.style_config,
-                      (block as any).layout || "vertical",
-                    );
-                  })}
+                      // Si el field tiene form: true, usar el valor de fieldValues
+                      if (
+                        blockField.form &&
+                        cardData.fieldValues[blockField.field_id]
+                      ) {
+                        safeField.value =
+                          cardData.fieldValues[blockField.field_id];
+                      }
+
+                      // Renderizar cada field del block
+                      return renderField(
+                        safeField,
+                        `card-${cardData.cardId}-block-${cardBlockIndex}-field-${fieldIndex}`,
+                        block.style_config,
+                        (block as any).layout || "vertical",
+                      );
+                    })}
+                  </div>
                 </div>
               );
             })}
@@ -2008,11 +2376,104 @@ export function TemplatePreview({
     }
   };
 
+  const renderMeasurementBlock = (
+    section: Section,
+    block: Section["blocks"][number],
+    blockIndex: number,
+  ) => {
+    const hasCardField = block.fields.some((field) => field.type === "card");
+    const measurementBlockStyles: React.CSSProperties = {
+      backgroundColor: block.style_config?.background_color || undefined,
+      backgroundImage: block.style_config?.background_image
+        ? `url("${getBackgroundImageUrl(block.style_config.background_image)}")`
+        : undefined,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      backgroundRepeat: "no-repeat",
+      color: block.style_config?.primary_color || undefined,
+      padding:
+        block.style_config?.padding !== undefined
+          ? block.style_config.padding
+          : "16px",
+      margin:
+        block.style_config?.margin !== undefined
+          ? block.style_config.margin
+          : undefined,
+      gap:
+        block.style_config?.gap !== undefined ? block.style_config.gap : "8px",
+      boxSizing: "border-box",
+      ...getBorderStyles(block.style_config),
+      ...(hasCardField && {
+        display: "flex",
+        flexDirection: "column",
+      }),
+    };
+
+    const fieldsLayout = block.style_config?.fields_layout || "vertical";
+    const fieldsContainerStyle: React.CSSProperties = {
+      gap: block.style_config?.gap ? block.style_config.gap : "8px",
+      alignItems: block.style_config?.align_items || "stretch",
+      display: "flex",
+      flexDirection: fieldsLayout === "horizontal" ? "row" : "column",
+      flexWrap: fieldsLayout === "horizontal" ? "wrap" : "nowrap",
+    };
+
+    if (block.style_config?.justify_content) {
+      const justifyMap: Record<string, string> = {
+        start: "flex-start",
+        end: "flex-end",
+        center: "center",
+        between: "space-between",
+        around: "space-around",
+        evenly: "space-evenly",
+      };
+      const justifyContent = block.style_config.justify_content.replace(
+        "justify-",
+        "",
+      );
+      fieldsContainerStyle.justifyContent =
+        justifyMap[justifyContent] ||
+        justifyMap[block.style_config.justify_content] ||
+        "flex-start";
+    }
+
+    return (
+      <div
+        key={`measurement-block-${blockIndex}`}
+        ref={(element) => {
+          blockMeasureRefs.current[blockIndex] = element;
+        }}
+        style={measurementBlockStyles}
+      >
+        <div
+          className={`${hasCardField ? "flex-1" : ""}`}
+          style={fieldsContainerStyle}
+        >
+          {block.fields.length === 0 ? (
+            <div className="text-sm text-[#283618]/50 italic">
+              {t("noFieldsInBlock")}
+            </div>
+          ) : (
+            block.fields
+              .filter((field) => field.bulletin)
+              .map((field, fieldIndex) =>
+                renderField(
+                  field,
+                  `measurement-field-${blockIndex}-${fieldIndex}`,
+                  block.style_config || section.style_config,
+                  fieldsLayout,
+                ),
+              )
+          )}
+        </div>
+      </div>
+    );
+  };
+
   // Tipo para info de paginación (funciona tanto para listas como para cards)
   type PaginationInfo = {
     blockIndex: number;
     fieldIndex: number;
-    field: Field;
     maxItemsPerPage: number;
     totalItems: number;
     items: any[];
@@ -2021,12 +2482,15 @@ export function TemplatePreview({
 
   // Función para obtener info de paginación de una sección específica
   const getSectionPagination = (
-    section: Section,
+    section?: Section | null,
   ): {
     totalPages: number;
-    fieldWithPagination?: PaginationInfo;
-    paginatedSection: Section;
+    paginatedSections: Section[];
   } => {
+    if (!section) {
+      return { totalPages: 1, paginatedSections: [] };
+    }
+
     // Buscar si hay algún field de tipo list o card que requiera paginación
     // Iteramos sobre TODOS los campos para encontrar el que requiera más páginas
     let maxPagesFound = 1;
@@ -2052,7 +2516,6 @@ export function TemplatePreview({
               currentInfo = {
                 blockIndex,
                 fieldIndex,
-                field,
                 maxItemsPerPage,
                 totalItems: items.length,
                 items,
@@ -2070,7 +2533,6 @@ export function TemplatePreview({
             currentInfo = {
               blockIndex,
               fieldIndex,
-              field,
               maxItemsPerPage: 1, // Una card por página
               totalItems: cards.length,
               items: cards,
@@ -2088,28 +2550,324 @@ export function TemplatePreview({
     }
 
     if (!bestPaginationInfo) {
-      return { totalPages: 1, paginatedSection: section };
+      return { totalPages: 1, paginatedSections: [section] };
     }
+
+    const paginatedSections = Array.from(
+      { length: maxPagesFound },
+      (_, pageIndex) => {
+        const startIndex = pageIndex * bestPaginationInfo.maxItemsPerPage;
+        const endIndex = Math.min(
+          startIndex + bestPaginationInfo.maxItemsPerPage,
+          bestPaginationInfo.totalItems,
+        );
+
+        const clonedSection: Section = JSON.parse(JSON.stringify(section));
+
+        clonedSection.blocks[bestPaginationInfo.blockIndex].fields[
+          bestPaginationInfo.fieldIndex
+        ].value = bestPaginationInfo.items.slice(startIndex, endIndex);
+
+        return clonedSection;
+      },
+    );
 
     return {
       totalPages: maxPagesFound,
-      fieldWithPagination: bestPaginationInfo,
-      paginatedSection: section,
+      paginatedSections,
     };
   };
 
   // Obtener la sección actual y su paginación
-  const currentSection = sections[selectedSectionIndex];
+  const safeSelectedSectionIndex = Math.min(
+    Math.max(selectedSectionIndex, 0),
+    Math.max(sections.length - 1, 0),
+  );
+  const currentSection = sections[safeSelectedSectionIndex];
+  const currentSectionId = currentSection?.section_id ?? null;
   const paginationInfo = currentSection
     ? getSectionPagination(currentSection)
-    : { totalPages: 1, paginatedSection: currentSection };
+    : { totalPages: 1, paginatedSections: [] as Section[] };
+
+  const resolvedBasePageIndex = Math.min(
+    currentPageIndex,
+    Math.max(paginationInfo.totalPages - 1, 0),
+  );
+  const pageSizes = paginationInfo.paginatedSections.map(
+    (_, pageIndex) => overflowPagesByBasePage[pageIndex]?.length || 1,
+  );
+  const clampedResolvedPageIndex =
+    currentResolvedPageIndex !== undefined
+      ? Math.min(
+          Math.max(currentResolvedPageIndex, 0),
+          Math.max(
+            pageSizes.reduce(
+              (totalPages, pageSize) => totalPages + Math.max(pageSize, 1),
+              0,
+            ) - 1,
+            0,
+          ),
+        )
+      : undefined;
+  const resolvedCompositeDescriptor =
+    clampedResolvedPageIndex !== undefined
+      ? getCompositePageDescriptor(pageSizes, clampedResolvedPageIndex)
+      : null;
+  const activeBasePageIndex =
+    resolvedCompositeDescriptor?.basePageIndex ?? resolvedBasePageIndex;
+  const defaultBlockIndexes =
+    paginationInfo.paginatedSections[activeBasePageIndex]?.blocks.map(
+      (_, blockIndex) => blockIndex,
+    ) || [];
+
+  const measuredSection =
+    paginationInfo.paginatedSections[measurementBasePageIndex];
+  const measuredOverflowPages: OverflowPageInfo[] = overflowPagesByBasePage[
+    activeBasePageIndex
+  ] || [{ blockIndexes: defaultBlockIndexes } as OverflowPageInfo];
+  const resolvedOverflowPageIndex = Math.min(
+    resolvedCompositeDescriptor?.overflowPageIndex ?? currentOverflowPageIndex,
+    Math.max(measuredOverflowPages.length - 1, 0),
+  );
+  const pagesBeforeCurrentBase = paginationInfo.paginatedSections.reduce(
+    (total, _, pageIndex) => {
+      if (pageIndex >= activeBasePageIndex) {
+        return total;
+      }
+
+      return total + (overflowPagesByBasePage[pageIndex]?.length || 1);
+    },
+    0,
+  );
+
+  const getResolvedSectionPageCount = (sectionIndex: number) => {
+    if (resolvedSectionPageCounts?.[sectionIndex]) {
+      return resolvedSectionPageCounts[sectionIndex];
+    }
+
+    if (sectionIndex === safeSelectedSectionIndex) {
+      return currentSectionTotalPages || 1;
+    }
+
+    const sectionPagination = getSectionPagination(sections[sectionIndex]);
+    return sectionPagination.totalPages;
+  };
+  const currentSectionTotalPages = paginationInfo.paginatedSections.reduce(
+    (total, _, pageIndex) => {
+      return total + (overflowPagesByBasePage[pageIndex]?.length || 1);
+    },
+    0,
+  );
+
+  useEffect(() => {
+    onResolvedPageCount?.(currentSectionTotalPages || 1);
+  }, [currentSectionTotalPages, onResolvedPageCount]);
+
+  useEffect(() => {
+    return () => {
+      if (overflowCollapseTimeoutRef.current !== null) {
+        window.clearTimeout(overflowCollapseTimeoutRef.current);
+        overflowCollapseTimeoutRef.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!currentSection) {
+      previousMeasuredSectionIdRef.current = null;
+      previousBasePageIndexRef.current = 0;
+      if (overflowCollapseTimeoutRef.current !== null) {
+        window.clearTimeout(overflowCollapseTimeoutRef.current);
+        overflowCollapseTimeoutRef.current = null;
+      }
+      setOverflowPagesByBasePage([]);
+      setCurrentOverflowPageIndex(0);
+      setIsMeasuringOverflow(false);
+      setMeasurementBasePageIndex(0);
+      return;
+    }
+
+    const didSectionChange =
+      previousMeasuredSectionIdRef.current !== currentSectionId;
+    previousMeasuredSectionIdRef.current = currentSectionId;
+
+    blockMeasureRefs.current = [];
+    if (overflowCollapseTimeoutRef.current !== null) {
+      window.clearTimeout(overflowCollapseTimeoutRef.current);
+      overflowCollapseTimeoutRef.current = null;
+    }
+    if (didSectionChange) {
+      pendingOverflowPageRef.current = null;
+      previousBasePageIndexRef.current = 0;
+      setOverflowPagesByBasePage([]);
+      setCurrentOverflowPageIndex(0);
+    }
+    setMeasurementBasePageIndex(0);
+    setIsMeasuringOverflow(true);
+  }, [
+    currentSection,
+    currentSectionId,
+    forceGlobalHeader,
+    cardsCache,
+    safeSelectedSectionIndex,
+  ]);
+
+  useLayoutEffect(() => {
+    if (!isMeasuringOverflow || !measuredSection) {
+      return;
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      const bulletinHeight = Number(styleConfig?.bulletin_height || 638);
+      const headerHeight = headerMeasureRef.current?.offsetHeight || 0;
+      const footerHeight = footerMeasureRef.current?.offsetHeight || 0;
+      const availableHeight = Math.max(
+        bulletinHeight - headerHeight - footerHeight,
+        0,
+      );
+      const blockMeasurements: BlockMeasurement[] = measuredSection.blocks.map(
+        (block, blockIndex) => {
+          const blockElement = blockMeasureRefs.current[blockIndex];
+          const cardBlockElements = blockElement
+            ? Array.from(
+                blockElement.querySelectorAll<HTMLElement>(
+                  "[data-card-content-block-index]",
+                ),
+              )
+            : [];
+
+          return {
+            height:
+              blockElement?.scrollHeight || blockElement?.offsetHeight || 0,
+            cardBlockHeights:
+              block.fields.some((field) => field.type === "card") &&
+              cardBlockElements.length > 0
+                ? cardBlockElements.map(
+                    (element) =>
+                      element.scrollHeight || element.offsetHeight || 0,
+                  )
+                : undefined,
+            cardStaticHeight:
+              block.fields.some((field) => field.type === "card") &&
+              cardBlockElements.length > 0
+                ? Math.max(
+                    (blockElement?.scrollHeight ||
+                      blockElement?.offsetHeight ||
+                      0) -
+                      cardBlockElements.reduce(
+                        (totalHeight, element) =>
+                          totalHeight +
+                          (element.scrollHeight || element.offsetHeight || 0),
+                        0,
+                      ),
+                    0,
+                  )
+                : undefined,
+          };
+        },
+      );
+
+      const nextOverflowPages = getOverflowPages(
+        blockMeasurements,
+        availableHeight,
+      );
+
+      const previousOverflowPages =
+        overflowPagesByBasePage[measurementBasePageIndex];
+      const shouldDelayOverflowCollapse =
+        pendingOverflowPageRef.current === null &&
+        measurementBasePageIndex === activeBasePageIndex &&
+        currentOverflowPageIndex > 0 &&
+        Boolean(previousOverflowPages?.length) &&
+        (previousOverflowPages?.length || 0) > nextOverflowPages.length &&
+        nextOverflowPages.length <= currentOverflowPageIndex;
+
+      const applyOverflowPages = () => {
+        setOverflowPagesByBasePage((previousPages) => {
+          const nextPages = [...previousPages];
+          nextPages[measurementBasePageIndex] = nextOverflowPages;
+          return nextPages;
+        });
+      };
+
+      if (shouldDelayOverflowCollapse) {
+        if (overflowCollapseTimeoutRef.current !== null) {
+          window.clearTimeout(overflowCollapseTimeoutRef.current);
+        }
+
+        overflowCollapseTimeoutRef.current = window.setTimeout(() => {
+          applyOverflowPages();
+          overflowCollapseTimeoutRef.current = null;
+        }, 120);
+      } else {
+        if (overflowCollapseTimeoutRef.current !== null) {
+          window.clearTimeout(overflowCollapseTimeoutRef.current);
+          overflowCollapseTimeoutRef.current = null;
+        }
+
+        applyOverflowPages();
+      }
+
+      blockMeasureRefs.current = [];
+
+      if (
+        measurementBasePageIndex <
+        paginationInfo.paginatedSections.length - 1
+      ) {
+        setMeasurementBasePageIndex((previousIndex) => previousIndex + 1);
+        return;
+      }
+
+      setIsMeasuringOverflow(false);
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [
+    isMeasuringOverflow,
+    measuredSection,
+    measurementBasePageIndex,
+    paginationInfo.paginatedSections.length,
+    styleConfig?.bulletin_height,
+    overflowPagesByBasePage,
+    activeBasePageIndex,
+    currentOverflowPageIndex,
+  ]);
+
+  useEffect(() => {
+    if (isMeasuringOverflow) {
+      return;
+    }
+
+    const requestedOverflowIndex = pendingOverflowPageRef.current;
+    const didBasePageChange =
+      previousBasePageIndexRef.current !== resolvedBasePageIndex;
+    pendingOverflowPageRef.current = null;
+
+    setCurrentOverflowPageIndex((previousIndex) => {
+      const maxOverflowIndex = Math.max(measuredOverflowPages.length - 1, 0);
+      const nextOverflowIndex =
+        requestedOverflowIndex !== null
+          ? requestedOverflowIndex
+          : didBasePageChange
+            ? 0
+            : previousIndex;
+
+      return Math.min(Math.max(nextOverflowIndex, 0), maxOverflowIndex);
+    });
+
+    previousBasePageIndexRef.current = resolvedBasePageIndex;
+  }, [
+    isMeasuringOverflow,
+    measuredOverflowPages.length,
+    resolvedBasePageIndex,
+    safeSelectedSectionIndex,
+  ]);
 
   // Calcular el número de páginas acumuladas de todas las secciones anteriores
   const getPreviousSectionsPagesCount = () => {
     let totalPages = 0;
-    for (let i = 0; i < selectedSectionIndex; i++) {
-      const sectionPagination = getSectionPagination(sections[i]);
-      totalPages += sectionPagination.totalPages;
+    for (let i = 0; i < safeSelectedSectionIndex; i++) {
+      totalPages += getResolvedSectionPageCount(i);
     }
     return totalPages;
   };
@@ -2117,50 +2875,87 @@ export function TemplatePreview({
   // Calcular el número total de páginas de todo el documento
   const getTotalDocumentPages = () => {
     let totalPages = 0;
-    sections.forEach((section) => {
-      const sectionPagination = getSectionPagination(section);
-      totalPages += sectionPagination.totalPages;
+    sections.forEach((_, sectionIndex) => {
+      totalPages += getResolvedSectionPageCount(sectionIndex);
     });
     return totalPages;
   };
 
   const previousPagesCount = getPreviousSectionsPagesCount();
   const totalDocumentPages = getTotalDocumentPages();
-  const absolutePageNumber = previousPagesCount + currentPageIndex + 1; // Número de página absoluto
+  const currentCompositePageNumber =
+    clampedResolvedPageIndex !== undefined
+      ? clampedResolvedPageIndex + 1
+      : pagesBeforeCurrentBase + resolvedOverflowPageIndex + 1;
+  const absolutePageNumber = previousPagesCount + currentCompositePageNumber;
 
-  // Crear la sección con los items de la página actual
-  const getCurrentPageSection = (): Section | null => {
-    if (!currentSection || !paginationInfo.fieldWithPagination) {
-      return currentSection;
+  const baseSectionToRender =
+    paginationInfo.paginatedSections[activeBasePageIndex] ||
+    currentSection ||
+    null;
+  const hasMeasuredOverflowLayout = Boolean(
+    overflowPagesByBasePage[activeBasePageIndex]?.length,
+  );
+  const visibleBlockIndexes = !baseSectionToRender
+    ? undefined
+    : hasMeasuredOverflowLayout
+      ? measuredOverflowPages[resolvedOverflowPageIndex]?.blockIndexes
+      : undefined;
+  const visibleBlockSlices = !baseSectionToRender
+    ? undefined
+    : hasMeasuredOverflowLayout
+      ? measuredOverflowPages[resolvedOverflowPageIndex]?.blockSlices
+      : undefined;
+  const visibleCardBlockPages = !baseSectionToRender
+    ? undefined
+    : hasMeasuredOverflowLayout
+      ? measuredOverflowPages[resolvedOverflowPageIndex]?.cardBlockPages
+      : undefined;
+
+  const goToPreviousPreviewPage = () => {
+    if (resolvedOverflowPageIndex > 0) {
+      setCurrentOverflowPageIndex((previousIndex) => previousIndex - 1);
+      return;
     }
 
-    const { fieldWithPagination } = paginationInfo;
-    const startIndex = currentPageIndex * fieldWithPagination.maxItemsPerPage;
-    const endIndex = Math.min(
-      startIndex + fieldWithPagination.maxItemsPerPage,
-      fieldWithPagination.totalItems,
-    );
+    if (activeBasePageIndex === 0) {
+      return;
+    }
 
-    // Clonar la sección
-    const clonedSection: Section = JSON.parse(JSON.stringify(currentSection));
+    const previousBasePageIndex = activeBasePageIndex - 1;
+    const previousOverflowPages =
+      overflowPagesByBasePage[previousBasePageIndex]?.length || 1;
 
-    // Actualizar el field con solo los items de esta página
-    clonedSection.blocks[fieldWithPagination.blockIndex].fields[
-      fieldWithPagination.fieldIndex
-    ].value = fieldWithPagination.items.slice(startIndex, endIndex);
+    pendingOverflowPageRef.current = previousOverflowPages - 1;
+    handlePageChange(previousBasePageIndex);
+  };
 
-    return clonedSection;
+  const goToNextPreviewPage = () => {
+    if (resolvedOverflowPageIndex < measuredOverflowPages.length - 1) {
+      setCurrentOverflowPageIndex((previousIndex) => previousIndex + 1);
+      return;
+    }
+
+    if (activeBasePageIndex >= paginationInfo.totalPages - 1) {
+      return;
+    }
+
+    pendingOverflowPageRef.current = 0;
+    handlePageChange(activeBasePageIndex + 1);
   };
 
   // Resetear página cuando cambie la sección
   useEffect(() => {
-    handlePageChange(0);
-  }, [selectedSectionIndex]);
+    if (onPageChange) {
+      onPageChange(0);
+      return;
+    }
 
-  const sectionToRender = getCurrentPageSection();
+    setInternalPageIndex(0);
+  }, [onPageChange, safeSelectedSectionIndex]);
 
   return (
-    <div className="h-full" id="template-preview-root">
+    <div className="h-full relative" id="template-preview-root">
       {/* Información de la plantilla */}
       {description && (
         <div className="mb-4 p-3 bg-[#bc6c25]/10 rounded-lg">
@@ -2320,11 +3115,39 @@ export function TemplatePreview({
               </p>
             </div>
           ) : (
-            sectionToRender && (
+            baseSectionToRender && (
               <>
                 {(() => {
-                  const section = sectionToRender;
-                  const sectionIndex = selectedSectionIndex;
+                  const section = baseSectionToRender;
+                  const sectionIndex = safeSelectedSectionIndex;
+                  const measuredBlockEntries =
+                    visibleBlockIndexes && visibleBlockIndexes.length > 0
+                      ? visibleBlockIndexes.flatMap(
+                          (blockIndex, renderIndex) => {
+                            const block = section.blocks[blockIndex];
+
+                            if (!block) {
+                              return [];
+                            }
+
+                            return [
+                              {
+                                block,
+                                blockIndex,
+                                renderIndex,
+                              },
+                            ];
+                          },
+                        )
+                      : [];
+                  const blockEntries =
+                    measuredBlockEntries.length > 0
+                      ? measuredBlockEntries
+                      : section.blocks.map((block, blockIndex) => ({
+                          block,
+                          blockIndex,
+                          renderIndex: blockIndex,
+                        }));
 
                   // Buscar campos de tipo select_background para aplicar el fondo seleccionado
                   let dynamicBackgroundUrl = null;
@@ -2505,6 +3328,9 @@ export function TemplatePreview({
                       {/* Header con lógica de prioridad */}
                       {activeHeaderConfig && (
                         <div
+                          ref={
+                            isMeasuringOverflow ? headerMeasureRef : undefined
+                          }
                           data-review-id={`header-${sectionIndex}`}
                           onClick={
                             reviewMode && onElementClick
@@ -2674,251 +3500,298 @@ export function TemplatePreview({
                               {t("noBlocksInSection")}
                             </div>
                           ) : (
-                            section.blocks.map((block, blockIndex) => {
-                              // Verificar si el block contiene un field de tipo card
-                              const hasCardField = block.fields.some(
-                                (field) => field.type === "card",
-                              );
+                            blockEntries.map(
+                              ({ block, blockIndex, renderIndex }) => {
+                                const blockSlice =
+                                  visibleBlockSlices?.[blockIndex];
+                                const cardBlockPage =
+                                  visibleCardBlockPages?.[blockIndex];
+                                // Verificar si el block contiene un field de tipo card
+                                const hasCardField = block.fields.some(
+                                  (field) => field.type === "card",
+                                );
 
-                              // Obtener estilos del bloque
-                              const blockStyles: React.CSSProperties = {
-                                backgroundColor:
-                                  block.style_config?.background_color ||
-                                  undefined,
-                                backgroundImage: block.style_config
-                                  ?.background_image
-                                  ? `url("${getBackgroundImageUrl(
-                                      block.style_config.background_image,
-                                    )}")`
-                                  : undefined,
-                                backgroundSize: "cover",
-                                backgroundPosition: "center",
-                                backgroundRepeat: "no-repeat",
-                                color:
-                                  block.style_config?.primary_color ||
-                                  undefined,
-                                padding:
-                                  block.style_config?.padding !== undefined
-                                    ? block.style_config.padding
-                                    : "16px",
-                                margin:
-                                  block.style_config?.margin !== undefined
-                                    ? block.style_config.margin
+                                // Obtener estilos del bloque
+                                const blockStyles: React.CSSProperties = {
+                                  backgroundColor:
+                                    block.style_config?.background_color ||
+                                    undefined,
+                                  backgroundImage: block.style_config
+                                    ?.background_image
+                                    ? `url("${getBackgroundImageUrl(
+                                        block.style_config.background_image,
+                                      )}")`
                                     : undefined,
-                                gap:
-                                  block.style_config?.gap !== undefined
-                                    ? block.style_config.gap
-                                    : "8px",
-                                boxSizing: "border-box",
-                                ...getBorderStyles(block.style_config),
-                                // Si tiene un card field, ocupar todo el espacio disponible
-                                ...(hasCardField && {
-                                  flex: 1,
-                                  display: "flex",
-                                  flexDirection: "column",
-                                }),
-                              };
-
-                              // Determine layout of fields
-                              const fieldsLayout =
-                                block.style_config?.fields_layout || "vertical";
-
-                              // Calculate container style for fields
-                              const fieldsContainerStyle: React.CSSProperties =
-                                {
-                                  gap: block.style_config?.gap
-                                    ? block.style_config.gap
-                                    : "8px",
-                                  alignItems:
-                                    block.style_config?.align_items ||
-                                    "stretch",
-                                  display: "flex",
-                                  flexDirection:
-                                    fieldsLayout === "horizontal"
-                                      ? "row"
-                                      : "column",
-                                  flexWrap:
-                                    fieldsLayout === "horizontal"
-                                      ? "wrap"
-                                      : "nowrap",
+                                  backgroundSize: "cover",
+                                  backgroundPosition: "center",
+                                  backgroundRepeat: "no-repeat",
+                                  color:
+                                    block.style_config?.primary_color ||
+                                    undefined,
+                                  padding:
+                                    block.style_config?.padding !== undefined
+                                      ? block.style_config.padding
+                                      : "16px",
+                                  margin:
+                                    block.style_config?.margin !== undefined
+                                      ? block.style_config.margin
+                                      : undefined,
+                                  gap:
+                                    block.style_config?.gap !== undefined
+                                      ? block.style_config.gap
+                                      : "8px",
+                                  boxSizing: "border-box",
+                                  ...getBorderStyles(block.style_config),
+                                  // Si tiene un card field, ocupar todo el espacio disponible
+                                  ...(hasCardField && {
+                                    flex: 1,
+                                    display: "flex",
+                                    flexDirection: "column",
+                                  }),
                                 };
 
-                              // Fix justifyContent value mapping from Tailwind class logic
-                              if (block.style_config?.justify_content) {
-                                const justifyMap: Record<string, string> = {
-                                  start: "flex-start",
-                                  end: "flex-end",
-                                  center: "center",
-                                  between: "space-between",
-                                  around: "space-around",
-                                  evenly: "space-evenly",
-                                };
-                                const jcValue =
-                                  block.style_config.justify_content.replace(
-                                    "justify-",
-                                    "",
-                                  );
-                                fieldsContainerStyle.justifyContent =
-                                  justifyMap[jcValue] ||
-                                  justifyMap[
-                                    block.style_config.justify_content
-                                  ] ||
-                                  "flex-start";
-                              }
+                                // Determine layout of fields
+                                const fieldsLayout =
+                                  block.style_config?.fields_layout ||
+                                  "vertical";
 
-                              // Calculate width considering margin
-                              const marginValue =
-                                block.style_config?.margin || "0";
-                              let widthStyle = {};
-                              if (
-                                marginValue &&
-                                marginValue !== "0" &&
-                                marginValue !== "0px"
-                              ) {
-                                // Parse margin to calculate width if possible
-                                // Simple text based parsing or assume full width minus margins
-                                // For now, let's keep it simple as the container handles margin via blockStyles
-                              }
+                                // Calculate container style for fields
+                                const fieldsContainerStyle: React.CSSProperties =
+                                  {
+                                    gap: block.style_config?.gap
+                                      ? block.style_config.gap
+                                      : "8px",
+                                    alignItems:
+                                      block.style_config?.align_items ||
+                                      "stretch",
+                                    display: "flex",
+                                    flexDirection:
+                                      fieldsLayout === "horizontal"
+                                        ? "row"
+                                        : "column",
+                                    flexWrap:
+                                      fieldsLayout === "horizontal"
+                                        ? "wrap"
+                                        : "nowrap",
+                                  };
 
-                              return (
-                                <div
-                                  key={`preview-block-${sectionIndex}-${blockIndex}`}
-                                  data-review-id={
-                                    reviewMode
-                                      ? block.block_id ||
-                                        `block-${sectionIndex}-${blockIndex}`
-                                      : undefined
-                                  }
-                                  className={`${hasCardField ? "flex-1" : ""} ${
-                                    reviewMode
-                                      ? "hover:ring-2 hover:ring-blue-400 cursor-pointer relative group/block transition-all"
-                                      : ""
-                                  }`}
-                                  onClick={
-                                    reviewMode && onElementClick
-                                      ? (e) =>
-                                          onElementClick(
-                                            "block",
-                                            `block-${sectionIndex}-${blockIndex}`,
-                                            e,
-                                          )
-                                      : undefined
-                                  }
-                                  style={{
-                                    ...blockStyles,
-                                    overflow: "hidden",
-                                  }}
-                                >
-                                  {reviewMode && (
-                                    <div className="absolute top-0 left-0 bg-blue-400 text-white text-[10px] px-1 rounded-br opacity-0 group-hover/block:opacity-100 transition-opacity z-10 pointer-events-none">
-                                      Block
+                                // Fix justifyContent value mapping from Tailwind class logic
+                                if (block.style_config?.justify_content) {
+                                  const justifyMap: Record<string, string> = {
+                                    start: "flex-start",
+                                    end: "flex-end",
+                                    center: "center",
+                                    between: "space-between",
+                                    around: "space-around",
+                                    evenly: "space-evenly",
+                                  };
+                                  const jcValue =
+                                    block.style_config.justify_content.replace(
+                                      "justify-",
+                                      "",
+                                    );
+                                  fieldsContainerStyle.justifyContent =
+                                    justifyMap[jcValue] ||
+                                    justifyMap[
+                                      block.style_config.justify_content
+                                    ] ||
+                                    "flex-start";
+                                }
+
+                                // Calculate width considering margin
+                                const marginValue =
+                                  block.style_config?.margin || "0";
+                                let widthStyle = {};
+                                if (
+                                  marginValue &&
+                                  marginValue !== "0" &&
+                                  marginValue !== "0px"
+                                ) {
+                                  // Parse margin to calculate width if possible
+                                  // Simple text based parsing or assume full width minus margins
+                                  // For now, let's keep it simple as the container handles margin via blockStyles
+                                }
+
+                                const blockContent = (
+                                  <>
+                                    {/* Container for fields with specific layout */}
+                                    <div
+                                      className={`${
+                                        hasCardField ? "flex-1" : ""
+                                      }`}
+                                      style={fieldsContainerStyle}
+                                    >
+                                      {block.fields.length === 0 ? (
+                                        <div className="text-sm text-[#283618]/50 italic">
+                                          {t("noFieldsInBlock")}
+                                        </div>
+                                      ) : (
+                                        block.fields
+                                          .filter((field) => field.bulletin) // Only show fields for bulletin
+                                          .map((field, fieldIndex) => {
+                                            const fieldId = `field-${sectionIndex}-${blockIndex}-${fieldIndex}`;
+                                            const renderedField = renderField(
+                                              field,
+                                              `preview-${fieldId}`, // Use consistent key
+                                              block.style_config ||
+                                                section.style_config, // Los campos heredan del bloque o de la sección
+                                              fieldsLayout,
+                                              undefined, // pageInfo
+                                              fieldId, // Pass fieldId here
+                                              field.type === "card"
+                                                ? { cardBlockPage }
+                                                : undefined,
+                                            );
+
+                                            if (reviewMode && onElementClick) {
+                                              const isSelected =
+                                                selectedElementId === fieldId;
+
+                                              // Determine flex or specific styling for the field-wrapper based on fieldsLayout
+                                              const fieldWrapperStyle: React.CSSProperties =
+                                                {
+                                                  // Aplicar el style_config del campo si existe
+                                                  ...((field as Field)
+                                                    .style_config?.margin
+                                                    ? {
+                                                        margin: (field as Field)
+                                                          .style_config?.margin,
+                                                      }
+                                                    : {}),
+                                                  ...((field as Field)
+                                                    .style_config?.padding
+                                                    ? {
+                                                        padding: (
+                                                          field as Field
+                                                        ).style_config?.padding,
+                                                      }
+                                                    : {}),
+                                                  // Asegurar que flex funciona para layouts horizontale
+                                                  flexShrink: 0,
+                                                };
+
+                                              return (
+                                                <div
+                                                  key={`review-wrapper-${fieldId}`}
+                                                  data-review-id={fieldId}
+                                                  onClick={(e) =>
+                                                    onElementClick(
+                                                      "field",
+                                                      fieldId,
+                                                      e,
+                                                    )
+                                                  }
+                                                  style={fieldWrapperStyle}
+                                                  className={`relative ${isSelected ? "ring-2 ring-blue-500 z-20" : "hover:ring-2 hover:ring-yellow-400"} cursor-pointer rounded transition-all group/field`}
+                                                >
+                                                  {renderedField}
+                                                  {renderCommentBadge(fieldId)}
+                                                  {/* Selection Badge for Parent */}
+                                                  {isSelected && (
+                                                    <div className="absolute -top-3 -left-1 bg-blue-500 text-white text-[10px] px-2 py-0.5 rounded-t font-semibold shadow-sm z-30">
+                                                      List
+                                                    </div>
+                                                  )}
+                                                  <div
+                                                    className={`absolute -top-2 -right-2 ${isSelected ? "bg-blue-500" : "bg-yellow-400"} text-white rounded-full p-1 ${isSelected ? "opacity-100" : "opacity-0 group-hover/field:opacity-100"} transition-opacity z-10 shadow-sm`}
+                                                  >
+                                                    <svg
+                                                      xmlns="http://www.w3.org/2000/svg"
+                                                      width="12"
+                                                      height="12"
+                                                      viewBox="0 0 24 24"
+                                                      fill="none"
+                                                      stroke="currentColor"
+                                                      strokeWidth="2"
+                                                      strokeLinecap="round"
+                                                      strokeLinejoin="round"
+                                                    >
+                                                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                                    </svg>
+                                                  </div>
+                                                </div>
+                                              );
+                                            }
+                                            return renderedField;
+                                          })
+                                      )}
                                     </div>
-                                  )}
-                                  {renderCommentBadge(
-                                    `block-${sectionIndex}-${blockIndex}`,
-                                  )}
+                                  </>
+                                );
+                                const slicedBlockWrapperStyles:
+                                  | React.CSSProperties
+                                  | undefined = blockSlice
+                                  ? {
+                                      overflow: "hidden",
+                                      height: `${blockSlice.height}px`,
+                                      margin: blockStyles.margin,
+                                      boxSizing: blockStyles.boxSizing,
+                                      flex: blockStyles.flex,
+                                      display: blockStyles.display,
+                                      flexDirection: blockStyles.flexDirection,
+                                    }
+                                  : undefined;
+                                const slicedBlockContentStyles:
+                                  | React.CSSProperties
+                                  | undefined = blockSlice
+                                  ? {
+                                      ...blockStyles,
+                                      margin: undefined,
+                                      transform: `translateY(-${blockSlice.offset}px)`,
+                                    }
+                                  : undefined;
 
-                                  {/* Container for fields with specific layout */}
+                                return (
                                   <div
-                                    className={`${
-                                      hasCardField ? "flex-1" : ""
+                                    key={`preview-block-${sectionIndex}-${blockIndex}-${renderIndex}`}
+                                    data-review-id={
+                                      reviewMode
+                                        ? block.block_id ||
+                                          `block-${sectionIndex}-${blockIndex}`
+                                        : undefined
+                                    }
+                                    className={`${hasCardField ? "flex-1" : ""} ${
+                                      reviewMode
+                                        ? "hover:ring-2 hover:ring-blue-400 cursor-pointer relative group/block transition-all"
+                                        : ""
                                     }`}
-                                    style={fieldsContainerStyle}
+                                    onClick={
+                                      reviewMode && onElementClick
+                                        ? (e) =>
+                                            onElementClick(
+                                              "block",
+                                              `block-${sectionIndex}-${blockIndex}`,
+                                              e,
+                                            )
+                                        : undefined
+                                    }
+                                    style={{
+                                      ...(blockSlice
+                                        ? slicedBlockWrapperStyles
+                                        : blockStyles),
+                                      overflow: "hidden",
+                                    }}
                                   >
-                                    {block.fields.length === 0 ? (
-                                      <div className="text-sm text-[#283618]/50 italic">
-                                        {t("noFieldsInBlock")}
+                                    {reviewMode && (
+                                      <div className="absolute top-0 left-0 bg-blue-400 text-white text-[10px] px-1 rounded-br opacity-0 group-hover/block:opacity-100 transition-opacity z-10 pointer-events-none">
+                                        Block
+                                      </div>
+                                    )}
+                                    {renderCommentBadge(
+                                      `block-${sectionIndex}-${blockIndex}`,
+                                    )}
+
+                                    {blockSlice ? (
+                                      <div style={slicedBlockContentStyles}>
+                                        {blockContent}
                                       </div>
                                     ) : (
-                                      block.fields
-                                        .filter((field) => field.bulletin) // Only show fields for bulletin
-                                        .map((field, fieldIndex) => {
-                                          const fieldId = `field-${sectionIndex}-${blockIndex}-${fieldIndex}`;
-                                          const renderedField = renderField(
-                                            field,
-                                            `preview-${fieldId}`, // Use consistent key
-                                            block.style_config ||
-                                              section.style_config, // Los campos heredan del bloque o de la sección
-                                            fieldsLayout,
-                                            undefined, // pageInfo
-                                            fieldId, // Pass fieldId here
-                                          );
-
-                                          if (reviewMode && onElementClick) {
-                                            const isSelected =
-                                              selectedElementId === fieldId;
-
-                                            // Determine flex or specific styling for the field-wrapper based on fieldsLayout
-                                            const fieldWrapperStyle: React.CSSProperties =
-                                              {
-                                                // Aplicar el style_config del campo si existe
-                                                ...((field as Field)
-                                                  .style_config?.margin
-                                                  ? {
-                                                      margin: (field as Field)
-                                                        .style_config?.margin,
-                                                    }
-                                                  : {}),
-                                                ...((field as Field)
-                                                  .style_config?.padding
-                                                  ? {
-                                                      padding: (field as Field)
-                                                        .style_config?.padding,
-                                                    }
-                                                  : {}),
-                                                // Asegurar que flex funciona para layouts horizontale
-                                                flexShrink: 0,
-                                              };
-
-                                            return (
-                                              <div
-                                                key={`review-wrapper-${fieldId}`}
-                                                data-review-id={fieldId}
-                                                onClick={(e) =>
-                                                  onElementClick(
-                                                    "field",
-                                                    fieldId,
-                                                    e,
-                                                  )
-                                                }
-                                                style={fieldWrapperStyle}
-                                                className={`relative ${isSelected ? "ring-2 ring-blue-500 z-20" : "hover:ring-2 hover:ring-yellow-400"} cursor-pointer rounded transition-all group/field`}
-                                              >
-                                                {renderedField}
-                                                {renderCommentBadge(fieldId)}
-                                                {/* Selection Badge for Parent */}
-                                                {isSelected && (
-                                                  <div className="absolute -top-3 -left-1 bg-blue-500 text-white text-[10px] px-2 py-0.5 rounded-t font-semibold shadow-sm z-30">
-                                                    List
-                                                  </div>
-                                                )}
-                                                <div
-                                                  className={`absolute -top-2 -right-2 ${isSelected ? "bg-blue-500" : "bg-yellow-400"} text-white rounded-full p-1 ${isSelected ? "opacity-100" : "opacity-0 group-hover/field:opacity-100"} transition-opacity z-10 shadow-sm`}
-                                                >
-                                                  <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="12"
-                                                    height="12"
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    strokeWidth="2"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                  >
-                                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                                                  </svg>
-                                                </div>
-                                              </div>
-                                            );
-                                          }
-                                          return renderedField;
-                                        })
+                                      blockContent
                                     )}
                                   </div>
-                                </div>
-                              );
-                            })
+                                );
+                              },
+                            )
                           )}
                         </div>
                       </div>
@@ -2926,6 +3799,9 @@ export function TemplatePreview({
                       {/* Footer con lógica de prioridad */}
                       {activeFooterConfig && (
                         <div
+                          ref={
+                            isMeasuringOverflow ? footerMeasureRef : undefined
+                          }
                           data-review-id={`footer-${sectionIndex}`}
                           onClick={
                             reviewMode && onElementClick
@@ -3172,29 +4048,53 @@ export function TemplatePreview({
         </div>
       </div>
 
-      {/* Controles de paginación de lista */}
-      {!hidePagination && paginationInfo.totalPages > 1 && (
+      {isMeasuringOverflow && measuredSection && (
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            left: "-10000px",
+            top: 0,
+            width: `${styleConfig?.bulletin_width || 366}px`,
+            visibility: "hidden",
+            pointerEvents: "none",
+          }}
+        >
+          <div
+            style={{
+              ...globalStyles,
+              width: `${styleConfig?.bulletin_width || 366}px`,
+              padding: 0,
+            }}
+          >
+            <div className="space-y-1 w-full flex flex-col">
+              {measuredSection.blocks.map((block, blockIndex) =>
+                renderMeasurementBlock(measuredSection, block, blockIndex),
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Controles de paginación de la sección */}
+      {!hidePagination && currentSectionTotalPages > 1 && (
         <div className="mt-4 flex items-center justify-center gap-4">
           <button
-            onClick={() => handlePageChange(Math.max(0, currentPageIndex - 1))}
-            disabled={currentPageIndex === 0}
+            onClick={goToPreviousPreviewPage}
+            disabled={absolutePageNumber <= previousPagesCount + 1}
             className={PAGINATION_BUTTON_CLASS}
           >
             {t("previousPage")}
           </button>
           <span className="text-sm text-[#283618] font-medium">
             {t("pageOf", {
-              current: currentPageIndex + 1,
-              total: paginationInfo.totalPages,
+              current: currentCompositePageNumber,
+              total: currentSectionTotalPages,
             })}
           </span>
           <button
-            onClick={() =>
-              handlePageChange(
-                Math.min(paginationInfo.totalPages - 1, currentPageIndex + 1),
-              )
-            }
-            disabled={currentPageIndex === paginationInfo.totalPages - 1}
+            onClick={goToNextPreviewPage}
+            disabled={currentCompositePageNumber === currentSectionTotalPages}
             className={PAGINATION_BUTTON_CLASS}
           >
             {t("nextPage")}

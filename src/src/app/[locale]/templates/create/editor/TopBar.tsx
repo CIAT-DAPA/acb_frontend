@@ -32,9 +32,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         <button
           onClick={onBack}
           className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
-          title={
-            isCardMode ? tCards("backToCards") : t("basicInfo.backToDashboard")
-          }
+          title={isCardMode ? tCards("backToCards") : t("backToTemplates")}
         >
           <ArrowLeft size={20} />
         </button>
