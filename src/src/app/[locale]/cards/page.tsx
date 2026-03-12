@@ -10,13 +10,11 @@ import {
   Trash2,
   X,
   AlertCircle,
-  FileText,
   Calendar,
   User,
   Layers,
   Grid3x3,
   FileStack,
-  Copy,
 } from "lucide-react";
 import Image from "next/image";
 import ItemCard from "../components/ItemCard";
@@ -31,6 +29,7 @@ import {
   pageTitle,
   pageSubtitle,
 } from "../components/ui";
+import { DuplicateItemModal } from "../components/DuplicateItemModal";
 import {
   Card,
   CardType,
@@ -125,7 +124,7 @@ export default function CardsPage() {
 
       if (response.success) {
         const activeCards = response.data.filter(
-          (card) => card.status === "active"
+          (card) => card.status === "active",
         );
         setCards(activeCards);
         setFilteredCards(activeCards);
@@ -165,13 +164,10 @@ export default function CardsPage() {
         if (showDeleteModal && !isDeleting) {
           handleCloseDeleteModal();
         }
-        if (showDuplicateModal && !isDuplicating) {
-          handleCloseDuplicateModal();
-        }
       }
     };
 
-    if (showDeleteModal || showDuplicateModal) {
+    if (showDeleteModal) {
       document.addEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "hidden"; // Prevenir scroll del fondo
     }
@@ -180,7 +176,7 @@ export default function CardsPage() {
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "unset"; // Restaurar scroll
     };
-  }, [showDeleteModal, isDeleting, showDuplicateModal, isDuplicating]);
+  }, [showDeleteModal, isDeleting]);
 
   // Función para mostrar el modal de confirmación de eliminación
   const handleDeleteCard = (card: Card) => {
@@ -211,7 +207,7 @@ export default function CardsPage() {
         showToast(
           t("deleteSuccess", { name: cardToDelete.card_name }),
           "success",
-          3000
+          3000,
         );
         loadCards();
         handleCloseDeleteModal();
@@ -226,7 +222,7 @@ export default function CardsPage() {
           error: error instanceof Error ? error.message : "Error desconocido",
         }),
         "error",
-        5000
+        5000,
       );
       setIsDeleting(false);
     }
@@ -235,7 +231,7 @@ export default function CardsPage() {
   // Función para mostrar el modal de duplicación
   const handleDuplicateCard = (card: Card) => {
     setCardToDuplicate(card);
-    setDuplicateCardName(`${card.card_name} - copy`);
+    setDuplicateCardName(`${card.card_name} - ${t("copySuffix")}`);
     setShowDuplicateModal(true);
   };
 
@@ -262,7 +258,7 @@ export default function CardsPage() {
         showToast(
           t("duplicateSuccess", { name: duplicateCardName }),
           "success",
-          3000
+          3000,
         );
         loadCards();
         handleCloseDuplicateModal();
@@ -277,7 +273,7 @@ export default function CardsPage() {
           error: error instanceof Error ? error.message : "Error desconocido",
         }),
         "error",
-        5000
+        5000,
       );
       setIsDuplicating(false);
     }
@@ -408,12 +404,12 @@ export default function CardsPage() {
                 const canEdit = can(
                   PERMISSION_ACTIONS.Update,
                   MODULES.CARD_MANAGEMENT,
-                  allowedGroups
+                  allowedGroups,
                 );
                 const canDelete = can(
                   PERMISSION_ACTIONS.Delete,
                   MODULES.CARD_MANAGEMENT,
-                  allowedGroups
+                  allowedGroups,
                 );
 
                 return (
@@ -562,7 +558,7 @@ export default function CardsPage() {
                       <span>
                         {t("lastModified")}:{" "}
                         {CardAPIService.getCardStats(
-                          cardToDelete
+                          cardToDelete,
                         ).updatedAt.toLocaleDateString()}
                       </span>
                     </div>
@@ -616,114 +612,41 @@ export default function CardsPage() {
         </div>
       )}
 
-      {/* Modal de Confirmación de Duplicación */}
-      {showDuplicateModal && cardToDuplicate && (
-        <div
-          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
-          onClick={handleCloseDuplicateModal}
-        >
-          <div
-            className="bg-white rounded-lg max-w-md w-full mx-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header del modal */}
-            <div className="flex items-center justify-between p-4 border-b">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-[#606c38]/20 rounded-full">
-                  <Copy className="h-5 w-5 text-[#606c38]" />
-                </div>
-                <h3 className="text-lg font-medium text-[#283618]">
-                  {t("duplicateConfirmTitle")}
-                </h3>
+      <DuplicateItemModal
+        isOpen={showDuplicateModal && Boolean(cardToDuplicate)}
+        onClose={handleCloseDuplicateModal}
+        onConfirm={handleConfirmDuplicate}
+        isSubmitting={isDuplicating}
+        title={t("duplicateConfirmTitle")}
+        message={t("duplicateConfirmMessage")}
+        nameLabel={t("cardNameLabel")}
+        namePlaceholder={t("cardNamePlaceholder")}
+        nameValue={duplicateCardName}
+        onNameChange={setDuplicateCardName}
+        cancelLabel={t("cancelDuplicate")}
+        confirmLabel={t("confirmDuplicateBtn")}
+        submittingLabel={t("duplicating")}
+        originalItemLabel={t("originalCardLabel")}
+        originalPreview={
+          cardToDuplicate ? (
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-[#606c38]/20 rounded-lg flex items-center justify-center text-2xl shrink-0">
+                {getCardTypeIcon(cardToDuplicate.card_type)}
               </div>
-              <button
-                onClick={handleCloseDuplicateModal}
-                className="p-2 text-[#283618]/80 hover:text-[#283618] transition-colors cursor-pointer"
-                disabled={isDuplicating}
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            {/* Contenido del modal */}
-            <div className="p-6">
-              <p className="text-[#283618] mb-4">
-                {t("duplicateConfirmMessage")}
-              </p>
-
-              {/* Input para el nombre */}
-              <div className="space-y-2">
-                <label
-                  htmlFor="duplicate-card-name"
-                  className="block text-sm font-medium text-[#283618]"
-                >
-                  {t("cardNameLabel")}
-                </label>
-                <input
-                  id="duplicate-card-name"
-                  type="text"
-                  value={duplicateCardName}
-                  onChange={(e) => setDuplicateCardName(e.target.value)}
-                  placeholder={t("cardNamePlaceholder")}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#606c38] focus:border-transparent"
-                  disabled={isDuplicating}
-                  autoFocus
-                />
-              </div>
-
-              {/* Información de la card original */}
-              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                <p className="text-xs text-[#283618]/60 mb-2">Card original:</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-[#606c38]/20 rounded-lg flex items-center justify-center text-2xl shrink-0">
-                    {getCardTypeIcon(cardToDuplicate.card_type)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[#283618] truncate">
-                      {cardToDuplicate.card_name}
-                    </p>
-                    <p className="text-xs text-[#283618]/60">
-                      {t(`cardTypes.${cardToDuplicate.card_type}`)}
-                    </p>
-                  </div>
-                </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-[#283618] truncate">
+                  {cardToDuplicate.card_name}
+                </p>
+                <p className="text-xs text-[#283618]/60">
+                  {t(`cardTypes.${cardToDuplicate.card_type}`)}
+                </p>
               </div>
             </div>
-
-            {/* Botones de acción */}
-            <div className="flex gap-3 justify-end p-4 border-t bg-gray-50">
-              <button
-                onClick={handleCloseDuplicateModal}
-                className={btnOutlineSecondary}
-                disabled={isDuplicating}
-              >
-                {t("cancelDuplicate")}
-              </button>
-              <button
-                onClick={handleConfirmDuplicate}
-                disabled={isDuplicating || !duplicateCardName.trim()}
-                className={`${btnPrimary} ${
-                  isDuplicating || !duplicateCardName.trim()
-                    ? "opacity-50 cursor-not-allowed"
-                    : "cursor-pointer"
-                }`}
-              >
-                {isDuplicating ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>{t("duplicating")}</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="h-4 w-4" />
-                    <span>{t("confirmDuplicateBtn")}</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          ) : null
+        }
+        headerAccentClassName="bg-[#606c38]/20 text-[#606c38]"
+        nameInputId="duplicate-card-name"
+      />
     </ProtectedRoute>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { TemplateFullPreviewProps, PreviewMode } from "@/types/templatePreview";
 import { CreateTemplateData } from "@/types/template";
@@ -8,16 +8,20 @@ import { CarouselView } from "./CarouselView";
 import { ScrollView } from "./ScrollView";
 import { GridView } from "./GridView";
 import { ModeToggle } from "./ModeToggle";
+import { useCardsMetadata } from "@/hooks/useCardsMetadata";
 
 /**
  * Componente principal de preview que soporta 3 modos de visualización:
  * - Carousel: navegación de sección en sección (horizontal/vertical)
  * - Scroll: todas las secciones en lista scrollable
  * - Grid: miniaturas de todas las secciones en grilla
- * 
+ *
  * Componente genérico que funciona con templates y bulletins
  */
-interface ContentFullPreviewProps extends Omit<TemplateFullPreviewProps, 'data'> {
+interface ContentFullPreviewProps extends Omit<
+  TemplateFullPreviewProps,
+  "data"
+> {
   data: CreateTemplateData;
 }
 
@@ -32,7 +36,22 @@ export function ContentFullPreview({
   className = "",
 }: ContentFullPreviewProps) {
   const t = useTranslations("ContentFullPreview");
-  
+  const sections = useMemo(
+    () => data?.version?.content?.sections || [],
+    [data],
+  );
+  const hasCardFields = useMemo(
+    () =>
+      sections.some((section) =>
+        section.blocks?.some((block) =>
+          block.fields?.some((field) => field.type === "card"),
+        ),
+      ),
+    [sections],
+  );
+  const { cardsMetadata, isLoading: cardsMetadataLoading } =
+    useCardsMetadata(hasCardFields);
+
   // Estado del modo actual (permite cambio dinámico si allowModeToggle=true)
   const [currentMode, setCurrentMode] = useState<PreviewMode>(initialMode);
 
@@ -44,8 +63,6 @@ export function ContentFullPreview({
       </div>
     );
   }
-
-  const sections = data.version.content.sections || [];
 
   if (sections.length === 0) {
     return (
@@ -74,6 +91,8 @@ export function ContentFullPreview({
             data={data}
             config={carouselConfig}
             initialSection={initialSection}
+            cardsMetadata={cardsMetadata}
+            cardsMetadataLoading={cardsMetadataLoading}
           />
         )}
 
@@ -82,6 +101,8 @@ export function ContentFullPreview({
             data={data}
             config={scrollConfig}
             initialSection={initialSection}
+            cardsMetadata={cardsMetadata}
+            cardsMetadataLoading={cardsMetadataLoading}
           />
         )}
 
@@ -90,6 +111,8 @@ export function ContentFullPreview({
             data={data}
             config={gridConfig}
             initialSection={initialSection}
+            cardsMetadata={cardsMetadata}
+            cardsMetadataLoading={cardsMetadataLoading}
           />
         )}
       </div>

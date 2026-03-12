@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { X, Download, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { CreateTemplateData } from "@/types/template";
 import { ScrollView } from "./ScrollView";
@@ -9,6 +9,7 @@ import { ContentType, NormalizedContent } from "@/types/content";
 import * as ui from "@/app/[locale]/components/ui";
 import { useTranslations } from "next-intl";
 import { exportContent } from "@/utils/exportContent";
+import { useCardsMetadata } from "@/hooks/useCardsMetadata";
 
 // Tipos para la configuración de exportación
 export type DownloadFormat = "png" | "jpg" | "pdf";
@@ -67,7 +68,7 @@ interface ExportModalProps {
   onExport?: (
     config: ExportConfig,
     onSectionChange: (index: number) => void,
-    onProgressUpdate: (current: number, message: string) => void
+    onProgressUpdate: (current: number, message: string) => void,
   ) => Promise<void>;
 
   // MODO 2: Auto-export (nuevo)
@@ -99,7 +100,7 @@ export function ExportModal({
   const t = useTranslations("CreateBulletin.exportModal");
   // Estado para contenido cargado dinámicamente
   const [loadedContent, setLoadedContent] = useState<NormalizedContent | null>(
-    null
+    null,
   );
   const [loadingContent, setLoadingContent] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -115,6 +116,20 @@ export function ExportModal({
     loadedContent?.master.name ||
     templateData?.master.template_name ||
     "Contenido";
+  const hasCardFields = useMemo(
+    () =>
+      Boolean(
+        templateData?.version.content.sections.some((section) =>
+          section.blocks?.some((block) =>
+            block.fields?.some((field) => field.type === "card"),
+          ),
+        ),
+      ),
+    [templateData],
+  );
+  const { cardsMetadata, isLoading: cardsMetadataLoading } = useCardsMetadata(
+    isOpen && hasCardFields,
+  );
 
   // Estado del formulario
   const [config, setConfig] = useState<ExportConfig>({
@@ -165,15 +180,15 @@ export function ExportModal({
         // Usar el servicio adaptador para cargar contenido normalizado
         const response = await ContentService.getContent(
           contentType,
-          contentId
+          contentId,
         );
 
         if (!response.success || !response.data) {
           throw new Error(
             response.message ||
               `No se pudo cargar ${ContentService.getContentTypeName(
-                contentType
-              )}`
+                contentType,
+              )}`,
           );
         }
 
@@ -184,8 +199,8 @@ export function ExportModal({
           err instanceof Error
             ? err.message
             : `Error al cargar ${ContentService.getContentTypeName(
-                contentType
-              )}`
+                contentType,
+              )}`,
         );
       } finally {
         setLoadingContent(false);
@@ -311,7 +326,7 @@ export function ExportModal({
         await onExport(config, setCurrentPreviewSection, handleProgressUpdate);
       } else {
         throw new Error(
-          "ExportModal: Se debe proporcionar 'onExport' o habilitar 'autoExport' con 'exportConfig'"
+          "ExportModal: Se debe proporcionar 'onExport' o habilitar 'autoExport' con 'exportConfig'",
         );
       }
 
@@ -331,7 +346,7 @@ export function ExportModal({
       console.error("Error en exportación:", error);
       setExportStatus("error");
       setErrorMessage(
-        error instanceof Error ? error.message : "Error desconocido"
+        error instanceof Error ? error.message : "Error desconocido",
       );
     } finally {
       setIsExporting(false);
@@ -469,7 +484,7 @@ export function ExportModal({
                           {quality === "ultra" && "3x"}
                         </div>
                       </button>
-                    )
+                    ),
                   )}
                 </div>
               </div>
@@ -501,7 +516,7 @@ export function ExportModal({
                           >
                             {size}
                           </button>
-                        )
+                        ),
                       )}
                     </div>
                   </div>
@@ -600,6 +615,8 @@ export function ExportModal({
                   >
                     <ScrollView
                       data={templateData}
+                      cardsMetadata={cardsMetadata}
+                      cardsMetadataLoading={cardsMetadataLoading}
                       config={{
                         orientation: "vertical",
                         showMiniNav: false,
