@@ -32,6 +32,7 @@ import {
 } from "../components/ui";
 import { TemplateMaster } from "@/types/template";
 import { PreviewModal } from "../components/PreviewModal";
+import { DuplicateItemModal } from "../components/DuplicateItemModal";
 
 export default function Templates() {
   const t = useTranslations("Templates");
@@ -42,7 +43,7 @@ export default function Templates() {
   const [searchTerm, setSearchTerm] = useState("");
   const [templates, setTemplates] = useState<TemplateMaster[]>([]);
   const [filteredTemplates, setFilteredTemplates] = useState<TemplateMaster[]>(
-    []
+    [],
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -50,11 +51,18 @@ export default function Templates() {
   const [templateToDelete, setTemplateToDelete] =
     useState<TemplateMaster | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
+  const [templateToDuplicate, setTemplateToDuplicate] =
+    useState<TemplateMaster | null>(null);
+  const [isDuplicating, setIsDuplicating] = useState(false);
+  const [duplicateTemplateName, setDuplicateTemplateName] = useState("");
+  const [duplicateTemplateDescription, setDuplicateTemplateDescription] =
+    useState("");
 
   // Estados para el modal de preview
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [previewTemplateId, setPreviewTemplateId] = useState<string | null>(
-    null
+    null,
   );
 
   // Helper para obtener el nombre del autor
@@ -74,8 +82,8 @@ export default function Templates() {
 
     try {
       const response = await TemplateAPIService.getTemplates();
-      const templatesActive = response.data.filter(
-        (template) => template.status === "active"
+      const templatesActive = (response.data || []).filter(
+        (template) => template.status === "active",
       );
 
       if (response.success) {
@@ -140,6 +148,64 @@ export default function Templates() {
     }
   };
 
+  const handleDuplicateTemplate = (template: TemplateMaster) => {
+    setTemplateToDuplicate(template);
+    setDuplicateTemplateName(`${template.template_name} - ${t("copySuffix")}`);
+    setDuplicateTemplateDescription(template.description || "");
+    setShowDuplicateModal(true);
+  };
+
+  const handleCloseDuplicateModal = () => {
+    if (!isDuplicating) {
+      setShowDuplicateModal(false);
+      setTemplateToDuplicate(null);
+      setDuplicateTemplateName("");
+      setDuplicateTemplateDescription("");
+      setIsDuplicating(false);
+    }
+  };
+
+  const handleConfirmDuplicate = async () => {
+    if (!templateToDuplicate?._id) {
+      return;
+    }
+
+    setIsDuplicating(true);
+
+    try {
+      const response = await TemplateAPIService.cloneTemplate(
+        templateToDuplicate._id,
+        {
+          template_name: duplicateTemplateName.trim(),
+          description: duplicateTemplateDescription.trim() || undefined,
+        },
+      );
+
+      if (!response.success) {
+        throw new Error(response.message || "Error al duplicar la plantilla");
+      }
+
+      showToast(
+        t("duplicateSuccess", { name: duplicateTemplateName }),
+        "success",
+        3000,
+      );
+      await loadTemplates();
+      handleCloseDuplicateModal();
+    } catch (error) {
+      console.error("Error duplicating template:", error);
+      showToast(
+        t("duplicateError", {
+          name: templateToDuplicate.template_name,
+          error: error instanceof Error ? error.message : t("unknownError"),
+        }),
+        "error",
+        5000,
+      );
+      setIsDuplicating(false);
+    }
+  };
+
   // Función para confirmar la eliminación (archivar)
   const handleConfirmDelete = async () => {
     if (!templateToDelete) return;
@@ -149,7 +215,7 @@ export default function Templates() {
     try {
       const response = await TemplateAPIService.updateTemplate(
         templateToDelete._id!,
-        { status: "archived" }
+        { status: "archived" },
       );
 
       if (!response.success) {
@@ -159,7 +225,7 @@ export default function Templates() {
       showToast(
         t("deleteSuccess", { name: templateToDelete.template_name }),
         "success",
-        3000
+        3000,
       );
       loadTemplates();
       handleCloseDeleteModal();
@@ -171,7 +237,7 @@ export default function Templates() {
           error: error instanceof Error ? error.message : t("unknownError"),
         }),
         "error",
-        5000
+        5000,
       );
     } finally {
       setIsDeleting(false);
@@ -281,12 +347,12 @@ export default function Templates() {
                   const canEdit = can(
                     PERMISSION_ACTIONS.Update,
                     MODULES.TEMPLATE_MANAGEMENT,
-                    allowedGroups
+                    allowedGroups,
                   );
                   const canDelete = can(
                     PERMISSION_ACTIONS.Delete,
                     MODULES.TEMPLATE_MANAGEMENT,
-                    allowedGroups
+                    allowedGroups,
                   );
 
                   return (
@@ -297,7 +363,7 @@ export default function Templates() {
                       name={template.template_name}
                       author={getAuthorName(template.log)}
                       lastModified={new Date(
-                        template.log.updated_at!
+                        template.log.updated_at!,
                       ).toLocaleDateString()}
                       thumbnailImages={template.thumbnail_images}
                       totalSections={template.section_count}
@@ -309,6 +375,16 @@ export default function Templates() {
                           ? () =>
                               (window.location.href = `/templates/${template._id}/edit`)
                           : undefined
+                      }
+                      duplicateBtn={canEdit}
+                      onDuplicate={
+                        canEdit
+                          ? () => handleDuplicateTemplate(template)
+                          : undefined
+                      }
+                      isDuplicating={
+                        isDuplicating &&
+                        templateToDuplicate?._id === template._id
                       }
                       deleteBtn={canDelete}
                       onDelete={
@@ -398,7 +474,7 @@ export default function Templates() {
                       <span>
                         {t("lastModified")}:{" "}
                         {new Date(
-                          templateToDelete.log.updated_at!
+                          templateToDelete.log.updated_at!,
                         ).toLocaleDateString()}
                       </span>
                     </div>
@@ -451,6 +527,47 @@ export default function Templates() {
           </div>
         </div>
       )}
+
+      <DuplicateItemModal
+        isOpen={showDuplicateModal && Boolean(templateToDuplicate)}
+        onClose={handleCloseDuplicateModal}
+        onConfirm={handleConfirmDuplicate}
+        isSubmitting={isDuplicating}
+        title={t("duplicateConfirmTitle")}
+        message={t("duplicateConfirmMessage")}
+        nameLabel={t("templateNameLabel")}
+        namePlaceholder={t("templateNamePlaceholder")}
+        nameValue={duplicateTemplateName}
+        onNameChange={setDuplicateTemplateName}
+        descriptionLabel={t("descriptionLabel")}
+        descriptionPlaceholder={t("descriptionPlaceholder")}
+        descriptionValue={duplicateTemplateDescription}
+        onDescriptionChange={setDuplicateTemplateDescription}
+        cancelLabel={t("cancelDuplicate")}
+        confirmLabel={t("confirmDuplicateBtn")}
+        submittingLabel={t("duplicating")}
+        originalItemLabel={t("originalTemplateLabel")}
+        originalPreview={
+          templateToDuplicate ? (
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-[#ffaf68]/20 rounded-lg flex items-center justify-center shrink-0">
+                <FileText className="h-6 w-6 text-[#ffaf68]" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-[#283618] truncate">
+                  {templateToDuplicate.template_name}
+                </p>
+                <p className="text-xs text-[#283618]/60 truncate">
+                  {t("by")} {getAuthorName(templateToDuplicate.log)}
+                </p>
+              </div>
+            </div>
+          ) : null
+        }
+        headerAccentClassName="bg-[#ffaf68]/20 text-[#ffaf68]"
+        nameInputId="duplicate-template-name"
+        descriptionInputId="duplicate-template-description"
+      />
 
       {/* Modal de Preview */}
       {showPreviewModal && previewTemplateId && (

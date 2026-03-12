@@ -53,7 +53,7 @@ export class TemplateAPIService extends BaseAPIService {
    * Obtiene un template específico por ID
    */
   static async getTemplateById(
-    id: string
+    id: string,
   ): Promise<APIResponse<TemplateMaster>> {
     try {
       const data = await this.get<any>(`/templates/${id}`);
@@ -118,7 +118,7 @@ export class TemplateAPIService extends BaseAPIService {
    * Crea un nuevo template
    */
   static async createTemplate(
-    templateData: Omit<TemplateMaster, "_id" | "log" | "current_version_id">
+    templateData: Omit<TemplateMaster, "_id" | "log" | "current_version_id">,
   ): Promise<APIResponse<TemplateMaster>> {
     try {
       const data = await this.post<any>("/templates/", templateData);
@@ -144,7 +144,7 @@ export class TemplateAPIService extends BaseAPIService {
    */
   static async updateTemplate(
     id: string,
-    templateData: Partial<TemplateMaster>
+    templateData: Partial<TemplateMaster>,
   ): Promise<APIResponse<TemplateMaster>> {
     try {
       const data = await this.put<any>(`/templates/${id}`, templateData);
@@ -171,7 +171,7 @@ export class TemplateAPIService extends BaseAPIService {
   static async getTemplatesByName(name: string): Promise<GetTemplatesResponse> {
     try {
       const data = await this.get<any>(
-        `/templates/name/${encodeURIComponent(name)}`
+        `/templates/name/${encodeURIComponent(name)}`,
       );
 
       return {
@@ -197,7 +197,7 @@ export class TemplateAPIService extends BaseAPIService {
    * Obtiene templates filtrados por estado
    */
   static async getTemplatesByStatus(
-    status: TemplateStatus
+    status: TemplateStatus,
   ): Promise<GetTemplatesResponse> {
     try {
       const data = await this.get<any>(`/templates/status/${status}`);
@@ -226,11 +226,11 @@ export class TemplateAPIService extends BaseAPIService {
    * La respuesta del API tiene la estructura: { master: {...}, current_version: {...} }
    */
   static async getCurrentVersion(
-    templateId: string
+    templateId: string,
   ): Promise<APIResponse<TemplateWithCurrentVersion>> {
     try {
       const data = await this.get<any>(
-        `/templates/${templateId}/current-version`
+        `/templates/${templateId}/current-version`,
       );
 
       // La API devuelve { master, current_version }
@@ -269,7 +269,7 @@ export class TemplateAPIService extends BaseAPIService {
    */
   static async createTemplateVersion(
     templateId: string,
-    versionData: any
+    versionData: any,
   ): Promise<APIResponse> {
     try {
       console.log("Creating template version for template ID:", {
@@ -302,17 +302,27 @@ export class TemplateAPIService extends BaseAPIService {
    */
   static async cloneTemplate(
     templateId: string,
-    newTemplateData?: Partial<TemplateMaster>
+    newTemplateData?: {
+      template_name?: string;
+      description?: string;
+    },
   ): Promise<APIResponse<TemplateMaster>> {
     try {
       const data = await this.post<any>(
         `/templates/${templateId}/clone`,
-        newTemplateData || {}
+        newTemplateData || {},
       );
+
+      const clonedTemplate = data.template || data.data || data;
 
       return {
         success: true,
-        data: data.template || data.data || data,
+        data: clonedTemplate
+          ? {
+              ...clonedTemplate,
+              _id: clonedTemplate.id || clonedTemplate._id,
+            }
+          : clonedTemplate,
       };
     } catch (error) {
       console.error("Error cloning template:", error);
@@ -330,7 +340,7 @@ export class TemplateAPIService extends BaseAPIService {
    * Obtiene el historial de un template
    */
   static async getTemplateHistory(
-    templateId: string
+    templateId: string,
   ): Promise<APIResponse<any[]>> {
     try {
       const data = await this.get<any>(`/templates/${templateId}/history`);
