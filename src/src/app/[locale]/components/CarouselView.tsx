@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { CarouselConfig } from "@/types/templatePreview";
 import { CreateTemplateData } from "@/types/template";
+import { Card } from "@/types/card";
 import { TemplatePreview } from "../templates/create/TemplatePreview";
 import {
   ChevronLeft,
@@ -15,6 +16,8 @@ interface CarouselViewProps {
   data: CreateTemplateData;
   config?: CarouselConfig;
   initialSection?: number;
+  cardsMetadata?: Record<string, Card>;
+  cardsMetadataLoading?: boolean;
 }
 
 /**
@@ -26,6 +29,8 @@ export function CarouselView({
   data,
   config = {},
   initialSection = 0,
+  cardsMetadata,
+  cardsMetadataLoading = false,
 }: CarouselViewProps) {
   // Configuración con defaults
   const {
@@ -189,7 +194,12 @@ export function CarouselView({
       >
         {itemsPerView === 1 ? (
           // Modo tradicional: una sola sección
-          <TemplatePreview data={data} selectedSectionIndex={currentSection} />
+          <TemplatePreview
+            data={data}
+            selectedSectionIndex={currentSection}
+            cardsMetadata={cardsMetadata}
+            cardsMetadataLoading={cardsMetadataLoading}
+          />
         ) : (
           // Modo múltiple: varias secciones
           visibleSections.map((sectionIndex) => (
@@ -208,6 +218,8 @@ export function CarouselView({
               <TemplatePreview
                 data={data}
                 selectedSectionIndex={sectionIndex}
+                cardsMetadata={cardsMetadata}
+                cardsMetadataLoading={cardsMetadataLoading}
               />
             </div>
           ))

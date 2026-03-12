@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { GridConfig } from "@/types/templatePreview";
 import { CreateTemplateData } from "@/types/template";
+import { Card } from "@/types/card";
 import { TemplatePreview } from "../templates/create/TemplatePreview";
 import { TemplateModal } from "@/app/[locale]/components/TemplateModal";
 
@@ -10,6 +11,8 @@ interface GridViewProps {
   data: CreateTemplateData;
   config?: GridConfig;
   initialSection?: number;
+  cardsMetadata?: Record<string, Card>;
+  cardsMetadataLoading?: boolean;
 }
 
 /**
@@ -21,6 +24,8 @@ export function GridView({
   data,
   config = {},
   initialSection = 0,
+  cardsMetadata,
+  cardsMetadataLoading = false,
 }: GridViewProps) {
   const {
     columns = 3,
@@ -104,12 +109,17 @@ export function GridView({
                   pointer-events-none
                 `}
               >
-                <TemplatePreview data={data} selectedSectionIndex={index} />
+                <TemplatePreview
+                  data={data}
+                  selectedSectionIndex={index}
+                  cardsMetadata={cardsMetadata}
+                  cardsMetadataLoading={cardsMetadataLoading}
+                />
               </div>
 
               {/* Overlay al hover */}
               <div className="absolute inset-0 bg-[#ffaf68]/0 group-hover:bg-[#ffaf68]/10 transition-colors" />
-              
+
               {/* Indicador de click */}
               <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                 <div className="bg-white px-2 py-1 rounded text-xs font-medium text-[#283618] shadow-md">
@@ -139,12 +149,17 @@ export function GridView({
         }
         onNext={() =>
           setSelectedSection((prev) =>
-            Math.min(sections.length - 1, (prev ?? 0) + 1)
+            Math.min(sections.length - 1, (prev ?? 0) + 1),
           )
         }
       >
         {selectedSection !== null && (
-          <TemplatePreview data={data} selectedSectionIndex={selectedSection} />
+          <TemplatePreview
+            data={data}
+            selectedSectionIndex={selectedSection}
+            cardsMetadata={cardsMetadata}
+            cardsMetadataLoading={cardsMetadataLoading}
+          />
         )}
       </TemplateModal>
     </div>

@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname } from "next/navigation";
 import { CreateTemplateData, Field, Section } from "../../../../types/template";
@@ -121,6 +127,24 @@ type CompositePageDescriptor = {
   basePageIndex: number;
   overflowPageIndex: number;
 };
+
+function buildCardsCache(
+  cardsMetadata?: Record<string, Card>,
+): Map<string, Card> {
+  const cache = new Map<string, Card>();
+
+  if (!cardsMetadata) {
+    return cache;
+  }
+
+  Object.values(cardsMetadata).forEach((card) => {
+    if (card._id) {
+      cache.set(card._id, card);
+    }
+  });
+
+  return cache;
+}
 
 function getOverflowPages(
   blockMeasurements: BlockMeasurement[],
@@ -422,6 +446,7 @@ interface TemplatePreviewProps {
   onResolvedPageCount?: (pageCount: number) => void; // Callback cuando se resuelve el total real de páginas de la sección
   hidePagination?: boolean; // Ocultar controles de paginación
   cardsMetadata?: Record<string, Card>; // Diccionario de cards precargadas para evitar HTTP calls
+  cardsMetadataLoading?: boolean; // Indica que un contenedor padre está precargando cards
   resolvedSectionPageCounts?: number[]; // Cantidad de páginas reales por sección para page numbers globales
   reviewMode?: boolean;
   onElementClick?: (
@@ -459,6 +484,7 @@ export function TemplatePreview({
   onResolvedPageCount,
   hidePagination = false,
   cardsMetadata,
+  cardsMetadataLoading = false,
   resolvedSectionPageCounts,
   reviewMode = false,
   onElementClick,
@@ -497,6 +523,16 @@ export function TemplatePreview({
   const [cardsCache, setCardsCache] = useState<Map<string, Card>>(new Map());
   const [cardsLoadingError, setCardsLoadingError] = useState(false);
   const [retryTrigger, setRetryTrigger] = useState(0);
+  const hasProvidedCardsMetadata = Boolean(
+    cardsMetadata && Object.keys(cardsMetadata).length > 0,
+  );
+  const resolvedCardsCache = useMemo(() => {
+    if (hasProvidedCardsMetadata) {
+      return buildCardsCache(cardsMetadata);
+    }
+
+    return cardsCache;
+  }, [cardsCache, cardsMetadata, hasProvidedCardsMetadata]);
 
   // Estado para controlar la página actual (para paginación de listas)
   const [internalPageIndex, setInternalPageIndex] = useState(0);
@@ -534,20 +570,14 @@ export function TemplatePreview({
     let isMounted = true;
     setCardsLoadingError(false);
 
+    if (cardsMetadataLoading || hasProvidedCardsMetadata) {
+      return () => {
+        isMounted = false;
+      };
+    }
+
     const loadCards = async (retryCount = 0) => {
       try {
-        // Si tenemos cardsMetadata, usarlo directamente (optimización para bulletins publicados)
-        if (cardsMetadata && Object.keys(cardsMetadata).length > 0) {
-          const cache = new Map<string, Card>();
-          Object.values(cardsMetadata).forEach((card) => {
-            if (card._id) {
-              cache.set(card._id, card);
-            }
-          });
-          if (isMounted) setCardsCache(cache);
-          return;
-        }
-
         // Si no hay cardsMetadata, hacer el fetch tradicional
         const response = await CardAPIService.getCards();
         if (response.success && response.data) {
@@ -587,7 +617,7 @@ export function TemplatePreview({
     return () => {
       isMounted = false;
     };
-  }, [cardsMetadata, retryTrigger]);
+  }, [cardsMetadataLoading, hasProvidedCardsMetadata, retryTrigger]);
 
   const styleConfig = data.version.content.style_config;
   const headerConfig = data.version.content.header_config;
@@ -1739,7 +1769,7 @@ export function TemplatePreview({
           );
         }
 
-        const cardToRender = cardsCache.get(cardData.cardId);
+        const cardToRender = resolvedCardsCache.get(cardData.cardId);
 
         if (!cardToRender) {
           if (cardsLoadingError) {
@@ -2708,7 +2738,7 @@ export function TemplatePreview({
     currentSection,
     currentSectionId,
     forceGlobalHeader,
-    cardsCache,
+    resolvedCardsCache,
     safeSelectedSectionIndex,
   ]);
 
@@ -2893,6 +2923,17 @@ export function TemplatePreview({
     paginationInfo.paginatedSections[activeBasePageIndex] ||
     currentSection ||
     null;
+  const currentSectionHasCardField = Boolean(
+    currentSection?.blocks.some((block) =>
+      block.fields.some((field) => field.type === "card"),
+    ),
+  );
+  const hasPendingCardLoad =
+    currentSectionHasCardField &&
+    !cardsLoadingError &&
+    (cardsMetadataLoading ||
+      (!hasProvidedCardsMetadata && resolvedCardsCache.size === 0));
+  const isPreviewReady = !isMeasuringOverflow && !hasPendingCardLoad;
   const hasMeasuredOverflowLayout = Boolean(
     overflowPagesByBasePage[activeBasePageIndex]?.length,
   );
@@ -2955,7 +2996,14 @@ export function TemplatePreview({
   }, [onPageChange, safeSelectedSectionIndex]);
 
   return (
-    <div className="h-full relative" id="template-preview-root">
+    <div
+      className="h-full relative"
+      id="template-preview-root"
+      data-template-preview-root="true"
+      data-preview-ready={isPreviewReady ? "true" : "false"}
+      data-preview-measuring={isMeasuringOverflow ? "true" : "false"}
+      data-preview-card-loading={hasPendingCardLoad ? "true" : "false"}
+    >
       {/* Información de la plantilla */}
       {description && (
         <div className="mb-4 p-3 bg-[#bc6c25]/10 rounded-lg">

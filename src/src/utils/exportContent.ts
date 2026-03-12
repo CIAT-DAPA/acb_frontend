@@ -109,12 +109,61 @@ export async function exportContent(
       return uniquePageIndexes.size;
     };
 
+    const isPreviewElementReady = (previewElement: Element | null) => {
+      if (!previewElement) {
+        return false;
+      }
+
+      const previewRoot = previewElement.querySelector(
+        '[data-template-preview-root="true"]',
+      );
+
+      return previewRoot?.getAttribute("data-preview-ready") === "true";
+    };
+
+    const areRenderedSectionPagesReady = (sectionIndex: number) => {
+      const renderedPages = Array.from(
+        scrollContainer.querySelectorAll(
+          `[data-section-index="${sectionIndex}"][data-page-index]`,
+        ),
+      );
+
+      if (renderedPages.length === 0) {
+        return false;
+      }
+
+      return renderedPages.every((pageElement) =>
+        isPreviewElementReady(pageElement),
+      );
+    };
+
+    const waitForRenderedPageReady = async (
+      sectionIndex: number,
+      pageIndex: number,
+    ) => {
+      for (let attempt = 0; attempt < 20; attempt++) {
+        const previewElement = scrollContainer.querySelector(
+          options.itemSelectorTemplate(sectionIndex, pageIndex),
+        );
+
+        if (isPreviewElementReady(previewElement)) {
+          return previewElement;
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 200));
+      }
+
+      return scrollContainer.querySelector(
+        options.itemSelectorTemplate(sectionIndex, pageIndex),
+      );
+    };
+
     const resolveSectionPageCounts = async () => {
       let previousSignature = "";
       let stableIterations = 0;
       let latestCounts = new Map<number, number>();
 
-      for (let attempt = 0; attempt < 10; attempt++) {
+      for (let attempt = 0; attempt < 20; attempt++) {
         const nextCounts = new Map<number, number>();
 
         sectionsToExport.forEach((sectionIndex) => {
@@ -133,13 +182,16 @@ export async function exportContent(
             (sectionIndex) => `${sectionIndex}:${nextCounts.get(sectionIndex)}`,
           )
           .join("|");
+        const allRenderedPagesReady = sectionsToExport.every((sectionIndex) =>
+          areRenderedSectionPagesReady(sectionIndex),
+        );
 
         latestCounts = nextCounts;
 
         if (signature === previousSignature) {
           stableIterations += 1;
 
-          if (stableIterations >= 1) {
+          if (allRenderedPagesReady && stableIterations >= 2) {
             return latestCounts;
           }
         } else {
@@ -189,11 +241,10 @@ export async function exportContent(
         await new Promise((resolve) => setTimeout(resolve, 300));
 
         // Buscar el elemento de preview específico
-        const itemSelector = options.itemSelectorTemplate(
+        const previewElement = await waitForRenderedPageReady(
           sectionIndex,
           pageIndex,
         );
-        const previewElement = scrollContainer.querySelector(itemSelector);
 
         if (!previewElement) {
           console.warn(
