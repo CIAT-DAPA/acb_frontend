@@ -1009,6 +1009,7 @@
         "addBlock": "Add Block",
         "addField": "Add Field",
         "addSection": "+ Add New Section",
+        "dragToReorder": "Drag to reorder",
         "styles": {
           "section": "Section Styles",
           "block": "Block Styles",
