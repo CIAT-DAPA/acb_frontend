@@ -13,6 +13,7 @@ interface ScrollViewProps {
   config?: ScrollConfig;
   initialSection?: number;
   cardsMetadata?: Record<string, Card>;
+  cardsMetadataLoading?: boolean;
 }
 
 /**
@@ -26,6 +27,7 @@ export function ScrollView({
   config = {},
   initialSection = 0,
   cardsMetadata,
+  cardsMetadataLoading = false,
 }: ScrollViewProps) {
   const t = useTranslations("ScrollView");
 
@@ -265,13 +267,17 @@ export function ScrollView({
             data,
             selectedSectionIndex: sectionIndex,
             cardsMetadata,
+            cardsMetadataLoading,
             resolvedSectionPageCounts: sectionPageCounts,
             onResolvedPageCount: (resolvedPageCount: number) =>
               handleResolvedPageCount(sectionIndex, resolvedPageCount),
           };
 
-          return expandAllPages && pageCount > 1 ? (
-            // Modo expandido: mostrar todas las páginas de la sección
+          return expandAllPages ? (
+            // Modo expandido: SIEMPRE usar estructura multi-página para evitar
+            // unmount/remount del TP[0] cuando el conteo cambia (causa flickering).
+            // Con pageCount=1 inicial se renderiza 1 entrada; cuando sube a N se
+            // agregan entradas sin desmontar la existente en pageIndex=0.
             <div
               key={sectionIndex}
               className={`flex gap-4 ${isVertical ? "flex-col" : ""}`}
@@ -295,27 +301,41 @@ export function ScrollView({
                     transition-all duration-300
                   `}
                 >
-                  {/* Título de sección con número de página */}
+                  {/* Título de sección (con número de página si hay más de 1) */}
                   <div className="mb-1.5 md:mb-2 px-1 md:px-2">
                     <h3 className="text-xs md:text-sm font-semibold text-[#283618]">
                       {section.display_name ||
                         t("section", { number: sectionIndex + 1 })}
-                      <span className="text-xs ml-2 text-[#606c38]">
-                        (
-                        {t("page", {
-                          current: pageIndex + 1,
-                          total: pageCount,
-                        })}
-                        )
-                      </span>
+                      {pageCount > 1 && (
+                        <span className="text-xs ml-2 text-[#606c38]">
+                          (
+                          {t("page", {
+                            current: pageIndex + 1,
+                            total: pageCount,
+                          })}
+                          )
+                        </span>
+                      )}
                     </h3>
                   </div>
 
-                  {/* Preview de la página específica */}
+                  {/* Preview de la página específica.
+                      Solo pageIndex=0 reporta el conteo total para evitar
+                      el bucle de feedback donde las páginas recién montadas
+                      reportan 1 y colapsan el conteo. */}
                   <TemplatePreview
                     {...sharedPreviewProps}
                     currentResolvedPageIndex={pageIndex}
                     hidePagination={true}
+                    onResolvedPageCount={
+                      pageIndex === 0
+                        ? (resolvedPageCount: number) =>
+                            handleResolvedPageCount(
+                              sectionIndex,
+                              resolvedPageCount,
+                            )
+                        : undefined
+                    }
                   />
                 </div>
               ))}
