@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { ScrollConfig } from "@/types/templatePreview";
 import { CreateTemplateData } from "@/types/template";
 import { Card } from "@/types/card";
 import { TemplatePreview } from "../templates/create/TemplatePreview";
 import { List, X } from "lucide-react";
-import * as ui from "@/app/[locale]/components/ui";
 
 interface ScrollViewProps {
   data: CreateTemplateData;
@@ -38,11 +37,30 @@ export function ScrollView({
     expandAllPages = false,
   } = config;
 
-  const sections = data.version.content.sections || [];
+  const sections = useMemo(() => data.version.content.sections || [], [data]);
   const [activeSectionIndex, setActiveSectionIndex] = useState(initialSection);
   const [isNavOpen, setIsNavOpen] = useState(false); // Estado del mini-nav colapsable
+  const [sectionPageCounts, setSectionPageCounts] = useState<number[]>(() =>
+    sections.map(() => 1),
+  );
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    setSectionPageCounts(sections.map(() => 1));
+  }, [sections]);
+
+  const handleResolvedPageCount = (sectionIndex: number, pageCount: number) => {
+    setSectionPageCounts((previousCounts) => {
+      if (previousCounts[sectionIndex] === pageCount) {
+        return previousCounts;
+      }
+
+      const nextCounts = [...previousCounts];
+      nextCounts[sectionIndex] = pageCount;
+      return nextCounts;
+    });
+  };
 
   // Mapeo de spacing a valores CSS
   const spacingMap = {
@@ -239,37 +257,18 @@ export function ScrollView({
         `}
       >
         {sections.map((section, sectionIndex) => {
-          // Calcular el número de páginas para esta sección
-          const getSectionPageCount = () => {
-            if (!expandAllPages) return 1;
+          const pageCount = expandAllPages
+            ? sectionPageCounts[sectionIndex] || 1
+            : 1;
 
-            let maxPages = 1;
-            section.blocks?.forEach((block: any) => {
-              block.fields?.forEach((field: any) => {
-                if (field.type === "card" && Array.isArray(field.value)) {
-                  const cards = field.value;
-                  if (cards.length > 1) {
-                    maxPages = Math.max(maxPages, cards.length);
-                  }
-                } else if (
-                  field.type === "list" &&
-                  Array.isArray(field.value)
-                ) {
-                  const rawMax = field.field_config?.max_items_per_page;
-                  const itemsPerPage = rawMax ? Number(rawMax) : 0;
-
-                  const items = field.value;
-                  if (items.length > 0 && itemsPerPage > 0) {
-                    const pageCount = Math.ceil(items.length / itemsPerPage);
-                    maxPages = Math.max(maxPages, pageCount);
-                  }
-                }
-              });
-            });
-            return maxPages;
+          const sharedPreviewProps = {
+            data,
+            selectedSectionIndex: sectionIndex,
+            cardsMetadata,
+            resolvedSectionPageCounts: sectionPageCounts,
+            onResolvedPageCount: (resolvedPageCount: number) =>
+              handleResolvedPageCount(sectionIndex, resolvedPageCount),
           };
-
-          const pageCount = getSectionPageCount();
 
           return expandAllPages && pageCount > 1 ? (
             // Modo expandido: mostrar todas las páginas de la sección
@@ -314,11 +313,9 @@ export function ScrollView({
 
                   {/* Preview de la página específica */}
                   <TemplatePreview
-                    data={data}
-                    selectedSectionIndex={sectionIndex}
-                    currentPageIndex={pageIndex}
+                    {...sharedPreviewProps}
+                    currentResolvedPageIndex={pageIndex}
                     hidePagination={true}
-                    cardsMetadata={cardsMetadata}
                   />
                 </div>
               ))}
@@ -355,11 +352,7 @@ export function ScrollView({
               </div>
 
               {/* Preview de la sección */}
-              <TemplatePreview
-                data={data}
-                selectedSectionIndex={sectionIndex}
-                cardsMetadata={cardsMetadata}
-              />
+              <TemplatePreview {...sharedPreviewProps} />
             </div>
           );
         })}
