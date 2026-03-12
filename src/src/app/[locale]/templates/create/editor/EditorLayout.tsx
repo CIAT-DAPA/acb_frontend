@@ -6,6 +6,121 @@ import { TopBar } from "@/app/[locale]/templates/create/editor/TopBar";
 import { Canvas } from "@/app/[locale]/templates/create/editor/Canvas";
 import { RightPanel } from "@/app/[locale]/templates/create/editor/RightPanel";
 
+function buildSelectionId(selection: EditorSelection): string | null {
+  switch (selection.type) {
+    case "template":
+      return null;
+    case "section":
+      return typeof selection.sectionIndex === "number"
+        ? `section-${selection.sectionIndex}`
+        : selection.id;
+    case "block":
+      return typeof selection.sectionIndex === "number" &&
+        typeof selection.blockIndex === "number"
+        ? `block-${selection.sectionIndex}-${selection.blockIndex}`
+        : selection.id;
+    case "field": {
+      if (
+        typeof selection.sectionIndex !== "number" ||
+        typeof selection.blockIndex !== "number" ||
+        typeof selection.fieldIndex !== "number"
+      ) {
+        return selection.id;
+      }
+
+      const baseId = `field-${selection.sectionIndex}-${selection.blockIndex}-${selection.fieldIndex}`;
+      return selection.schemaKey
+        ? `${baseId}-subfield-${selection.schemaKey}`
+        : baseId;
+    }
+    case "header":
+      return selection.sectionIndex !== undefined && selection.sectionIndex >= 0
+        ? `header-${selection.sectionIndex}`
+        : "header-global";
+    case "footer":
+      return selection.sectionIndex !== undefined && selection.sectionIndex >= 0
+        ? `footer-${selection.sectionIndex}`
+        : "footer-global";
+    case "header_field":
+      return selection.sectionIndex !== undefined && selection.sectionIndex >= 0
+        ? `header-${selection.sectionIndex}-${selection.fieldIndex}`
+        : `header-global-${selection.fieldIndex}`;
+    case "footer_field":
+      return selection.sectionIndex !== undefined && selection.sectionIndex >= 0
+        ? `footer-${selection.sectionIndex}-${selection.fieldIndex}`
+        : `footer-global-${selection.fieldIndex}`;
+    default:
+      return selection.id;
+  }
+}
+
+function remapSelectionAfterSectionMove(
+  selection: EditorSelection,
+  fromIndex: number,
+  toIndex: number,
+): EditorSelection {
+  if (
+    selection.type === "template" ||
+    typeof selection.sectionIndex !== "number" ||
+    selection.sectionIndex < 0 ||
+    fromIndex === toIndex
+  ) {
+    return selection;
+  }
+
+  let nextSectionIndex = selection.sectionIndex;
+
+  if (selection.sectionIndex === fromIndex) {
+    nextSectionIndex = toIndex;
+  } else if (
+    fromIndex < toIndex &&
+    selection.sectionIndex > fromIndex &&
+    selection.sectionIndex <= toIndex
+  ) {
+    nextSectionIndex = selection.sectionIndex - 1;
+  } else if (
+    fromIndex > toIndex &&
+    selection.sectionIndex >= toIndex &&
+    selection.sectionIndex < fromIndex
+  ) {
+    nextSectionIndex = selection.sectionIndex + 1;
+  }
+
+  if (nextSectionIndex === selection.sectionIndex) {
+    return selection;
+  }
+
+  const nextSelection = {
+    ...selection,
+    sectionIndex: nextSectionIndex,
+  };
+
+  return {
+    ...nextSelection,
+    id: buildSelectionId(nextSelection),
+  };
+}
+
+function reorderSections(
+  sections: CreateTemplateData["version"]["content"]["sections"],
+  fromIndex: number,
+  toIndex: number,
+) {
+  const nextSections = [...sections];
+  const [movedSection] = nextSections.splice(fromIndex, 1);
+
+  if (!movedSection) {
+    return sections;
+  }
+
+  nextSections.splice(toIndex, 0, movedSection);
+
+  return nextSections.map((section, index) => ({
+    ...section,
+    order: index,
+  }));
+}
+
 interface EditorLayoutProps {
   data: CreateTemplateData;
   onUpdate: (updater: (prev: CreateTemplateData) => CreateTemplateData) => void;
@@ -83,6 +198,43 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({
     }));
   };
 
+  const handleMoveSection = (fromIndex: number, toIndex: number) => {
+    const sectionsCount = data.version.content.sections.length;
+
+    if (sectionsCount < 2 || fromIndex < 0 || fromIndex >= sectionsCount) {
+      return;
+    }
+
+    const boundedToIndex = Math.min(Math.max(toIndex, 0), sectionsCount - 1);
+
+    if (fromIndex === boundedToIndex) {
+      return;
+    }
+
+    setSelection((previousSelection) =>
+      remapSelectionAfterSectionMove(
+        previousSelection,
+        fromIndex,
+        boundedToIndex,
+      ),
+    );
+
+    onUpdate((prev) => ({
+      ...prev,
+      version: {
+        ...prev.version,
+        content: {
+          ...prev.version.content,
+          sections: reorderSections(
+            prev.version.content.sections,
+            fromIndex,
+            boundedToIndex,
+          ),
+        },
+      },
+    }));
+  };
+
   return (
     <div className="flex flex-col h-[calc(100vh-80px)] w-full bg-gray-100 overflow-hidden">
       <TopBar
@@ -113,6 +265,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({
             selection={selection}
             onSelect={handleSelection}
             onAddSection={handleAddSection}
+            onMoveSection={handleMoveSection}
             isCardMode={isCardMode}
           />
         </div>
@@ -123,6 +276,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({
             selection={selection}
             data={data}
             onUpdate={onUpdate}
+            onMoveSection={handleMoveSection}
             // @ts-ignore - Dynamic props for Card Mode
             isCardMode={isCardMode}
             cardType={cardType}

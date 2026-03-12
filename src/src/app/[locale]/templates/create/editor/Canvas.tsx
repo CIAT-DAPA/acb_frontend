@@ -4,6 +4,7 @@ import { EditorSelection, CanvasState } from "./types";
 import { TemplatePreview } from "../TemplatePreview";
 import * as ui from "../../../components/ui";
 import { useTranslations } from "next-intl";
+import { GripVertical } from "lucide-react";
 
 interface CanvasProps {
   data: CreateTemplateData;
@@ -12,6 +13,7 @@ interface CanvasProps {
   onUpdateSection?: any;
   onUpdate?: any;
   onAddSection?: () => void;
+  onMoveSection?: (fromIndex: number, toIndex: number) => void;
   globalStyleConfig?: any;
   sections?: any;
   isCardMode?: boolean;
@@ -24,6 +26,7 @@ export const Canvas: React.FC<CanvasProps> = ({
   selection,
   onSelect,
   onAddSection,
+  onMoveSection,
   isCardMode = false,
   onCanvasChange,
   commentCounts,
@@ -38,6 +41,12 @@ export const Canvas: React.FC<CanvasProps> = ({
   });
   const [isDragging, setIsDragging] = useState(false);
   const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 });
+  const [draggedSectionIndex, setDraggedSectionIndex] = useState<number | null>(
+    null,
+  );
+  const [dragOverSectionIndex, setDragOverSectionIndex] = useState<
+    number | null
+  >(null);
   const spacePressed = useRef(false);
 
   useEffect(() => {
@@ -151,6 +160,61 @@ export const Canvas: React.FC<CanvasProps> = ({
 
   const handleMouseUp = () => {
     setIsDragging(false);
+  };
+
+  const handleSectionDragStart = (
+    e: React.DragEvent<HTMLButtonElement>,
+    sectionIndex: number,
+  ) => {
+    if (!onMoveSection) {
+      return;
+    }
+
+    e.stopPropagation();
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", String(sectionIndex));
+    setDraggedSectionIndex(sectionIndex);
+    setDragOverSectionIndex(sectionIndex);
+  };
+
+  const handleSectionDragOver = (
+    e: React.DragEvent<HTMLDivElement>,
+    sectionIndex: number,
+  ) => {
+    if (draggedSectionIndex === null || !onMoveSection) {
+      return;
+    }
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (dragOverSectionIndex !== sectionIndex) {
+      setDragOverSectionIndex(sectionIndex);
+    }
+  };
+
+  const handleSectionDrop = (
+    e: React.DragEvent<HTMLDivElement>,
+    sectionIndex: number,
+  ) => {
+    if (draggedSectionIndex === null || !onMoveSection) {
+      return;
+    }
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (draggedSectionIndex !== sectionIndex) {
+      onMoveSection(draggedSectionIndex, sectionIndex);
+    }
+
+    setDraggedSectionIndex(null);
+    setDragOverSectionIndex(null);
+  };
+
+  const handleSectionDragEnd = () => {
+    setDraggedSectionIndex(null);
+    setDragOverSectionIndex(null);
   };
 
   // Center canvas initially
@@ -403,7 +467,17 @@ export const Canvas: React.FC<CanvasProps> = ({
               <div
                 key={index}
                 id={`template-section-${index}`}
-                className="w-max bg-white shadow-xl relative group-section"
+                className={`w-max bg-white shadow-xl relative group-section transition-all ${
+                  draggedSectionIndex === index ? "opacity-60" : ""
+                } ${
+                  dragOverSectionIndex === index &&
+                  draggedSectionIndex !== null &&
+                  draggedSectionIndex !== index
+                    ? "ring-2 ring-[#bc6c25] ring-offset-4"
+                    : ""
+                }`}
+                onDragOver={(e) => handleSectionDragOver(e, index)}
+                onDrop={(e) => handleSectionDrop(e, index)}
               >
                 {/* Selection Indicator */}
                 {selection.type === "section" &&
@@ -421,19 +495,37 @@ export const Canvas: React.FC<CanvasProps> = ({
                   commentCounts={commentCounts}
                 />
 
-                <div
-                  className="absolute -top-8 left-0 text-sm font-bold text-gray-500 cursor-pointer hover:text-blue-600 hover:underline"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onSelect({
-                      type: "section",
-                      id: section.section_id || null,
-                      sectionIndex: index,
-                    });
-                  }}
-                >
-                  {section.display_name ||
-                    `${t("editor.selectionTypes.section")} ${index + 1}`}
+                <div className="absolute -top-10 left-0 flex items-center gap-2">
+                  {onMoveSection && (
+                    <button
+                      type="button"
+                      draggable
+                      title={t("editor.dragToReorder")}
+                      aria-label={t("editor.dragToReorder")}
+                      className="interactive-element inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-500 shadow-sm transition-colors hover:border-[#bc6c25] hover:text-[#bc6c25] cursor-grab active:cursor-grabbing"
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onClick={(e) => e.stopPropagation()}
+                      onDragStart={(e) => handleSectionDragStart(e, index)}
+                      onDragEnd={handleSectionDragEnd}
+                    >
+                      <GripVertical size={14} />
+                    </button>
+                  )}
+
+                  <div
+                    className="text-sm font-bold text-gray-500 cursor-pointer hover:text-blue-600 hover:underline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSelect({
+                        type: "section",
+                        id: section.section_id || null,
+                        sectionIndex: index,
+                      });
+                    }}
+                  >
+                    {section.display_name ||
+                      `${t("editor.selectionTypes.section")} ${index + 1}`}
+                  </div>
                 </div>
               </div>
             ))
