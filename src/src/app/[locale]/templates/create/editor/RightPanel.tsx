@@ -9,7 +9,7 @@ import {
 } from "@/types/template";
 import { EditorSelection } from "./types";
 import { getFieldConfigDefaults } from "@/app/[locale]/templates/create/editor/utils";
-import { Trash2, Move, Plus } from "lucide-react";
+import { Trash2, Move, Plus, ArrowUp, ArrowDown } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { StyleConfigurator } from "@/app/[locale]/templates/create/components/StyleConfigurator";
 import * as ui from "../../../components/ui";
@@ -33,6 +33,7 @@ interface RightPanelProps {
   selection: EditorSelection;
   data: CreateTemplateData;
   onUpdate: (updater: (prev: CreateTemplateData) => CreateTemplateData) => void;
+  onMoveSection?: (fromIndex: number, toIndex: number) => void;
   // Card specific props
   isCardMode?: boolean;
   cardType?: string;
@@ -43,6 +44,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
   selection,
   data,
   onUpdate,
+  onMoveSection,
   isCardMode = false,
   cardType,
   onCardTypeChange,
@@ -140,6 +142,18 @@ export const RightPanel: React.FC<RightPanelProps> = ({
 
     return null;
   }, [selection, data]);
+
+  const selectedSectionIndex =
+    typeof selection.sectionIndex === "number" ? selection.sectionIndex : -1;
+  const canReorderSelectedSection =
+    selection.type === "section" &&
+    selectedSectionIndex >= 0 &&
+    Boolean(onMoveSection);
+  const canMoveSelectedSectionUp =
+    canReorderSelectedSection && selectedSectionIndex > 0;
+  const canMoveSelectedSectionDown =
+    canReorderSelectedSection &&
+    selectedSectionIndex < data.version.content.sections.length - 1;
 
   // Actions
   const updateField = (updates: Partial<Field>) => {
@@ -972,6 +986,79 @@ export const RightPanel: React.FC<RightPanelProps> = ({
         {/* Section Specific */}
         {selection.type === "section" && currentObject && (
           <div className="space-y-6">
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 space-y-3">
+              <div className="flex items-start gap-2">
+                <div className="rounded-md bg-white p-2 text-gray-500 border border-gray-200">
+                  <Move size={14} />
+                </div>
+                <div>
+                  <h3 className="text-xs uppercase font-bold text-gray-500">
+                    {t("sections.overview.pageOrder")}
+                  </h3>
+                  <p className="text-[10px] text-gray-400">
+                    {t("sections.overview.pageOrderHelp")}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <select
+                  className="flex-1 text-sm border border-gray-200 rounded px-2 py-1.5 bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all disabled:bg-gray-100"
+                  value={selectedSectionIndex}
+                  disabled={!canReorderSelectedSection}
+                  onChange={(e) =>
+                    onMoveSection?.(
+                      selectedSectionIndex,
+                      Number.parseInt(e.target.value, 10),
+                    )
+                  }
+                >
+                  {data.version.content.sections.map((section, index) => (
+                    <option
+                      key={section.section_id || `section-order-${index}`}
+                      value={index}
+                    >
+                      {`${index + 1}. ${
+                        section.display_name || t("fieldEditor.editor.untitled")
+                      }`}
+                    </option>
+                  ))}
+                </select>
+
+                <button
+                  type="button"
+                  title={t("sections.section.moveUp")}
+                  aria-label={t("sections.section.moveUp")}
+                  disabled={!canMoveSelectedSectionUp}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-600 transition-colors hover:border-blue-500 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() =>
+                    onMoveSection?.(
+                      selectedSectionIndex,
+                      selectedSectionIndex - 1,
+                    )
+                  }
+                >
+                  <ArrowUp size={14} />
+                </button>
+
+                <button
+                  type="button"
+                  title={t("sections.section.moveDown")}
+                  aria-label={t("sections.section.moveDown")}
+                  disabled={!canMoveSelectedSectionDown}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-600 transition-colors hover:border-blue-500 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() =>
+                    onMoveSection?.(
+                      selectedSectionIndex,
+                      selectedSectionIndex + 1,
+                    )
+                  }
+                >
+                  <ArrowDown size={14} />
+                </button>
+              </div>
+            </div>
+
             <div>
               <button
                 onClick={handleAddBlock}

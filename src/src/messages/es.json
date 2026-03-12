@@ -1008,6 +1008,7 @@
         "addBlock": "Agregar Bloque",
         "addField": "Agregar Campo",
         "addSection": "+ Agregar Nueva Sección",
+        "dragToReorder": "Arrastra para reordenar",
         "styles": {
           "section": "Estilos de Sección",
           "block": "Estilos de Bloque",

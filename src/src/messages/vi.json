@@ -994,6 +994,7 @@
         "addBlock": "Thêm khối",
         "addField": "Thêm trường",
         "addSection": "+ Thêm phần mới",
+        "dragToReorder": "Kéo để sắp xếp lại",
         "styles": {
           "section": "Kiểu phần",
           "block": "Kiểu khối",
