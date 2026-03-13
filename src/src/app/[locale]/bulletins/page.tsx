@@ -3,10 +3,10 @@
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { Loader2, Plus, Search, Check, Copy } from "lucide-react";
+import { Loader2, Plus, Search, Check, Copy, FileStack } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { BulletinMaster } from "@/types/bulletin";
+import { useEffect, useMemo, useState } from "react";
+import { BulletinMaster, BulletinStatus } from "@/types/bulletin";
 import BulletinAPIService from "@/services/bulletinService";
 import { TemplateAPIService } from "@/services/templateService";
 import ItemCard from "../components/ItemCard";
@@ -22,11 +22,23 @@ import {
   searchField,
 } from "../components/ui";
 
+const BULLETIN_STATUS_FILTERS: BulletinStatus[] = [
+  "draft",
+  "pending_review",
+  "review",
+  "rejected",
+  "published",
+  "archived",
+];
+
 export default function Bulletins() {
   const t = useTranslations("Bulletins");
   const params = useParams();
   const locale = (params.locale as string) || "es";
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState<BulletinStatus | "all">(
+    "all",
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [bulletins, setBulletins] = useState<BulletinMaster[]>([]);
@@ -105,6 +117,8 @@ export default function Bulletins() {
     const term = searchTerm.trim().toLowerCase();
 
     const filtered = bulletins.filter((bulletin) => {
+      const matchesStatus =
+        selectedStatus === "all" || bulletin.status === selectedStatus;
       const matchesSearch =
         !term ||
         bulletin.bulletin_name.toLowerCase().includes(term) ||
@@ -113,11 +127,64 @@ export default function Bulletins() {
             .toLowerCase()
             .includes(term));
 
-      return matchesSearch;
+      return matchesStatus && matchesSearch;
     });
 
     setFilteredBulletins(filtered);
-  }, [searchTerm, bulletins, templatesMap]);
+  }, [searchTerm, selectedStatus, bulletins, templatesMap]);
+
+  const groupedBulletins = useMemo(() => {
+    const uniqueBulletins = filteredBulletins.filter(
+      (bulletin, index, array) => {
+        return (
+          bulletin._id &&
+          array.findIndex(
+            (otherBulletin) => otherBulletin._id === bulletin._id,
+          ) === index
+        );
+      },
+    );
+
+    const groupsMap = new Map<
+      string,
+      {
+        templateId: string;
+        templateName: string;
+        bulletins: BulletinMaster[];
+      }
+    >();
+
+    uniqueBulletins.forEach((bulletin) => {
+      const templateId = bulletin.base_template_master_id || "unknown-template";
+      const templateName = templatesMap[templateId] || t("templateUnknown");
+      const existingGroup = groupsMap.get(templateId);
+
+      if (existingGroup) {
+        existingGroup.bulletins.push(bulletin);
+      } else {
+        groupsMap.set(templateId, {
+          templateId,
+          templateName,
+          bulletins: [bulletin],
+        });
+      }
+    });
+
+    return Array.from(groupsMap.values())
+      .map((group) => ({
+        ...group,
+        bulletins: [...group.bulletins].sort((a, b) => {
+          const leftDate = new Date(
+            b.log.updated_at || b.log.created_at || 0,
+          ).getTime();
+          const rightDate = new Date(
+            a.log.updated_at || a.log.created_at || 0,
+          ).getTime();
+          return leftDate - rightDate;
+        }),
+      }))
+      .sort((a, b) => a.templateName.localeCompare(b.templateName));
+  }, [filteredBulletins, templatesMap, t]);
 
   return (
     <ProtectedRoute
@@ -149,29 +216,62 @@ export default function Bulletins() {
 
         {/* Content Section */}
         <div className={`${container} py-8`}>
-          {/* Search Bar y Botones */}
-          <div className="flex gap-4 mb-8">
-            {/* Search Bar */}
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#283618]/50" />
-              <input
-                type="text"
-                placeholder={t("searchPlaceholder")}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className={searchField}
-              />
+          {/* Search Bar, Filtros y Botones */}
+          <div className="flex flex-col gap-4 mb-8">
+            <div className="flex gap-4">
+              {/* Search Bar */}
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#283618]/50" />
+                <input
+                  type="text"
+                  placeholder={t("searchPlaceholder")}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className={searchField}
+                />
+              </div>
+
+              {/* Botón Crear */}
+              {can(PERMISSION_ACTIONS.Create, MODULES.BULLETINS_COMPOSER) && (
+                <Link
+                  href="/bulletins/create"
+                  className={`${btnPrimary} whitespace-nowrap`}
+                >
+                  <Plus className="h-5 w-5" />
+                  <span>{t("createNew")}</span>
+                </Link>
+              )}
             </div>
-            {/* Botón Crear */}
-            {can(PERMISSION_ACTIONS.Create, MODULES.BULLETINS_COMPOSER) && (
-              <Link
-                href="/bulletins/create"
-                className={`${btnPrimary} whitespace-nowrap`}
+
+            {/* Filtro por estado */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-2">
+              <span className="text-sm font-medium text-[#283618] whitespace-nowrap">
+                {t("filterByStatus")}:
+              </span>
+              <button
+                onClick={() => setSelectedStatus("all")}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap cursor-pointer ${
+                  selectedStatus === "all"
+                    ? "bg-[#606c38] text-white"
+                    : "bg-white text-[#283618] border border-gray-200 hover:bg-gray-50"
+                }`}
               >
-                <Plus className="h-5 w-5" />
-                <span>{t("createNew")}</span>
-              </Link>
-            )}
+                {t("allStatuses")}
+              </button>
+              {BULLETIN_STATUS_FILTERS.map((status) => (
+                <button
+                  key={status}
+                  onClick={() => setSelectedStatus(status)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap cursor-pointer ${
+                    selectedStatus === status
+                      ? "bg-[#606c38] text-white"
+                      : "bg-white text-[#283618] border border-gray-200 hover:bg-gray-50"
+                  }`}
+                >
+                  {t(`status.${status}`)}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Loading State */}
@@ -194,86 +294,103 @@ export default function Bulletins() {
 
           {/* Bulletins Grid */}
           {!loading && !error && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredBulletins
-                .filter((bulletin, index, array) => {
-                  // Filter out bulletins without valid _id and remove duplicates
-                  return (
-                    bulletin._id &&
-                    array.findIndex((b) => b._id === bulletin._id) === index
-                  );
-                })
-                .map((bulletin, index) => {
-                  const allowedGroups =
-                    bulletin.access_config?.allowed_groups || [];
-                  const canEdit = can(
-                    PERMISSION_ACTIONS.Update,
-                    MODULES.BULLETINS_COMPOSER,
-                    allowedGroups,
-                  );
-                  const canDelete = can(
-                    PERMISSION_ACTIONS.Delete,
-                    MODULES.BULLETINS_COMPOSER,
-                    allowedGroups,
-                  );
+            <div className="space-y-8">
+              {groupedBulletins.map((group) => (
+                <section key={group.templateId} className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-[#606c38]/10 text-[#606c38] flex items-center justify-center">
+                      <FileStack className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wide font-semibold text-[#606c38]/80">
+                        {t("groupedByTemplate")}
+                      </p>
+                      <h2 className="text-lg font-bold text-[#283618]">
+                        {group.templateName}
+                      </h2>
+                    </div>
+                    <span className="ml-auto text-sm text-[#606c38]/80 font-medium">
+                      {group.bulletins.length}
+                    </span>
+                  </div>
 
-                  const status = bulletin.status;
-                  const isPublished = status === "published";
-                  // Draft, rejected: enable edit
-                  // Pending review, in review: disable edit
-                  // Published: disable edit (show Share instead)
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {group.bulletins.map((bulletin, index) => {
+                      const allowedGroups =
+                        bulletin.access_config?.allowed_groups || [];
+                      const canEdit = can(
+                        PERMISSION_ACTIONS.Update,
+                        MODULES.BULLETINS_COMPOSER,
+                        allowedGroups,
+                      );
+                      const canDelete = can(
+                        PERMISSION_ACTIONS.Delete,
+                        MODULES.BULLETINS_COMPOSER,
+                        allowedGroups,
+                      );
 
-                  const isEditableStatus =
-                    status === "draft" || status === "rejected";
-                  const showEditBtn = canEdit && isEditableStatus;
-                  const showShareBtn = isPublished;
+                      const status = bulletin.status;
+                      const isPublished = status === "published";
 
-                  const handleShare = () => {
-                    const templateNameMachine =
-                      templateNameMachineMap[bulletin.base_template_master_id];
-                    if (templateNameMachine && bulletin.name_machine) {
-                      const url = `${window.location.origin}/${locale}/${templateNameMachine}/${bulletin.name_machine}`;
-                      setShareData({ url });
-                      setShowShareModal(true);
-                    }
-                  };
+                      const isEditableStatus =
+                        status === "draft" || status === "rejected";
+                      const showEditBtn = canEdit && isEditableStatus;
+                      const showShareBtn = isPublished;
 
-                  const creatorName =
-                    bulletin.log.creator_first_name &&
-                    bulletin.log.creator_last_name
-                      ? `${bulletin.log.creator_first_name} ${bulletin.log.creator_last_name}`
-                      : bulletin.log.creator_first_name ||
-                        bulletin.log.creator_last_name ||
-                        bulletin.log.creator_user_id;
+                      const handleShare = () => {
+                        const templateNameMachine =
+                          templateNameMachineMap[
+                            bulletin.base_template_master_id
+                          ];
+                        if (templateNameMachine && bulletin.name_machine) {
+                          const url = `${window.location.origin}/${locale}/${templateNameMachine}/${bulletin.name_machine}`;
+                          setShareData({ url });
+                          setShowShareModal(true);
+                        }
+                      };
 
-                  return (
-                    <ItemCard
-                      key={bulletin._id || `bulletin-${index}`}
-                      type="template"
-                      id={bulletin._id!}
-                      name={bulletin.bulletin_name}
-                      author={creatorName}
-                      lastModified={new Date(
-                        bulletin.log.updated_at!,
-                      ).toLocaleDateString()}
-                      templateBaseName={
-                        templatesMap[bulletin.base_template_master_id]
-                      }
-                      status={bulletin.status}
-                      thumbnailImages={
-                        templateThumbnailsMap[
-                          bulletin.base_template_master_id
-                        ] || []
-                      }
-                      editBtn={showEditBtn}
-                      onEdit={() =>
-                        (window.location.href = `/bulletins/${bulletin._id}/edit`)
-                      }
-                      shareBtn={showShareBtn}
-                      onShare={handleShare}
-                    />
-                  );
-                })}
+                      const creatorName =
+                        bulletin.log.creator_first_name &&
+                        bulletin.log.creator_last_name
+                          ? `${bulletin.log.creator_first_name} ${bulletin.log.creator_last_name}`
+                          : bulletin.log.creator_first_name ||
+                            bulletin.log.creator_last_name ||
+                            bulletin.log.creator_user_id;
+
+                      return (
+                        <ItemCard
+                          key={
+                            bulletin._id ||
+                            `bulletin-${group.templateId}-${index}`
+                          }
+                          type="template"
+                          id={bulletin._id!}
+                          name={bulletin.bulletin_name}
+                          author={creatorName}
+                          lastModified={new Date(
+                            bulletin.log.updated_at!,
+                          ).toLocaleDateString()}
+                          templateBaseName={
+                            templatesMap[bulletin.base_template_master_id]
+                          }
+                          status={bulletin.status}
+                          thumbnailImages={
+                            templateThumbnailsMap[
+                              bulletin.base_template_master_id
+                            ] || []
+                          }
+                          editBtn={showEditBtn}
+                          onEdit={() =>
+                            (window.location.href = `/bulletins/${bulletin._id}/edit`)
+                          }
+                          shareBtn={showShareBtn}
+                          onShare={handleShare}
+                        />
+                      );
+                    })}
+                  </div>
+                </section>
+              ))}
             </div>
           )}
 
@@ -347,7 +464,7 @@ export default function Bulletins() {
           )}
 
           {/* Empty State */}
-          {!loading && !error && filteredBulletins.length === 0 && (
+          {!loading && !error && groupedBulletins.length === 0 && (
             <div className="text-center py-12">
               <p className="text-[#283618]/60 mb-4">
                 {searchTerm ? t("noResults") : t("noResults")}
