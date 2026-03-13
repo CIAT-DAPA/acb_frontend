@@ -107,20 +107,41 @@ type PaginatedBlockPage = {
   usedHeight: number;
 };
 
+type PaginatedFieldPage = {
+  fieldIndexes: number[];
+  fieldSlices?: Record<number, OverflowSlice>;
+  listFieldItemPages?: Record<number, ListFieldItemPage>;
+  usedHeight: number;
+  includesPreviousBlockContext?: boolean;
+};
+
+type ListFieldItemPage = {
+  itemIndexes: number[];
+  itemSlices?: Record<number, OverflowSlice>;
+};
+
 type OverflowPageInfo = {
   blockIndexes: number[];
   blockSlices?: Record<number, OverflowSlice>;
   cardBlockPages?: Record<number, PaginatedBlockPage>;
+  blockFieldPages?: Record<number, PaginatedFieldPage>;
 };
 
 type BlockMeasurement = {
   height: number;
   cardBlockHeights?: number[];
   cardStaticHeight?: number;
+  fieldHeights?: number[];
+  fieldStaticHeight?: number;
+  listFieldItemHeights?: (number[] | undefined)[];
+  listFieldStaticHeights?: (number | undefined)[];
+  listFieldItemGapHeights?: (number | undefined)[];
 };
 
 type FieldOverflowContext = {
   cardBlockPage?: PaginatedBlockPage;
+  listFieldPage?: ListFieldItemPage;
+  measurementFieldIndex?: number;
 };
 
 type CompositePageDescriptor = {
@@ -264,6 +285,303 @@ function getOverflowPages(
         ];
   };
 
+  const paginateFieldHeights = (
+    fieldHeights: number[],
+    firstPageAvailableHeight: number,
+    fullPageAvailableHeight: number,
+    repeatedPreviousBlockHeight?: number,
+    includePreviousBlockOnFirstPage = false,
+    listFieldItemHeights?: (number[] | undefined)[],
+    listFieldStaticHeights?: (number | undefined)[],
+    listFieldItemGapHeights?: (number | undefined)[],
+  ): PaginatedFieldPage[] => {
+    if (fieldHeights.length === 0 || fullPageAvailableHeight <= 0) {
+      return [{ fieldIndexes: [], usedHeight: 0 }];
+    }
+
+    const pages: PaginatedFieldPage[] = [];
+    let currentFieldIndex = 0;
+    let currentFieldOffset = 0;
+    let currentListItemIndex = 0;
+    let currentListItemOffset = 0;
+    let isFirstPage = true;
+
+    while (currentFieldIndex < fieldHeights.length) {
+      let availableHeightForPage = Math.max(
+        isFirstPage ? firstPageAvailableHeight : fullPageAvailableHeight,
+        0,
+      );
+      let reservedPreviousBlockHeight = 0;
+      const shouldReservePreviousBlock =
+        repeatedPreviousBlockHeight !== undefined &&
+        (isFirstPage ? includePreviousBlockOnFirstPage : true) &&
+        repeatedPreviousBlockHeight < availableHeightForPage;
+
+      if (shouldReservePreviousBlock) {
+        reservedPreviousBlockHeight = repeatedPreviousBlockHeight;
+        availableHeightForPage -= repeatedPreviousBlockHeight;
+      }
+
+      if (availableHeightForPage <= 0) {
+        if (isFirstPage) {
+          isFirstPage = false;
+          continue;
+        }
+        break;
+      }
+
+      const pageFieldIndexes: number[] = [];
+      const pageFieldSlices: Record<number, OverflowSlice> = {};
+      const pageListFieldItemPages: Record<number, ListFieldItemPage> = {};
+      let usedFieldHeight = 0;
+
+      while (
+        currentFieldIndex < fieldHeights.length &&
+        availableHeightForPage > 0
+      ) {
+        const currentFieldHeight = fieldHeights[currentFieldIndex];
+        const currentListItems = listFieldItemHeights?.[currentFieldIndex];
+        const isListField =
+          Array.isArray(currentListItems) && currentListItems.length > 0;
+
+        if (isListField) {
+          const normalizedItemHeights = currentListItems;
+          const listItemGapHeight = Math.max(
+            listFieldItemGapHeights?.[currentFieldIndex] ?? 0,
+            0,
+          );
+          const inferredTotalGapHeight =
+            normalizedItemHeights.length > 1
+              ? listItemGapHeight * (normalizedItemHeights.length - 1)
+              : 0;
+          const inferredStaticHeight = Math.max(
+            currentFieldHeight -
+              normalizedItemHeights.reduce(
+                (totalHeight, itemHeight) =>
+                  totalHeight + Math.max(itemHeight, 0),
+                0,
+              ) -
+              inferredTotalGapHeight,
+            0,
+          );
+          const listStaticHeight = Math.max(
+            listFieldStaticHeights?.[currentFieldIndex] ?? inferredStaticHeight,
+            0,
+          );
+
+          if (availableHeightForPage > listStaticHeight) {
+            let availableHeightForItems =
+              availableHeightForPage - listStaticHeight;
+            const pageItemIndexes: number[] = [];
+            const pageItemSlices: Record<number, OverflowSlice> = {};
+            let usedItemsHeight = 0;
+
+            while (
+              currentListItemIndex < normalizedItemHeights.length &&
+              availableHeightForItems > 0
+            ) {
+              const currentItemHeight = Math.max(
+                normalizedItemHeights[currentListItemIndex] || 0,
+                0,
+              );
+              const remainingItemHeight = Math.max(
+                currentItemHeight - currentListItemOffset,
+                0,
+              );
+              const gapBeforeCurrentItem =
+                currentListItemOffset === 0 && pageItemIndexes.length > 0
+                  ? listItemGapHeight
+                  : 0;
+              const requiredItemHeight =
+                remainingItemHeight + gapBeforeCurrentItem;
+
+              if (remainingItemHeight <= 0) {
+                currentListItemIndex += 1;
+                currentListItemOffset = 0;
+                continue;
+              }
+
+              if (requiredItemHeight <= availableHeightForItems) {
+                pageItemIndexes.push(currentListItemIndex);
+
+                if (currentListItemOffset > 0) {
+                  pageItemSlices[currentListItemIndex] = {
+                    offset: currentListItemOffset,
+                    height: remainingItemHeight,
+                  };
+                }
+
+                availableHeightForItems -= requiredItemHeight;
+                usedItemsHeight += requiredItemHeight;
+                currentListItemIndex += 1;
+                currentListItemOffset = 0;
+                continue;
+              }
+
+              const shouldMoveCurrentItemToNextPage =
+                currentListItemOffset === 0 && pageItemIndexes.length > 0;
+              const shouldMoveWholeListToNextPage =
+                currentListItemOffset === 0 &&
+                pageItemIndexes.length === 0 &&
+                pageFieldIndexes.length > 0;
+
+              if (
+                shouldMoveCurrentItemToNextPage ||
+                shouldMoveWholeListToNextPage
+              ) {
+                break;
+              }
+
+              pageItemIndexes.push(currentListItemIndex);
+              pageItemSlices[currentListItemIndex] = {
+                offset: currentListItemOffset,
+                height: availableHeightForItems,
+              };
+              currentListItemOffset += availableHeightForItems;
+              usedItemsHeight += availableHeightForItems;
+              availableHeightForItems = 0;
+            }
+
+            if (pageItemIndexes.length > 0) {
+              pageFieldIndexes.push(currentFieldIndex);
+              pageListFieldItemPages[currentFieldIndex] = {
+                itemIndexes: [...new Set(pageItemIndexes)],
+                itemSlices:
+                  Object.keys(pageItemSlices).length > 0
+                    ? pageItemSlices
+                    : undefined,
+              };
+
+              usedFieldHeight += listStaticHeight + usedItemsHeight;
+              availableHeightForPage = availableHeightForItems;
+
+              if (
+                currentListItemIndex >= normalizedItemHeights.length &&
+                currentListItemOffset === 0
+              ) {
+                currentFieldIndex += 1;
+                currentFieldOffset = 0;
+                currentListItemIndex = 0;
+                currentListItemOffset = 0;
+                continue;
+              }
+
+              break;
+            }
+
+            if (pageFieldIndexes.length > 0) {
+              break;
+            }
+          } else if (pageFieldIndexes.length > 0) {
+            break;
+          }
+        }
+
+        const remainingFieldHeight = Math.max(
+          currentFieldHeight - currentFieldOffset,
+          0,
+        );
+
+        if (remainingFieldHeight <= 0) {
+          currentFieldIndex += 1;
+          currentFieldOffset = 0;
+          currentListItemIndex = 0;
+          currentListItemOffset = 0;
+          continue;
+        }
+
+        if (remainingFieldHeight <= availableHeightForPage) {
+          pageFieldIndexes.push(currentFieldIndex);
+
+          if (currentFieldOffset > 0) {
+            pageFieldSlices[currentFieldIndex] = {
+              offset: currentFieldOffset,
+              height: remainingFieldHeight,
+            };
+          }
+
+          availableHeightForPage -= remainingFieldHeight;
+          usedFieldHeight += remainingFieldHeight;
+          currentFieldIndex += 1;
+          currentFieldOffset = 0;
+          currentListItemIndex = 0;
+          currentListItemOffset = 0;
+          continue;
+        }
+
+        const shouldMoveToNextPage =
+          currentFieldOffset === 0 && pageFieldIndexes.length > 0;
+
+        if (shouldMoveToNextPage) {
+          break;
+        }
+
+        pageFieldIndexes.push(currentFieldIndex);
+        pageFieldSlices[currentFieldIndex] = {
+          offset: currentFieldOffset,
+          height: availableHeightForPage,
+        };
+        currentFieldOffset += availableHeightForPage;
+        usedFieldHeight += availableHeightForPage;
+        availableHeightForPage = 0;
+      }
+
+      const hasPageContent =
+        pageFieldIndexes.length > 0 || Object.keys(pageFieldSlices).length > 0;
+
+      if (!hasPageContent && currentFieldIndex < fieldHeights.length) {
+        const fallbackRemainingHeight = Math.max(
+          fieldHeights[currentFieldIndex] - currentFieldOffset,
+          0,
+        );
+        const fallbackHeight = Math.min(
+          Math.max(availableHeightForPage, 0),
+          fallbackRemainingHeight,
+        );
+
+        if (fallbackHeight > 0) {
+          pageFieldIndexes.push(currentFieldIndex);
+          pageFieldSlices[currentFieldIndex] = {
+            offset: currentFieldOffset,
+            height: fallbackHeight,
+          };
+          currentFieldOffset += fallbackHeight;
+          usedFieldHeight += fallbackHeight;
+        } else {
+          currentFieldIndex += 1;
+          currentFieldOffset = 0;
+          currentListItemIndex = 0;
+          currentListItemOffset = 0;
+        }
+      }
+
+      const hasListFieldItemPages =
+        Object.keys(pageListFieldItemPages).length > 0;
+
+      pages.push({
+        fieldIndexes: [...new Set(pageFieldIndexes)],
+        fieldSlices:
+          Object.keys(pageFieldSlices).length > 0 ? pageFieldSlices : undefined,
+        listFieldItemPages: hasListFieldItemPages
+          ? pageListFieldItemPages
+          : undefined,
+        usedHeight: usedFieldHeight + reservedPreviousBlockHeight,
+        includesPreviousBlockContext: shouldReservePreviousBlock,
+      });
+
+      isFirstPage = false;
+    }
+
+    return pages.length > 0
+      ? pages
+      : [
+          {
+            fieldIndexes: fieldHeights.map((_, index) => index),
+            usedHeight: 0,
+          },
+        ];
+  };
+
   const pages: OverflowPageInfo[] = [];
   let currentPageBlocks: number[] = [];
   let currentHeight = 0;
@@ -332,6 +650,162 @@ function getOverflowPages(
       currentPageBlocks = [];
       currentHeight = 0;
       return;
+    }
+
+    if (blockMeasurement.fieldHeights?.length) {
+      const previousBlockIndex =
+        currentPageBlocks[currentPageBlocks.length - 1];
+      const previousBlockHeight =
+        previousBlockIndex !== undefined
+          ? blockMeasurements[previousBlockIndex]?.height || 0
+          : 0;
+      const fieldStaticHeight = Math.max(
+        blockMeasurement.fieldStaticHeight || 0,
+        0,
+      );
+      const remainingSpace = Math.max(availableHeight - currentHeight, 0);
+      const currentPageFieldCapacity = Math.max(
+        remainingSpace - fieldStaticHeight - OVERFLOW_SAFETY_MARGIN_PX,
+        0,
+      );
+      const fullPageFieldCapacity = Math.max(
+        availableHeight - fieldStaticHeight - OVERFLOW_SAFETY_MARGIN_PX,
+        0,
+      );
+      const firstMeasuredFieldIndex = blockMeasurement.fieldHeights.findIndex(
+        (height) => height > 0,
+      );
+      let firstMeasuredFieldHeight = 0;
+
+      if (firstMeasuredFieldIndex >= 0) {
+        const firstFieldHeight =
+          blockMeasurement.fieldHeights[firstMeasuredFieldIndex] || 0;
+        const firstFieldListItems =
+          blockMeasurement.listFieldItemHeights?.[firstMeasuredFieldIndex];
+
+        if (
+          Array.isArray(firstFieldListItems) &&
+          firstFieldListItems.length > 0
+        ) {
+          const firstItemHeight = Math.max(
+            firstFieldListItems.find((height) => height > 0) || 0,
+            0,
+          );
+          const firstFieldGapHeight = Math.max(
+            blockMeasurement.listFieldItemGapHeights?.[
+              firstMeasuredFieldIndex
+            ] ?? 0,
+            0,
+          );
+          const inferredTotalGapHeight =
+            firstFieldListItems.length > 1
+              ? firstFieldGapHeight * (firstFieldListItems.length - 1)
+              : 0;
+          const inferredStaticHeight = Math.max(
+            firstFieldHeight -
+              firstFieldListItems.reduce(
+                (totalHeight, itemHeight) =>
+                  totalHeight + Math.max(itemHeight, 0),
+                0,
+              ) -
+              inferredTotalGapHeight,
+            0,
+          );
+          const firstFieldStaticHeight = Math.max(
+            blockMeasurement.listFieldStaticHeights?.[
+              firstMeasuredFieldIndex
+            ] ?? inferredStaticHeight,
+            0,
+          );
+
+          firstMeasuredFieldHeight = firstFieldStaticHeight + firstItemHeight;
+        } else {
+          firstMeasuredFieldHeight = firstFieldHeight;
+        }
+      }
+      const canFitWholeFieldOnCurrentPage =
+        firstMeasuredFieldHeight === 0 ||
+        firstMeasuredFieldHeight <= currentPageFieldCapacity;
+      const shouldShareCurrentPage =
+        currentPageBlocks.length > 0 &&
+        currentPageFieldCapacity > 0 &&
+        canFitWholeFieldOnCurrentPage;
+      const firstPageFieldCapacity = shouldShareCurrentPage
+        ? currentPageFieldCapacity
+        : fullPageFieldCapacity;
+
+      if (fullPageFieldCapacity <= 0) {
+        // Fallback: cuando el overhead del bloque no permite paginación por field,
+        // usar la lógica legacy de slicing por bloque para evitar perder contenido.
+      } else {
+        const canRepeatPreviousBlock =
+          previousBlockIndex !== undefined &&
+          previousBlockHeight < availableHeight;
+        const includePreviousBlockOnFirstFieldPage =
+          canRepeatPreviousBlock && !shouldShareCurrentPage;
+
+        const fieldPages = paginateFieldHeights(
+          blockMeasurement.fieldHeights,
+          firstPageFieldCapacity,
+          fullPageFieldCapacity,
+          canRepeatPreviousBlock ? previousBlockHeight : undefined,
+          includePreviousBlockOnFirstFieldPage,
+          blockMeasurement.listFieldItemHeights,
+          blockMeasurement.listFieldStaticHeights,
+          blockMeasurement.listFieldItemGapHeights,
+        );
+
+        if (shouldShareCurrentPage) {
+          const [firstFieldPage, ...remainingFieldPages] = fieldPages;
+
+          pages.push({
+            blockIndexes: [...currentPageBlocks, blockIndex],
+            blockFieldPages: {
+              [blockIndex]: firstFieldPage,
+            },
+          });
+
+          remainingFieldPages.forEach((fieldPage) => {
+            const shouldIncludePreviousBlock =
+              canRepeatPreviousBlock &&
+              fieldPage.includesPreviousBlockContext &&
+              previousBlockIndex !== undefined;
+
+            pages.push({
+              blockIndexes: shouldIncludePreviousBlock
+                ? [previousBlockIndex, blockIndex]
+                : [blockIndex],
+              blockFieldPages: {
+                [blockIndex]: fieldPage,
+              },
+            });
+          });
+        } else {
+          if (currentPageBlocks.length > 0) {
+            pages.push({ blockIndexes: [...currentPageBlocks] });
+          }
+
+          fieldPages.forEach((fieldPage) => {
+            const shouldIncludePreviousBlock =
+              canRepeatPreviousBlock &&
+              fieldPage.includesPreviousBlockContext &&
+              previousBlockIndex !== undefined;
+
+            pages.push({
+              blockIndexes: shouldIncludePreviousBlock
+                ? [previousBlockIndex, blockIndex]
+                : [blockIndex],
+              blockFieldPages: {
+                [blockIndex]: fieldPage,
+              },
+            });
+          });
+        }
+
+        currentPageBlocks = [];
+        currentHeight = 0;
+        return;
+      }
     }
 
     const previousBlockIndex = currentPageBlocks[currentPageBlocks.length - 1];
@@ -471,6 +945,7 @@ const PLACEHOLDER_CONTAINER_CLASS =
 const PLACEHOLDER_TEXT_CLASS = "text-gray-400 text-sm";
 const PAGINATION_BUTTON_CLASS =
   "px-4 py-2 bg-[#283618] text-white rounded-md disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-[#283618]/90 transition-colors";
+const OVERFLOW_SAFETY_MARGIN_PX = 4;
 
 export function TemplatePreview({
   data,
@@ -1151,9 +1626,28 @@ export function TemplatePreview({
 
         // Obtener el array de items del valor del campo
         const listItems = Array.isArray(field.value) ? field.value : [];
+        const listFieldPage = overflowContext?.listFieldPage;
+        const measurementFieldIndex = overflowContext?.measurementFieldIndex;
 
-        // Si no hay items, mostrar un item de ejemplo basado en el schema
-        const itemsToRender = listItems.length > 0 ? listItems : [{}];
+        const defaultItemsToRenderWithIndex =
+          listItems.length > 0
+            ? listItems.map((item, itemIndex) => ({ item, itemIndex }))
+            : [{ item: {}, itemIndex: 0 }];
+
+        const paginatedItemsToRenderWithIndex =
+          listFieldPage && listItems.length > 0
+            ? listFieldPage.itemIndexes
+                .map((itemIndex) => ({
+                  item: listItems[itemIndex],
+                  itemIndex,
+                }))
+                .filter((entry) => entry.item !== undefined)
+            : defaultItemsToRenderWithIndex;
+
+        const itemsToRenderWithIndex =
+          paginatedItemsToRenderWithIndex.length > 0
+            ? paginatedItemsToRenderWithIndex
+            : defaultItemsToRenderWithIndex;
 
         if (listItemsLayout === "table") {
           return (
@@ -1239,64 +1733,85 @@ export function TemplatePreview({
                   </thead>
                 )}
                 <tbody>
-                  {itemsToRender.map((item: any, itemIndex: number) => (
-                    <tr key={itemIndex}>
-                      {field.field_config?.item_schema &&
-                        Object.entries(field.field_config.item_schema).map(
-                          ([fieldKey, itemFieldSchema], fieldIndex, array) => {
-                            const itemFieldValue = item[fieldKey];
-                            const fieldSchema = itemFieldSchema as Field;
-                            const subfieldId = `${fieldId}-subfield-${fieldKey}`;
-                            const isSubfieldSelected =
-                              selectedElementId === subfieldId;
+                  {itemsToRenderWithIndex.map(
+                    ({ item, itemIndex }, renderItemIndex) => (
+                      <tr
+                        key={itemIndex}
+                        data-measure-list-field-index={measurementFieldIndex}
+                        data-measure-list-item-index={
+                          measurementFieldIndex !== undefined
+                            ? itemIndex
+                            : undefined
+                        }
+                      >
+                        {field.field_config?.item_schema &&
+                          Object.entries(field.field_config.item_schema).map(
+                            (
+                              [fieldKey, itemFieldSchema],
+                              fieldIndex,
+                              array,
+                            ) => {
+                              const itemFieldValue = (
+                                item as Record<string, any>
+                              )[fieldKey];
+                              const fieldSchema = itemFieldSchema as Field;
+                              const subfieldId = `${fieldId}-subfield-${fieldKey}`;
+                              const isSubfieldSelected =
+                                selectedElementId === subfieldId;
 
-                            return (
-                              <td
-                                key={fieldIndex}
-                                className={`p-2 align-top ${reviewMode ? "cursor-pointer hover:bg-black/5" : ""} ${isSubfieldSelected ? "ring-2 ring-emerald-500 bg-emerald-50 relative z-30" : ""}`}
-                                onDoubleClick={(e) => {
-                                  if (reviewMode && fieldId && onElementClick) {
-                                    e.stopPropagation();
-                                    onElementClick("field", subfieldId, e);
-                                  }
-                                }}
-                                style={{
-                                  padding: effectiveStyles.padding || "8px",
-                                  borderBottomWidth:
-                                    itemIndex === itemsToRender.length - 1
-                                      ? "0px"
-                                      : effectiveStyles.border_width || "1px",
-                                  borderBottomStyle:
-                                    (effectiveStyles.border_style as any) ||
-                                    "solid",
-                                  borderBottomColor:
-                                    effectiveStyles.border_color || "#e5e7eb",
-                                  borderRightWidth:
-                                    fieldIndex === array.length - 1
-                                      ? "0px"
-                                      : effectiveStyles.border_width || "1px",
-                                  borderRightStyle:
-                                    (effectiveStyles.border_style as any) ||
-                                    "solid",
-                                  borderRightColor:
-                                    effectiveStyles.border_color || "#e5e7eb",
-                                }}
-                              >
-                                {renderField(
-                                  {
-                                    ...fieldSchema,
-                                    value: itemFieldValue,
-                                  } as Field,
-                                  `${itemIndex}-${fieldIndex}`,
-                                  effectiveStyles,
-                                  "horizontal",
-                                )}
-                              </td>
-                            );
-                          },
-                        )}
-                    </tr>
-                  ))}
+                              return (
+                                <td
+                                  key={fieldIndex}
+                                  className={`p-2 align-top ${reviewMode ? "cursor-pointer hover:bg-black/5" : ""} ${isSubfieldSelected ? "ring-2 ring-emerald-500 bg-emerald-50 relative z-30" : ""}`}
+                                  onDoubleClick={(e) => {
+                                    if (
+                                      reviewMode &&
+                                      fieldId &&
+                                      onElementClick
+                                    ) {
+                                      e.stopPropagation();
+                                      onElementClick("field", subfieldId, e);
+                                    }
+                                  }}
+                                  style={{
+                                    padding: effectiveStyles.padding || "8px",
+                                    borderBottomWidth:
+                                      renderItemIndex ===
+                                      itemsToRenderWithIndex.length - 1
+                                        ? "0px"
+                                        : effectiveStyles.border_width || "1px",
+                                    borderBottomStyle:
+                                      (effectiveStyles.border_style as any) ||
+                                      "solid",
+                                    borderBottomColor:
+                                      effectiveStyles.border_color || "#e5e7eb",
+                                    borderRightWidth:
+                                      fieldIndex === array.length - 1
+                                        ? "0px"
+                                        : effectiveStyles.border_width || "1px",
+                                    borderRightStyle:
+                                      (effectiveStyles.border_style as any) ||
+                                      "solid",
+                                    borderRightColor:
+                                      effectiveStyles.border_color || "#e5e7eb",
+                                  }}
+                                >
+                                  {renderField(
+                                    {
+                                      ...fieldSchema,
+                                      value: itemFieldValue,
+                                    } as Field,
+                                    `${itemIndex}-${fieldIndex}`,
+                                    effectiveStyles,
+                                    "horizontal",
+                                  )}
+                                </td>
+                              );
+                            },
+                          )}
+                      </tr>
+                    ),
+                  )}
                 </tbody>
               </table>
             </div>
@@ -1382,133 +1897,180 @@ export function TemplatePreview({
                   ? "flex flex-wrap items-start"
                   : "grid"
               }
+              data-measure-list-items-container-index={
+                measurementFieldIndex !== undefined
+                  ? measurementFieldIndex
+                  : undefined
+              }
               style={itemsContainerStyle}
             >
               {/* Renderizar elementos basados en el valor del campo */}
-              {itemsToRender.map((item: any, itemIndex: number) => (
-                <div
-                  key={itemIndex}
-                  className={
-                    listItemsLayout === "horizontal"
-                      ? "flex items-start"
-                      : "flex w-full"
-                  }
-                  style={{
-                    ...listItemStyles,
-                    // Apply alignItems to the list item wrapper (which contains the bullet/number)
-                    alignItems: effectiveStyles.align_items || "start",
-                    gap: "8px", // Gap fijo entre bullet y contenido
-                  }}
-                >
-                  {showBullets && (
-                    <span
-                      className="shrink-0"
+              {itemsToRenderWithIndex.flatMap(
+                ({ item, itemIndex }, visualItemIndex) => {
+                  const itemSlice = listFieldPage?.itemSlices?.[itemIndex];
+
+                  const listItemNode = (
+                    <div
+                      key={`list-item-${itemIndex}-${visualItemIndex}`}
+                      data-measure-list-field-index={measurementFieldIndex}
+                      data-measure-list-item-index={
+                        measurementFieldIndex !== undefined
+                          ? itemIndex
+                          : undefined
+                      }
+                      className={
+                        listItemsLayout === "horizontal"
+                          ? "flex items-start"
+                          : "flex w-full"
+                      }
                       style={{
-                        color:
-                          effectiveStyles.primary_color || fieldStyles.color,
-                        fontSize: effectiveStyles.font_size
-                          ? `${effectiveStyles.font_size}px`
-                          : undefined,
+                        ...listItemStyles,
+                        // Apply alignItems to the list item wrapper (which contains the bullet/number)
+                        alignItems: effectiveStyles.align_items || "start",
+                        gap: "8px", // Gap fijo entre bullet y contenido
                       }}
                     >
-                      {isNumbered
-                        ? `${itemIndex + 1}.`
-                        : bulletStyles[listStyleType]}
-                    </span>
-                  )}
-                  <div
-                    className={`flex-1 min-w-0 ${getItemLayoutClasses()}`}
-                    style={{
-                      ...getGridColumnsStyle(),
-                      gap: effectiveStyles.gap || undefined,
-                      // alignItems: effectiveStyles.align_items || "center", // Removed, now applied to parent
-                    }}
-                  >
-                    {field.field_config?.item_schema &&
-                    Object.keys(field.field_config.item_schema).length > 0 ? (
-                      Object.entries(field.field_config.item_schema).map(
-                        ([fieldKey, itemFieldSchema], fieldIndex) => {
-                          // Obtener el valor del sub-field del item actual
-                          const itemFieldValue = item[fieldKey];
-                          const fieldSchema = itemFieldSchema as Field;
+                      {showBullets && (
+                        <span
+                          className="shrink-0"
+                          style={{
+                            color:
+                              effectiveStyles.primary_color ||
+                              fieldStyles.color,
+                            fontSize: effectiveStyles.font_size
+                              ? `${effectiveStyles.font_size}px`
+                              : undefined,
+                          }}
+                        >
+                          {isNumbered
+                            ? `${itemIndex + 1}.`
+                            : bulletStyles[listStyleType]}
+                        </span>
+                      )}
+                      <div
+                        className={`flex-1 min-w-0 ${getItemLayoutClasses()}`}
+                        style={{
+                          ...getGridColumnsStyle(),
+                          gap: effectiveStyles.gap || undefined,
+                          // alignItems: effectiveStyles.align_items || "center", // Removed, now applied to parent
+                        }}
+                      >
+                        {field.field_config?.item_schema &&
+                        Object.keys(field.field_config.item_schema).length >
+                          0 ? (
+                          Object.entries(field.field_config.item_schema).map(
+                            ([fieldKey, itemFieldSchema], fieldIndex) => {
+                              // Obtener el valor del sub-field del item actual
+                              const itemFieldValue = (
+                                item as Record<string, any>
+                              )[fieldKey];
+                              const fieldSchema = itemFieldSchema as Field;
 
-                          // Determinar si el campo debe expandirse (texto) o usar ancho natural (iconos, números, etc.)
-                          const shouldExpand =
-                            fieldSchema.type === "text" ||
-                            fieldSchema.type === "text_with_icon";
+                              // Determinar si el campo debe expandirse (texto) o usar ancho natural (iconos, números, etc.)
+                              const shouldExpand =
+                                fieldSchema.type === "text" ||
+                                fieldSchema.type === "text_with_icon";
 
-                          // Para grid layouts: cada celda del grid contiene un flex interno
-                          const isGridLayout =
-                            listItemsLayout === "grid-2" ||
-                            listItemsLayout === "grid-3";
+                              // Para grid layouts: cada celda del grid contiene un flex interno
+                              const isGridLayout =
+                                listItemsLayout === "grid-2" ||
+                                listItemsLayout === "grid-3";
 
-                          // Determinar la alineación según la posición en el grid
-                          let justifyClass = "";
-                          if (isGridLayout) {
-                            // En grid-2: índices impares (1, 3, 5...) van a la derecha
-                            // En grid-3: índices 2, 5, 8... van a la derecha
-                            const colsCount =
-                              listItemsLayout === "grid-2" ? 2 : 3;
-                            const colPosition = fieldIndex % colsCount;
+                              // Determinar la alineación según la posición en el grid
+                              let justifyClass = "";
+                              if (isGridLayout) {
+                                // En grid-2: índices impares (1, 3, 5...) van a la derecha
+                                // En grid-3: índices 2, 5, 8... van a la derecha
+                                const colsCount =
+                                  listItemsLayout === "grid-2" ? 2 : 3;
+                                const colPosition = fieldIndex % colsCount;
 
-                            if (colPosition === colsCount - 1) {
-                              // Última columna: alinear a la derecha
-                              justifyClass = "justify-end";
-                            } else if (colPosition === 0) {
-                              // Primera columna: alinear a la izquierda
-                              justifyClass = "justify-start";
-                            } else {
-                              // Columnas del medio: centrar
-                              justifyClass = "justify-center";
-                            }
-                          }
-
-                          const subfieldId = `${fieldId}-subfield-${fieldKey}`;
-                          const isSubfieldSelected =
-                            selectedElementId === subfieldId;
-
-                          return (
-                            <div
-                              key={fieldIndex}
-                              className={
-                                (isGridLayout
-                                  ? `flex gap-1 items-center ${justifyClass} min-w-0 ${reviewMode ? "cursor-pointer hover:bg-black/5 p-1 rounded transition-colors" : ""}`
-                                  : shouldExpand
-                                    ? `flex-1 min-w-[120px] ${reviewMode ? "cursor-pointer hover:bg-black/5 p-1 rounded transition-colors" : ""}`
-                                    : `shrink-0 ${reviewMode ? "cursor-pointer hover:bg-black/5 p-1 rounded transition-colors" : ""}`) +
-                                (isSubfieldSelected
-                                  ? " ring-2 ring-emerald-500 bg-emerald-50 relative z-30"
-                                  : "")
-                              }
-                              onClick={(e) => {
-                                // Dejar que el click se propague para seleccionar el padre (Lista)
-                              }}
-                              onDoubleClick={(e) => {
-                                if (reviewMode && fieldId && onElementClick) {
-                                  e.stopPropagation();
-                                  onElementClick("field", subfieldId, e);
+                                if (colPosition === colsCount - 1) {
+                                  // Última columna: alinear a la derecha
+                                  justifyClass = "justify-end";
+                                } else if (colPosition === 0) {
+                                  // Primera columna: alinear a la izquierda
+                                  justifyClass = "justify-start";
+                                } else {
+                                  // Columnas del medio: centrar
+                                  justifyClass = "justify-center";
                                 }
-                              }}
-                            >
-                              {renderField(
-                                {
-                                  ...fieldSchema,
-                                  value: itemFieldValue,
-                                } as Field,
-                                `${itemIndex}-${fieldIndex}`,
-                                containerStyle,
-                                "horizontal",
-                              )}
-                            </div>
-                          );
-                        },
-                      )
-                    ) : (
-                      <div className="text-sm">{JSON.stringify(item)}</div>
-                    )}
-                  </div>
-                </div>
-              ))}
+                              }
+
+                              const subfieldId = `${fieldId}-subfield-${fieldKey}`;
+                              const isSubfieldSelected =
+                                selectedElementId === subfieldId;
+
+                              return (
+                                <div
+                                  key={fieldIndex}
+                                  className={
+                                    (isGridLayout
+                                      ? `flex gap-1 items-center ${justifyClass} min-w-0 ${reviewMode ? "cursor-pointer hover:bg-black/5 p-1 rounded transition-colors" : ""}`
+                                      : shouldExpand
+                                        ? `flex-1 min-w-[120px] ${reviewMode ? "cursor-pointer hover:bg-black/5 p-1 rounded transition-colors" : ""}`
+                                        : `shrink-0 ${reviewMode ? "cursor-pointer hover:bg-black/5 p-1 rounded transition-colors" : ""}`) +
+                                    (isSubfieldSelected
+                                      ? " ring-2 ring-emerald-500 bg-emerald-50 relative z-30"
+                                      : "")
+                                  }
+                                  onClick={(e) => {
+                                    // Dejar que el click se propague para seleccionar el padre (Lista)
+                                  }}
+                                  onDoubleClick={(e) => {
+                                    if (
+                                      reviewMode &&
+                                      fieldId &&
+                                      onElementClick
+                                    ) {
+                                      e.stopPropagation();
+                                      onElementClick("field", subfieldId, e);
+                                    }
+                                  }}
+                                >
+                                  {renderField(
+                                    {
+                                      ...fieldSchema,
+                                      value: itemFieldValue,
+                                    } as Field,
+                                    `${itemIndex}-${fieldIndex}`,
+                                    containerStyle,
+                                    "horizontal",
+                                  )}
+                                </div>
+                              );
+                            },
+                          )
+                        ) : (
+                          <div className="text-sm">{JSON.stringify(item)}</div>
+                        )}
+                      </div>
+                    </div>
+                  );
+
+                  if (!itemSlice || measurementFieldIndex !== undefined) {
+                    return [listItemNode];
+                  }
+
+                  return [
+                    <div
+                      key={`list-item-slice-${itemIndex}-${visualItemIndex}`}
+                      style={{
+                        overflow: "hidden",
+                        height: `${itemSlice.height}px`,
+                      }}
+                    >
+                      <div
+                        style={{
+                          transform: `translateY(-${itemSlice.offset}px)`,
+                        }}
+                      >
+                        {listItemNode}
+                      </div>
+                    </div>,
+                  ];
+                },
+              )}
             </div>
           </div>
         );
@@ -2486,14 +3048,23 @@ export function TemplatePreview({
           ) : (
             block.fields
               .filter((field) => field.bulletin)
-              .map((field, fieldIndex) =>
-                renderField(
-                  field,
-                  `measurement-field-${blockIndex}-${fieldIndex}`,
-                  block.style_config || section.style_config,
-                  fieldsLayout,
-                ),
-              )
+              .map((field, fieldIndex) => (
+                <div
+                  key={`measurement-field-wrapper-${blockIndex}-${fieldIndex}`}
+                  data-measure-field-index={fieldIndex}
+                  style={{ display: "contents" }}
+                >
+                  {renderField(
+                    field,
+                    `measurement-field-${blockIndex}-${fieldIndex}`,
+                    block.style_config || section.style_config,
+                    fieldsLayout,
+                    undefined,
+                    undefined,
+                    { measurementFieldIndex: fieldIndex },
+                  )}
+                </div>
+              ))
           )}
         </div>
       </div>
@@ -2758,6 +3329,11 @@ export function TemplatePreview({
       const blockMeasurements: BlockMeasurement[] = measuredSection.blocks.map(
         (block, blockIndex) => {
           const blockElement = blockMeasureRefs.current[blockIndex];
+          const hasCardField = block.fields.some(
+            (field) => field.type === "card",
+          );
+          const blockMeasuredHeight =
+            blockElement?.scrollHeight || blockElement?.offsetHeight || 0;
           const cardBlockElements = blockElement
             ? Array.from(
                 blockElement.querySelectorAll<HTMLElement>(
@@ -2765,25 +3341,274 @@ export function TemplatePreview({
                 ),
               )
             : [];
+          const measuredFieldElements = blockElement
+            ? Array.from(
+                blockElement.querySelectorAll<HTMLElement>(
+                  "[data-measure-field-index]",
+                ),
+              )
+                .map((wrapperElement) => {
+                  const fieldIndex = Number(
+                    wrapperElement.dataset.measureFieldIndex,
+                  );
+                  const fieldElement =
+                    wrapperElement.firstElementChild as HTMLElement | null;
+
+                  if (!Number.isFinite(fieldIndex) || !fieldElement) {
+                    return null;
+                  }
+
+                  return {
+                    fieldIndex,
+                    fieldElement,
+                  };
+                })
+                .filter(
+                  (
+                    candidate,
+                  ): candidate is {
+                    fieldIndex: number;
+                    fieldElement: HTMLElement;
+                  } => candidate !== null,
+                )
+                .sort((a, b) => a.fieldIndex - b.fieldIndex)
+            : [];
+          const measuredListItemElements = blockElement
+            ? Array.from(
+                blockElement.querySelectorAll<HTMLElement>(
+                  "[data-measure-list-item-index]",
+                ),
+              )
+                .map((itemElement) => {
+                  const fieldIndex = Number(
+                    itemElement.dataset.measureListFieldIndex,
+                  );
+                  const itemIndex = Number(
+                    itemElement.dataset.measureListItemIndex,
+                  );
+
+                  if (
+                    !Number.isFinite(fieldIndex) ||
+                    !Number.isFinite(itemIndex)
+                  ) {
+                    return null;
+                  }
+
+                  return {
+                    fieldIndex,
+                    itemIndex,
+                    itemElement,
+                  };
+                })
+                .filter(
+                  (
+                    candidate,
+                  ): candidate is {
+                    fieldIndex: number;
+                    itemIndex: number;
+                    itemElement: HTMLElement;
+                  } => candidate !== null,
+                )
+                .sort((a, b) => {
+                  if (a.fieldIndex === b.fieldIndex) {
+                    return a.itemIndex - b.itemIndex;
+                  }
+
+                  return a.fieldIndex - b.fieldIndex;
+                })
+            : [];
+          const measuredListContainerElements = blockElement
+            ? Array.from(
+                blockElement.querySelectorAll<HTMLElement>(
+                  "[data-measure-list-items-container-index]",
+                ),
+              )
+                .map((containerElement) => {
+                  const fieldIndex = Number(
+                    containerElement.dataset.measureListItemsContainerIndex,
+                  );
+
+                  if (!Number.isFinite(fieldIndex)) {
+                    return null;
+                  }
+
+                  return {
+                    fieldIndex,
+                    containerElement,
+                  };
+                })
+                .filter(
+                  (
+                    candidate,
+                  ): candidate is {
+                    fieldIndex: number;
+                    containerElement: HTMLElement;
+                  } => candidate !== null,
+                )
+                .sort((a, b) => a.fieldIndex - b.fieldIndex)
+            : [];
+          const bulletinFields = block.fields.filter((field) => field.bulletin);
+          const bulletinFieldCount = bulletinFields.length;
+          const measuredFieldHeightsByIndex = new Map<number, number>();
+          const measuredListItemHeightsByField = new Map<
+            number,
+            Map<number, number>
+          >();
+          const measuredListItemGapHeightsByField = new Map<number, number>();
+
+          measuredFieldElements.forEach(({ fieldIndex, fieldElement }) => {
+            const computedStyle = window.getComputedStyle(fieldElement);
+            const marginTop =
+              Number.parseFloat(computedStyle.marginTop || "0") || 0;
+            const marginBottom =
+              Number.parseFloat(computedStyle.marginBottom || "0") || 0;
+            const measuredHeight =
+              (fieldElement.scrollHeight ||
+                fieldElement.offsetHeight ||
+                fieldElement.getBoundingClientRect().height ||
+                0) +
+              marginTop +
+              marginBottom;
+
+            measuredFieldHeightsByIndex.set(fieldIndex, measuredHeight);
+          });
+          measuredListItemElements.forEach(
+            ({ fieldIndex, itemIndex, itemElement }) => {
+              const computedStyle = window.getComputedStyle(itemElement);
+              const marginTop =
+                Number.parseFloat(computedStyle.marginTop || "0") || 0;
+              const marginBottom =
+                Number.parseFloat(computedStyle.marginBottom || "0") || 0;
+              const measuredHeight =
+                (itemElement.scrollHeight ||
+                  itemElement.offsetHeight ||
+                  itemElement.getBoundingClientRect().height ||
+                  0) +
+                marginTop +
+                marginBottom;
+
+              const currentFieldMap =
+                measuredListItemHeightsByField.get(fieldIndex) ||
+                new Map<number, number>();
+
+              currentFieldMap.set(itemIndex, measuredHeight);
+              measuredListItemHeightsByField.set(fieldIndex, currentFieldMap);
+            },
+          );
+          measuredListContainerElements.forEach(
+            ({ fieldIndex, containerElement }) => {
+              const computedStyle = window.getComputedStyle(containerElement);
+              const parsedRowGap = Number.parseFloat(
+                computedStyle.rowGap || "",
+              );
+              const parsedGap = Number.parseFloat(computedStyle.gap || "");
+              const resolvedGap = Number.isFinite(parsedRowGap)
+                ? parsedRowGap
+                : Number.isFinite(parsedGap)
+                  ? parsedGap
+                  : 0;
+
+              measuredListItemGapHeightsByField.set(
+                fieldIndex,
+                Math.max(resolvedGap, 0),
+              );
+            },
+          );
+          const measuredFieldHeights =
+            bulletinFieldCount > 0
+              ? Array.from(
+                  { length: bulletinFieldCount },
+                  (_, fieldIndex) =>
+                    measuredFieldHeightsByIndex.get(fieldIndex) || 0,
+                )
+              : [];
+          const measuredListFieldItemHeights: (number[] | undefined)[] =
+            bulletinFieldCount > 0
+              ? Array.from({ length: bulletinFieldCount }, (_, fieldIndex) => {
+                  const itemHeightsMap =
+                    measuredListItemHeightsByField.get(fieldIndex);
+
+                  if (!itemHeightsMap || itemHeightsMap.size === 0) {
+                    return undefined;
+                  }
+
+                  const maxItemIndex = Math.max(...itemHeightsMap.keys());
+
+                  return Array.from(
+                    { length: maxItemIndex + 1 },
+                    (_, itemIndex) => itemHeightsMap.get(itemIndex) || 0,
+                  );
+                })
+              : [];
+          const measuredListFieldItemGapHeights: (number | undefined)[] =
+            measuredListFieldItemHeights.map((itemHeights, fieldIndex) => {
+              if (!itemHeights || itemHeights.length === 0) {
+                return undefined;
+              }
+
+              return Math.max(
+                measuredListItemGapHeightsByField.get(fieldIndex) || 0,
+                0,
+              );
+            });
+          const measuredListFieldStaticHeights: (number | undefined)[] =
+            measuredListFieldItemHeights.map((itemHeights, fieldIndex) => {
+              if (!itemHeights || itemHeights.length === 0) {
+                return undefined;
+              }
+
+              const bulletinField = bulletinFields[fieldIndex];
+              const fieldListLayout = bulletinField
+                ? getEffectiveFieldStyles(
+                    bulletinField,
+                    block.style_config || measuredSection.style_config,
+                  ).list_items_layout || "vertical"
+                : "vertical";
+              const shouldApplyInterItemGap =
+                fieldListLayout !== "table" &&
+                fieldListLayout !== "horizontal" &&
+                fieldListLayout !== "grid-2" &&
+                fieldListLayout !== "grid-3";
+              const itemGapHeight = Math.max(
+                measuredListFieldItemGapHeights[fieldIndex] || 0,
+                0,
+              );
+
+              const totalItemHeight = itemHeights.reduce(
+                (totalHeight, itemHeight) =>
+                  totalHeight + Math.max(itemHeight, 0),
+                0,
+              );
+              const totalGapHeight =
+                shouldApplyInterItemGap && itemHeights.length > 1
+                  ? itemGapHeight * (itemHeights.length - 1)
+                  : 0;
+              const totalFieldHeight =
+                measuredFieldHeightsByIndex.get(fieldIndex) || 0;
+
+              return Math.max(
+                totalFieldHeight - totalItemHeight - totalGapHeight,
+                0,
+              );
+            });
+          const measuredFieldTotalHeight = measuredFieldHeights.reduce(
+            (totalHeight, fieldHeight) => totalHeight + fieldHeight,
+            0,
+          );
 
           return {
-            height:
-              blockElement?.scrollHeight || blockElement?.offsetHeight || 0,
+            height: blockMeasuredHeight,
             cardBlockHeights:
-              block.fields.some((field) => field.type === "card") &&
-              cardBlockElements.length > 0
+              hasCardField && cardBlockElements.length > 0
                 ? cardBlockElements.map(
                     (element) =>
                       element.scrollHeight || element.offsetHeight || 0,
                   )
                 : undefined,
             cardStaticHeight:
-              block.fields.some((field) => field.type === "card") &&
-              cardBlockElements.length > 0
+              hasCardField && cardBlockElements.length > 0
                 ? Math.max(
-                    (blockElement?.scrollHeight ||
-                      blockElement?.offsetHeight ||
-                      0) -
+                    blockMeasuredHeight -
                       cardBlockElements.reduce(
                         (totalHeight, element) =>
                           totalHeight +
@@ -2792,6 +3617,26 @@ export function TemplatePreview({
                       ),
                     0,
                   )
+                : undefined,
+            fieldHeights:
+              !hasCardField && bulletinFieldCount > 0
+                ? measuredFieldHeights
+                : undefined,
+            fieldStaticHeight:
+              !hasCardField && bulletinFieldCount > 0
+                ? Math.max(blockMeasuredHeight - measuredFieldTotalHeight, 0)
+                : undefined,
+            listFieldItemHeights:
+              !hasCardField && bulletinFieldCount > 0
+                ? measuredListFieldItemHeights
+                : undefined,
+            listFieldStaticHeights:
+              !hasCardField && bulletinFieldCount > 0
+                ? measuredListFieldStaticHeights
+                : undefined,
+            listFieldItemGapHeights:
+              !hasCardField && bulletinFieldCount > 0
+                ? measuredListFieldItemGapHeights
                 : undefined,
           };
         },
@@ -2951,6 +3796,11 @@ export function TemplatePreview({
     ? undefined
     : hasMeasuredOverflowLayout
       ? measuredOverflowPages[resolvedOverflowPageIndex]?.cardBlockPages
+      : undefined;
+  const visibleBlockFieldPages = !baseSectionToRender
+    ? undefined
+    : hasMeasuredOverflowLayout
+      ? measuredOverflowPages[resolvedOverflowPageIndex]?.blockFieldPages
       : undefined;
 
   const goToPreviousPreviewPage = () => {
@@ -3554,6 +4404,12 @@ export function TemplatePreview({
                                   visibleBlockSlices?.[blockIndex];
                                 const cardBlockPage =
                                   visibleCardBlockPages?.[blockIndex];
+                                const blockFieldPage =
+                                  visibleBlockFieldPages?.[blockIndex];
+                                const visibleFieldIndexes =
+                                  blockFieldPage?.fieldIndexes;
+                                const visibleFieldSlices =
+                                  blockFieldPage?.fieldSlices;
                                 // Verificar si el block contiene un field de tipo card
                                 const hasCardField = block.fields.some(
                                   (field) => field.type === "card",
@@ -3669,56 +4525,57 @@ export function TemplatePreview({
                                       }`}
                                       style={fieldsContainerStyle}
                                     >
-                                      {block.fields.length === 0 ? (
-                                        <div className="text-sm text-[#283618]/50 italic">
-                                          {t("noFieldsInBlock")}
-                                        </div>
-                                      ) : (
-                                        block.fields
-                                          .filter((field) => field.bulletin) // Only show fields for bulletin
-                                          .map((field, fieldIndex) => {
+                                      {(() => {
+                                        const bulletinFields =
+                                          block.fields.filter(
+                                            (field) => field.bulletin,
+                                          );
+
+                                        if (block.fields.length === 0) {
+                                          return (
+                                            <div className="text-sm text-[#283618]/50 italic">
+                                              {t("noFieldsInBlock")}
+                                            </div>
+                                          );
+                                        }
+
+                                        return bulletinFields.flatMap(
+                                          (field, fieldIndex) => {
+                                            if (
+                                              visibleFieldIndexes &&
+                                              !visibleFieldIndexes.includes(
+                                                fieldIndex,
+                                              )
+                                            ) {
+                                              return [];
+                                            }
+
                                             const fieldId = `field-${sectionIndex}-${blockIndex}-${fieldIndex}`;
                                             const renderedField = renderField(
                                               field,
-                                              `preview-${fieldId}`, // Use consistent key
+                                              `preview-${fieldId}`,
                                               block.style_config ||
-                                                section.style_config, // Los campos heredan del bloque o de la sección
+                                                section.style_config,
                                               fieldsLayout,
-                                              undefined, // pageInfo
-                                              fieldId, // Pass fieldId here
+                                              undefined,
+                                              fieldId,
                                               field.type === "card"
                                                 ? { cardBlockPage }
-                                                : undefined,
+                                                : field.type === "list"
+                                                  ? {
+                                                      listFieldPage:
+                                                        blockFieldPage
+                                                          ?.listFieldItemPages?.[
+                                                          fieldIndex
+                                                        ],
+                                                    }
+                                                  : undefined,
                                             );
+                                            const fieldSlice =
+                                              visibleFieldSlices?.[fieldIndex];
 
-                                            if (reviewMode && onElementClick) {
-                                              const isSelected =
-                                                selectedElementId === fieldId;
-
-                                              // Determine flex or specific styling for the field-wrapper based on fieldsLayout
-                                              const fieldWrapperStyle: React.CSSProperties =
-                                                {
-                                                  // Aplicar el style_config del campo si existe
-                                                  ...((field as Field)
-                                                    .style_config?.margin
-                                                    ? {
-                                                        margin: (field as Field)
-                                                          .style_config?.margin,
-                                                      }
-                                                    : {}),
-                                                  ...((field as Field)
-                                                    .style_config?.padding
-                                                    ? {
-                                                        padding: (
-                                                          field as Field
-                                                        ).style_config?.padding,
-                                                      }
-                                                    : {}),
-                                                  // Asegurar que flex funciona para layouts horizontale
-                                                  flexShrink: 0,
-                                                };
-
-                                              return (
+                                            const fieldNode =
+                                              reviewMode && onElementClick ? (
                                                 <div
                                                   key={`review-wrapper-${fieldId}`}
                                                   data-review-id={fieldId}
@@ -3729,19 +4586,54 @@ export function TemplatePreview({
                                                       e,
                                                     )
                                                   }
-                                                  style={fieldWrapperStyle}
-                                                  className={`relative ${isSelected ? "ring-2 ring-blue-500 z-20" : "hover:ring-2 hover:ring-yellow-400"} cursor-pointer rounded transition-all group/field`}
+                                                  style={{
+                                                    ...((field as Field)
+                                                      .style_config?.margin
+                                                      ? {
+                                                          margin: (
+                                                            field as Field
+                                                          ).style_config
+                                                            ?.margin,
+                                                        }
+                                                      : {}),
+                                                    ...((field as Field)
+                                                      .style_config?.padding
+                                                      ? {
+                                                          padding: (
+                                                            field as Field
+                                                          ).style_config
+                                                            ?.padding,
+                                                        }
+                                                      : {}),
+                                                    flexShrink: 0,
+                                                  }}
+                                                  className={`relative ${
+                                                    selectedElementId ===
+                                                    fieldId
+                                                      ? "ring-2 ring-blue-500 z-20"
+                                                      : "hover:ring-2 hover:ring-yellow-400"
+                                                  } cursor-pointer rounded transition-all group/field`}
                                                 >
                                                   {renderedField}
                                                   {renderCommentBadge(fieldId)}
-                                                  {/* Selection Badge for Parent */}
-                                                  {isSelected && (
+                                                  {selectedElementId ===
+                                                    fieldId && (
                                                     <div className="absolute -top-3 -left-1 bg-blue-500 text-white text-[10px] px-2 py-0.5 rounded-t font-semibold shadow-sm z-30">
                                                       List
                                                     </div>
                                                   )}
                                                   <div
-                                                    className={`absolute -top-2 -right-2 ${isSelected ? "bg-blue-500" : "bg-yellow-400"} text-white rounded-full p-1 ${isSelected ? "opacity-100" : "opacity-0 group-hover/field:opacity-100"} transition-opacity z-10 shadow-sm`}
+                                                    className={`absolute -top-2 -right-2 ${
+                                                      selectedElementId ===
+                                                      fieldId
+                                                        ? "bg-blue-500"
+                                                        : "bg-yellow-400"
+                                                    } text-white rounded-full p-1 ${
+                                                      selectedElementId ===
+                                                      fieldId
+                                                        ? "opacity-100"
+                                                        : "opacity-0 group-hover/field:opacity-100"
+                                                    } transition-opacity z-10 shadow-sm`}
                                                   >
                                                     <svg
                                                       xmlns="http://www.w3.org/2000/svg"
@@ -3758,11 +4650,34 @@ export function TemplatePreview({
                                                     </svg>
                                                   </div>
                                                 </div>
+                                              ) : (
+                                                renderedField
                                               );
+
+                                            if (!fieldSlice) {
+                                              return [fieldNode];
                                             }
-                                            return renderedField;
-                                          })
-                                      )}
+
+                                            return [
+                                              <div
+                                                key={`field-slice-wrapper-${fieldId}`}
+                                                style={{
+                                                  overflow: "hidden",
+                                                  height: `${fieldSlice.height}px`,
+                                                }}
+                                              >
+                                                <div
+                                                  style={{
+                                                    transform: `translateY(-${fieldSlice.offset}px)`,
+                                                  }}
+                                                >
+                                                  {fieldNode}
+                                                </div>
+                                              </div>,
+                                            ];
+                                          },
+                                        );
+                                      })()}
                                     </div>
                                   </>
                                 );
