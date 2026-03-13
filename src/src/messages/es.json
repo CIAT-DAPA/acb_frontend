@@ -1022,6 +1022,7 @@
         "addField": "Agregar Campo",
         "addSection": "+ Agregar Nueva Sección",
         "dragToReorder": "Arrastra para reordenar",
+        "sectionHasCardsTooltip": "Esta sección contiene campos tipo tarjeta y permite selección múltiple.",
         "styles": {
           "section": "Estilos de Sección",
           "block": "Estilos de Bloque",
