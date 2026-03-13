@@ -90,6 +90,9 @@ export function ListFieldEditor({
   const dateFieldId = Object.keys(itemSchema).find(
     (key) => itemSchema[key].type === "date",
   );
+  const textFieldIds = Object.keys(itemSchema).filter(
+    (key) => itemSchema[key].type === "text",
+  );
   const showCsvUpload = allowCsvImport && climateDataFieldId && dateFieldId;
 
   const getExpectedColumns = () => {
@@ -104,7 +107,38 @@ export function ListFieldEditor({
         }
       });
     }
+    if (textFieldIds.length > 0) {
+      columns.push("description");
+    }
     return columns;
+  };
+
+  const parseCsvLine = (line: string) => {
+    const values: string[] = [];
+    let currentValue = "";
+    let insideQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+
+      if (char === '"') {
+        // Handle escaped quotes "" inside quoted values.
+        if (insideQuotes && line[i + 1] === '"') {
+          currentValue += '"';
+          i += 1;
+        } else {
+          insideQuotes = !insideQuotes;
+        }
+      } else if (char === "," && !insideQuotes) {
+        values.push(currentValue.trim());
+        currentValue = "";
+      } else {
+        currentValue += char;
+      }
+    }
+
+    values.push(currentValue.trim());
+    return values.map((value) => value.replace(/^"|"$/g, ""));
   };
 
   const handleCsvUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -119,7 +153,35 @@ export function ListFieldEditor({
       const lines = text.split(/\r\n|\n/);
       if (lines.length < 2) return; // Need at least header and one row
 
-      const headers = lines[0].split(",").map((h) => h.trim());
+      const headers = parseCsvLine(lines[0]);
+      const getHeaderIndex = (headerName: string) =>
+        headers.findIndex(
+          (header) => header.toLowerCase() === headerName.toLowerCase(),
+        );
+
+      const dateIndex = getHeaderIndex("date");
+      const descriptionIndex = getHeaderIndex("description");
+
+      const descriptionTextFieldId = textFieldIds.find((fieldId) => {
+        const fieldDef = itemSchema[fieldId];
+        const searchableIdentifier = [
+          fieldId,
+          fieldDef?.field_id,
+          fieldDef?.label,
+          fieldDef?.display_name,
+          fieldDef?.description,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        return (
+          searchableIdentifier.includes("description") ||
+          searchableIdentifier.includes("descripcion")
+        );
+      });
+      const csvDescriptionTargetFieldId =
+        descriptionTextFieldId || textFieldIds[0];
       const newItems: any[] = [];
 
       // Get climate data config to map columns
@@ -141,13 +203,12 @@ export function ListFieldEditor({
         const line = lines[i].trim();
         if (!line) continue;
 
-        const values = line.split(",").map((v) => v.trim());
+        const values = parseCsvLine(line);
         const newItem = createEmptyItem();
 
         // Fill date
-        const dateIndex = headers.indexOf("date");
         if (dateIndex !== -1 && dateFieldId) {
-          const dateStr = values[dateIndex];
+          const dateStr = values[dateIndex] || "";
           // Simple parser for MM/DD/YYYY to YYYY-MM-DD if needed
           // Assuming input is MM/DD/YYYY based on user example
           const parts = dateStr.split("/");
@@ -165,12 +226,20 @@ export function ListFieldEditor({
         if (climateDataFieldId) {
           const climateData: Record<string, string> = {};
           Object.entries(colNameToParamKey).forEach(([colName, paramKey]) => {
-            const colIndex = headers.indexOf(colName);
+            const colIndex = getHeaderIndex(colName);
             if (colIndex !== -1) {
-              climateData[paramKey] = values[colIndex];
+              climateData[paramKey] = values[colIndex] || "";
             }
           });
           newItem[climateDataFieldId] = climateData;
+        }
+
+        // Fill list text field from CSV description column, if present.
+        if (descriptionIndex !== -1 && csvDescriptionTargetFieldId) {
+          const descriptionValue = values[descriptionIndex] || "";
+          if (descriptionValue) {
+            newItem[csvDescriptionTargetFieldId] = descriptionValue;
+          }
         }
 
         newItems.push(newItem);
