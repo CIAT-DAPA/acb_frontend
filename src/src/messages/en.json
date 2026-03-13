@@ -1023,6 +1023,7 @@
         "addField": "Add Field",
         "addSection": "+ Add New Section",
         "dragToReorder": "Drag to reorder",
+        "sectionHasCardsTooltip": "This section contains card fields and supports selecting multiple cards.",
         "styles": {
           "section": "Section Styles",
           "block": "Block Styles",

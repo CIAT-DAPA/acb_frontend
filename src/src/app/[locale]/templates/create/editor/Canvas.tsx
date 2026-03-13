@@ -4,7 +4,7 @@ import { EditorSelection, CanvasState } from "./types";
 import { TemplatePreview } from "../TemplatePreview";
 import * as ui from "../../../components/ui";
 import { useTranslations } from "next-intl";
-import { GripVertical } from "lucide-react";
+import { Layers, GripVertical } from "lucide-react";
 
 interface CanvasProps {
   data: CreateTemplateData;
@@ -526,6 +526,31 @@ export const Canvas: React.FC<CanvasProps> = ({
                     {section.display_name ||
                       `${t("editor.selectionTypes.section")} ${index + 1}`}
                   </div>
+
+                  {section.blocks.some((block) =>
+                    block.fields.some((field) => field.type === "card"),
+                  ) && (
+                    <div className="interactive-element relative inline-flex items-center group">
+                      <button
+                        type="button"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#bc6c25] bg-[#bc6c25]/10 text-[#bc6c25] cursor-help outline-none transition-colors hover:bg-[#bc6c25]/20 focus-visible:ring-2 focus-visible:ring-[#bc6c25]/40"
+                        aria-label={t("editor.sectionHasCardsTooltip")}
+                        aria-describedby={`section-card-tooltip-${index}`}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Layers size={16} />
+                      </button>
+
+                      <span
+                        id={`section-card-tooltip-${index}`}
+                        role="tooltip"
+                        className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 w-max max-w-[260px] -translate-x-1/2 rounded-md bg-[#283618] px-2 py-1 text-[11px] font-medium leading-tight text-[#fefae0] shadow-lg opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+                      >
+                        {t("editor.sectionHasCardsTooltip")}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             ))

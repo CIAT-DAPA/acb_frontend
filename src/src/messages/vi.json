@@ -1010,6 +1010,7 @@
         "addField": "Thêm trường",
         "addSection": "+ Thêm phần mới",
         "dragToReorder": "Kéo để sắp xếp lại",
+        "sectionHasCardsTooltip": "Phần này có các trường thẻ và hỗ trợ chọn nhiều thẻ.",
         "styles": {
           "section": "Kiểu phần",
           "block": "Kiểu khối",
