@@ -542,13 +542,15 @@ export const Canvas: React.FC<CanvasProps> = ({
                         <Layers size={16} />
                       </button>
 
-                      <span
+                      <div
                         id={`section-card-tooltip-${index}`}
                         role="tooltip"
-                        className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 w-max max-w-[260px] -translate-x-1/2 rounded-md bg-[#283618] px-2 py-1 text-[11px] font-medium leading-tight text-[#fefae0] shadow-lg opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+                        className="pointer-events-none absolute right-0 top-full z-50 mt-2 w-72 rounded-lg border border-gray-200 bg-white p-4 text-sm shadow-xl opacity-0 transition-opacity duration-150 group-hover:opacity-100"
                       >
-                        {t("editor.sectionHasCardsTooltip")}
-                      </span>
+                        <p className="text-[#283618] leading-snug">
+                          {t("editor.sectionHasCardsTooltip")}
+                        </p>
+                      </div>
                     </div>
                   )}
                 </div>
