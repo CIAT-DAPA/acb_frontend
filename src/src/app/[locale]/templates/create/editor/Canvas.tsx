@@ -19,7 +19,117 @@ interface CanvasProps {
   isCardMode?: boolean;
   onCanvasChange?: () => void;
   commentCounts?: Record<string, number>;
+  renderAllPagesInReview?: boolean;
 }
+
+const normalizeCardFieldValue = (value: unknown): any[] => {
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  if (value === null || value === undefined || value === "") {
+    return [];
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return [];
+    }
+
+    const tryParseArrayLikeString = (candidate: string): any[] | null => {
+      const looksLikeJson =
+        (candidate.startsWith("{") && candidate.endsWith("}")) ||
+        (candidate.startsWith("[") && candidate.endsWith("]"));
+
+      if (!looksLikeJson) {
+        return null;
+      }
+
+      try {
+        const parsed = JSON.parse(candidate);
+        return Array.isArray(parsed) ? parsed : [parsed];
+      } catch {
+        return null;
+      }
+    };
+
+    const directParsed = tryParseArrayLikeString(trimmed);
+    if (directParsed) {
+      return directParsed;
+    }
+
+    try {
+      const decodedValue = decodeURIComponent(trimmed);
+      if (decodedValue !== trimmed) {
+        const decodedParsed = tryParseArrayLikeString(decodedValue);
+        if (decodedParsed) {
+          return decodedParsed;
+        }
+      }
+    } catch {
+      // Ignore malformed URI component values and keep raw value fallback.
+    }
+
+    return [trimmed];
+  }
+
+  if (typeof value === "object") {
+    const valueObject = value as Record<string, any>;
+
+    if (Array.isArray(valueObject.selectedCards)) {
+      return valueObject.selectedCards;
+    }
+
+    if (Array.isArray(valueObject.selected_cards)) {
+      return valueObject.selected_cards;
+    }
+
+    if (Array.isArray(valueObject.cards)) {
+      return valueObject.cards;
+    }
+
+    return [valueObject];
+  }
+
+  return [value];
+};
+
+const getSectionTotalPagesForReview = (
+  section: CreateTemplateData["version"]["content"]["sections"][number],
+): number => {
+  let totalPages = 1;
+
+  section.blocks?.forEach((block) => {
+    block.fields?.forEach((field) => {
+      if (!field.bulletin) {
+        return;
+      }
+
+      if (field.type === "list") {
+        const rawMax = (field.field_config as any)?.max_items_per_page;
+        const maxItemsPerPage = rawMax ? Number(rawMax) : 0;
+        const items = Array.isArray(field.value) ? field.value : [];
+
+        if (items.length > 0 && maxItemsPerPage > 0) {
+          totalPages = Math.max(
+            totalPages,
+            Math.ceil(items.length / maxItemsPerPage),
+          );
+        }
+      }
+
+      if (field.type === "card") {
+        const cards = normalizeCardFieldValue(field.value);
+        if (cards.length > 1) {
+          totalPages = Math.max(totalPages, cards.length);
+        }
+      }
+    });
+  });
+
+  return totalPages;
+};
 
 export const Canvas: React.FC<CanvasProps> = ({
   data,
@@ -30,6 +140,7 @@ export const Canvas: React.FC<CanvasProps> = ({
   isCardMode = false,
   onCanvasChange,
   commentCounts,
+  renderAllPagesInReview = false,
 }) => {
   const t = useTranslations("CreateTemplate.fieldEditor");
   const containerRef = useRef<HTMLDivElement>(null);
@@ -47,7 +158,34 @@ export const Canvas: React.FC<CanvasProps> = ({
   const [dragOverSectionIndex, setDragOverSectionIndex] = useState<
     number | null
   >(null);
+  const [resolvedReviewPageCounts, setResolvedReviewPageCounts] = useState<
+    Record<number, number>
+  >({});
   const spacePressed = useRef(false);
+  const reviewSectionsResetKey = data.version.content.sections
+    .map((section) => section.section_id || "")
+    .join("|");
+
+  const sectionPageCounts = data.version.content.sections.map(
+    (section, sectionIndex) => {
+      if (!renderAllPagesInReview) {
+        return 1;
+      }
+
+      const estimatedCount = getSectionTotalPagesForReview(section);
+      const resolvedCount = resolvedReviewPageCounts[sectionIndex] || 0;
+
+      return Math.max(estimatedCount, resolvedCount, 1);
+    },
+  );
+
+  useEffect(() => {
+    if (!renderAllPagesInReview) {
+      return;
+    }
+
+    setResolvedReviewPageCounts({});
+  }, [renderAllPagesInReview, reviewSectionsResetKey]);
 
   useEffect(() => {
     if (onCanvasChange) {
@@ -467,7 +605,7 @@ export const Canvas: React.FC<CanvasProps> = ({
               <div
                 key={index}
                 id={`template-section-${index}`}
-                className={`w-max bg-white shadow-xl relative group-section transition-all ${
+                className={`relative group-section transition-all ${
                   draggedSectionIndex === index ? "opacity-60" : ""
                 } ${
                   dragOverSectionIndex === index &&
@@ -485,15 +623,60 @@ export const Canvas: React.FC<CanvasProps> = ({
                     <div className="absolute -inset-2 border-2 border-blue-500 rounded-lg pointer-events-none z-10" />
                   )}
 
-                <TemplatePreview
-                  data={data}
-                  reviewMode={true}
-                  onElementClick={handleElementClick}
-                  selectedSectionIndex={index}
-                  hidePagination={true}
-                  selectedElementId={selection.id}
-                  commentCounts={commentCounts}
-                />
+                <div className="flex flex-col gap-6">
+                  {Array.from(
+                    {
+                      length: sectionPageCounts[index] || 1,
+                    },
+                    (_, pageIndex) => (
+                      <div
+                        key={`section-${index}-page-${pageIndex}`}
+                        className="w-max bg-white shadow-xl"
+                      >
+                        <TemplatePreview
+                          data={data}
+                          reviewMode={true}
+                          onElementClick={handleElementClick}
+                          selectedSectionIndex={index}
+                          currentResolvedPageIndex={
+                            renderAllPagesInReview ? pageIndex : undefined
+                          }
+                          hidePagination={true}
+                          selectedElementId={selection.id}
+                          commentCounts={commentCounts}
+                          resolvedSectionPageCounts={sectionPageCounts}
+                          onResolvedPageCount={
+                            renderAllPagesInReview && pageIndex === 0
+                              ? (pageCount) => {
+                                  const normalizedPageCount = Number.isFinite(
+                                    pageCount,
+                                  )
+                                    ? Math.max(Math.floor(pageCount), 1)
+                                    : 1;
+
+                                  setResolvedReviewPageCounts(
+                                    (previousCounts) => {
+                                      if (
+                                        previousCounts[index] ===
+                                        normalizedPageCount
+                                      ) {
+                                        return previousCounts;
+                                      }
+
+                                      return {
+                                        ...previousCounts,
+                                        [index]: normalizedPageCount,
+                                      };
+                                    },
+                                  );
+                                }
+                              : undefined
+                          }
+                        />
+                      </div>
+                    ),
+                  )}
+                </div>
 
                 <div className="absolute -top-10 left-0 flex items-center gap-2">
                   {onMoveSection && (

@@ -10,6 +10,7 @@ export interface StepConfig {
   description: string;
   isCompleted?: boolean;
   isActive?: boolean;
+  notificationCount?: number;
 }
 
 interface StepperProps {
@@ -32,31 +33,41 @@ export function Stepper({
           <React.Fragment key={step.id}>
             {/* Step Container - Circle and Label vertically aligned */}
             <div className="flex flex-col items-center gap-2">
-              <button
-                onClick={() => onStepClick?.(index)}
-                disabled={!onStepClick}
-                className={`
-                  flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all shrink-0
-                  ${
-                    index < currentStepIndex
-                      ? "bg-[#283618]/70 border-[#283618]/70 text-[#fefae0]"
-                      : index === currentStepIndex
-                        ? "border-[#283618] bg-[#283618] text-[#fefae0]"
-                        : "border-gray-300 bg-white text-[#283618]/50"
-                  }
-                  ${
-                    onStepClick
-                      ? "cursor-pointer hover:opacity-80"
-                      : "cursor-default"
-                  }
-                `}
-              >
-                {index < currentStepIndex ? (
-                  <CheckCircle size={20} />
-                ) : (
-                  <span className="text-sm font-semibold">{index + 1}</span>
+              <div className="relative">
+                <button
+                  onClick={() => onStepClick?.(index)}
+                  disabled={!onStepClick}
+                  className={`
+                    flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all shrink-0
+                    ${
+                      index < currentStepIndex
+                        ? "bg-[#283618]/70 border-[#283618]/70 text-[#fefae0]"
+                        : index === currentStepIndex
+                          ? "border-[#283618] bg-[#283618] text-[#fefae0]"
+                          : "border-gray-300 bg-white text-[#283618]/50"
+                    }
+                    ${
+                      onStepClick
+                        ? "cursor-pointer hover:opacity-80"
+                        : "cursor-default"
+                    }
+                  `}
+                >
+                  {index < currentStepIndex ? (
+                    <CheckCircle size={20} />
+                  ) : (
+                    <span className="text-sm font-semibold">{index + 1}</span>
+                  )}
+                </button>
+
+                {step.notificationCount && step.notificationCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold leading-none flex items-center justify-center border-2 border-white shadow-sm">
+                    {step.notificationCount > 99
+                      ? "99+"
+                      : step.notificationCount}
+                  </span>
                 )}
-              </button>
+              </div>
 
               {/* Step Label */}
               <p

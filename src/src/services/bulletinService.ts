@@ -66,7 +66,7 @@ export class BulletinAPIService extends BaseAPIService {
    * GET /bulletins/{bulletin_id}
    */
   static async getBulletinById(
-    id: string
+    id: string,
   ): Promise<APIResponse<BulletinMaster>> {
     try {
       const data = await this.get<any>(`/bulletins/${id}`);
@@ -126,7 +126,7 @@ export class BulletinAPIService extends BaseAPIService {
    * POST /bulletins/
    */
   static async createBulletin(
-    bulletinData: Omit<BulletinMaster, "_id" | "log" | "current_version_id">
+    bulletinData: Omit<BulletinMaster, "_id" | "log" | "current_version_id">,
   ): Promise<APIResponse<BulletinMaster>> {
     try {
       const data = await this.post<any>("/bulletins/", bulletinData);
@@ -151,7 +151,7 @@ export class BulletinAPIService extends BaseAPIService {
    */
   static async updateBulletin(
     id: string,
-    bulletinData: Partial<BulletinMaster>
+    bulletinData: Partial<BulletinMaster>,
   ): Promise<APIResponse<BulletinMaster>> {
     try {
       const data = await this.put<any>(`/bulletins/${id}`, bulletinData);
@@ -179,7 +179,7 @@ export class BulletinAPIService extends BaseAPIService {
   static async getBulletinsByName(name: string): Promise<GetBulletinsResponse> {
     try {
       const data = await this.get<any>(
-        `/bulletins/name/${encodeURIComponent(name)}`
+        `/bulletins/name/${encodeURIComponent(name)}`,
       );
 
       return {
@@ -206,7 +206,7 @@ export class BulletinAPIService extends BaseAPIService {
    * GET /bulletins/status/{status}
    */
   static async getBulletinsByStatus(
-    status: BulletinStatus
+    status: BulletinStatus,
   ): Promise<GetBulletinsResponse> {
     try {
       const data = await this.get<any>(`/bulletins/status/${status}`);
@@ -236,11 +236,11 @@ export class BulletinAPIService extends BaseAPIService {
    * GET /bulletins/{bulletin_id}/current-version
    */
   static async getCurrentVersion(
-    bulletinId: string
+    bulletinId: string,
   ): Promise<APIResponse<BulletinWithCurrentVersion>> {
     try {
       const data = await this.get<any>(
-        `/bulletins/${bulletinId}/current-version`
+        `/bulletins/${bulletinId}/current-version`,
       );
 
       // La API devuelve { master, current_version }
@@ -280,11 +280,11 @@ export class BulletinAPIService extends BaseAPIService {
    * GET /bulletins/{bulletin_id}/current-version
    */
   static async getBulletinPublished(
-    bulletinId: string
+    bulletinId: string,
   ): Promise<APIResponse<BulletinWithCurrentVersion>> {
     try {
       const data = await this.get<any>(
-        `/bulletins/${bulletinId}/current-version-published`
+        `/bulletins/${bulletinId}/current-version-published`,
       );
 
       // La API devuelve { master, current_version }
@@ -338,7 +338,7 @@ export class BulletinAPIService extends BaseAPIService {
    * GET /bulletins/by-slug/{bulletinSlug}
    */
   static async getBulletinBySlug(
-    bulletinSlug: string
+    bulletinSlug: string,
   ): Promise<APIResponse<BulletinWithCurrentVersion>> {
     try {
       const data = await this.get<any>(`/bulletins/by-slug/${bulletinSlug}`);
@@ -396,7 +396,7 @@ export class BulletinAPIService extends BaseAPIService {
     versionData: Omit<
       BulletinVersion,
       "_id" | "bulletin_master_id" | "previous_version_id" | "log"
-    >
+    >,
   ): Promise<APIResponse<BulletinVersion>> {
     try {
       console.log("Creating bulletin version for bulletin ID:", {
@@ -429,7 +429,7 @@ export class BulletinAPIService extends BaseAPIService {
    * GET /bulletins/{bulletin_id}/history
    */
   static async getBulletinHistory(
-    bulletinId: string
+    bulletinId: string,
   ): Promise<APIResponse<BulletinVersion[]>> {
     try {
       const data = await this.get<any>(`/bulletins/${bulletinId}/history`);
@@ -455,7 +455,7 @@ export class BulletinAPIService extends BaseAPIService {
    * GET /bulletins/version/{version_id}
    */
   static async getVersionById(
-    versionId: string
+    versionId: string,
   ): Promise<APIResponse<BulletinVersion>> {
     try {
       const data = await this.get<any>(`/bulletins/version/${versionId}`);
@@ -481,17 +481,29 @@ export class BulletinAPIService extends BaseAPIService {
    */
   static async cloneBulletin(
     bulletinId: string,
-    newBulletinData?: Partial<BulletinMaster>
+    cloneData?: {
+      bulletin_name?: string;
+      description?: string;
+    },
   ): Promise<APIResponse<BulletinMaster>> {
     try {
       const data = await this.post<any>(
         `/bulletins/${bulletinId}/clone`,
-        newBulletinData || {}
+        cloneData || {},
       );
+
+      const bulletin = data.bulletin || data.data || data;
+
+      const mappedBulletin = bulletin
+        ? {
+            ...bulletin,
+            _id: bulletin.id || bulletin._id,
+          }
+        : bulletin;
 
       return {
         success: true,
-        data: data.bulletin || data.data || data,
+        data: mappedBulletin,
       };
     } catch (error) {
       console.error("Error cloning bulletin:", error);
@@ -529,7 +541,7 @@ export class BulletinAPIService extends BaseAPIService {
    * Exporta un bulletin a PDF (método auxiliar para futuras implementaciones)
    */
   static async exportBulletinToPDF(
-    bulletinId: string
+    bulletinId: string,
   ): Promise<APIResponse<Blob>> {
     try {
       const data = await this.get<Blob>(`/bulletins/${bulletinId}/export/pdf`, {
@@ -557,12 +569,12 @@ export class BulletinAPIService extends BaseAPIService {
    */
   static async exportBulletinToImage(
     bulletinId: string,
-    format: "png" | "jpg" = "png"
+    format: "png" | "jpg" = "png",
   ): Promise<APIResponse<Blob>> {
     try {
       const data = await this.get<Blob>(
         `/bulletins/${bulletinId}/export/image?format=${format}`,
-        { responseType: "blob" }
+        { responseType: "blob" },
       );
 
       return {
