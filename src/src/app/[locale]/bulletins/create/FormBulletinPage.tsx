@@ -601,6 +601,67 @@ export default function FormBulletinPage({
     });
   }, []);
 
+  const sectionCommentCounts = useMemo(() => {
+    const counts: Record<number, number> = {};
+    const sections = creationState.data.version.data.sections;
+
+    if (!comments || comments.length === 0 || sections.length === 0) {
+      return counts;
+    }
+
+    const sectionIdToIndex = new Map<string, number>();
+    const fieldIdToSectionIndex = new Map<string, number>();
+
+    const registerSectionFields = (
+      fields: Field[] | undefined,
+      index: number,
+    ) => {
+      if (!fields) return;
+      fields.forEach((field) => {
+        fieldIdToSectionIndex.set(field.field_id, index);
+      });
+    };
+
+    sections.forEach((section, index) => {
+      if (section.section_id) {
+        sectionIdToIndex.set(section.section_id, index);
+      }
+
+      registerSectionFields(section.header_config?.fields, index);
+      registerSectionFields(section.footer_config?.fields, index);
+      section.blocks.forEach((block) =>
+        registerSectionFields(block.fields, index),
+      );
+    });
+
+    comments.forEach((comment) => {
+      const target = comment.target_element;
+      let sectionIndex: number | undefined;
+
+      if (
+        typeof target?.section_index === "number" &&
+        target.section_index >= 0 &&
+        target.section_index < sections.length
+      ) {
+        sectionIndex = target.section_index;
+      }
+
+      if (sectionIndex === undefined && target?.section_id) {
+        sectionIndex = sectionIdToIndex.get(target.section_id);
+      }
+
+      if (sectionIndex === undefined && target?.field_id) {
+        sectionIndex = fieldIdToSectionIndex.get(target.field_id);
+      }
+
+      if (sectionIndex !== undefined) {
+        counts[sectionIndex] = (counts[sectionIndex] || 0) + 1;
+      }
+    });
+
+    return counts;
+  }, [comments, creationState.data.version.data.sections]);
+
   // Configuración de los pasos del stepper
   const stepConfigs = useMemo((): StepConfig[] => {
     const baseSteps: StepConfig[] = [];
@@ -626,6 +687,7 @@ export default function FormBulletinPage({
         id: `section-${index}`,
         title: section.display_name || `${t("section.title")} ${index + 1}`,
         description: t("section.description"),
+        notificationCount: sectionCommentCounts[index] || undefined,
       }));
 
     // Agregar paso de exportación al final
@@ -636,7 +698,12 @@ export default function FormBulletinPage({
     };
 
     return [...baseSteps, ...sectionSteps, exportStep];
-  }, [t, creationState.data.version.data.sections, isEditMode]);
+  }, [
+    t,
+    creationState.data.version.data.sections,
+    isEditMode,
+    sectionCommentCounts,
+  ]);
 
   // Obtener índice del paso actual
   const currentStepIndex = useMemo(() => {
