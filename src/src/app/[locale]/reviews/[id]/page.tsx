@@ -71,6 +71,68 @@ const decodeTextFields = (data: any): any => {
           }
           return item;
         });
+      } else if (field.type === "card") {
+        if (Array.isArray(field.value)) {
+          return;
+        }
+
+        if (typeof field.value === "string" && field.value.trim() !== "") {
+          const rawValue = field.value.trim();
+
+          const tryParseCardValue = (candidate: string): any[] | null => {
+            const looksLikeJson =
+              (candidate.startsWith("{") && candidate.endsWith("}")) ||
+              (candidate.startsWith("[") && candidate.endsWith("]"));
+
+            if (!looksLikeJson) {
+              return null;
+            }
+
+            try {
+              const parsed = JSON.parse(candidate);
+              return Array.isArray(parsed) ? parsed : [parsed];
+            } catch {
+              return null;
+            }
+          };
+
+          const directParsed = tryParseCardValue(rawValue);
+          if (directParsed) {
+            field.value = directParsed as any;
+            return;
+          }
+
+          try {
+            const decodedValue = decodeURIComponent(rawValue);
+            if (decodedValue !== rawValue) {
+              const decodedParsed = tryParseCardValue(decodedValue);
+              if (decodedParsed) {
+                field.value = decodedParsed as any;
+                return;
+              }
+            }
+          } catch {
+            // Ignore malformed URI components and keep raw card value.
+          }
+
+          field.value = [rawValue] as any;
+        } else if (
+          field.value &&
+          typeof field.value === "object" &&
+          !Array.isArray(field.value)
+        ) {
+          const valueObject = field.value as Record<string, any>;
+
+          if (Array.isArray(valueObject.selectedCards)) {
+            field.value = valueObject.selectedCards as any;
+          } else if (Array.isArray(valueObject.selected_cards)) {
+            field.value = valueObject.selected_cards as any;
+          } else if (Array.isArray(valueObject.cards)) {
+            field.value = valueObject.cards as any;
+          } else {
+            field.value = [valueObject] as any;
+          }
+        }
       }
     });
   };
@@ -163,6 +225,58 @@ export default function ReviewBulletinPage() {
       let frontendId: string = target.id || "unknown-id";
       let type: string = target.type || "unknown-type";
 
+      const mapHeaderOrFooterField = (
+        section: Section | undefined,
+        sectionIdx: number,
+        fieldId: string,
+      ): boolean => {
+        if (section?.header_config?.fields) {
+          const hIndex = section.header_config.fields.findIndex(
+            (f) => f.field_id === fieldId,
+          );
+          if (hIndex !== -1) {
+            frontendId = `header-${sectionIdx}-${hIndex}`;
+            type = "header_field";
+            return true;
+          }
+        }
+
+        if (data.header_config?.fields) {
+          const ghIndex = data.header_config.fields.findIndex(
+            (f) => f.field_id === fieldId,
+          );
+          if (ghIndex !== -1) {
+            frontendId = `header-${sectionIdx}-${ghIndex}`;
+            type = "header_field";
+            return true;
+          }
+        }
+
+        if (section?.footer_config?.fields) {
+          const foIndex = section.footer_config.fields.findIndex(
+            (f) => f.field_id === fieldId,
+          );
+          if (foIndex !== -1) {
+            frontendId = `footer-${sectionIdx}-${foIndex}`;
+            type = "footer_field";
+            return true;
+          }
+        }
+
+        if (data.footer_config?.fields) {
+          const gfIndex = data.footer_config.fields.findIndex(
+            (f) => f.field_id === fieldId,
+          );
+          if (gfIndex !== -1) {
+            frontendId = `footer-${sectionIdx}-${gfIndex}`;
+            type = "footer_field";
+            return true;
+          }
+        }
+
+        return false;
+      };
+
       if (target.section_id) {
         sIndex = data.sections.findIndex(
           (s) => s.section_id === target.section_id,
@@ -170,76 +284,69 @@ export default function ReviewBulletinPage() {
         if (sIndex !== -1) {
           const section = data.sections[sIndex];
           if (target.block_id) {
+            const hasBlocks = !!section?.blocks?.length;
+            const sectionBlocks: Block[] = section?.blocks || [];
             if (section && section.blocks) {
               bIndex = section.blocks.findIndex(
                 (b) => b.block_id === target.block_id,
               );
-              if (bIndex !== -1) {
-                if (target.field_id) {
-                  const block = section.blocks[bIndex];
-                  if (block && block.fields) {
-                    fIndex = block.fields.findIndex(
-                      (f) => f.field_id === target.field_id,
-                    );
-                    if (fIndex !== -1) {
-                      frontendId = `field-${sIndex}-${bIndex}-${fIndex}`;
-                      type = "field";
-                    }
-                  }
-                } else {
-                  frontendId = `block-${sIndex}-${bIndex}`;
-                  type = "block";
-                }
-              }
-            }
-          } else if (target.field_id) {
-            // Check for section header/footer fields
-            let foundHeader = false;
-            if (section && section.header_config?.fields) {
-              const hIndex = section.header_config.fields.findIndex(
-                (f) => f.field_id === target.field_id,
-              );
-              if (hIndex !== -1) {
-                frontendId = `header-${sIndex}-${hIndex}`;
-                type = "header_field";
-                foundHeader = true;
-              }
-            }
-            // Fallback to global header if not found
-            if (!foundHeader && data.header_config?.fields) {
-              const ghIndex = data.header_config.fields.findIndex(
-                (f) => f.field_id === target.field_id,
-              );
-              if (ghIndex !== -1) {
-                frontendId = `header-${sIndex}-${ghIndex}`;
-                type = "header_field";
-              }
             }
 
-            // Footer
-            if (type !== "header_field" && section) {
-              let foundFooter = false;
-              if (section.footer_config?.fields) {
-                const foIndex = section.footer_config.fields.findIndex(
-                  (f) => f.field_id === target.field_id,
-                );
-                if (foIndex !== -1) {
-                  frontendId = `footer-${sIndex}-${foIndex}`;
-                  type = "footer_field";
-                  foundFooter = true;
+            const hasValidBlock = typeof bIndex === "number" && bIndex >= 0;
+
+            if (target.field_id) {
+              let mappedFieldInBlock = false;
+
+              if (hasValidBlock) {
+                const resolvedBlockIndex = bIndex as number;
+                const block = section.blocks[resolvedBlockIndex];
+                if (block?.fields) {
+                  fIndex = block.fields.findIndex(
+                    (f: Field) => f.field_id === target.field_id,
+                  );
+                  if (fIndex !== -1) {
+                    frontendId = `field-${sIndex}-${resolvedBlockIndex}-${fIndex}`;
+                    type = "field";
+                    mappedFieldInBlock = true;
+                  }
                 }
               }
-              // Fallback to global footer
-              if (!foundFooter && data.footer_config?.fields) {
-                const gfIndex = data.footer_config.fields.findIndex(
-                  (f) => f.field_id === target.field_id,
+
+              // Some backends now include block_id even for header/footer field comments.
+              // If field was not found in block, resolve it against section/global header/footer.
+              if (!mappedFieldInBlock) {
+                const mappedAsHeaderFooter = mapHeaderOrFooterField(
+                  section,
+                  sIndex,
+                  target.field_id,
                 );
-                if (gfIndex !== -1) {
-                  frontendId = `footer-${sIndex}-${gfIndex}`;
-                  type = "footer_field";
+
+                if (!mappedAsHeaderFooter && hasBlocks) {
+                  // Fallback: locate the field in any block in case block_id changed.
+                  sectionBlocks.some((block, blockIdx) => {
+                    const sectionFieldIndex = block.fields?.findIndex(
+                      (f: Field) => f.field_id === target.field_id,
+                    );
+                    if (
+                      typeof sectionFieldIndex === "number" &&
+                      sectionFieldIndex >= 0
+                    ) {
+                      bIndex = blockIdx;
+                      fIndex = sectionFieldIndex;
+                      frontendId = `field-${sIndex}-${blockIdx}-${sectionFieldIndex}`;
+                      type = "field";
+                      return true;
+                    }
+                    return false;
+                  });
                 }
               }
+            } else if (hasValidBlock) {
+              frontendId = `block-${sIndex}-${bIndex}`;
+              type = "block";
             }
+          } else if (target.field_id) {
+            mapHeaderOrFooterField(section, sIndex, target.field_id);
           } else {
             frontendId = `section-${sIndex}`;
             type = "section";
@@ -573,75 +680,112 @@ export default function ReviewBulletinPage() {
       setIsSubmittingComment(true);
       try {
         const data = bulletin.current_version.data as TemplateVersionContent;
-        const target: any = {};
-
-        // Helper to extract IDs based on indices
-        if (
-          selection.sectionIndex !== undefined &&
+        const target: NonNullable<CommentPayload["target_element"]> = {};
+        const sectionIndex =
+          typeof selection.sectionIndex === "number" &&
           selection.sectionIndex >= 0
+            ? selection.sectionIndex
+            : undefined;
+        const section =
+          sectionIndex !== undefined ? data.sections[sectionIndex] : undefined;
+        const sectionForFieldTarget =
+          section ||
+          (selection.sectionIndex === -1 && data.sections.length > 0
+            ? data.sections[0]
+            : undefined);
+
+        // section-level target
+        if (section) {
+          target.section_id = section.section_id;
+        }
+
+        // block/field inside section blocks
+        if (
+          (selection.type === "block" || selection.type === "field") &&
+          section &&
+          typeof selection.blockIndex === "number" &&
+          selection.blockIndex >= 0
         ) {
-          const section = data.sections[selection.sectionIndex];
-          if (section) {
-            target.section_id = section.section_id;
+          const block = section.blocks[selection.blockIndex];
+          if (block) {
+            target.block_id = block.block_id;
 
             if (
-              selection.blockIndex !== undefined &&
-              selection.blockIndex >= 0
+              selection.type === "field" &&
+              typeof selection.fieldIndex === "number" &&
+              selection.fieldIndex >= 0
             ) {
-              const block = section.blocks[selection.blockIndex];
-              if (
-                block &&
-                (selection.type === "block" || selection.type === "field")
-              ) {
-                target.block_id = block.block_id;
-
-                if (
-                  selection.fieldIndex !== undefined &&
-                  selection.fieldIndex >= 0 &&
-                  selection.type === "field"
-                ) {
-                  const field = block.fields[selection.fieldIndex];
-                  if (field) {
-                    target.field_id = field.field_id;
-                  }
-                }
+              const field = block.fields[selection.fieldIndex];
+              if (field) {
+                target.field_id = field.field_id;
               }
-            }
-          }
-
-          // Handle header/footer fields
-          if (
-            selection.type === "header_field" &&
-            selection.fieldIndex !== undefined
-          ) {
-            // Heuristic: Check section config first, then global
-            let field = section.header_config?.fields?.[selection.fieldIndex!];
-            if (!field && data.header_config?.fields?.[selection.fieldIndex!]) {
-              field = data.header_config.fields[selection.fieldIndex!];
-            }
-            if (field) {
-              target.field_id = field.field_id;
-              target.type = "header_field";
-            }
-          }
-
-          if (
-            selection.type === "footer_field" &&
-            selection.fieldIndex !== undefined
-          ) {
-            let field = section.footer_config?.fields?.[selection.fieldIndex!];
-            if (!field && data.footer_config?.fields?.[selection.fieldIndex!]) {
-              field = data.footer_config.fields[selection.fieldIndex!];
-            }
-            if (field) {
-              target.field_id = field.field_id;
-              target.type = "footer_field";
             }
           }
         }
 
-        // Handle global header/footer (if sectionIndex is -1 or missing but type is header/footer)
-        // ... (currently selection.sectionIndex seems to be populated for headers/footers in Canvas)
+        // header field (section or global)
+        if (
+          selection.type === "header_field" &&
+          typeof selection.fieldIndex === "number" &&
+          selection.fieldIndex >= 0
+        ) {
+          let field =
+            selection.sectionIndex === -1
+              ? data.header_config?.fields?.[selection.fieldIndex]
+              : section?.header_config?.fields?.[selection.fieldIndex];
+
+          if (!field) {
+            field = data.header_config?.fields?.[selection.fieldIndex];
+          }
+
+          if (field) {
+            if (sectionForFieldTarget?.section_id) {
+              target.section_id = sectionForFieldTarget.section_id;
+            }
+
+            const defaultBlockId = sectionForFieldTarget?.blocks?.[0]?.block_id;
+            if (defaultBlockId) {
+              target.block_id = defaultBlockId;
+            }
+
+            // Backend requires section_id + block_id whenever field_id is present
+            if (target.section_id && target.block_id) {
+              target.field_id = field.field_id;
+            }
+          }
+        }
+
+        // footer field (section or global)
+        if (
+          selection.type === "footer_field" &&
+          typeof selection.fieldIndex === "number" &&
+          selection.fieldIndex >= 0
+        ) {
+          let field =
+            selection.sectionIndex === -1
+              ? data.footer_config?.fields?.[selection.fieldIndex]
+              : section?.footer_config?.fields?.[selection.fieldIndex];
+
+          if (!field) {
+            field = data.footer_config?.fields?.[selection.fieldIndex];
+          }
+
+          if (field) {
+            if (sectionForFieldTarget?.section_id) {
+              target.section_id = sectionForFieldTarget.section_id;
+            }
+
+            const defaultBlockId = sectionForFieldTarget?.blocks?.[0]?.block_id;
+            if (defaultBlockId) {
+              target.block_id = defaultBlockId;
+            }
+
+            // Backend requires section_id + block_id whenever field_id is present
+            if (target.section_id && target.block_id) {
+              target.field_id = field.field_id;
+            }
+          }
+        }
 
         const payload: CommentPayload = {
           text: commentText,
@@ -880,6 +1024,7 @@ export default function ReviewBulletinPage() {
             onSelect={handleSelection}
             isCardMode={false}
             commentCounts={commentCounts}
+            renderAllPagesInReview={true}
           />
         </div>
 
@@ -1107,9 +1252,7 @@ export default function ReviewBulletinPage() {
           <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600 mb-2">
             <CheckCircle className="w-6 h-6" />
           </div>
-          <p className="text-gray-600">
-            {t("successModal.message")}
-          </p>
+          <p className="text-gray-600">{t("successModal.message")}</p>
           {publishedUrl && (
             <div className="w-full mt-2">
               <label className="block text-xs font-medium text-gray-500 mb-1 text-left">
