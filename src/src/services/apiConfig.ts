@@ -11,7 +11,7 @@ export const API_CONFIG = {
 // Función utilitaria para crear URLs con parámetros
 export const buildURL = (
   endpoint: string,
-  params?: Record<string, string | number | boolean>
+  params?: Record<string, string | number | boolean>,
 ): string => {
   const url = new URL(endpoint, API_CONFIG.BASE_URL);
 
@@ -26,17 +26,69 @@ export const buildURL = (
 
 // Función utilitaria para manejar respuestas de fetch
 export const handleFetchResponse = async <T = any>(
-  response: Response
+  response: Response,
 ): Promise<T> => {
   if (!response.ok) {
     const errorText = await response.text();
     let errorMessage: string;
 
+    const toReadableError = (value: unknown): string => {
+      if (typeof value === "string") return value;
+      if (typeof value === "number" || typeof value === "boolean") {
+        return String(value);
+      }
+
+      if (Array.isArray(value)) {
+        const parts = value
+          .map((item) => {
+            if (typeof item === "string") return item;
+
+            if (item && typeof item === "object") {
+              const maybeMsg = (item as any).msg;
+              const maybeLoc = (item as any).loc;
+
+              if (typeof maybeMsg === "string") {
+                if (Array.isArray(maybeLoc) && maybeLoc.length > 0) {
+                  return `${maybeLoc.join(".")}: ${maybeMsg}`;
+                }
+                return maybeMsg;
+              }
+            }
+
+            try {
+              return JSON.stringify(item);
+            } catch {
+              return String(item);
+            }
+          })
+          .filter(Boolean);
+
+        return parts.join(" | ");
+      }
+
+      if (value && typeof value === "object") {
+        const maybeMessage = (value as any).message;
+        const maybeDetail = (value as any).detail;
+
+        if (typeof maybeMessage === "string") return maybeMessage;
+        if (maybeDetail !== undefined) return toReadableError(maybeDetail);
+
+        try {
+          return JSON.stringify(value);
+        } catch {
+          return String(value);
+        }
+      }
+
+      return "";
+    };
+
     try {
       const errorJson = JSON.parse(errorText);
       errorMessage =
-        errorJson.message ||
-        errorJson.detail ||
+        toReadableError(errorJson.message) ||
+        toReadableError(errorJson.detail) ||
+        toReadableError(errorJson) ||
         `HTTP ${response.status}: ${response.statusText}`;
     } catch {
       errorMessage =
@@ -96,7 +148,7 @@ export const createFetchOptions = (options: RequestInit = {}): RequestInit => {
 export abstract class BaseAPIService {
   protected static async request<T = any>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<T> {
     const url = endpoint.startsWith("http")
       ? endpoint
@@ -114,7 +166,7 @@ export abstract class BaseAPIService {
 
   protected static async get<T = any>(
     endpoint: string,
-    params?: Record<string, any>
+    params?: Record<string, any>,
   ): Promise<T> {
     const url = params ? buildURL(endpoint, params) : endpoint;
     return this.request<T>(url, { method: "GET" });
@@ -122,7 +174,7 @@ export abstract class BaseAPIService {
 
   protected static async post<T = any>(
     endpoint: string,
-    data?: any
+    data?: any,
   ): Promise<T> {
     return this.request<T>(endpoint, {
       method: "POST",
@@ -132,7 +184,7 @@ export abstract class BaseAPIService {
 
   protected static async put<T = any>(
     endpoint: string,
-    data?: any
+    data?: any,
   ): Promise<T> {
     return this.request<T>(endpoint, {
       method: "PUT",

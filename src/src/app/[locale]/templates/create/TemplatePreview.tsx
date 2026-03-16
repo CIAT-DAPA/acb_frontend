@@ -2288,34 +2288,212 @@ export function TemplatePreview({
         // 2. Un array de strings (solo IDs)
         // 3. Un string (un solo ID)
         // 4. undefined/null
-        // NOTA: Si hay múltiples cards, getSectionPagination ya las habrá dividido en páginas,
-        // por lo que aquí solo renderizamos lo que llegue (1 card a la vez)
+        // NOTA:
+        // - En preview normal, getSectionPagination divide cards en páginas (1 card por página).
+        // - En review mode mostramos todas las cards seleccionadas en el mismo canvas.
 
-        let cardData: {
+        type CardFieldItem = {
           cardId: string;
           fieldValues: Record<string, any>;
-        } | null = null;
+        };
 
-        if (Array.isArray(field.value) && field.value.length > 0) {
-          // Es un array, tomar el primer elemento (debería ser solo uno gracias a la paginación)
-          const item = field.value[0];
-          if (typeof item === "string") {
-            cardData = { cardId: item, fieldValues: {} };
-          } else if (item && typeof item === "object") {
-            cardData = {
-              cardId: (item as any).cardId || "",
-              fieldValues: (item as any).fieldValues || {},
-            };
+        const parseCardFieldItem = (item: any): CardFieldItem | null => {
+          if (item === null || item === undefined) {
+            return null;
           }
-        } else if (field.value && typeof field.value === "string") {
-          // Es un string simple
-          cardData = { cardId: field.value, fieldValues: {} };
+
+          if (typeof item === "string") {
+            const trimmed = item.trim();
+            if (!trimmed) {
+              return null;
+            }
+
+            const parseStringCandidate = (
+              candidate: string,
+            ): CardFieldItem | null => {
+              const looksLikeJson =
+                (candidate.startsWith("{") && candidate.endsWith("}")) ||
+                (candidate.startsWith("[") && candidate.endsWith("]"));
+
+              if (!looksLikeJson) {
+                return null;
+              }
+
+              try {
+                const parsed = JSON.parse(candidate);
+                const parsedArray = Array.isArray(parsed) ? parsed : [parsed];
+
+                for (const parsedItem of parsedArray) {
+                  const nestedParsed = parseCardFieldItem(parsedItem);
+                  if (nestedParsed) {
+                    return nestedParsed;
+                  }
+                }
+              } catch {
+                return null;
+              }
+
+              return null;
+            };
+
+            const directParsed = parseStringCandidate(trimmed);
+            if (directParsed) {
+              return directParsed;
+            }
+
+            try {
+              const decoded = decodeURIComponent(trimmed);
+              if (decoded !== trimmed) {
+                const decodedParsed = parseStringCandidate(decoded);
+                if (decodedParsed) {
+                  return decodedParsed;
+                }
+              }
+            } catch {
+              // Ignore malformed URI components and treat the string as a card ID.
+            }
+
+            return { cardId: trimmed, fieldValues: {} };
+          }
+
+          if (item && typeof item === "object") {
+            const source = item as Record<string, any>;
+            const cardId =
+              source.cardId ||
+              source.card_id ||
+              source._id ||
+              source.id ||
+              source.card?._id ||
+              source.card?.id ||
+              "";
+
+            if (cardId) {
+              const rawFieldValues =
+                source.fieldValues ||
+                source.field_values ||
+                source.values ||
+                source.cardFieldValues ||
+                {};
+
+              return {
+                cardId: String(cardId),
+                fieldValues:
+                  rawFieldValues && typeof rawFieldValues === "object"
+                    ? (rawFieldValues as Record<string, any>)
+                    : {},
+              };
+            }
+          }
+
+          return null;
+        };
+
+        const normalizedCardValue: any[] = (() => {
+          if (Array.isArray(field.value)) {
+            return field.value;
+          }
+
+          if (
+            field.value === null ||
+            field.value === undefined ||
+            field.value === ""
+          ) {
+            return [];
+          }
+
+          if (typeof field.value === "string") {
+            const trimmedValue = field.value.trim();
+            if (!trimmedValue) {
+              return [];
+            }
+
+            const tryParseArrayLikeString = (
+              candidate: string,
+            ): any[] | null => {
+              const looksLikeJson =
+                (candidate.startsWith("{") && candidate.endsWith("}")) ||
+                (candidate.startsWith("[") && candidate.endsWith("]"));
+
+              if (!looksLikeJson) {
+                return null;
+              }
+
+              try {
+                const parsed = JSON.parse(candidate);
+                return Array.isArray(parsed) ? parsed : [parsed];
+              } catch {
+                return null;
+              }
+            };
+
+            const directParsed = tryParseArrayLikeString(trimmedValue);
+            if (directParsed) {
+              return directParsed;
+            }
+
+            try {
+              const decodedValue = decodeURIComponent(trimmedValue);
+              if (decodedValue !== trimmedValue) {
+                const decodedParsed = tryParseArrayLikeString(decodedValue);
+                if (decodedParsed) {
+                  return decodedParsed;
+                }
+              }
+            } catch {
+              // Ignore malformed URI components and keep raw string value.
+            }
+
+            return [trimmedValue];
+          }
+
+          if (typeof field.value === "object") {
+            const valueObject = field.value as Record<string, any>;
+
+            if (Array.isArray(valueObject.selectedCards)) {
+              return valueObject.selectedCards;
+            }
+
+            if (Array.isArray(valueObject.selected_cards)) {
+              return valueObject.selected_cards;
+            }
+
+            if (Array.isArray(valueObject.cards)) {
+              return valueObject.cards;
+            }
+
+            return [valueObject];
+          }
+
+          return [];
+        })();
+
+        const cardItems: CardFieldItem[] = [];
+
+        if (normalizedCardValue.length > 0) {
+          if (reviewMode) {
+            // In review mode we want to show all selected cards in the canvas.
+            normalizedCardValue.forEach((item) => {
+              const parsed = parseCardFieldItem(item);
+              if (parsed) {
+                cardItems.push(parsed);
+              }
+            });
+          } else {
+            // In normal preview mode keep one-card rendering per paginated section.
+            const parsed = parseCardFieldItem(normalizedCardValue[0]);
+            if (parsed) {
+              cardItems.push(parsed);
+            }
+          }
         } else if (availableCardIds.length > 0) {
           // Si no hay valor (preview del template), mostrar el primer card disponible
-          cardData = { cardId: availableCardIds[0], fieldValues: {} };
+          const parsed = parseCardFieldItem(availableCardIds[0]);
+          if (parsed) {
+            cardItems.push(parsed);
+          }
         }
 
-        if (!cardData || !cardData.cardId) {
+        if (cardItems.length === 0) {
           return (
             <div
               key={key}
@@ -2331,170 +2509,192 @@ export function TemplatePreview({
           );
         }
 
-        const cardToRender = resolvedCardsCache.get(cardData.cardId);
+        const renderCardItem = (
+          cardData: CardFieldItem,
+          cardOrderIndex: number,
+        ) => {
+          const cardToRender = resolvedCardsCache.get(cardData.cardId);
 
-        if (!cardToRender) {
-          if (cardsLoadingError) {
+          if (!cardToRender) {
+            if (cardsLoadingError) {
+              return (
+                <div
+                  key={`card-error-${cardData.cardId}-${cardOrderIndex}`}
+                  style={fieldStyles}
+                  className={`${PLACEHOLDER_CONTAINER_CLASS} p-4 flex flex-col items-center justify-center gap-2`}
+                >
+                  <span className="text-red-500 text-sm font-medium text-center">
+                    {t("errorLoadingCard")}
+                  </span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setRetryTrigger((prev) => prev + 1);
+                    }}
+                    className="flex items-center gap-1 text-xs bg-white border border-gray-300 px-2 py-1 rounded hover:bg-gray-50 text-gray-700"
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                    {t("retry")}
+                  </button>
+                </div>
+              );
+            }
+
             return (
               <div
-                key={key}
+                key={`card-loading-${cardData.cardId}-${cardOrderIndex}`}
                 style={fieldStyles}
-                className={`${PLACEHOLDER_CONTAINER_CLASS} p-4 flex flex-col items-center justify-center gap-2`}
+                className={`${PLACEHOLDER_CONTAINER_CLASS} p-4`}
               >
-                <span className="text-red-500 text-sm font-medium text-center">
-                  {t("errorLoadingCard")}
+                <span className={PLACEHOLDER_TEXT_CLASS}>
+                  {t("loadingCard")}
                 </span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setRetryTrigger((prev) => prev + 1);
-                  }}
-                  className="flex items-center gap-1 text-xs bg-white border border-gray-300 px-2 py-1 rounded hover:bg-gray-50 text-gray-700"
-                >
-                  <RefreshCw className="w-3 h-3" />
-                  {t("retry")}
-                </button>
               </div>
             );
           }
 
+          const cardContent = cardToRender.content;
+          const cardBackgroundUrl = cardContent.background_url;
+          const cardBackgroundColor = cardContent.background_color;
+          const cardContentStyleConfig = cardContent.style_config;
+
+          const cardContainerStyles: React.CSSProperties = {
+            ...fieldStyles,
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            ...(cardBackgroundColor && {
+              backgroundColor: cardBackgroundColor,
+            }),
+            ...(cardBackgroundUrl && {
+              backgroundImage: `url(${getBackgroundImageUrl(cardBackgroundUrl)})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }),
+          };
+
+          if (cardContentStyleConfig) {
+            if (cardContentStyleConfig.padding) {
+              cardContainerStyles.padding = cardContentStyleConfig.padding;
+            }
+            if (cardContentStyleConfig.gap) {
+              cardContainerStyles.gap = cardContentStyleConfig.gap;
+            }
+          }
+
+          const cardBlockIndexes = !reviewMode
+            ? cardBlockPage?.blockIndexes ||
+              cardContent.blocks.map((_, blockIndex) => blockIndex)
+            : cardContent.blocks.map((_, blockIndex) => blockIndex);
+
           return (
             <div
-              key={key}
-              style={fieldStyles}
-              className={`${PLACEHOLDER_CONTAINER_CLASS} p-4`}
+              key={`card-${cardData.cardId}-${cardOrderIndex}`}
+              style={cardContainerStyles}
+              className="flex flex-col"
             >
-              <span className={PLACEHOLDER_TEXT_CLASS}>{t("loadingCard")}</span>
-            </div>
-          );
-        }
+              {cardBlockIndexes.flatMap((cardBlockIndex) => {
+                const block = cardContent.blocks[cardBlockIndex];
 
-        // Renderizar el contenido de la card
-        const cardContent = cardToRender.content;
-        const cardBackgroundUrl = cardContent.background_url;
-        const cardBackgroundColor = cardContent.background_color;
+                if (!block) {
+                  return [];
+                }
 
-        // Estilos del contenedor de la card
-        const cardContainerStyles: React.CSSProperties = {
-          ...fieldStyles,
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          ...(cardBackgroundColor && { backgroundColor: cardBackgroundColor }),
-          ...(cardBackgroundUrl && {
-            backgroundImage: `url(${getBackgroundImageUrl(cardBackgroundUrl)})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }),
-        };
+                const cardBlockSlice = !reviewMode
+                  ? cardBlockPage?.blockSlices?.[cardBlockIndex]
+                  : undefined;
+                const blockStyleConfig = block.style_config || {};
+                const contentStyleConfig = cardContentStyleConfig || {};
 
-        // Aplicar estilos del card content si existen
-        const cardContentStyleConfig = cardContent.style_config;
-        if (cardContentStyleConfig) {
-          if (cardContentStyleConfig.padding) {
-            cardContainerStyles.padding = cardContentStyleConfig.padding;
-          }
-          if (cardContentStyleConfig.gap) {
-            cardContainerStyles.gap = cardContentStyleConfig.gap;
-          }
-        }
+                const effectiveBlockStyles = {
+                  ...contentStyleConfig,
+                  ...blockStyleConfig,
+                };
 
-        return (
-          <div key={key} style={cardContainerStyles} className="flex flex-col">
-            {/* Blocks del contenido de la card */}
-            {(
-              cardBlockPage?.blockIndexes ||
-              cardContent.blocks.map((_, blockIndex) => blockIndex)
-            ).flatMap((cardBlockIndex) => {
-              const block = cardContent.blocks[cardBlockIndex];
+                const blockContainerStyles: React.CSSProperties = {
+                  display: "flex",
+                  flexDirection:
+                    (block as any).layout === "horizontal" ? "row" : "column",
+                  gap: effectiveBlockStyles.gap
+                    ? `${effectiveBlockStyles.gap}px`
+                    : "8px",
+                  padding: effectiveBlockStyles.padding || undefined,
+                  backgroundColor:
+                    effectiveBlockStyles.background_color || "transparent",
+                  boxSizing: "border-box",
+                  ...getBorderStyles(block.style_config),
+                  ...(effectiveBlockStyles.background_image && {
+                    backgroundImage: `url(${getBackgroundImageUrl(
+                      effectiveBlockStyles.background_image,
+                    )})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }),
+                };
 
-              if (!block) {
-                return [];
-              }
-
-              const cardBlockSlice =
-                cardBlockPage?.blockSlices?.[cardBlockIndex];
-              const blockStyleConfig = block.style_config || {};
-              const contentStyleConfig = cardContentStyleConfig || {};
-
-              const effectiveBlockStyles = {
-                ...contentStyleConfig,
-                ...blockStyleConfig,
-              };
-
-              const blockContainerStyles: React.CSSProperties = {
-                display: "flex",
-                flexDirection:
-                  (block as any).layout === "horizontal" ? "row" : "column",
-                gap: effectiveBlockStyles.gap
-                  ? `${effectiveBlockStyles.gap}px`
-                  : "8px",
-                padding: effectiveBlockStyles.padding || undefined,
-                backgroundColor:
-                  effectiveBlockStyles.background_color || "transparent",
-                boxSizing: "border-box",
-                ...getBorderStyles(block.style_config),
-                ...(effectiveBlockStyles.background_image && {
-                  backgroundImage: `url(${getBackgroundImageUrl(
-                    effectiveBlockStyles.background_image,
-                  )})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                }),
-              };
-
-              return (
-                <div
-                  key={`card-block-${cardBlockIndex}`}
-                  data-card-content-block-index={cardBlockIndex}
-                  style={
-                    cardBlockSlice
-                      ? {
-                          overflow: "hidden",
-                          height: `${cardBlockSlice.height}px`,
-                        }
-                      : blockContainerStyles
-                  }
-                >
+                return (
                   <div
+                    key={`card-block-${cardData.cardId}-${cardOrderIndex}-${cardBlockIndex}`}
+                    data-card-content-block-index={
+                      !reviewMode ? cardBlockIndex : undefined
+                    }
                     style={
                       cardBlockSlice
                         ? {
-                            ...blockContainerStyles,
-                            transform: `translateY(-${cardBlockSlice.offset}px)`,
+                            overflow: "hidden",
+                            height: `${cardBlockSlice.height}px`,
                           }
-                        : undefined
+                        : blockContainerStyles
                     }
                   >
-                    {block.fields.map((blockField, fieldIndex) => {
-                      // Asegurar que el field tenga todas las propiedades necesarias
-                      const safeField: Field = {
-                        ...blockField,
-                        style_manually_edited:
-                          blockField.style_manually_edited ?? false,
-                      } as Field;
-
-                      // Si el field tiene form: true, usar el valor de fieldValues
-                      if (
-                        blockField.form &&
-                        cardData.fieldValues[blockField.field_id]
-                      ) {
-                        safeField.value =
-                          cardData.fieldValues[blockField.field_id];
+                    <div
+                      style={
+                        cardBlockSlice
+                          ? {
+                              ...blockContainerStyles,
+                              transform: `translateY(-${cardBlockSlice.offset}px)`,
+                            }
+                          : undefined
                       }
+                    >
+                      {block.fields.map((blockField, fieldIndex) => {
+                        const safeField: Field = {
+                          ...blockField,
+                          style_manually_edited:
+                            blockField.style_manually_edited ?? false,
+                        } as Field;
 
-                      // Renderizar cada field del block
-                      return renderField(
-                        safeField,
-                        `card-${cardData.cardId}-block-${cardBlockIndex}-field-${fieldIndex}`,
-                        block.style_config,
-                        (block as any).layout || "vertical",
-                      );
-                    })}
+                        if (
+                          blockField.form &&
+                          cardData.fieldValues[blockField.field_id]
+                        ) {
+                          safeField.value =
+                            cardData.fieldValues[blockField.field_id];
+                        }
+
+                        return renderField(
+                          safeField,
+                          `card-${cardData.cardId}-block-${cardOrderIndex}-${cardBlockIndex}-field-${fieldIndex}`,
+                          block.style_config,
+                          (block as any).layout || "vertical",
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+          );
+        };
+
+        return (
+          <div
+            key={key}
+            className={`flex flex-col ${reviewMode ? "gap-3" : ""}`}
+          >
+            {cardItems.map((cardData, cardOrderIndex) =>
+              renderCardItem(cardData, cardOrderIndex),
+            )}
           </div>
         );
 
@@ -4133,8 +4333,16 @@ export function TemplatePreview({
                           if (typeof item === "string") {
                             cardIdToShow = item;
                           } else if (item && typeof item === "object") {
-                            cardIdToShow = (item as any).cardId || "";
-                            cardFieldValues = (item as any).fieldValues || {};
+                            cardIdToShow =
+                              (item as any).cardId ||
+                              (item as any).card_id ||
+                              (item as any)._id ||
+                              (item as any).id ||
+                              "";
+                            cardFieldValues =
+                              (item as any).fieldValues ||
+                              (item as any).field_values ||
+                              {};
                           }
                         } else if (
                           field.value &&
@@ -4151,7 +4359,7 @@ export function TemplatePreview({
                         }
 
                         if (cardIdToShow) {
-                          const card = cardsCache.get(cardIdToShow);
+                          const card = resolvedCardsCache.get(cardIdToShow);
                           if (card) {
                             // Guardar el background color de la card
                             cardBackgroundColor = card.content.background_color;
