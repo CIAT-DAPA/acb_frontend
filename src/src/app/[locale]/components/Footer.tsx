@@ -107,6 +107,15 @@ export function Footer() {
                     </Link>
                   </li>
                 ))}
+                <li key="data policy">
+                  <Link
+                    href="https://www.aclimate.org/data-policy"
+                    className={linkAccent}
+                    target="_blank"
+                  >
+                    {t("dataPolicy")}
+                  </Link>
+                </li>
               </ul>
             </div>
           )}
