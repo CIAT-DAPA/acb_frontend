@@ -96,29 +96,27 @@ export function Footer() {
           </div>
 
           {/* Enlaces simples */}
-          {VISIBLE_LINKS.length > 0 && (
-            <div className="space-y-4">
-              <h3 className={sectionTitle}>{t("links")}</h3>
-              <ul className="space-y-2">
-                {VISIBLE_LINKS.map((link) => (
-                  <li key={link.path}>
-                    <Link href={link.path} className={linkAccent}>
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-                <li key="data policy">
-                  <Link
-                    href="https://www.aclimate.org/data-policy"
-                    className={linkAccent}
-                    target="_blank"
-                  >
-                    {t("dataPolicy")}
+          <div className="space-y-4">
+            <h3 className={sectionTitle}>{t("links")}</h3>
+            <ul className="space-y-2">
+              {VISIBLE_LINKS.map((link: (typeof VISIBLE_LINKS)[0]) => (
+                <li key={link.path}>
+                  <Link href={link.path} className={linkAccent}>
+                    {link.name}
                   </Link>
                 </li>
-              </ul>
-            </div>
-          )}
+              ))}
+              <li key="data policy">
+                <Link
+                  href="https://www.aclimate.org/data-policy"
+                  className={linkAccent}
+                  target="_blank"
+                >
+                  {t("dataPolicy")}
+                </Link>
+              </li>
+            </ul>
+          </div>
 
           {/* Socios */}
           <div className="space-y-4">
