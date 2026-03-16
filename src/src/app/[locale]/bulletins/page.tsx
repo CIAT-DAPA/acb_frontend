@@ -1,6 +1,7 @@
 "use client";
 
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { useToast } from "@/components/Toast";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { Loader2, Plus, Search, Check, Copy, FileStack } from "lucide-react";
@@ -10,9 +11,10 @@ import { BulletinMaster, BulletinStatus } from "@/types/bulletin";
 import BulletinAPIService from "@/services/bulletinService";
 import { TemplateAPIService } from "@/services/templateService";
 import ItemCard from "../components/ItemCard";
+import { DuplicateItemModal } from "../components/DuplicateItemModal";
 import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
 import { usePermissions } from "@/hooks/usePermissions";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import {
   btnOutlineSecondary,
   btnPrimary,
@@ -33,6 +35,7 @@ const BULLETIN_STATUS_FILTERS: BulletinStatus[] = [
 
 export default function Bulletins() {
   const t = useTranslations("Bulletins");
+  const { showToast } = useToast();
   const params = useParams();
   const locale = (params.locale as string) || "es";
   const [searchTerm, setSearchTerm] = useState("");
@@ -57,6 +60,11 @@ export default function Bulletins() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareData, setShareData] = useState<{ url: string } | null>(null);
   const [urlCopied, setUrlCopied] = useState(false);
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
+  const [bulletinToDuplicate, setBulletinToDuplicate] =
+    useState<BulletinMaster | null>(null);
+  const [isDuplicating, setIsDuplicating] = useState(false);
+  const [duplicateBulletinName, setDuplicateBulletinName] = useState("");
 
   const { can } = usePermissions();
 
@@ -185,6 +193,61 @@ export default function Bulletins() {
       }))
       .sort((a, b) => a.templateName.localeCompare(b.templateName));
   }, [filteredBulletins, templatesMap, t]);
+
+  const handleDuplicateBulletin = (bulletin: BulletinMaster) => {
+    setBulletinToDuplicate(bulletin);
+    setDuplicateBulletinName(`${bulletin.bulletin_name} - ${t("copySuffix")}`);
+    setShowDuplicateModal(true);
+  };
+
+  const handleCloseDuplicateModal = () => {
+    if (!isDuplicating) {
+      setShowDuplicateModal(false);
+      setBulletinToDuplicate(null);
+      setDuplicateBulletinName("");
+      setIsDuplicating(false);
+    }
+  };
+
+  const handleConfirmDuplicate = async () => {
+    if (!bulletinToDuplicate?._id) {
+      return;
+    }
+
+    setIsDuplicating(true);
+
+    try {
+      const response = await BulletinAPIService.cloneBulletin(
+        bulletinToDuplicate._id,
+        {
+          bulletin_name: duplicateBulletinName.trim(),
+        },
+      );
+
+      if (!response.success) {
+        throw new Error(response.message || "Error al duplicar el boletín");
+      }
+
+      showToast(
+        t("duplicateSuccess", { name: duplicateBulletinName }),
+        "success",
+        3000,
+      );
+      await loadBulletins();
+      handleCloseDuplicateModal();
+    } catch (error) {
+      console.error("Error duplicating bulletin:", error);
+      showToast(
+        t("duplicateError", {
+          name: bulletinToDuplicate.bulletin_name,
+          error: error instanceof Error ? error.message : "Error desconocido",
+        }),
+        "error",
+        5000,
+      );
+      setIsDuplicating(false);
+    }
+  };
 
   return (
     <ProtectedRoute
@@ -335,6 +398,7 @@ export default function Bulletins() {
                       const isEditableStatus =
                         status === "draft" || status === "rejected";
                       const showEditBtn = canEdit && isEditableStatus;
+                      const showDuplicateBtn = canEdit;
                       const showShareBtn = isPublished;
 
                       const handleShare = () => {
@@ -382,6 +446,16 @@ export default function Bulletins() {
                           editBtn={showEditBtn}
                           onEdit={() =>
                             (window.location.href = `/bulletins/${bulletin._id}/edit`)
+                          }
+                          duplicateBtn={showDuplicateBtn}
+                          onDuplicate={
+                            showDuplicateBtn
+                              ? () => handleDuplicateBulletin(bulletin)
+                              : undefined
+                          }
+                          isDuplicating={
+                            isDuplicating &&
+                            bulletinToDuplicate?._id === bulletin._id
                           }
                           shareBtn={showShareBtn}
                           onShare={handleShare}
@@ -479,6 +553,42 @@ export default function Bulletins() {
           )}
         </div>
       </main>
+
+      <DuplicateItemModal
+        isOpen={showDuplicateModal && Boolean(bulletinToDuplicate)}
+        onClose={handleCloseDuplicateModal}
+        onConfirm={handleConfirmDuplicate}
+        isSubmitting={isDuplicating}
+        title={t("duplicateConfirmTitle")}
+        message={t("duplicateConfirmMessage")}
+        nameLabel={t("bulletinNameLabel")}
+        namePlaceholder={t("bulletinNamePlaceholder")}
+        nameValue={duplicateBulletinName}
+        onNameChange={setDuplicateBulletinName}
+        cancelLabel={t("cancelDuplicate")}
+        confirmLabel={t("confirmDuplicateBtn")}
+        submittingLabel={t("duplicating")}
+        originalItemLabel={t("originalBulletinLabel")}
+        originalPreview={
+          bulletinToDuplicate ? (
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-[#606c38]/20 rounded-lg flex items-center justify-center shrink-0">
+                <FileStack className="h-6 w-6 text-[#606c38]" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-[#283618] truncate">
+                  {bulletinToDuplicate.bulletin_name}
+                </p>
+                <p className="text-xs text-[#283618]/60">
+                  {t(`status.${bulletinToDuplicate.status}`)}
+                </p>
+              </div>
+            </div>
+          ) : null
+        }
+        headerAccentClassName="bg-[#606c38]/20 text-[#606c38]"
+        nameInputId="duplicate-bulletin-name"
+      />
     </ProtectedRoute>
   );
 }
