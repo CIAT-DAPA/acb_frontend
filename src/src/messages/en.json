@@ -239,6 +239,13 @@
     "duplicateSuccess": "Bulletin \"{name}\" duplicated successfully",
     "duplicateError": "Error duplicating bulletin \"{name}\": {error}",
     "copySuffix": "copy",
+    "deleteConfirmTitle": "Archive Bulletin",
+    "deleteConfirmMessage": "Are you sure you want to archive bulletin \"{name}\"? This action will move it to archived status.",
+    "cancelDelete": "Cancel",
+    "confirmDeleteBtn": "Archive",
+    "deleting": "Archiving...",
+    "deleteSuccess": "Bulletin \"{name}\" archived successfully",
+    "deleteError": "Error archiving bulletin \"{name}\": {error}",
     "shareModal": {
       "title": "Published Bulletin",
       "message": "This bulletin is already published. You can use the following link to share it.",
