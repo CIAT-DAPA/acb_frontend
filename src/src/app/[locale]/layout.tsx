@@ -15,6 +15,7 @@ import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
 import { AuthProviderWrapper } from "@/components/AuthProviderWrapper";
 import { ToastProvider } from "@/components/Toast";
+import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 
 type Props = {
   children: React.ReactNode;
@@ -85,21 +86,6 @@ export default async function RootLayout({ children, params }: Props) {
           href="/favicon.ico"
           media="(prefers-color-scheme: dark)"
         />
-        {/* Google tag (gtag.js) */}
-        <script
-          async
-          src="https://www.googletagmanager.com/gtag/js?id=G-MLWGH1E59C"
-        />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'G-MLWGH1E59C');
-            `,
-          }}
-        />
       </head>
       <body
         className={`${sintony.variable} ${poppins.variable} ${montserrat.variable} ${roboto.variable} ${openSans.variable} ${lato.variable} ${archivoNarrow.variable} antialiased`}
@@ -110,6 +96,7 @@ export default async function RootLayout({ children, params }: Props) {
               <Navbar />
               {children}
               <Footer />
+              <CookieConsentBanner locale={locale} />
             </ToastProvider>
           </NextIntlClientProvider>
         </AuthProviderWrapper>
