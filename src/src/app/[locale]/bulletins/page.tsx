@@ -55,9 +55,6 @@ export default function Bulletins() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [bulletins, setBulletins] = useState<BulletinMaster[]>([]);
-  const [filteredBulletins, setFilteredBulletins] = useState<BulletinMaster[]>(
-    [],
-  );
   const [templatesMap, setTemplatesMap] = useState<Record<string, string>>({});
   const [templateNameMachineMap, setTemplateNameMachineMap] = useState<
     Record<string, string>
@@ -96,15 +93,20 @@ export default function Bulletins() {
       const response = await BulletinAPIService.getBulletins();
 
       if (response.success) {
-        console.log("Fetched bulletins:", response);
+        const readableBulletins = response.data.filter((bulletin) => {
+          const allowedGroups = bulletin.access_config?.allowed_groups || [];
+          return can(
+            PERMISSION_ACTIONS.Read,
+            MODULES.BULLETINS_COMPOSER,
+            allowedGroups,
+          );
+        });
+
         setBulletins(response.data);
-        setFilteredBulletins(
-          response.data.filter((bulletin) => bulletin.status !== "archived"),
-        );
 
         // Obtener los nombres y thumbnails de los templates base
         const templateIds = [
-          ...new Set(response.data.map((b) => b.base_template_master_id)),
+          ...new Set(readableBulletins.map((b) => b.base_template_master_id)),
         ];
         const templatesResponse = await Promise.all(
           templateIds.map((id) =>
@@ -137,14 +139,24 @@ export default function Bulletins() {
   };
 
   // Filtrar boletines cuando cambia el término de búsqueda
-  useEffect(() => {
+  const filteredBulletins = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
 
-    const filtered = bulletins.filter((bulletin) => {
+    return bulletins.filter((bulletin) => {
+      const allowedGroups = bulletin.access_config?.allowed_groups || [];
+      const hasReadPermission = can(
+        PERMISSION_ACTIONS.Read,
+        MODULES.BULLETINS_COMPOSER,
+        allowedGroups,
+      );
       const matchesStatus =
         selectedStatus === "all"
           ? bulletin.status !== "archived"
           : bulletin.status === selectedStatus;
+      const hasKnownTemplate = Boolean(
+        bulletin.base_template_master_id &&
+        templatesMap[bulletin.base_template_master_id],
+      );
       const matchesSearch =
         !term ||
         bulletin.bulletin_name.toLowerCase().includes(term) ||
@@ -153,11 +165,11 @@ export default function Bulletins() {
             .toLowerCase()
             .includes(term));
 
-      return matchesStatus && matchesSearch;
+      return (
+        hasReadPermission && hasKnownTemplate && matchesStatus && matchesSearch
+      );
     });
-
-    setFilteredBulletins(filtered);
-  }, [searchTerm, selectedStatus, bulletins, templatesMap]);
+  }, [searchTerm, selectedStatus, bulletins, templatesMap, can]);
 
   const groupedBulletins = useMemo(() => {
     const uniqueBulletins = filteredBulletins.filter(
@@ -181,8 +193,12 @@ export default function Bulletins() {
     >();
 
     uniqueBulletins.forEach((bulletin) => {
-      const templateId = bulletin.base_template_master_id || "unknown-template";
-      const templateName = templatesMap[templateId] || t("templateUnknown");
+      const templateId = bulletin.base_template_master_id;
+      if (!templateId || !templatesMap[templateId]) {
+        return;
+      }
+
+      const templateName = templatesMap[templateId];
       const existingGroup = groupsMap.get(templateId);
 
       if (existingGroup) {
