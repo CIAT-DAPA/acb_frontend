@@ -29,9 +29,9 @@ const THUMBNAIL_IMAGE_CLASS = "w-full h-full object-cover";
 const CARD_TITLE_CLASS = "font-medium text-[#283618] truncate";
 const CARD_META_CLASS = "text-xs text-[#283618]/50";
 const MODAL_OVERLAY_CLASS =
-  "fixed inset-0 bg-black/75 flex items-center justify-center z-50";
+  "fixed inset-0 bg-black/75 flex items-center justify-center z-50 mb-0";
 const MODAL_CONTENT_CLASS =
-  "bg-white rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col shadow-2xl";
+  "bg-white rounded-lg p-6 w-full max-w-2xl max-h-[60vh] overflow-hidden flex flex-col shadow-2xl";
 const SEARCH_INPUT_CLASS =
   "w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#bc6c25] focus:border-[#bc6c25]";
 const MODAL_CARD_BUTTON_CLASS =
@@ -66,7 +66,7 @@ export const CardFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
       const response = await CardAPIService.getCards();
       if (response.success) {
         const activeCards = response.data.filter(
-          (card) => card.status === "active"
+          (card) => card.status === "active",
         );
         setAllCards(activeCards);
       }
@@ -98,11 +98,11 @@ export const CardFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
   };
 
   const availableCardsToAdd = allCards.filter(
-    (card) => !availableCards.includes(card._id!)
+    (card) => !availableCards.includes(card._id!),
   );
 
   const filteredCards = availableCardsToAdd.filter((card) =>
-    card.card_name.toLowerCase().includes(searchTerm.toLowerCase())
+    card.card_name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const closeModal = () => {
