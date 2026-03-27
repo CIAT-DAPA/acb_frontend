@@ -245,13 +245,6 @@ export function Navbar() {
                 onItemClick={() => setShowWorkspacesMenu(false)}
               />
             )}
-
-            {/* Link de Partners */}
-            <li>
-              <Link href="/partners" className={`${NAV_BASE} ${NAV_INACTIVE}`}>
-                {t("partners")}
-              </Link>
-            </li>
           </ul>
 
           {/* Selector de idioma */}

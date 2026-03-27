@@ -30,54 +30,14 @@ export function Footer() {
   // Definir todos los links con sus permisos
   const ALL_LINKS = [
     {
-      name: tNavbar("templates"),
-      path: "/templates",
-      module: MODULES.TEMPLATE_MANAGEMENT,
-    },
-    {
-      name: tNavbar("cards"),
-      path: "/cards",
-      module: MODULES.CARD_MANAGEMENT,
-    },
-    {
-      name: tNavbar("visualResources"),
-      path: "/templates/visual-resources",
-      module: MODULES.TEMPLATE_MANAGEMENT,
-    },
-    {
-      name: tNavbar("bulletins"),
-      path: "/bulletins",
-      module: MODULES.BULLETINS_COMPOSER,
-    },
-    {
-      name: tNavbar("reviews"),
-      path: "/reviews",
-      module: MODULES.REVIEW,
-    },
-    {
-      name: tNavbar("roles"),
-      path: "/roles",
-      requiresSuperadmin: true,
-    },
-    {
-      name: tNavbar("groups"),
-      path: "/groups",
-      requiresAdmin: true,
-    },
-    {
       name: t("partner"),
       path: "/partners",
     },
   ];
 
-  // Filtrar links según permisos
-  const VISIBLE_LINKS = ALL_LINKS.filter((link) =>
-    hasPermission(link.module, link.requiresSuperadmin, link.requiresAdmin),
-  );
-
   return (
     <footer className="bg-[#283618] text-[#fefae0]/80 border-t border-[#283618]/80">
-      <div className={`${container} py-12`}>
+      <div className={`${container} py-6`}>
         <div className="grid gap-10 md:grid-cols-3">
           {/* Marca y descripción */}
           <div className="space-y-4">
@@ -99,7 +59,7 @@ export function Footer() {
           <div className="space-y-4">
             <h3 className={sectionTitle}>{t("links")}</h3>
             <ul className="space-y-2">
-              {VISIBLE_LINKS.map((link: (typeof VISIBLE_LINKS)[0]) => (
+              {ALL_LINKS.map((link: (typeof ALL_LINKS)[0]) => (
                 <li key={link.path}>
                   <Link href={link.path} className={linkAccent}>
                     {link.name}
@@ -132,7 +92,7 @@ export function Footer() {
         </div>
 
         {/* Barra inferior */}
-        <div className="border-t border-[#283618]/60 mt-10 pt-6">
+        <div className="border-t border-[#283618]/60 pt-6">
           <p className={`${muted} text-sm`}>{t("copyright")}</p>
         </div>
       </div>
