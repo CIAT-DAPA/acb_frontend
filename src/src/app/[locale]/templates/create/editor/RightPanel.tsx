@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   CreateTemplateData,
   FIELD_TYPES,
@@ -18,6 +18,7 @@ import { ConfirmationModal } from "../../../components/ConfirmationModal";
 import { GroupSelector } from "../../../components/GroupSelector";
 import { slugify } from "@/utils/slugify";
 import { EnumAPIService, EnumValue } from "@/services/enumService";
+import { isSelectableCardType } from "@/types/card";
 
 const DIMENSION_PRESETS = [
   { label: "Custom", width: 0, height: 0 },
@@ -37,7 +38,9 @@ interface RightPanelProps {
   // Card specific props
   isCardMode?: boolean;
   cardType?: string;
+  cardTags?: string[];
   onCardTypeChange?: (type: string) => void;
+  onCardTagsChange?: (tags: string[]) => void;
 }
 
 export const RightPanel: React.FC<RightPanelProps> = ({
@@ -47,15 +50,20 @@ export const RightPanel: React.FC<RightPanelProps> = ({
   onMoveSection,
   isCardMode = false,
   cardType,
+  cardTags,
   onCardTypeChange,
+  onCardTagsChange,
 }) => {
   const t = useTranslations("CreateTemplate");
   const tCards = useTranslations("Cards");
+  const tCreateCard = useTranslations("CreateCard");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [restoreModalOpen, setRestoreModalOpen] = useState(false);
   const [restoreType, setRestoreType] = useState<"header" | "footer" | null>(
     null,
   );
+  const [cardTagsInput, setCardTagsInput] = useState("");
+  const [isEditingCardTags, setIsEditingCardTags] = useState(false);
 
   // Card Types state
   const [cardTypes, setCardTypes] = useState<EnumValue[]>([]);
@@ -63,9 +71,23 @@ export const RightPanel: React.FC<RightPanelProps> = ({
   // Load card types if in card mode
   React.useEffect(() => {
     if (isCardMode) {
-      EnumAPIService.getCardTypes().then(setCardTypes).catch(console.error);
+      EnumAPIService.getCardTypes()
+        .then((types) =>
+          setCardTypes(
+            types.filter((type) => isSelectableCardType(type.value)),
+          ),
+        )
+        .catch(console.error);
     }
   }, [isCardMode]);
+
+  useEffect(() => {
+    if (!isCardMode || isEditingCardTags) {
+      return;
+    }
+
+    setCardTagsInput((cardTags || []).join(", "));
+  }, [isCardMode, cardTags, isEditingCardTags]);
 
   // Helper to get current object
   const currentObject = useMemo(() => {
@@ -530,17 +552,17 @@ export const RightPanel: React.FC<RightPanelProps> = ({
             />
           </div>
 
-          {isCardMode && cardType && onCardTypeChange && (
+          {isCardMode && onCardTypeChange && (
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
-                {/* Use a translation for Card Type, can fallback to literal for now or reuse existing key */}
-                Card Type
+                {tCreateCard("basicInfo.type")}
               </label>
               <select
                 className="w-full text-sm border border-gray-200 rounded p-1.5"
-                value={cardType}
+                value={cardType || ""}
                 onChange={(e) => onCardTypeChange(e.target.value)}
               >
+                <option value="">{tCreateCard("basicInfo.selectType")}</option>
                 {cardTypes.map((type) => (
                   <option key={type.value} value={type.value}>
                     {tCards(`cardTypes.${type.value}`) !==
@@ -550,6 +572,37 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                   </option>
                 ))}
               </select>
+            </div>
+          )}
+
+          {isCardMode && onCardTagsChange && (
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                {tCreateCard("basicInfo.tags")}
+              </label>
+              <input
+                type="text"
+                className="w-full text-sm border border-gray-200 rounded p-1.5"
+                value={cardTagsInput}
+                onFocus={() => setIsEditingCardTags(true)}
+                onChange={(e) => setCardTagsInput(e.target.value)}
+                onBlur={() => {
+                  setIsEditingCardTags(false);
+                  const parsedTags = Array.from(
+                    new Set(
+                      cardTagsInput
+                        .split(",")
+                        .map((tag) => slugify(tag))
+                        .filter(Boolean),
+                    ),
+                  );
+                  onCardTagsChange(parsedTags);
+                }}
+                placeholder={tCreateCard("basicInfo.tagsPlaceholder")}
+              />
+              <p className="mt-1 text-[11px] text-gray-500">
+                {tCreateCard("basicInfo.tagsHelp")}
+              </p>
             </div>
           )}
 

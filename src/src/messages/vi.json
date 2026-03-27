@@ -545,7 +545,11 @@
       "name": "Tên thẻ",
       "description": "Xác định dữ liệu chính của thẻ của bạn",
       "namePlaceholder": "VD: Cảnh báo sâu bệnh hại cà phê",
+      "tags": "Thẻ tag",
+      "tagsPlaceholder": "VD: lua, caytrong, cantho",
+      "tagsHelp": "Phân tách bằng dấu phẩy",
       "type": "Loại thẻ",
+      "selectType": "Chọn một loại...",
       "typeHelp": "Chọn loại thẻ dựa trên mục đích sử dụng",
       "accessTypeHelp": "Xác định ai có thể sử dụng thẻ này",
       "allowedGroupsHelp": "Giữ Ctrl/Cmd để chọn nhiều nhóm",
@@ -558,6 +562,7 @@
     "actions": {
       "back": "Mặt sau",
       "next": "Tiếp theo",
+      "save": "Lưu thẻ",
       "create": "Tạo thẻ",
       "update": "Cập nhật thẻ"
     },
@@ -649,14 +654,12 @@
     "section": "Phần",
     "by": "Bởi",
     "cardTypes": {
-      "general": "Tổng quan",
       "pest_or_disease": "Sâu hoặc bệnh",
       "pest": "Sâu bệnh",
       "crop_info": "Thông tin cây trồng",
       "crop": "Mùa vụ",
       "crops": "Cây trồng",
       "recommendation": "Khuyến cáo",
-      "weather_alert": "Cảnh báo thời tiết",
       "alert": "Cảnh báo"
     },
     "blocks": "khối",

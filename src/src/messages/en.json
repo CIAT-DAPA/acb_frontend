@@ -1923,9 +1923,7 @@
       "crop": "Crop",
       "crops": "Crops",
       "recommendation": "Recommendation",
-      "weather_alert": "Weather Alert",
-      "alert": "Alert",
-      "general": "General"
+      "alert": "Alert"
     },
     "filterByType": "Filter by type",
     "allTypes": "All types",
@@ -1948,6 +1946,7 @@
     "actions": {
       "next": "Next",
       "back": "Back",
+      "save": "Save Card",
       "create": "Create Card",
       "update": "Update Card"
     },
@@ -1966,7 +1965,11 @@
       "description": "Define your card's main data",
       "name": "Card Name",
       "namePlaceholder": "Ex: Coffee Pest Alert",
+      "tags": "Tags",
+      "tagsPlaceholder": "Ex: rice, crop, cantho",
+      "tagsHelp": "Comma-separated",
       "type": "Card Type",
+      "selectType": "Select a type...",
       "typeHelp": "Select card type based on its purpose",
       "accessType": "Access Type",
       "accessTypeHelp": "Define who can use this card",

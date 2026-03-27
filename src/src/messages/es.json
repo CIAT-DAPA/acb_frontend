@@ -1921,9 +1921,7 @@
       "crop": "Cultivo",
       "crops": "Cultivos",
       "recommendation": "Recomendación",
-      "weather_alert": "Alerta Climática",
-      "alert": "Alerta",
-      "general": "General"
+      "alert": "Alerta"
     },
     "filterByType": "Filtrar por tipo",
     "allTypes": "Todos los tipos",
@@ -1946,6 +1944,7 @@
     "actions": {
       "next": "Siguiente",
       "back": "Atrás",
+      "save": "Guardar Card",
       "create": "Crear Card",
       "update": "Actualizar Card"
     },
@@ -1964,7 +1963,11 @@
       "description": "Define los datos principales de tu card",
       "name": "Nombre de la Card",
       "namePlaceholder": "Ej: Alerta de Plagas en Café",
+      "tags": "Tags",
+      "tagsPlaceholder": "Ej: arroz, cultivo, cantho",
+      "tagsHelp": "Separados por coma",
       "type": "Tipo de Card",
+      "selectType": "Selecciona un tipo...",
       "typeHelp": "Selecciona el tipo de card según su propósito",
       "accessType": "Tipo de Acceso",
       "accessTypeHelp": "Define quién puede usar esta card",

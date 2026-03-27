@@ -36,6 +36,7 @@ import {
   getCardTypeIcon,
   CARD_TYPE_DISPLAY_ORDER,
   hasCardTypeTranslation,
+  isSelectableCardType,
 } from "@/types/card";
 import { EnumAPIService, EnumValue } from "@/services/enumService";
 import usePermissions from "@/hooks/usePermissions";
@@ -83,7 +84,9 @@ export default function CardsPage() {
   const loadCardTypes = async () => {
     setLoadingTypes(true);
     try {
-      const types = await EnumAPIService.getCardTypes();
+      const types = (await EnumAPIService.getCardTypes()).filter((type) =>
+        isSelectableCardType(type.value),
+      );
 
       // Ordenar tipos según el orden preferido
       const sortedTypes = types.sort((a, b) => {
