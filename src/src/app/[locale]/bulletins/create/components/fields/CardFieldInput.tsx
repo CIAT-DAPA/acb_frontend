@@ -95,6 +95,7 @@ export function CardFieldInput({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
+  const [pendingCardId, setPendingCardId] = useState("");
 
   // Obtener la configuración del field
   const fieldConfig = field?.field_config as any;
@@ -171,7 +172,7 @@ export function CardFieldInput({
       if (response.success) {
         // Filtrar cards: solo las disponibles y del tipo correcto
         let filtered = response.data.filter((card) =>
-          availableCardIds.includes(card._id)
+          availableCardIds.includes(card._id),
         );
 
         // Si hay un card_type específico, filtrar por ese tipo
@@ -210,6 +211,7 @@ export function CardFieldInput({
       },
     ];
     onChange(fullData as any);
+    setPendingCardId("");
 
     // Expandir automáticamente la card recién agregada
     setExpandedCards(new Set([...expandedCards, value.length]));
@@ -262,7 +264,7 @@ export function CardFieldInput({
   const handleFieldChange = (
     cardIndex: number,
     fieldId: string,
-    fieldValue: any
+    fieldValue: any,
   ) => {
     const updated = [...selectedCards];
     if (updated[cardIndex]) {
@@ -293,7 +295,7 @@ export function CardFieldInput({
     cardField: Field,
     cardIndex: number,
     value: any,
-    onChange: (value: any) => void
+    onChange: (value: any) => void,
   ) => {
     switch (cardField.type) {
       case "text":
@@ -456,14 +458,13 @@ export function CardFieldInput({
       {/* Selector para agregar cards */}
       <div className="flex gap-2">
         <select
-          onChange={(e) => {
-            if (e.target.value) {
-              handleAddCard(e.target.value);
-              e.target.value = "";
-            }
-          }}
+          value={pendingCardId}
+          onChange={(e) => setPendingCardId(e.target.value)}
           className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#283618] text-sm"
-          disabled={disabled}
+          disabled={
+            disabled ||
+            availableCards.every((card) => value.includes(card._id!))
+          }
         >
           <option value="">{t("selectCard")}</option>
           {availableCards
@@ -477,15 +478,13 @@ export function CardFieldInput({
         <button
           type="button"
           onClick={() => {
-            const firstAvailable = availableCards.find(
-              (card) => !value.includes(card._id!)
-            );
-            if (firstAvailable) {
-              handleAddCard(firstAvailable._id!);
+            if (pendingCardId) {
+              handleAddCard(pendingCardId);
             }
           }}
           disabled={
             disabled ||
+            !pendingCardId ||
             availableCards.every((card) => value.includes(card._id!))
           }
           className="px-4 py-2 bg-[#606c38] text-white rounded-md hover:bg-[#283618] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
@@ -515,7 +514,12 @@ export function CardFieldInput({
               >
                 {/* Header de la card */}
                 <div className="flex items-center justify-between p-4 bg-gray-50 border-b">
-                  <div className="flex items-center gap-3 flex-1">
+                  <button
+                    type="button"
+                    onClick={() => toggleCardExpanded(index)}
+                    disabled={disabled || formFields.length === 0}
+                    className="flex items-center gap-3 flex-1 text-left disabled:cursor-default"
+                  >
                     <div className="flex items-center justify-center w-8 h-8 bg-[#606c38]/20 rounded-full text-[#606c38] font-semibold text-sm">
                       {index + 1}
                     </div>
@@ -529,7 +533,7 @@ export function CardFieldInput({
                         </p>
                       )}
                     </div>
-                  </div>
+                  </button>
 
                   <div className="flex items-center gap-2">
                     {formFields.length > 0 && (
@@ -573,8 +577,8 @@ export function CardFieldInput({
                             handleFieldChange(
                               index,
                               cardField.field_id,
-                              newValue
-                            )
+                              newValue,
+                            ),
                         )}
                         {cardField.description && (
                           <p className="text-xs text-[#283618]/60 mt-1">
