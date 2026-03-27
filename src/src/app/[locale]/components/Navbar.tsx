@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { Menu, X, LogOut, ChevronDown } from "lucide-react";
@@ -21,6 +21,9 @@ export function Navbar() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showConfigMenu, setShowConfigMenu] = useState(false);
   const [showWorkspacesMenu, setShowWorkspacesMenu] = useState(false);
+  const configMenuRef = useRef<HTMLLIElement>(null);
+  const workspacesMenuRef = useRef<HTMLLIElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const t = useTranslations("Navbar");
   const { can, isAdminAnywhere, isSuperadmin } = usePermissions();
 
@@ -82,6 +85,44 @@ export function Navbar() {
     return initials.join("") || t("defaultInitial");
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node;
+
+      if (
+        showConfigMenu &&
+        configMenuRef.current &&
+        !configMenuRef.current.contains(target)
+      ) {
+        setShowConfigMenu(false);
+      }
+
+      if (
+        showWorkspacesMenu &&
+        workspacesMenuRef.current &&
+        !workspacesMenuRef.current.contains(target)
+      ) {
+        setShowWorkspacesMenu(false);
+      }
+
+      if (
+        showUserMenu &&
+        userMenuRef.current &&
+        !userMenuRef.current.contains(target)
+      ) {
+        setShowUserMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [showConfigMenu, showWorkspacesMenu, showUserMenu]);
+
   // Componente reutilizable para dropdowns (escritorio)
   const DropdownMenu = ({
     label,
@@ -89,14 +130,16 @@ export function Navbar() {
     onToggle,
     items,
     onItemClick,
+    menuRef,
   }: {
     label: string;
     isOpen: boolean;
     onToggle: () => void;
     items: { name: string; path: string }[];
     onItemClick: (path: string) => void;
+    menuRef?: React.RefObject<HTMLLIElement | null>;
   }) => (
-    <li className="relative">
+    <li className="relative" ref={menuRef}>
       <button
         onClick={onToggle}
         className={`${NAV_BASE} ${NAV_INACTIVE} flex items-center gap-1 cursor-pointer`}
@@ -232,6 +275,7 @@ export function Navbar() {
                 onToggle={() => setShowConfigMenu(!showConfigMenu)}
                 items={VISIBLE_CONFIG_ITEMS}
                 onItemClick={() => setShowConfigMenu(false)}
+                menuRef={configMenuRef}
               />
             ) : null}
 
@@ -243,15 +287,9 @@ export function Navbar() {
                 onToggle={() => setShowWorkspacesMenu(!showWorkspacesMenu)}
                 items={ADMIN_ITEMS}
                 onItemClick={() => setShowWorkspacesMenu(false)}
+                menuRef={workspacesMenuRef}
               />
             )}
-
-            {/* Link de Partners */}
-            <li>
-              <Link href="/partners" className={`${NAV_BASE} ${NAV_INACTIVE}`}>
-                {t("partners")}
-              </Link>
-            </li>
           </ul>
 
           {/* Selector de idioma */}
@@ -266,7 +304,7 @@ export function Navbar() {
                 {t("login")}
               </button>
             ) : (
-              <div className="relative">
+              <div className="relative" ref={userMenuRef}>
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   className="flex items-center justify-center w-10 h-10 bg-[#bc6c25] text-[#fefae0] font-semibold rounded-full hover:bg-[#bc6c25]/90 transition-colors cursor-pointer"

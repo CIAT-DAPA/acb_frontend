@@ -457,13 +457,14 @@ export default function FormBulletinPage({
             );
           }
 
-          // Generar nombre por defecto: [Nombre Template] - [Mes Actual]
+          // Generar nombre por defecto: [Nombre Template] - [Mes Actual] [Año Actual]
           const monthName = new Intl.DateTimeFormat(locale, {
             month: "long",
           }).format(new Date());
           const capitalizedMonth =
             monthName.charAt(0).toUpperCase() + monthName.slice(1);
-          const defaultBulletinName = `${master.template_name} - ${capitalizedMonth}`;
+          const currentYear = new Date().getFullYear();
+          const defaultBulletinName = `${master.template_name} - ${capitalizedMonth} ${currentYear}`;
           const defaultNameMachine = slugify(defaultBulletinName);
 
           // Helper para inicializar el valor de un campo según su tipo
