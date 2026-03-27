@@ -1414,6 +1414,7 @@
         "noCardsHelp": "Haz clic en \"Agregar Card\" para comenzar",
         "modalTitle": "Seleccionar Card",
         "searchPlaceholder": "Buscar card por nombre...",
+        "allTypes": "Todos los tipos",
         "loadingCards": "Cargando cards...",
         "noResults": "No se encontraron cards con ese nombre",
         "noMoreCards": "No hay más cards disponibles",

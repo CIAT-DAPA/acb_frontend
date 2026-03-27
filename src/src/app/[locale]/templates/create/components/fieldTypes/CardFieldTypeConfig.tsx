@@ -34,6 +34,8 @@ const MODAL_CONTENT_CLASS =
   "bg-white rounded-lg p-6 w-full max-w-2xl max-h-[60vh] overflow-hidden flex flex-col shadow-2xl";
 const SEARCH_INPUT_CLASS =
   "w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#bc6c25] focus:border-[#bc6c25]";
+const TYPE_FILTER_SELECT_CLASS =
+  "w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-[#bc6c25] focus:border-[#bc6c25]";
 const MODAL_CARD_BUTTON_CLASS =
   "w-full flex items-center gap-3 p-3 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors text-left";
 const MODAL_THUMBNAIL_CLASS =
@@ -47,6 +49,7 @@ export const CardFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
   t: fieldT,
 }) => {
   const t = useTranslations("CreateTemplate.fieldEditor.cardConfig");
+  const tCardTypes = useTranslations("Cards.cardTypes");
 
   const config = (currentField.field_config as CardFieldConfig) || {};
   const availableCards = config.available_cards || [];
@@ -54,6 +57,7 @@ export const CardFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
   const [allCards, setAllCards] = useState<Card[]>([]);
   const [isLoadingCards, setIsLoadingCards] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedType, setSelectedType] = useState("all");
   const [showCardSelector, setShowCardSelector] = useState(false);
 
   useEffect(() => {
@@ -87,6 +91,7 @@ export const CardFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
     }
     setShowCardSelector(false);
     setSearchTerm("");
+    setSelectedType("all");
   };
 
   const removeCard = (cardId: string) => {
@@ -101,13 +106,45 @@ export const CardFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
     (card) => !availableCards.includes(card._id!),
   );
 
-  const filteredCards = availableCardsToAdd.filter((card) =>
-    card.card_name.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const getCardTypeLabel = (type?: string) => {
+    if (!type) {
+      return "";
+    }
+
+    try {
+      return tCardTypes(type as any);
+    } catch {
+      return type
+        .split("_")
+        .map((segment) =>
+          segment ? segment.charAt(0).toUpperCase() + segment.slice(1) : "",
+        )
+        .join(" ");
+    }
+  };
+
+  const availableCardTypes = Array.from(
+    new Set(
+      availableCardsToAdd
+        .map((card) => card.card_type)
+        .filter((type): type is string => Boolean(type)),
+    ),
+  ).sort((a, b) => getCardTypeLabel(a).localeCompare(getCardTypeLabel(b)));
+
+  const filteredCards = availableCardsToAdd.filter((card) => {
+    const matchesSearch = card.card_name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesType =
+      selectedType === "all" || card.card_type === selectedType;
+
+    return matchesSearch && matchesType;
+  });
 
   const closeModal = () => {
     setShowCardSelector(false);
     setSearchTerm("");
+    setSelectedType("all");
   };
 
   const renderThumbnail = (card: Card, className: string) => (
@@ -158,7 +195,7 @@ export const CardFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                 <div className="flex-1 min-w-0">
                   <h4 className={CARD_TITLE_CLASS}>{card.card_name}</h4>
                   <p className={CARD_META_CLASS}>
-                    {t("type")}: {card.card_type}
+                    {t("type")}: {getCardTypeLabel(card.card_type)}
                   </p>
                   <p className={CARD_META_CLASS}>ID: {card._id}</p>
                 </div>
@@ -200,7 +237,7 @@ export const CardFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
               </button>
             </div>
 
-            <div className="mb-4">
+            <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
@@ -211,6 +248,20 @@ export const CardFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                   className={SEARCH_INPUT_CLASS}
                 />
               </div>
+
+              <select
+                value={selectedType}
+                onChange={(e) => setSelectedType(e.target.value)}
+                className={TYPE_FILTER_SELECT_CLASS}
+                aria-label={t("type")}
+              >
+                <option value="all">{t("allTypes")}</option>
+                {availableCardTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {getCardTypeLabel(type)}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="flex-1 overflow-y-auto space-y-2">
@@ -233,7 +284,7 @@ export const CardFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                     <div className="flex-1 min-w-0">
                       <h4 className={CARD_TITLE_CLASS}>{card.card_name}</h4>
                       <p className={CARD_META_CLASS}>
-                        {t("type")}: {card.card_type}
+                        {t("type")}: {getCardTypeLabel(card.card_type)}
                       </p>
                     </div>
                   </button>
