@@ -65,7 +65,9 @@ export const TopBar: React.FC<TopBarProps> = ({
           onClick={onSave}
           className={`${ui.btnPrimary} font-medium text-sm py-2`}
         >
-          {t("fieldEditor.editor.saveTemplate")}
+          {isCardMode
+            ? tCards("actions.save")
+            : t("fieldEditor.editor.saveTemplate")}
         </button>
       </div>
     </div>

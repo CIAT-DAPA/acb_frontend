@@ -106,6 +106,7 @@ export interface PageNumberFieldConfig {
 export interface CardFieldConfig {
   card_type?: string; // Tipo de card (opcional para filtrar por tipo)
   available_cards: string[]; // Array de IDs de cards que el usuario puede seleccionar
+  available_tags?: string[]; // Tags para incluir cards de forma dinámica en el stack
 }
 
 export interface MoonCalendarFieldConfig {

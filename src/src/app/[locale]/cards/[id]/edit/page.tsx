@@ -41,6 +41,7 @@ export default function EditCardPage() {
         const card = response.data;
         setInitialData({
           card_name: card.card_name || "",
+          tags: Array.isArray(card.tags) ? card.tags : [],
           card_type: card.card_type,
           templates_master_ids: card.templates_master_ids || [],
           access_config: card.access_config || {

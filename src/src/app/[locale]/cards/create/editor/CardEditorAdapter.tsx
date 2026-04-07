@@ -30,10 +30,7 @@ export const CardEditorAdapter: React.FC<CardEditorAdapterProps> = ({
     // Construct a single section from card content
     const cardSection: Section = {
       section_id: "card_section", // Fixed ID for the single card section
-      display_name:
-        data.card_type === "general"
-          ? data.card_name || t("untitled")
-          : data.card_type,
+      display_name: data.card_name || data.card_type || t("untitled"),
       background_url: data.content.background_url
         ? [data.content.background_url]
         : [],
@@ -80,12 +77,22 @@ export const CardEditorAdapter: React.FC<CardEditorAdapterProps> = ({
         },
         content: {
           style_config: {
-            // Default global styles, or map from card if available
-            font: "Arial",
-            primary_color: "#000000",
-            secondary_color: "#666666",
-            background_color: "#ffffff",
+            // Map card global styles into template global styles for editor mode
+            font: data.content.style_config?.font || "Arial",
+            primary_color:
+              data.content.style_config?.primary_color || "#000000",
+            secondary_color:
+              data.content.style_config?.secondary_color || "#666666",
+            background_color:
+              data.content.style_config?.background_color || "#ffffff",
+            background_image: data.content.style_config?.background_image,
+            font_size: data.content.style_config?.font_size,
+            font_weight: data.content.style_config?.font_weight,
+            line_height: data.content.style_config?.line_height,
+            text_align: data.content.style_config?.text_align,
           },
+          header_config: data.content.header_config,
+          footer_config: data.content.footer_config,
           sections: [cardSection],
         },
       },
@@ -103,29 +110,43 @@ export const CardEditorAdapter: React.FC<CardEditorAdapterProps> = ({
 
       if (!primarySection) return;
 
-      onUpdate((prevCard) => ({
-        ...prevCard,
-        card_name: nextTemplate.master.template_name,
-        // access_config: nextTemplate.master.access_config, // Can sync if needed
-        content: {
-          ...prevCard.content,
-          blocks: primarySection.blocks,
-          header_config: primarySection.header_config,
-          footer_config: primarySection.footer_config,
-          background_url:
-            primarySection.style_config?.background_image ||
-            (primarySection.background_url &&
-              primarySection.background_url[0]) ||
-            "",
-          background_color: primarySection.style_config?.background_color,
-          style_config: {
-            ...prevCard.content.style_config,
-            padding: primarySection.style_config?.padding,
-            gap: primarySection.style_config?.gap,
-            // Sync other style props
+      onUpdate((prevCard) => {
+        const syncedHeaderConfig =
+          primarySection.header_config ||
+          nextTemplate.version.content.header_config ||
+          prevCard.content.header_config;
+
+        const syncedFooterConfig =
+          primarySection.footer_config ||
+          nextTemplate.version.content.footer_config ||
+          prevCard.content.footer_config;
+
+        return {
+          ...prevCard,
+          card_name: nextTemplate.master.template_name,
+          access_config:
+            nextTemplate.master.access_config || prevCard.access_config,
+          content: {
+            ...prevCard.content,
+            blocks: primarySection.blocks,
+            header_config: syncedHeaderConfig,
+            footer_config: syncedFooterConfig,
+            background_url:
+              primarySection.style_config?.background_image ||
+              (primarySection.background_url &&
+                primarySection.background_url[0]) ||
+              "",
+            background_color: primarySection.style_config?.background_color,
+            style_config: {
+              ...prevCard.content.style_config,
+              ...nextTemplate.version.content.style_config,
+              padding: primarySection.style_config?.padding,
+              gap: primarySection.style_config?.gap,
+              // Sync other style props
+            },
           },
-        },
-      }));
+        };
+      });
     },
     [templateData, onUpdate],
   );
@@ -141,9 +162,11 @@ export const CardEditorAdapter: React.FC<CardEditorAdapterProps> = ({
         onSave={onSave}
         isCardMode={true}
         cardType={data.card_type}
+        cardTags={data.tags}
         onCardTypeChange={(type) =>
           onUpdate((prev) => ({ ...prev, card_type: type }))
         }
+        onCardTagsChange={(tags) => onUpdate((prev) => ({ ...prev, tags }))}
       />
     </div>
   );

@@ -1,5 +1,6 @@
 import { Card, CardType, CreateCardData } from "@/types/card";
 import { BaseAPIService } from "./apiConfig";
+import { slugify } from "@/utils/slugify";
 
 // Interfaz para respuestas de la API
 interface APIResponse<T = any> {
@@ -10,6 +11,18 @@ interface APIResponse<T = any> {
   page?: number;
   limit?: number;
 }
+
+const normalizeTags = (tags: unknown): string[] => {
+  if (!Array.isArray(tags)) {
+    return [];
+  }
+
+  const normalizedTags = tags
+    .map((tag) => slugify(String(tag)))
+    .filter(Boolean);
+
+  return Array.from(new Set(normalizedTags));
+};
 
 // Interfaz para la respuesta de listado de cards
 export interface GetCardsResponse {
@@ -23,6 +36,7 @@ export interface GetCardsResponse {
  * Servicio para gestión de cards
  * Endpoints disponibles:
  * - GET /cards/ - Obtener todas las cards
+ * - GET /cards/by-tag/?tag=tag1,tag2 - Obtener cards por tags
  * - POST /cards/ - Crear una nueva card
  * - PUT /cards/{card_id} - Actualizar card
  * - GET /cards/{card_id} - Obtener card por ID
@@ -72,10 +86,15 @@ export class CardAPIService extends BaseAPIService {
    * POST /cards/
    */
   static async createCard(
-    cardData: CreateCardData
+    cardData: CreateCardData,
   ): Promise<APIResponse<Card>> {
     try {
-      const data = await this.post<any>("/cards/", cardData);
+      const normalizedCardData: CreateCardData = {
+        ...cardData,
+        tags: normalizeTags(cardData.tags),
+      };
+
+      const data = await this.post<any>("/cards/", normalizedCardData);
 
       const card = data.card || data.data || data;
 
@@ -106,18 +125,24 @@ export class CardAPIService extends BaseAPIService {
    */
   static async updateCard(
     id: string,
-    cardData: Partial<Card>
+    cardData: Partial<Card>,
   ): Promise<APIResponse<Card>> {
     const { log, ...cardDataWithoutLog } = cardData;
+    const normalizedCardData = {
+      ...cardDataWithoutLog,
+      ...(Array.isArray(cardDataWithoutLog.tags)
+        ? { tags: normalizeTags(cardDataWithoutLog.tags) }
+        : {}),
+    };
 
     console.log("🔍 CardService.updateCard - ID:", id);
     console.log(
       "🔍 CardService.updateCard - Data to send:",
-      cardDataWithoutLog
+      normalizedCardData,
     );
 
     try {
-      const data = await this.put<any>(`/cards/${id}`, cardDataWithoutLog);
+      const data = await this.put<any>(`/cards/${id}`, normalizedCardData);
 
       console.log("✅ CardService.updateCard - Response:", data);
 
@@ -243,11 +268,61 @@ export class CardAPIService extends BaseAPIService {
   }
 
   /**
+   * Obtiene cards filtradas por tags
+   * GET /cards/by-tag/?tag=tag1,tag2
+   */
+  static async getCardsByTags(tags: string[]): Promise<GetCardsResponse> {
+    const normalizedTags = normalizeTags(tags);
+
+    if (normalizedTags.length === 0) {
+      return {
+        success: true,
+        data: [],
+        total: 0,
+      };
+    }
+
+    try {
+      const query = new URLSearchParams({
+        tag: normalizedTags.join(","),
+      }).toString();
+      const data = await this.get<any>(`/cards/by-tag/?${query}`);
+      const cards = data.cards || data.data || data;
+
+      // Map API response to match Card interface
+      const mappedCards = Array.isArray(cards)
+        ? cards.map((card: any) => ({
+            ...card,
+            _id: card.id || card._id,
+          }))
+        : [];
+
+      return {
+        success: true,
+        data: mappedCards,
+        total: data.total || mappedCards.length,
+      };
+    } catch (error) {
+      console.error("Error fetching cards by tags:", error);
+
+      return {
+        success: false,
+        data: [],
+        total: 0,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Error al buscar cards por tags",
+      };
+    }
+  }
+
+  /**
    * Obtiene cards filtradas por template
    * GET /cards/template/{template_id}
    */
   static async getCardsByTemplate(
-    templateId: string
+    templateId: string,
   ): Promise<GetCardsResponse> {
     try {
       const data = await this.get<any>(`/cards/template/${templateId}`);
@@ -327,7 +402,7 @@ export class CardAPIService extends BaseAPIService {
     cloneData?: {
       card_name?: string;
       description?: string;
-    }
+    },
   ): Promise<APIResponse<Card>> {
     try {
       const data = await this.post<any>(`/cards/${cardId}/clone`, cloneData);
@@ -394,10 +469,10 @@ export class CardAPIService extends BaseAPIService {
    */
   static filterByAccessType(
     cards: Card[],
-    accessType: "public" | "restricted" | "private"
+    accessType: "public" | "restricted" | "private",
   ): Card[] {
     return cards.filter(
-      (card) => card.access_config.access_type === accessType
+      (card) => card.access_config.access_type === accessType,
     );
   }
 
@@ -431,7 +506,7 @@ export class CardAPIService extends BaseAPIService {
    */
   static sortByCreatedDate(
     cards: Card[],
-    order: "asc" | "desc" = "desc"
+    order: "asc" | "desc" = "desc",
   ): Card[] {
     return [...cards].sort((a, b) => {
       const dateA = new Date(a.log.created_at).getTime();
@@ -445,7 +520,7 @@ export class CardAPIService extends BaseAPIService {
    */
   static sortByUpdatedDate(
     cards: Card[],
-    order: "asc" | "desc" = "desc"
+    order: "asc" | "desc" = "desc",
   ): Card[] {
     return [...cards].sort((a, b) => {
       const dateA = new Date(a.log.updated_at || a.log.created_at).getTime();

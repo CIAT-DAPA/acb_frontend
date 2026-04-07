@@ -167,6 +167,44 @@ function buildCardsCache(
   return cache;
 }
 
+const normalizeCardTag = (value: unknown): string =>
+  String(value ?? "")
+    .trim()
+    .toLowerCase();
+
+const getAvailableCardIdsFromConfig = (
+  fieldConfig: any,
+  cardsCache: Map<string, Card>,
+): string[] => {
+  const configuredIds = Array.isArray(fieldConfig?.available_cards)
+    ? fieldConfig.available_cards.filter(
+        (id: unknown): id is string => typeof id === "string" && Boolean(id),
+      )
+    : [];
+
+  const selectedTags = Array.isArray(fieldConfig?.available_tags)
+    ? fieldConfig.available_tags
+        .map((tag: unknown) => normalizeCardTag(tag))
+        .filter(Boolean)
+    : [];
+
+  if (selectedTags.length === 0) {
+    return Array.from(new Set(configuredIds));
+  }
+
+  const selectedTagSet = new Set(selectedTags);
+  const idsByTags = Array.from(cardsCache.values())
+    .filter(
+      (card) =>
+        Boolean(card._id) &&
+        Array.isArray(card.tags) &&
+        card.tags.some((tag) => selectedTagSet.has(normalizeCardTag(tag))),
+    )
+    .map((card) => card._id as string);
+
+  return Array.from(new Set([...configuredIds, ...idsByTags]));
+};
+
 function getOverflowPages(
   blockMeasurements: BlockMeasurement[],
   availableHeight: number,
@@ -2280,8 +2318,10 @@ export function TemplatePreview({
       case "card":
         const cardBlockPage = overflowContext?.cardBlockPage;
         // Obtener los IDs de cards disponibles desde field_config
-        const availableCardIds =
-          (field.field_config as any)?.available_cards || [];
+        const availableCardIds = getAvailableCardIdsFromConfig(
+          field.field_config,
+          resolvedCardsCache,
+        );
 
         // El valor puede ser:
         // 1. Un array de objetos {cardId, fieldValues} - ya paginado por getSectionPagination
@@ -4352,7 +4392,10 @@ export function TemplatePreview({
                         } else {
                           // Fallback: usar el primer card disponible (preview de template)
                           const availableCardIds =
-                            (field.field_config as any)?.available_cards || [];
+                            getAvailableCardIdsFromConfig(
+                              field.field_config,
+                              resolvedCardsCache,
+                            );
                           if (availableCardIds.length > 0) {
                             cardIdToShow = availableCardIds[0];
                           }
