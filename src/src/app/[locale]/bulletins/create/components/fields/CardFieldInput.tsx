@@ -3,7 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { Field } from "../../../../../../types/template";
 import { Card } from "../../../../../../types/card";
-import { CardAPIService } from "../../../../../../services/cardService";
+import {
+  CardAPIService,
+  GetCardsResponse,
+} from "../../../../../../services/cardService";
 import {
   Plus,
   Trash2,
@@ -41,6 +44,11 @@ interface SelectedCardData {
   card: Card;
   fieldValues: { [fieldId: string]: any };
 }
+
+const normalizeTag = (value: unknown): string =>
+  String(value ?? "")
+    .trim()
+    .toLowerCase();
 
 // Helper para extraer valores por defecto de una card
 const getDefaultFieldValues = (card: Card) => {
@@ -100,12 +108,13 @@ export function CardFieldInput({
   // Obtener la configuración del field
   const fieldConfig = field?.field_config as any;
   const availableCardIds = fieldConfig?.available_cards || [];
+  const availableCardTags = fieldConfig?.available_tags || [];
   const cardType = fieldConfig?.card_type;
 
   // Cargar las cards disponibles
   useEffect(() => {
     loadAvailableCards();
-  }, []);
+  }, [field?.field_id]);
 
   // Sincronizar selectedCards con value
   useEffect(() => {
@@ -167,23 +176,73 @@ export function CardFieldInput({
     setError(null);
 
     try {
-      const response = await CardAPIService.getCards();
+      const explicitIds = Array.isArray(availableCardIds)
+        ? availableCardIds.filter(Boolean)
+        : [];
+      const configuredTags = Array.isArray(availableCardTags)
+        ? availableCardTags.filter(Boolean)
+        : [];
 
-      if (response.success) {
-        // Filtrar cards: solo las disponibles y del tipo correcto
-        let filtered = response.data.filter((card) =>
-          availableCardIds.includes(card._id),
-        );
-
-        // Si hay un card_type específico, filtrar por ese tipo
-        if (cardType) {
-          filtered = filtered.filter((card) => card.card_type === cardType);
-        }
-
-        setAvailableCards(filtered);
-      } else {
-        setError(response.message || "Error al cargar las cards");
+      if (explicitIds.length === 0 && configuredTags.length === 0) {
+        setAvailableCards([]);
+        return;
       }
+
+      const fallbackResponse: GetCardsResponse = {
+        success: true,
+        data: [],
+        total: 0,
+      };
+
+      const [explicitCardsResult, tagsCardsResult] = await Promise.all([
+        explicitIds.length > 0
+          ? CardAPIService.getCardsByUserGroups()
+          : Promise.resolve(fallbackResponse),
+        configuredTags.length > 0
+          ? CardAPIService.getCardsByTags(configuredTags)
+          : Promise.resolve(fallbackResponse),
+      ]);
+
+      if (!explicitCardsResult.success && !tagsCardsResult.success) {
+        throw new Error(
+          tagsCardsResult.message ||
+            explicitCardsResult.message ||
+            "Error al cargar las cards",
+        );
+      }
+
+      const mergedCards = new Map<string, Card>();
+
+      if (explicitCardsResult.success) {
+        explicitCardsResult.data
+          .filter(
+            (card) => Boolean(card._id) && explicitIds.includes(card._id!),
+          )
+          .forEach((card) => {
+            if (card._id) {
+              mergedCards.set(card._id, card);
+            }
+          });
+      }
+
+      if (tagsCardsResult.success) {
+        tagsCardsResult.data.forEach((card) => {
+          if (card._id) {
+            mergedCards.set(card._id, card);
+          }
+        });
+      }
+
+      let filtered = Array.from(mergedCards.values()).filter(
+        (card) => card.status === "active",
+      );
+
+      // Si hay un card_type específico, filtrar por ese tipo
+      if (cardType) {
+        filtered = filtered.filter((card) => card.card_type === cardType);
+      }
+
+      setAvailableCards(filtered);
     } catch (err) {
       setError("Error de conexión al cargar las cards");
       console.error(err);

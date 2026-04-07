@@ -36,6 +36,7 @@ export interface GetCardsResponse {
  * Servicio para gestión de cards
  * Endpoints disponibles:
  * - GET /cards/ - Obtener todas las cards
+ * - GET /cards/by-tag/?tag=tag1,tag2 - Obtener cards por tags
  * - POST /cards/ - Crear una nueva card
  * - PUT /cards/{card_id} - Actualizar card
  * - GET /cards/{card_id} - Obtener card por ID
@@ -262,6 +263,56 @@ export class CardAPIService extends BaseAPIService {
           error instanceof Error
             ? error.message
             : "Error al buscar cards por tipo",
+      };
+    }
+  }
+
+  /**
+   * Obtiene cards filtradas por tags
+   * GET /cards/by-tag/?tag=tag1,tag2
+   */
+  static async getCardsByTags(tags: string[]): Promise<GetCardsResponse> {
+    const normalizedTags = normalizeTags(tags);
+
+    if (normalizedTags.length === 0) {
+      return {
+        success: true,
+        data: [],
+        total: 0,
+      };
+    }
+
+    try {
+      const query = new URLSearchParams({
+        tag: normalizedTags.join(","),
+      }).toString();
+      const data = await this.get<any>(`/cards/by-tag/?${query}`);
+      const cards = data.cards || data.data || data;
+
+      // Map API response to match Card interface
+      const mappedCards = Array.isArray(cards)
+        ? cards.map((card: any) => ({
+            ...card,
+            _id: card.id || card._id,
+          }))
+        : [];
+
+      return {
+        success: true,
+        data: mappedCards,
+        total: data.total || mappedCards.length,
+      };
+    } catch (error) {
+      console.error("Error fetching cards by tags:", error);
+
+      return {
+        success: false,
+        data: [],
+        total: 0,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Error al buscar cards por tags",
       };
     }
   }
