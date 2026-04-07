@@ -149,10 +149,14 @@ export default function CardsPage() {
     const filtered = cards.filter((card) => {
       const matchesType =
         selectedType === "all" || card.card_type === selectedType;
+      const matchesTags =
+        Array.isArray(card.tags) &&
+        card.tags.some((tag) => tag.toLowerCase().includes(term));
       const matchesSearch =
         !term ||
         card.card_name.toLowerCase().includes(term) ||
-        getCardTypeLabel(card.card_type).toLowerCase().includes(term);
+        getCardTypeLabel(card.card_type).toLowerCase().includes(term) ||
+        matchesTags;
 
       return matchesType && matchesSearch;
     });
@@ -426,6 +430,7 @@ export default function CardsPage() {
                     thumbnailImages={
                       card.thumbnail_images ? card.thumbnail_images : undefined
                     }
+                    tags={card.tags}
                     badge={
                       <div className="flex items-center gap-1 text-xs">
                         <span>{getCardTypeIcon(card.card_type)}</span>

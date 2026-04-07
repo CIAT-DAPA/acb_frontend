@@ -1882,7 +1882,7 @@
     "title": "Manage reusable cards for your bulletins",
     "subtitle": "Cards are predefined content you can insert into your bulletins: pests, diseases, crop information and recommendations.",
     "createNew": "Create Card",
-    "searchPlaceholder": "Search cards by name or type...",
+    "searchPlaceholder": "Search cards by name, tags or type...",
     "by": "by",
     "updatedBy": "Updated by",
     "lastModified": "Last modified",

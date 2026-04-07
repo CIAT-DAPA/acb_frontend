@@ -1880,7 +1880,7 @@
     "title": "Gestiona cards reutilizables para tus boletines",
     "subtitle": "Las cards son contenido predefinido que puedes insertar en tus boletines: plagas, enfermedades, información de cultivos y recomendaciones.",
     "createNew": "Crear Card",
-    "searchPlaceholder": "Buscar cards por nombre o tipo...",
+    "searchPlaceholder": "Buscar cards por nombre, tag o tipo...",
     "by": "por",
     "updatedBy": "Actualizado por",
     "lastModified": "Última modificación",

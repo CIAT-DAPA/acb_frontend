@@ -71,6 +71,7 @@ export interface CardItemCardProps extends BaseItemCardProps {
   type: "card";
   lastModified: string;
   thumbnailImages?: string[]; // Background URL de la card
+  tags?: string[];
   badge?: React.ReactNode; // Para mostrar el tipo de card
   metadata?: React.ReactNode; // Para mostrar blocks, fields, templates count
 }
@@ -345,11 +346,11 @@ export default function ItemCard(props: ItemCardProps) {
           </p>
         )}
 
-        {/* Tags (solo para visual-resource) */}
-        {props.type === "visual-resource" &&
+        {/* Tags (visual-resource y card) */}
+        {(props.type === "visual-resource" || props.type === "card") &&
           props.tags &&
           props.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1">
+            <div className="flex flex-wrap gap-1 mb-2">
               {props.tags.slice(0, 2).map((tag: string) => (
                 <span
                   key={tag}

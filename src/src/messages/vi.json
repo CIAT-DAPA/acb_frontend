@@ -668,7 +668,7 @@
     "title": "Quản lý các thẻ có thể tái sử dụng cho bản tin của bạn",
     "subtitle": "Các Thẻ là nội dung được định nghĩa trước mà bạn có thể chèn vào bản tin của mình: (bao gồm) sâu bệnh, dịch bệnh, thông tin cây trồng và khuyến nghị.",
     "createNew": "Tạo thẻ",
-    "searchPlaceholder": "Tìm kiếm thẻ theo tên hoặc loại...",
+    "searchPlaceholder": "Tìm kiếm thẻ theo tên, thẻ tag hoặc loại...",
     "deleteConfirmTitle": "Xóa thẻ",
     "deleteConfirmMessage": "Bạn có chắc chắn muốn xóa \"{name}\" không? Thao tác này không thể hoàn tác.",
     "deleteSuccess": "Thẻ \"{name}\" đã được xóa thành công",
