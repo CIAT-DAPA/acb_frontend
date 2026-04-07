@@ -36,6 +36,7 @@ import {
   getCardTypeIcon,
   CARD_TYPE_DISPLAY_ORDER,
   hasCardTypeTranslation,
+  isSelectableCardType,
 } from "@/types/card";
 import { EnumAPIService, EnumValue } from "@/services/enumService";
 import usePermissions from "@/hooks/usePermissions";
@@ -83,7 +84,9 @@ export default function CardsPage() {
   const loadCardTypes = async () => {
     setLoadingTypes(true);
     try {
-      const types = await EnumAPIService.getCardTypes();
+      const types = (await EnumAPIService.getCardTypes()).filter((type) =>
+        isSelectableCardType(type.value),
+      );
 
       // Ordenar tipos según el orden preferido
       const sortedTypes = types.sort((a, b) => {
@@ -146,10 +149,14 @@ export default function CardsPage() {
     const filtered = cards.filter((card) => {
       const matchesType =
         selectedType === "all" || card.card_type === selectedType;
+      const matchesTags =
+        Array.isArray(card.tags) &&
+        card.tags.some((tag) => tag.toLowerCase().includes(term));
       const matchesSearch =
         !term ||
         card.card_name.toLowerCase().includes(term) ||
-        getCardTypeLabel(card.card_type).toLowerCase().includes(term);
+        getCardTypeLabel(card.card_type).toLowerCase().includes(term) ||
+        matchesTags;
 
       return matchesType && matchesSearch;
     });
@@ -423,6 +430,7 @@ export default function CardsPage() {
                     thumbnailImages={
                       card.thumbnail_images ? card.thumbnail_images : undefined
                     }
+                    tags={card.tags}
                     badge={
                       <div className="flex items-center gap-1 text-xs">
                         <span>{getCardTypeIcon(card.card_type)}</span>

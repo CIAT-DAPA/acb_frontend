@@ -7,6 +7,7 @@ import {
   CardType,
   getCardTypeIcon,
   hasCardTypeTranslation,
+  isSelectableCardType,
 } from "../../../../../types/card";
 import { ACCESS_TYPES } from "../../../../../types/core";
 import { GroupAPIService } from "../../../../../services/groupService";
@@ -40,7 +41,9 @@ export function BasicInfoStep({
     const loadCardTypes = async () => {
       setLoadingTypes(true);
       try {
-        const types = await EnumAPIService.getCardTypes();
+        const types = (await EnumAPIService.getCardTypes()).filter((type) =>
+          isSelectableCardType(type.value),
+        );
         setCardTypes(types);
       } catch (error) {
         console.error("Error loading card types:", error);
@@ -76,7 +79,7 @@ export function BasicInfoStep({
         });
       }
     },
-    [onDataChange, errors, onErrorsChange]
+    [onDataChange, errors, onErrorsChange],
   );
 
   const handleTypeChange = useCallback(
@@ -94,7 +97,7 @@ export function BasicInfoStep({
         });
       }
     },
-    [onDataChange, errors, onErrorsChange]
+    [onDataChange, errors, onErrorsChange],
   );
 
   const handleAccessTypeChange = useCallback(
@@ -112,7 +115,7 @@ export function BasicInfoStep({
         },
       }));
     },
-    [onDataChange, data.access_config]
+    [onDataChange, data.access_config],
   );
 
   const handleGroupsChange = useCallback(
@@ -133,7 +136,7 @@ export function BasicInfoStep({
         });
       }
     },
-    [onDataChange, errors, onErrorsChange]
+    [onDataChange, errors, onErrorsChange],
   );
 
   return (
@@ -197,6 +200,7 @@ export function BasicInfoStep({
                   : "border-gray-300"
               }`}
             >
+              <option value="">{t("selectType")}</option>
               {cardTypes.map((type) => (
                 <option key={type.value} value={type.value}>
                   {getCardTypeIcon(type.value)} {getCardTypeLabel(type.value)}

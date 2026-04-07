@@ -49,7 +49,8 @@ export default function FormCardPage({
     currentStep: "content", // Start directly in editor
     data: initialData || {
       card_name: "",
-      card_type: "general",
+      tags: [],
+      card_type: "",
       templates_master_ids: [],
       access_config: {
         access_type: "public",

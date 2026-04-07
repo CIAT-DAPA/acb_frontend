@@ -37,6 +37,7 @@ export type CardStatus = "active" | "archived";
 export interface Card {
   _id?: string; // ObjectId como string
   card_name: string; // Nombre de la card
+  tags: string[]; // Etiquetas para clasificación y búsqueda
   card_type: CardType; // Tipo de card para filtrado y categorización
   thumbnail_images?: string[]; // Rutas a las imágenes de preview de la card
   templates_master_ids: string[]; // Array de ObjectIds de templates donde esta card es válida
@@ -83,6 +84,7 @@ export interface CardsListAPIResponse {
  */
 export interface CreateCardData {
   card_name: string;
+  tags: string[];
   card_type: CardType;
   templates_master_ids: string[];
   access_config: AccessConfig;
@@ -166,6 +168,7 @@ export interface CardQueryParams {
 export interface CardSummary {
   _id: string;
   card_name: string;
+  tags?: string[];
   card_type: CardType;
   icon_url?: string;
 }
@@ -193,9 +196,7 @@ export const CARD_TYPE_ICONS: Record<string, string> = {
   crop: "🌾",
   crops: "🌾",
   recommendation: "💡",
-  weather_alert: "⚠️",
   alert: "⚠️",
-  general: "📄",
 };
 
 /**
@@ -209,7 +210,6 @@ export const CARD_TYPE_DISPLAY_ORDER: string[] = [
   "pest_or_disease",
   "pest",
   "recommendation",
-  "general",
 ];
 
 /**
@@ -231,10 +231,28 @@ export const TRANSLATABLE_CARD_TYPES = [
   "crop",
   "crops",
   "recommendation",
-  "weather_alert",
   "alert",
-  "general",
 ];
+
+/**
+ * Tipos de card disponibles para selección en UI
+ */
+export const ACTIVE_CARD_TYPES = [
+  "crop_info",
+  "crop",
+  "crops",
+  "pest_or_disease",
+  "pest",
+  "recommendation",
+  "alert",
+];
+
+/**
+ * Verificar si un tipo de card está disponible para selección en UI
+ */
+export const isSelectableCardType = (cardType: string): boolean => {
+  return ACTIVE_CARD_TYPES.includes(cardType.toLowerCase());
+};
 
 /**
  * Verificar si un tipo de card tiene traducción disponible

@@ -131,7 +131,9 @@ interface EditorLayoutProps {
   // Card specific props
   isCardMode?: boolean;
   cardType?: string;
+  cardTags?: string[];
   onCardTypeChange?: (type: string) => void;
+  onCardTagsChange?: (tags: string[]) => void;
 }
 
 export const EditorLayout: React.FC<EditorLayoutProps> = ({
@@ -143,7 +145,9 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({
   onSave,
   isCardMode = false,
   cardType,
+  cardTags,
   onCardTypeChange,
+  onCardTagsChange,
 }) => {
   const [selection, setSelection] = useState<EditorSelection>({
     type: "template",
@@ -253,6 +257,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({
         lastSaved={lastSaved}
         onBack={onBack}
         onSave={onSave}
+        isCardMode={isCardMode}
       />
 
       <div className="flex flex-1 overflow-hidden relative isolate">
@@ -280,7 +285,9 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({
             // @ts-ignore - Dynamic props for Card Mode
             isCardMode={isCardMode}
             cardType={cardType}
+            cardTags={cardTags}
             onCardTypeChange={onCardTypeChange}
+            onCardTagsChange={onCardTagsChange}
           />
         </div>
       </div>

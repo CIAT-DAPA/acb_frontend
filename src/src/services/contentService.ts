@@ -31,7 +31,7 @@ export class ContentService {
    */
   static async getContent(
     type: ContentType,
-    id: string
+    id: string,
   ): Promise<APIResponse<NormalizedContent>> {
     try {
       if (type === "template") {
@@ -58,7 +58,7 @@ export class ContentService {
    * @private
    */
   private static async getTemplateAsNormalized(
-    id: string
+    id: string,
   ): Promise<APIResponse<NormalizedContent>> {
     // Obtener master y version en una sola llamada
     const response = await TemplateAPIService.getCurrentVersion(id);
@@ -117,7 +117,7 @@ export class ContentService {
    * @private
    */
   private static async getBulletinAsNormalized(
-    id: string
+    id: string,
   ): Promise<APIResponse<NormalizedContent>> {
     // Obtener master y version en una sola llamada
     const response = await BulletinAPIService.getCurrentVersion(id);
@@ -175,7 +175,7 @@ export class ContentService {
   }
 
   private static async getCardAsNormalized(
-    id: string
+    id: string,
   ): Promise<APIResponse<NormalizedContent>> {
     // Obtener card por ID
     const response = await CardAPIService.getCardById(id);
@@ -260,9 +260,10 @@ export class ContentService {
    * Convierte contenido normalizado de vuelta al formato específico
    * Útil para guardar cambios
    */
-  static denormalizeContent(
-    content: NormalizedContent
-  ): { master: any; version: any } {
+  static denormalizeContent(content: NormalizedContent): {
+    master: any;
+    version: any;
+  } {
     if (content.contentType === "template") {
       return {
         master: {
@@ -318,7 +319,10 @@ export class ContentService {
         master: {
           _id: content.master.id,
           card_name: content.master.name,
-          card_type: content.master.description || "general", // Recuperar el tipo desde description
+          tags: Array.isArray((content.master as any).tags)
+            ? (content.master as any).tags
+            : [],
+          card_type: content.master.description || "", // Recuperar el tipo desde description
           status: content.master.status,
           log: content.master.log,
           access_config: content.master.access_config,
