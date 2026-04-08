@@ -33,7 +33,9 @@ export const GroupSelector: React.FC<GroupSelectorProps> = ({
         if (res.success) {
           setGroups(res.data);
           setAvailableGroups(
-            res.data.filter((g: Group) => !!g._id && !selectedIds.includes(g._id!))
+            res.data.filter(
+              (g: Group) => !!g._id && !selectedIds.includes(g._id!),
+            ),
           );
         }
       } catch (e) {
@@ -64,20 +66,23 @@ export const GroupSelector: React.FC<GroupSelectorProps> = ({
         (e.target as HTMLSelectElement).value = "";
       } catch (_) {}
     },
-    [onChange, selectedIds]
+    [onChange, selectedIds],
   );
 
   const handleRemove = useCallback(
     (idToRemove: string) => {
       onChange(selectedIds.filter((s) => s !== idToRemove));
     },
-    [onChange, selectedIds]
+    [onChange, selectedIds],
   );
 
   return (
     <div>
       {label && (
-        <label htmlFor={id} className="block text-sm font-medium text-[#283618]/70 mb-2">
+        <label
+          htmlFor={id}
+          className="block text-sm font-medium text-[#283618]/70 mb-2"
+        >
           {label}
         </label>
       )}
@@ -101,19 +106,22 @@ export const GroupSelector: React.FC<GroupSelectorProps> = ({
           )}
         </select>
 
-        <div className="mt-2 mb-2 flex flex-wrap gap-2">
+        <div className="mt-2 mb-2 flex flex-wrap gap-1.5">
           {selectedIds.map((idSel) => {
             const grp = groups.find((g) => g._id === idSel);
             return (
-              <span key={idSel} className="inline-flex items-center bg-blue-100 text-blue-800 text-sm rounded-full px-3 py-1">
-                <span className="mr-2">{grp ? grp.group_name : idSel}</span>
+              <span
+                key={idSel}
+                className="inline-flex items-center gap-1 rounded-full bg-[#606c38]/10 text-[#283618] px-2 py-1 text-xs"
+              >
+                <span>{grp ? grp.group_name : idSel}</span>
                 <button
                   type="button"
                   aria-label={`Eliminar ${grp ? grp.group_name : idSel}`}
                   onClick={() => handleRemove(idSel)}
-                  className="rounded-full hover:bg-blue-200 px-2"
+                  className="text-[#283618]/70 hover:text-red-600 transition-colors"
                 >
-                  ×
+                  x
                 </button>
               </span>
             );
