@@ -9,7 +9,7 @@ import {
 } from "@/types/template";
 import { EditorSelection } from "./types";
 import { getFieldConfigDefaults } from "@/app/[locale]/templates/create/editor/utils";
-import { Trash2, Move, Plus, ArrowUp, ArrowDown } from "lucide-react";
+import { Trash2, Move, Plus, ArrowUp, ArrowDown, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { StyleConfigurator } from "@/app/[locale]/templates/create/components/StyleConfigurator";
 import * as ui from "../../../components/ui";
@@ -62,8 +62,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
   const [restoreType, setRestoreType] = useState<"header" | "footer" | null>(
     null,
   );
-  const [cardTagsInput, setCardTagsInput] = useState("");
-  const [isEditingCardTags, setIsEditingCardTags] = useState(false);
+  const [cardTagDraft, setCardTagDraft] = useState("");
 
   // Card Types state
   const [cardTypes, setCardTypes] = useState<EnumValue[]>([]);
@@ -81,13 +80,34 @@ export const RightPanel: React.FC<RightPanelProps> = ({
     }
   }, [isCardMode]);
 
-  useEffect(() => {
-    if (!isCardMode || isEditingCardTags) {
+  const commitCardTagDraft = () => {
+    if (!isCardMode || !onCardTagsChange) {
       return;
     }
 
-    setCardTagsInput((cardTags || []).join(", "));
-  }, [isCardMode, cardTags, isEditingCardTags]);
+    const normalizedTag = slugify(cardTagDraft);
+
+    if (!normalizedTag) {
+      setCardTagDraft("");
+      return;
+    }
+
+    const currentTags = Array.isArray(cardTags) ? cardTags : [];
+    if (!currentTags.includes(normalizedTag)) {
+      onCardTagsChange([...currentTags, normalizedTag]);
+    }
+
+    setCardTagDraft("");
+  };
+
+  const removeCardTag = (tagToRemove: string) => {
+    if (!onCardTagsChange) {
+      return;
+    }
+
+    const currentTags = Array.isArray(cardTags) ? cardTags : [];
+    onCardTagsChange(currentTags.filter((tag) => tag !== tagToRemove));
+  };
 
   // Helper to get current object
   const currentObject = useMemo(() => {
@@ -583,23 +603,69 @@ export const RightPanel: React.FC<RightPanelProps> = ({
               <input
                 type="text"
                 className="w-full text-sm border border-gray-200 rounded p-1.5"
-                value={cardTagsInput}
-                onFocus={() => setIsEditingCardTags(true)}
-                onChange={(e) => setCardTagsInput(e.target.value)}
-                onBlur={() => {
-                  setIsEditingCardTags(false);
-                  const parsedTags = Array.from(
-                    new Set(
-                      cardTagsInput
-                        .split(",")
-                        .map((tag) => slugify(tag))
-                        .filter(Boolean),
-                    ),
-                  );
-                  onCardTagsChange(parsedTags);
+                value={cardTagDraft}
+                onChange={(e) => {
+                  const value = e.target.value;
+
+                  if (value.includes(",")) {
+                    const [firstChunk, ...remainingChunks] = value.split(",");
+                    const normalizedTag = slugify(firstChunk);
+
+                    if (normalizedTag) {
+                      const currentTags = Array.isArray(cardTags)
+                        ? cardTags
+                        : [];
+                      if (!currentTags.includes(normalizedTag)) {
+                        onCardTagsChange([...currentTags, normalizedTag]);
+                      }
+                    }
+
+                    setCardTagDraft(remainingChunks.join(",").trimStart());
+                    return;
+                  }
+
+                  setCardTagDraft(value);
                 }}
+                onKeyDown={(e) => {
+                  if (e.key === "," || e.key === "Enter") {
+                    e.preventDefault();
+                    commitCardTagDraft();
+                    return;
+                  }
+
+                  if (
+                    e.key === "Backspace" &&
+                    !cardTagDraft.trim() &&
+                    Array.isArray(cardTags) &&
+                    cardTags.length > 0
+                  ) {
+                    removeCardTag(cardTags[cardTags.length - 1]);
+                  }
+                }}
+                onBlur={commitCardTagDraft}
                 placeholder={tCreateCard("basicInfo.tagsPlaceholder")}
               />
+              {Array.isArray(cardTags) && cardTags.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {cardTags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="inline-flex items-center gap-1 rounded-full bg-[#606c38]/10 text-[#283618] px-2 py-1 text-xs"
+                    >
+                      <span>{tag}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeCardTag(tag)}
+                        className="text-[#283618]/70 hover:text-red-600 transition-colors"
+                        aria-label={`${tCreateCard("basicInfo.tags")}: ${tag}`}
+                        title={t("fieldEditor.actions.remove") || "Remove"}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
               <p className="mt-1 text-[11px] text-gray-500">
                 {tCreateCard("basicInfo.tagsHelp")}
               </p>

@@ -180,6 +180,27 @@ export const CardFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
     ).sort();
   }, [allCards]);
 
+  const tagUsageCount = useMemo(() => {
+    const counts: Record<string, number> = {};
+
+    allCards.forEach((card) => {
+      if (!Array.isArray(card.tags)) {
+        return;
+      }
+
+      // Evita contar dos veces la misma tag dentro de una misma card.
+      const uniqueCardTags = new Set(
+        card.tags.map((tag) => normalizeTag(tag)).filter(Boolean),
+      );
+
+      uniqueCardTags.forEach((tag) => {
+        counts[tag] = (counts[tag] || 0) + 1;
+      });
+    });
+
+    return counts;
+  }, [allCards]);
+
   const availableTagsToAdd = allAvailableTags.filter(
     (tag) => !selectedTags.includes(tag),
   );
@@ -473,6 +494,9 @@ export const CardFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                     <div className="flex-1 min-w-0">
                       <h4 className={CARD_TITLE_CLASS}>#{tag}</h4>
                     </div>
+                    <span className="px-2 py-0.5 rounded-full bg-[#606c38]/10 text-[#606c38] text-xs font-medium">
+                      {tagUsageCount[tag] || 0}
+                    </span>
                   </button>
                 ))
               )}
