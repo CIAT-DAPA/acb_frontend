@@ -58,6 +58,7 @@ export default function FormCardPage({
       },
       content: {
         background_url: "",
+        background_opacity: 1,
         blocks: [],
       },
       status: "active",

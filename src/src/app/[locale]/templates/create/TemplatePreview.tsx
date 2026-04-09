@@ -54,6 +54,39 @@ function getResolvedFontWeight(
   return fontWeight || "400";
 }
 
+function clampOpacity(opacity?: number | string): number | undefined {
+  if (opacity === undefined || opacity === null || opacity === "") {
+    return undefined;
+  }
+
+  const numericOpacity =
+    typeof opacity === "string" ? Number.parseFloat(opacity) : opacity;
+
+  if (!Number.isFinite(numericOpacity)) {
+    return undefined;
+  }
+
+  return Math.min(Math.max(numericOpacity, 0), 1);
+}
+
+function getColorWithOpacity(
+  color?: string,
+  opacity?: number | string,
+): string | undefined {
+  if (!color) {
+    return undefined;
+  }
+
+  const normalizedOpacity = clampOpacity(opacity);
+
+  if (normalizedOpacity === undefined || normalizedOpacity >= 0.999) {
+    return color;
+  }
+
+  const roundedPercent = Math.round(normalizedOpacity * 1000) / 10;
+  return `color-mix(in srgb, ${color} ${roundedPercent}%, transparent)`;
+}
+
 // Helper para obtener la clase Tailwind de justify-content
 function getJustifyClass(justifyContent?: string): string {
   const justifyMap: Record<string, string> = {
@@ -2638,6 +2671,8 @@ export function TemplatePreview({
           const cardContent = cardToRender.content;
           const cardBackgroundUrl = cardContent.background_url;
           const cardBackgroundColor = cardContent.background_color;
+          const cardBackgroundOpacity =
+            clampOpacity(cardContent.background_opacity) ?? 1;
           const cardContentStyleConfig = cardContent.style_config;
 
           const cardContainerStyles: React.CSSProperties = {
@@ -2645,6 +2680,15 @@ export function TemplatePreview({
             flex: 1,
             display: "flex",
             flexDirection: "column",
+            position: "relative",
+            overflow: "hidden",
+          };
+
+          const cardBackgroundLayerStyles: React.CSSProperties = {
+            position: "absolute",
+            inset: 0,
+            pointerEvents: "none",
+            opacity: cardBackgroundOpacity,
             ...(cardBackgroundColor && {
               backgroundColor: cardBackgroundColor,
             }),
@@ -2652,6 +2696,7 @@ export function TemplatePreview({
               backgroundImage: `url(${getBackgroundImageUrl(cardBackgroundUrl)})`,
               backgroundSize: "cover",
               backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
             }),
           };
 
@@ -2675,7 +2720,12 @@ export function TemplatePreview({
               style={cardContainerStyles}
               className="flex flex-col"
             >
-              {cardBlockIndexes.flatMap((cardBlockIndex) => {
+              {(cardBackgroundColor || cardBackgroundUrl) && (
+                <div style={cardBackgroundLayerStyles} />
+              )}
+
+              <div className="relative z-10 flex flex-col flex-1">
+                {cardBlockIndexes.flatMap((cardBlockIndex) => {
                 const block = cardContent.blocks[cardBlockIndex];
 
                 if (!block) {
@@ -2714,66 +2764,64 @@ export function TemplatePreview({
                   }),
                 };
 
-                return (
-                  <div
-                    key={`card-block-${cardData.cardId}-${cardOrderIndex}-${cardBlockIndex}`}
-                    data-card-content-block-index={
-                      !reviewMode ? cardBlockIndex : undefined
-                    }
-                    style={
-                      cardBlockSlice
-                        ? {
-                            overflow: "hidden",
-                            height: `${cardBlockSlice.height}px`,
-                          }
-                        : blockContainerStyles
-                    }
-                  >
+                  return (
                     <div
+                      key={`card-block-${cardData.cardId}-${cardOrderIndex}-${cardBlockIndex}`}
+                      data-card-content-block-index={
+                        !reviewMode ? cardBlockIndex : undefined
+                      }
                       style={
                         cardBlockSlice
                           ? {
-                              ...blockContainerStyles,
-                              transform: `translateY(-${cardBlockSlice.offset}px)`,
+                              overflow: "hidden",
+                              height: `${cardBlockSlice.height}px`,
                             }
-                          : undefined
+                          : blockContainerStyles
                       }
                     >
-                      {block.fields.map((blockField, fieldIndex) => {
-                        const safeField: Field = {
-                          ...blockField,
-                          style_manually_edited:
-                            blockField.style_manually_edited ?? false,
-                        } as Field;
-
-                        if (
-                          blockField.form &&
-                          cardData.fieldValues[blockField.field_id]
-                        ) {
-                          safeField.value =
-                            cardData.fieldValues[blockField.field_id];
+                      <div
+                        style={
+                          cardBlockSlice
+                            ? {
+                                ...blockContainerStyles,
+                                transform: `translateY(-${cardBlockSlice.offset}px)`,
+                              }
+                            : undefined
                         }
+                      >
+                        {block.fields.map((blockField, fieldIndex) => {
+                          const safeField: Field = {
+                            ...blockField,
+                            style_manually_edited:
+                              blockField.style_manually_edited ?? false,
+                          } as Field;
 
-                        return renderField(
-                          safeField,
-                          `card-${cardData.cardId}-block-${cardOrderIndex}-${cardBlockIndex}-field-${fieldIndex}`,
-                          block.style_config,
-                          (block as any).layout || "vertical",
-                        );
-                      })}
+                          if (
+                            blockField.form &&
+                            cardData.fieldValues[blockField.field_id]
+                          ) {
+                            safeField.value =
+                              cardData.fieldValues[blockField.field_id];
+                          }
+
+                          return renderField(
+                            safeField,
+                            `card-${cardData.cardId}-block-${cardOrderIndex}-${cardBlockIndex}-field-${fieldIndex}`,
+                            block.style_config,
+                            (block as any).layout || "vertical",
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           );
         };
 
         return (
-          <div
-            key={key}
-            className={`flex flex-col ${reviewMode ? "gap-3" : ""}`}
-          >
+          <div key={key} className="flex flex-col">
             {cardItems.map((cardData, cardOrderIndex) =>
               renderCardItem(cardData, cardOrderIndex),
             )}
@@ -4374,7 +4422,10 @@ export function TemplatePreview({
                     fontSize: section.style_config?.font_size
                       ? `${section.style_config.font_size}px`
                       : globalStyles.fontSize,
-                    backgroundColor: section.style_config?.background_color,
+                    backgroundColor: getColorWithOpacity(
+                      section.style_config?.background_color,
+                      section.style_config?.background_opacity,
+                    ),
                     backgroundImage: dynamicBackgroundUrl
                       ? `url("${getBackgroundImageUrl(dynamicBackgroundUrl)}")`
                       : section.style_config?.background_image
@@ -4407,6 +4458,7 @@ export function TemplatePreview({
                   let cardHeaderConfig = null;
                   let cardFooterConfig = null;
                   let cardBackgroundColor = null;
+                  let cardBackgroundOpacity = 1;
                   let cardFieldValues: Record<string, any> = {}; // Valores de los campos de la card actual
 
                   for (const block of section.blocks) {
@@ -4456,6 +4508,9 @@ export function TemplatePreview({
                           if (card) {
                             // Guardar el background color de la card
                             cardBackgroundColor = card.content.background_color;
+                            cardBackgroundOpacity =
+                              clampOpacity(card.content.background_opacity) ??
+                              1;
 
                             // Si la card tiene header, usarlo
                             if (
@@ -4891,24 +4946,6 @@ export function TemplatePreview({
                                                     )
                                                   }
                                                   style={{
-                                                    ...((field as Field)
-                                                      .style_config?.margin
-                                                      ? {
-                                                          margin: (
-                                                            field as Field
-                                                          ).style_config
-                                                            ?.margin,
-                                                        }
-                                                      : {}),
-                                                    ...((field as Field)
-                                                      .style_config?.padding
-                                                      ? {
-                                                          padding: (
-                                                            field as Field
-                                                          ).style_config
-                                                            ?.padding,
-                                                        }
-                                                      : {}),
                                                     flexShrink: 0,
                                                   }}
                                                   className={`relative ${
@@ -5097,7 +5134,10 @@ export function TemplatePreview({
                             backgroundColor:
                               activeFooterConfig.style_config
                                 ?.background_color ||
-                              cardBackgroundColor ||
+                              getColorWithOpacity(
+                                cardBackgroundColor || undefined,
+                                cardBackgroundOpacity,
+                              ) ||
                               "transparent",
                             backgroundImage: activeFooterConfig.style_config
                               ?.background_image

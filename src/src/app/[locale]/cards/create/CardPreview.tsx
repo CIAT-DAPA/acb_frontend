@@ -43,6 +43,7 @@ export function CardPreview({ data }: CardPreviewProps) {
       blocks: data.content.blocks,
       style_config: {
         background_color: data.content.background_color,
+        background_opacity: data.content.background_opacity,
         background_image: data.content.background_url,
         padding: data.content.style_config?.padding,
         gap: data.content.style_config?.gap,
