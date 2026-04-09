@@ -64,7 +64,7 @@ export class VisualResourcesService extends BaseAPIService {
    */
   static async createVisualResource(
     data: CreateVisualResourceRequest,
-    file?: File
+    file?: File,
   ): Promise<APIResponse<VisualResource>> {
     try {
       // Si hay archivo, lo procesamos
@@ -82,22 +82,36 @@ export class VisualResourcesService extends BaseAPIService {
         }
 
         // 3. Preparar el body para la API
+        const normalizedAccessType =
+          data.access_config?.type === "group"
+            ? "restricted"
+            : data.access_config?.type || "public";
+
+        const allowedGroups =
+          normalizedAccessType === "restricted"
+            ? Array.isArray(data.access_config?.allowed_groups)
+              ? data.access_config.allowed_groups
+              : data.access_config?.group_name
+                ? [data.access_config.group_name]
+                : []
+            : [];
+
         const apiBody = {
           file_url: file_url,
           file_name: data.file_name,
           file_type: data.file_type,
           status: data.status || "active",
           access_config: {
-            access_type: data.access_config?.type || "public",
-            allowed_groups:
-              data.access_config?.type === "group"
-                ? [data.access_config.group_name]
-                : [],
+            access_type: normalizedAccessType,
+            allowed_groups: allowedGroups,
           },
         };
 
         // 4. Llamar a la API
-        const response = await this.post<any>(this.BASE_ENDPOINT + "/", apiBody);
+        const response = await this.post<any>(
+          this.BASE_ENDPOINT + "/",
+          apiBody,
+        );
 
         return {
           success: true,
@@ -125,10 +139,13 @@ export class VisualResourcesService extends BaseAPIService {
   private static getFolderPath(accessConfig?: any): string {
     let folderPath = "/assets/img/visualResources/";
 
-    if (accessConfig?.type === "public") {
+    const accessType =
+      accessConfig?.type === "group" ? "restricted" : accessConfig?.type;
+
+    if (accessType === "public") {
       folderPath += "public/";
-    } else if (accessConfig?.type === "group" && accessConfig?.group_name) {
-      folderPath += `${accessConfig.group_name}/`;
+    } else if (accessType === "restricted") {
+      folderPath += "restricted/";
     } else {
       folderPath += "public/"; // Default a público
     }
@@ -164,7 +181,7 @@ export class VisualResourcesService extends BaseAPIService {
    */
   private static async uploadFileToServer(
     file: File,
-    targetPath: string
+    targetPath: string,
   ): Promise<boolean> {
     try {
       const formData = new FormData();
@@ -190,12 +207,12 @@ export class VisualResourcesService extends BaseAPIService {
    */
   static async updateVisualResource(
     resourceId: string,
-    data: UpdateVisualResourceRequest
+    data: UpdateVisualResourceRequest,
   ): Promise<APIResponse<VisualResource>> {
     try {
       const response = await this.put<any>(
         `${this.BASE_ENDPOINT}/${resourceId}`,
-        data
+        data,
       );
       return {
         success: true,
@@ -217,7 +234,7 @@ export class VisualResourcesService extends BaseAPIService {
    * GET /visual-resources/{resource_id} - Get Visual Resource By Id
    */
   static async getVisualResourceById(
-    resourceId: string
+    resourceId: string,
   ): Promise<APIResponse<VisualResource>> {
     try {
       const data = await this.get<any>(`${this.BASE_ENDPOINT}/${resourceId}`);
@@ -241,7 +258,7 @@ export class VisualResourcesService extends BaseAPIService {
    * GET /visual-resources/name/{name} - Get Visual Resources By Name
    */
   static async getVisualResourcesByName(
-    name: string
+    name: string,
   ): Promise<APIResponse<VisualResource[]>> {
     try {
       const endpoint = `${this.BASE_ENDPOINT}/name/${encodeURIComponent(name)}`;
@@ -271,7 +288,7 @@ export class VisualResourcesService extends BaseAPIService {
    * GET /visual-resources/status/{status} - Get Visual Resources By Status
    */
   static async getVisualResourcesByStatus(
-    status: VisualResourceStatus
+    status: VisualResourceStatus,
   ): Promise<APIResponse<VisualResource[]>> {
     try {
       const endpoint = `${this.BASE_ENDPOINT}/status/${status}`;
@@ -301,7 +318,7 @@ export class VisualResourcesService extends BaseAPIService {
    * GET /visual-resources/type/{file_type} - Get Visual Resources By File Type
    */
   static async getVisualResourcesByType(
-    fileType: VisualResourceFileType
+    fileType: VisualResourceFileType,
   ): Promise<APIResponse<VisualResource[]>> {
     try {
       const endpoint = `${this.BASE_ENDPOINT}/type/${fileType}`;
@@ -335,7 +352,7 @@ export class VisualResourcesService extends BaseAPIService {
     try {
       const response = await this.put<any>(
         `${this.BASE_ENDPOINT}/${resourceId}`,
-        { status: "archived" }
+        { status: "archived" },
       );
       return {
         success: true,
@@ -360,7 +377,7 @@ export class VisualResourcesService extends BaseAPIService {
    */
   static async uploadVisualResource(
     file: File,
-    metadata: CreateVisualResourceRequest
+    metadata: CreateVisualResourceRequest,
   ): Promise<APIResponse<VisualResource>> {
     try {
       const formData = new FormData();

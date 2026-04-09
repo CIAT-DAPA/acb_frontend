@@ -70,6 +70,12 @@ export default function Templates() {
     `${log.updater_first_name || ""} ${log.updater_last_name || ""}`.trim() ||
     `${log.creator_first_name || ""} ${log.creator_last_name || ""}`.trim();
 
+  const getTemplateTimestamp = (template: TemplateMaster): number => {
+    return new Date(
+      template.log?.updated_at || template.log?.created_at || 0,
+    ).getTime();
+  };
+
   // Cargar templates al montar el componente
   useEffect(() => {
     loadTemplates();
@@ -85,10 +91,13 @@ export default function Templates() {
       const templatesActive = (response.data || []).filter(
         (template) => template.status === "active",
       );
+      const sortedTemplates = [...templatesActive].sort(
+        (a, b) => getTemplateTimestamp(b) - getTemplateTimestamp(a),
+      );
 
       if (response.success) {
-        setTemplates(templatesActive);
-        setFilteredTemplates(templatesActive);
+        setTemplates(sortedTemplates);
+        setFilteredTemplates(sortedTemplates);
       } else {
         setError(response.message || t("loadError"));
       }
@@ -112,7 +121,11 @@ export default function Templates() {
       return matchesSearch;
     });
 
-    setFilteredTemplates(filtered);
+    const sortedFiltered = [...filtered].sort(
+      (a, b) => getTemplateTimestamp(b) - getTemplateTimestamp(a),
+    );
+
+    setFilteredTemplates(sortedFiltered);
   }, [searchTerm, templates]);
 
   // Efecto para cerrar el modal con la tecla Escape
