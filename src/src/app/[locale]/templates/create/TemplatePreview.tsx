@@ -39,6 +39,21 @@ function getFontFamily(font?: string): string {
   return FONT_CSS_VARS[font] || font;
 }
 
+function getResolvedFontWeight(
+  font?: string,
+  fontWeight?: string | number,
+): string | number {
+  if (
+    fontWeight !== undefined &&
+    fontWeight !== null &&
+    `${fontWeight}` !== ""
+  ) {
+    return fontWeight;
+  }
+  if (font === "Archivo Light") return "300";
+  return fontWeight || "400";
+}
+
 // Helper para obtener la clase Tailwind de justify-content
 function getJustifyClass(justifyContent?: string): string {
   const justifyMap: Record<string, string> = {
@@ -1144,6 +1159,10 @@ export function TemplatePreview({
     fontFamily: getFontFamily(styleConfig?.font),
     color: styleConfig?.primary_color || "#000000",
     fontSize: `${styleConfig?.font_size || 16}px`,
+    fontWeight: getResolvedFontWeight(
+      styleConfig?.font,
+      styleConfig?.font_weight,
+    ),
     lineHeight: styleConfig?.line_height || "normal",
     backgroundColor: styleConfig?.background_color || "#ffffff",
     textAlign:
@@ -1264,6 +1283,7 @@ export function TemplatePreview({
   ) => {
     // Usar herencia de estilos
     const effectiveStyles = getEffectiveFieldStyles(field, containerStyle);
+    const resolvedFieldFont = effectiveStyles.font || styleConfig?.font;
 
     const fieldStyles = {
       ...globalStyles,
@@ -1271,7 +1291,10 @@ export function TemplatePreview({
       fontSize: effectiveStyles.font_size
         ? `${effectiveStyles.font_size}px`
         : globalStyles.fontSize,
-      fontWeight: effectiveStyles.font_weight || "400",
+      fontWeight: getResolvedFontWeight(
+        resolvedFieldFont,
+        effectiveStyles.font_weight || globalStyles.fontWeight,
+      ),
       lineHeight:
         effectiveStyles.line_height || globalStyles.lineHeight || "normal",
       fontStyle: effectiveStyles.font_style || "normal",
@@ -1305,7 +1328,7 @@ export function TemplatePreview({
           : field.display_name || field.label || "Campo de texto";
 
         const showPlainTextLabel =
-          (field.field_config as any)?.showLabel ?? true;
+          (field.field_config as any)?.showLabel ?? false;
         const displayPlainTextLabel = showPlainTextLabel
           ? field.label || field.display_name
           : null;
@@ -1915,7 +1938,13 @@ export function TemplatePreview({
           fontSize: effectiveStyles.font_size
             ? `${effectiveStyles.font_size}px`
             : undefined,
-          fontWeight: effectiveStyles.font_weight || undefined,
+          fontWeight:
+            effectiveStyles.font === "Archivo Light"
+              ? getResolvedFontWeight(
+                  effectiveStyles.font,
+                  effectiveStyles.font_weight,
+                )
+              : effectiveStyles.font_weight || undefined,
           lineHeight: effectiveStyles.line_height || undefined,
           fontStyle: effectiveStyles.font_style || undefined,
           textDecoration: effectiveStyles.text_decoration || undefined,
@@ -2158,9 +2187,17 @@ export function TemplatePreview({
                       ? `${effectiveStyles.font_size}px`
                       : undefined,
                   fontWeight:
-                    paramConfig.style_config?.font_weight ||
-                    effectiveStyles.font_weight ||
-                    undefined,
+                    paramConfig.style_config?.font === "Archivo Light" ||
+                    effectiveStyles.font === "Archivo Light"
+                      ? getResolvedFontWeight(
+                          paramConfig.style_config?.font ||
+                            effectiveStyles.font,
+                          paramConfig.style_config?.font_weight ||
+                            effectiveStyles.font_weight,
+                        )
+                      : paramConfig.style_config?.font_weight ||
+                        effectiveStyles.font_weight ||
+                        undefined,
                 };
 
                 return (
@@ -4177,7 +4214,11 @@ export function TemplatePreview({
                   fontSize: headerConfig.style_config?.font_size
                     ? `${headerConfig.style_config.font_size}px`
                     : globalStyles.fontSize,
-                  fontWeight: headerConfig.style_config?.font_weight || "400",
+                  fontWeight: getResolvedFontWeight(
+                    headerConfig.style_config?.font || styleConfig?.font,
+                    headerConfig.style_config?.font_weight ||
+                      globalStyles.fontWeight,
+                  ),
                   lineHeight:
                     headerConfig.style_config?.line_height || undefined,
                   fontStyle: headerConfig.style_config?.font_style || "normal",
@@ -4344,7 +4385,11 @@ export function TemplatePreview({
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                     backgroundRepeat: "no-repeat",
-                    fontWeight: section.style_config?.font_weight || "400",
+                    fontWeight: getResolvedFontWeight(
+                      section.style_config?.font || styleConfig?.font,
+                      section.style_config?.font_weight ||
+                        globalStyles.fontWeight,
+                    ),
                     fontStyle: section.style_config?.font_style || "normal",
                     textDecoration:
                       section.style_config?.text_decoration || "none",
@@ -4529,9 +4574,12 @@ export function TemplatePreview({
                             fontSize: activeHeaderConfig.style_config?.font_size
                               ? `${activeHeaderConfig.style_config.font_size}px`
                               : globalStyles.fontSize,
-                            fontWeight:
+                            fontWeight: getResolvedFontWeight(
+                              activeHeaderConfig.style_config?.font ||
+                                styleConfig?.font,
                               activeHeaderConfig.style_config?.font_weight ||
-                              "400",
+                                globalStyles.fontWeight,
+                            ),
                             lineHeight:
                               activeHeaderConfig.style_config?.line_height ||
                               undefined,
@@ -5067,9 +5115,12 @@ export function TemplatePreview({
                             fontSize: activeFooterConfig.style_config?.font_size
                               ? `${activeFooterConfig.style_config.font_size}px`
                               : globalStyles.fontSize,
-                            fontWeight:
+                            fontWeight: getResolvedFontWeight(
+                              activeFooterConfig.style_config?.font ||
+                                styleConfig?.font,
                               activeFooterConfig.style_config?.font_weight ||
-                              "400",
+                                globalStyles.fontWeight,
+                            ),
                             lineHeight:
                               activeFooterConfig.style_config?.line_height ||
                               undefined,
@@ -5201,7 +5252,11 @@ export function TemplatePreview({
                   fontSize: footerConfig.style_config?.font_size
                     ? `${footerConfig.style_config.font_size}px`
                     : globalStyles.fontSize,
-                  fontWeight: footerConfig.style_config?.font_weight || "400",
+                  fontWeight: getResolvedFontWeight(
+                    footerConfig.style_config?.font || styleConfig?.font,
+                    footerConfig.style_config?.font_weight ||
+                      globalStyles.fontWeight,
+                  ),
                   lineHeight:
                     footerConfig.style_config?.line_height || undefined,
                   fontStyle: footerConfig.style_config?.font_style || "normal",

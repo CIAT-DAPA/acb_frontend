@@ -1683,9 +1683,13 @@ export const RightPanel: React.FC<RightPanelProps> = ({
 
             {/* Configuration Specifics */}
             {((currentObject as Field)?.form ||
-              ["page_number", "image", "text_with_icon", "list"].includes(
-                (currentObject as Field).type,
-              )) && (
+              [
+                "page_number",
+                "image",
+                "text_with_icon",
+                "text",
+                "list",
+              ].includes((currentObject as Field).type)) && (
               <div className="pt-4 border-t border-gray-100">
                 <div className="flex items-center justify-between mb-2">
                   <label className="block text-xs font-bold text-gray-700">

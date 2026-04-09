@@ -21,7 +21,7 @@ export const TextFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
 
   // Helper para obtener config tipada
   const fieldConfig = currentField.field_config as TextFieldConfig;
-  const showLabel = fieldConfig?.showLabel ?? true;
+  const showLabel = fieldConfig?.showLabel ?? false;
 
   return (
     <div className="space-y-4">
