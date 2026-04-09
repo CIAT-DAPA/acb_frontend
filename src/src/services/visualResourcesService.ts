@@ -4,6 +4,7 @@ import {
   VisualResourceFileType,
   VisualResourceStatus,
 } from "../types/visualResource";
+import { normalizeAssetUrl } from "@/utils/assetUrl";
 
 // Interfaz para respuestas de la API
 interface APIResponse<T = any> {
@@ -32,13 +33,37 @@ interface UpdateVisualResourceRequest {
 export class VisualResourcesService extends BaseAPIService {
   private static readonly BASE_ENDPOINT = "/visual-resources";
 
+  private static normalizeResource<T extends { file_url?: string }>(
+    resource: T,
+  ): T {
+    if (!resource || typeof resource !== "object") {
+      return resource;
+    }
+
+    return {
+      ...resource,
+      file_url:
+        typeof resource.file_url === "string"
+          ? normalizeAssetUrl(resource.file_url)
+          : resource.file_url,
+    };
+  }
+
+  private static normalizeResources<T extends { file_url?: string }>(
+    resources: T[] = [],
+  ): T[] {
+    return resources.map((resource) => this.normalizeResource(resource));
+  }
+
   /**
    * GET /visual-resources/ - Get All Visual Resources
    */
   static async getAllVisualResources(): Promise<APIResponse<VisualResource[]>> {
     try {
       const data = await this.get<any>(this.BASE_ENDPOINT);
-      const resources = data.resources || data.data || data;
+      const resources = this.normalizeResources<VisualResource>(
+        data.resources || data.data || data,
+      );
 
       return {
         success: true,
@@ -72,14 +97,19 @@ export class VisualResourcesService extends BaseAPIService {
         // 1. Determinar la ruta donde se guardará el archivo
         const folderPath = this.getFolderPath(data.access_config);
         const fileName = this.generateFileName(file, data.file_name);
-        const file_url = `${folderPath}${fileName}`;
+        const staticFileUrl = `${folderPath}${fileName}`;
 
         // 2. Subir el archivo al servidor
-        const uploadSuccess = await this.uploadFileToServer(file, file_url);
+        const uploadedFileUrl = await this.uploadFileToServer(
+          file,
+          staticFileUrl,
+        );
 
-        if (!uploadSuccess) {
+        if (!uploadedFileUrl) {
           throw new Error("Error al subir el archivo al servidor");
         }
+
+        const file_url = normalizeAssetUrl(uploadedFileUrl);
 
         // 3. Preparar el body para la API
         const normalizedAccessType =
@@ -113,9 +143,13 @@ export class VisualResourcesService extends BaseAPIService {
           apiBody,
         );
 
+        const createdResource = this.normalizeResource<VisualResource>(
+          response.resource || response.data || response,
+        );
+
         return {
           success: true,
-          data: response.resource || response.data || response,
+          data: createdResource,
         };
       } else {
         // Solo metadatos sin archivo - esto probablemente no debería ocurrir
@@ -182,7 +216,7 @@ export class VisualResourcesService extends BaseAPIService {
   private static async uploadFileToServer(
     file: File,
     targetPath: string,
-  ): Promise<boolean> {
+  ): Promise<string | null> {
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -194,11 +228,19 @@ export class VisualResourcesService extends BaseAPIService {
         body: formData,
       });
 
+      if (!response.ok) {
+        return null;
+      }
+
       const result = await response.json();
-      return result && result.success;
+      if (result && result.success) {
+        return normalizeAssetUrl(result.path || targetPath);
+      }
+
+      return null;
     } catch (error) {
       console.error("Error uploading file to server:", error);
-      return false;
+      return null;
     }
   }
 
@@ -216,7 +258,9 @@ export class VisualResourcesService extends BaseAPIService {
       );
       return {
         success: true,
-        data: response.resource || response.data || response,
+        data: this.normalizeResource<VisualResource>(
+          response.resource || response.data || response,
+        ),
       };
     } catch (error) {
       console.error("Error updating visual resource:", error);
@@ -240,7 +284,9 @@ export class VisualResourcesService extends BaseAPIService {
       const data = await this.get<any>(`${this.BASE_ENDPOINT}/${resourceId}`);
       return {
         success: true,
-        data: data.resource || data.data || data,
+        data: this.normalizeResource<VisualResource>(
+          data.resource || data.data || data,
+        ),
       };
     } catch (error) {
       console.error("Error fetching visual resource:", error);
@@ -263,7 +309,9 @@ export class VisualResourcesService extends BaseAPIService {
     try {
       const endpoint = `${this.BASE_ENDPOINT}/name/${encodeURIComponent(name)}`;
       const data = await this.get<any>(endpoint);
-      const resources = data.resources || data.data || data;
+      const resources = this.normalizeResources<VisualResource>(
+        data.resources || data.data || data,
+      );
 
       return {
         success: true,
@@ -293,7 +341,9 @@ export class VisualResourcesService extends BaseAPIService {
     try {
       const endpoint = `${this.BASE_ENDPOINT}/status/${status}`;
       const data = await this.get<any>(endpoint);
-      const resources = data.resources || data.data || data;
+      const resources = this.normalizeResources<VisualResource>(
+        data.resources || data.data || data,
+      );
 
       return {
         success: true,
@@ -323,7 +373,9 @@ export class VisualResourcesService extends BaseAPIService {
     try {
       const endpoint = `${this.BASE_ENDPOINT}/type/${fileType}`;
       const data = await this.get<any>(endpoint);
-      const resources = data.resources || data.data || data;
+      const resources = this.normalizeResources<VisualResource>(
+        data.resources || data.data || data,
+      );
 
       return {
         success: true,
@@ -392,7 +444,9 @@ export class VisualResourcesService extends BaseAPIService {
 
       return {
         success: true,
-        data: response.resource || response.data || response,
+        data: this.normalizeResource<VisualResource>(
+          response.resource || response.data || response,
+        ),
       };
     } catch (error) {
       console.error("Error uploading visual resource:", error);
@@ -451,9 +505,20 @@ export const visualResourcesHelpers = {
    * Obtiene la URL completa de un recurso visual
    */
   getResourceURL: (filePath: string): string => {
-    const baseUrl =
-      process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
-    return `${baseUrl}${filePath}`;
+    const normalizedUrl = normalizeAssetUrl(filePath);
+
+    if (
+      normalizedUrl.startsWith("http://") ||
+      normalizedUrl.startsWith("https://")
+    ) {
+      return normalizedUrl;
+    }
+
+    if (typeof window !== "undefined") {
+      return `${window.location.origin}${normalizedUrl}`;
+    }
+
+    return normalizedUrl;
   },
 };
 

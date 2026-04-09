@@ -17,6 +17,7 @@ import {
   btnDangerIconClass,
 } from "@/app/[locale]/components/ui";
 import { VisualResourceSelector } from "../VisualResourceSelector";
+import { normalizeAssetUrl } from "@/utils/assetUrl";
 
 interface ImageFieldConfig {
   images: string[];
@@ -87,7 +88,7 @@ export const ImageFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
               {/* Preview de la imagen */}
               <div className={imagePreviewLargeClass}>
                 <img
-                  src={currentField.value as string}
+                  src={normalizeAssetUrl(currentField.value as string)}
                   alt={t("predefinedImageAlt")}
                   className="w-full h-full object-cover"
                   onError={(e) => {
@@ -184,7 +185,7 @@ export const ImageFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                 <div className={imagePreviewClass}>
                   {imageUrl ? (
                     <img
-                      src={imageUrl}
+                      src={normalizeAssetUrl(imageUrl)}
                       alt={t("imageNumber", { number: index + 1 })}
                       className="w-full h-full object-cover"
                       onError={(e) => {

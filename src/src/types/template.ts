@@ -19,6 +19,7 @@ export type {
 // Tipos de campo específicos para field_config
 export interface TextFieldConfig {
   subtype?: "short" | "long";
+  showLabel?: boolean; // Si true, muestra el label al lado del valor en el preview; si false, solo muestra el valor
 }
 
 export interface TextWithIconFieldConfig {
