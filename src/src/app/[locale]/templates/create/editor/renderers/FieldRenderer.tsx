@@ -111,7 +111,24 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
   };
 
   if (field.type === "text") {
-    return <div style={fieldStyles}>{renderTextContent()}</div>;
+    const showTextLabel = (field.field_config as any)?.showLabel ?? true;
+    const displayTextLabel = showTextLabel
+      ? field.label || field.display_name
+      : null;
+
+    return (
+      <div
+        style={{
+          ...fieldStyles,
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+        }}
+      >
+        {displayTextLabel && <span>{displayTextLabel}:</span>}
+        {renderTextContent()}
+      </div>
+    );
   }
 
   if (field.type === "text_with_icon") {

@@ -29,6 +29,7 @@ import {
 import { VisualResource } from "@/types/visualResource";
 import { VisualResourcesService } from "@/services/visualResourcesService";
 import { useToast } from "../../../../components/Toast";
+import { normalizeAssetUrl, toAbsoluteAssetUrl } from "@/utils/assetUrl";
 
 export default function VisualResources() {
   const t = useTranslations("VisualResources");
@@ -255,10 +256,7 @@ export default function VisualResources() {
       setDownloadingId(resource.id);
 
       // Construir la URL completa del recurso
-      const baseUrl = window.location.origin;
-      const fullImageUrl = resource.file_url.startsWith("http")
-        ? resource.file_url
-        : `${baseUrl}${resource.file_url}`;
+      const fullImageUrl = toAbsoluteAssetUrl(resource.file_url);
 
       // Fetch la imagen como blob para asegurar la descarga
       const response = await fetch(fullImageUrl);
@@ -406,7 +404,7 @@ export default function VisualResources() {
                     type="visual-resource"
                     id={resource.id}
                     name={resource.file_name}
-                    image={resource.file_url}
+                    image={normalizeAssetUrl(resource.file_url)}
                     fileType={resource.file_type}
                     author={updaterName || creatorName}
                     tags={getResourceTags(resource)}
@@ -483,7 +481,7 @@ export default function VisualResources() {
                   </h4>
                   <div className="flex items-center justify-center bg-gray-50 rounded-lg min-h-[300px] p-4">
                     <Image
-                      src={selectedResource.file_url}
+                      src={normalizeAssetUrl(selectedResource.file_url)}
                       alt={selectedResource.file_name}
                       width={400}
                       height={300}
@@ -678,7 +676,7 @@ export default function VisualResources() {
                 <div className="shrink-0">
                   <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
                     <Image
-                      src={resourceToDelete.file_url}
+                      src={normalizeAssetUrl(resourceToDelete.file_url)}
                       alt={resourceToDelete.file_name}
                       width={64}
                       height={64}

@@ -31,6 +31,7 @@ import { HeaderFooterConfigurator } from "../components/HeaderFooterConfigurator
 import { SmartIcon } from "../../../components/AdaptiveSvgIcon";
 import { btnOutlineSecondary } from "@/app/[locale]/components/ui";
 import { VisualResourcesService } from "@/services/visualResourcesService";
+import { normalizeAssetUrl } from "@/utils/assetUrl";
 import { VisualResource } from "@/types/visualResource";
 import Image from "next/image";
 
@@ -1479,20 +1480,21 @@ export function SectionsStep({
                     <div
                       key={icon.id}
                       className={`cursor-pointer p-4 border-2 rounded-lg hover:border-[#bc6c25] transition-colors ${
-                        currentSection.icon_url === icon.file_url
+                        normalizeAssetUrl(currentSection.icon_url) ===
+                        normalizeAssetUrl(icon.file_url)
                           ? "border-[#bc6c25] bg-[#bc6c25]/10"
                           : "border-gray-200"
                       }`}
                       onClick={() => {
                         updateSection(selectedSectionIndex, {
-                          icon_url: icon.file_url,
+                          icon_url: normalizeAssetUrl(icon.file_url),
                         });
                         setShowIconSelector(false);
                       }}
                     >
                       <div className="aspect-square bg-gray-50 rounded flex items-center justify-center mb-2">
                         <Image
-                          src={icon.file_url}
+                          src={normalizeAssetUrl(icon.file_url)}
                           alt={icon.file_name}
                           width={64}
                           height={64}

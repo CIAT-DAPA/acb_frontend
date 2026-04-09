@@ -16,6 +16,7 @@ import { SmartIcon } from "../../components/AdaptiveSvgIcon";
 import { Card } from "../../../../types/card";
 import { CardAPIService } from "../../../../services/cardService";
 import { RefreshCw } from "lucide-react";
+import { normalizeAssetUrl } from "@/utils/assetUrl";
 
 // Mapeo de fuentes a variables CSS de Next.js
 const FONT_CSS_VARS: Record<string, string> = {
@@ -1166,15 +1167,7 @@ export function TemplatePreview({
 
     // Si es una ruta relativa, construir URL completa y codificar
     const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
-    let cleanUrl = imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`;
-
-    // Fix for runtime uploaded assets
-    if (
-      cleanUrl.startsWith("/assets/thumbnails/") ||
-      cleanUrl.startsWith("/assets/img/visualResources/")
-    ) {
-      cleanUrl = cleanUrl.replace("/assets/", "/api/dynamic-assets/");
-    }
+    const cleanUrl = normalizeAssetUrl(imageUrl);
 
     // Codificar cada parte del path (excepto las barras)
     const encodedPath = cleanUrl
@@ -1311,9 +1304,20 @@ export function TemplatePreview({
           ? renderFieldValue(field.value)
           : field.display_name || field.label || "Campo de texto";
 
+        const showPlainTextLabel =
+          (field.field_config as any)?.showLabel ?? true;
+        const displayPlainTextLabel = showPlainTextLabel
+          ? field.label || field.display_name
+          : null;
+
         return (
-          <div key={key} style={fieldStyles}>
-            {textValue}
+          <div
+            key={key}
+            style={fieldStyles}
+            className="flex items-center gap-2"
+          >
+            {displayPlainTextLabel && <span>{displayPlainTextLabel}:</span>}
+            <span>{textValue}</span>
           </div>
         );
 

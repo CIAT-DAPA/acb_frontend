@@ -21,6 +21,7 @@ export const TextFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
 
   // Helper para obtener config tipada
   const fieldConfig = currentField.field_config as TextFieldConfig;
+  const showLabel = fieldConfig?.showLabel ?? true;
 
   return (
     <div className="space-y-4">
@@ -36,6 +37,27 @@ export const TextFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
           <option value="long">{t("textConfig.long")}</option>
         </select>
         <p className={helpTextClass}>{t("textConfig.subtypeHelp")}</p>
+      </div>
+
+      {/* Configuración de visualización del label */}
+      <div className="flex items-center space-x-2">
+        <input
+          type="checkbox"
+          id="textShowLabel"
+          checked={showLabel}
+          onChange={(e) => updateFieldConfig({ showLabel: e.target.checked })}
+          className="w-4 h-4 text-[#bc6c25] border-gray-300 rounded focus:ring-[#bc6c25]"
+        />
+        <label htmlFor="textShowLabel" className={labelClass}>
+          {currentField.form
+            ? t("textWithIconConfig.showLabelForm")
+            : t("textWithIconConfig.showLabelPreview")}
+        </label>
+        <p className={helpTextClass}>
+          {currentField.form
+            ? t("textWithIconConfig.showLabelFormHelp")
+            : t("textWithIconConfig.showLabelPreviewHelp")}
+        </p>
       </div>
 
       {/* Validaciones */}

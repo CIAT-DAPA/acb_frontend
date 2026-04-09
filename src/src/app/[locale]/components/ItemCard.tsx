@@ -17,6 +17,7 @@ import {
   getStatusBadgeClass,
   getStatusBadgeConfig,
 } from "@/utils/statusHelpers";
+import { normalizeAssetUrl } from "@/utils/assetUrl";
 
 // Props base compartidas
 interface BaseItemCardProps {
@@ -101,13 +102,7 @@ export default function ItemCard(props: ItemCardProps) {
 
   const getSafeImageUrl = (url?: string) => {
     if (!url) return undefined;
-    if (
-      url.startsWith("/assets/img/visualResources/") ||
-      url.startsWith("/assets/thumbnails/")
-    ) {
-      return url.replace("/assets/", "/api/dynamic-assets/");
-    }
-    return url;
+    return normalizeAssetUrl(url);
   };
 
   // Imagen a mostrar
