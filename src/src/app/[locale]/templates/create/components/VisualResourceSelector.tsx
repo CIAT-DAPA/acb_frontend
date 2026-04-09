@@ -5,6 +5,7 @@ import { X, Loader2 } from "lucide-react";
 import { VisualResourcesService } from "@/services/visualResourcesService";
 import { VisualResource } from "@/types/visualResource";
 import Image from "next/image";
+import { normalizeAssetUrl } from "@/utils/assetUrl";
 
 export interface VisualResourceSelectorProps {
   /** Si el modal está visible */
@@ -50,16 +51,15 @@ export const VisualResourceSelector: React.FC<VisualResourceSelectorProps> = ({
   const loadResources = async () => {
     setLoadingResources(true);
     try {
-      const response = await VisualResourcesService.getVisualResourcesByStatus(
-        "active"
-      );
+      const response =
+        await VisualResourcesService.getVisualResourcesByStatus("active");
       if (response.success && response.data) {
         let filteredResources = response.data;
 
         // Filtrar por tipo si es necesario
         if (resourceType !== "both") {
           filteredResources = filteredResources.filter(
-            (resource) => resource.file_type === resourceType
+            (resource) => resource.file_type === resourceType,
           );
         }
 
@@ -118,8 +118,8 @@ export const VisualResourceSelector: React.FC<VisualResourceSelectorProps> = ({
               {resourceType === "icon"
                 ? "iconos"
                 : resourceType === "image"
-                ? "imágenes"
-                : "recursos"}{" "}
+                  ? "imágenes"
+                  : "recursos"}{" "}
               disponibles.
             </p>
             <p className="text-sm">
@@ -130,12 +130,16 @@ export const VisualResourceSelector: React.FC<VisualResourceSelectorProps> = ({
           <div className="overflow-y-auto max-h-[calc(90vh-180px)]">
             <div className={`grid ${gridColsClass} gap-4 p-2`}>
               {availableResources.map((resource) => {
-                const isSelected = selectedUrl === resource.file_url;
+                const normalizedResourceUrl = normalizeAssetUrl(
+                  resource.file_url,
+                );
+                const isSelected =
+                  normalizeAssetUrl(selectedUrl) === normalizedResourceUrl;
                 return (
                   <button
                     key={resource.id}
                     type="button"
-                    onClick={() => handleSelect(resource.file_url)}
+                    onClick={() => handleSelect(normalizedResourceUrl)}
                     className={`
                       flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all
                       ${
@@ -148,7 +152,7 @@ export const VisualResourceSelector: React.FC<VisualResourceSelectorProps> = ({
                   >
                     <div className="w-16 h-16 mb-2 flex items-center justify-center">
                       <Image
-                        src={resource.file_url}
+                        src={normalizedResourceUrl}
                         alt={resource.file_name}
                         width={64}
                         height={64}

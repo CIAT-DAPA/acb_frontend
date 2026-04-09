@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { normalizeAssetUrl } from "@/utils/assetUrl";
 
 interface AdaptiveSvgIconProps {
   src: string;
@@ -27,14 +28,7 @@ export function AdaptiveSvgIcon({
         setIsLoading(true);
         setError(false);
 
-        let fetchSrc = src;
-        // Fix for runtime uploaded assets
-        if (
-          fetchSrc.startsWith("/assets/thumbnails/") ||
-          fetchSrc.startsWith("/assets/img/visualResources/")
-        ) {
-          fetchSrc = fetchSrc.replace("/assets/", "/api/dynamic-assets/");
-        }
+        const fetchSrc = normalizeAssetUrl(src);
 
         const response = await fetch(fetchSrc);
         if (!response.ok) throw new Error("Failed to load SVG");
@@ -60,7 +54,7 @@ export function AdaptiveSvgIcon({
           if (!preserveOriginalColors) {
             // Hacer que todos los paths usen currentColor de manera inteligente
             const paths = svgElement.querySelectorAll(
-              "path, circle, rect, polygon, polyline, line, ellipse"
+              "path, circle, rect, polygon, polyline, line, ellipse",
             );
 
             // Detectar si el SVG es principalmente stroke-based o fill-based
