@@ -286,7 +286,7 @@ function BlockConfiguration({
                   isExpanded={expandedField === fieldIndex}
                   onToggleExpand={() =>
                     setExpandedField(
-                      expandedField === fieldIndex ? null : fieldIndex
+                      expandedField === fieldIndex ? null : fieldIndex,
                     )
                   }
                   onUpdateField={() => {}}
@@ -311,7 +311,7 @@ export function CardSectionsEditor({
 }: CardSectionsEditorProps) {
   const t = useTranslations("CreateCard.content");
   const [activeTab, setActiveTab] = useState<"blocks" | "header" | "footer">(
-    "blocks"
+    "blocks",
   );
   const [expandedBlock, setExpandedBlock] = useState<number | null>(null);
   const [editingField, setEditingField] = useState<{
@@ -363,7 +363,7 @@ export function CardSectionsEditor({
         },
       }));
     },
-    [onDataChange]
+    [onDataChange],
   );
 
   const handleUpdateBlock = useCallback(
@@ -373,12 +373,12 @@ export function CardSectionsEditor({
         content: {
           ...prevData.content,
           blocks: prevData.content.blocks.map((block, i) =>
-            i === blockIndex ? { ...block, ...updates } : block
+            i === blockIndex ? { ...block, ...updates } : block,
           ),
         },
       }));
     },
-    [onDataChange]
+    [onDataChange],
   );
 
   // ============================================
@@ -407,12 +407,12 @@ export function CardSectionsEditor({
                   ...block,
                   fields: [...block.fields, newField] as Field[],
                 }
-              : block
+              : block,
           ),
         },
       }));
     },
-    [data.content.blocks, onDataChange]
+    [data.content.blocks, onDataChange],
   );
 
   const handleRemoveField = useCallback(
@@ -426,10 +426,10 @@ export function CardSectionsEditor({
               ? {
                   ...block,
                   fields: block.fields.filter(
-                    (_, fi) => fi !== fieldIndex
+                    (_, fi) => fi !== fieldIndex,
                   ) as Field[],
                 }
-              : block
+              : block,
           ),
         },
       }));
@@ -443,7 +443,7 @@ export function CardSectionsEditor({
         setEditingField(null);
       }
     },
-    [editingField, onDataChange]
+    [editingField, onDataChange],
   );
 
   const handleUpdateField = useCallback(
@@ -457,15 +457,15 @@ export function CardSectionsEditor({
               ? {
                   ...block,
                   fields: block.fields.map((field, fi) =>
-                    fi === fieldIndex ? { ...field, ...updates } : field
+                    fi === fieldIndex ? { ...field, ...updates } : field,
                   ) as Field[],
                 }
-              : block
+              : block,
           ),
         },
       }));
     },
-    [onDataChange]
+    [onDataChange],
   );
 
   // ============================================
@@ -500,14 +500,14 @@ export function CardSectionsEditor({
 
       setDraggedItem(null);
     },
-    [draggedItem, onDataChange]
+    [draggedItem, onDataChange],
   );
 
   const handleFieldDragStart = useCallback(
     (blockIndex: number, fieldIndex: number) => {
       setDraggedItem({ blockIndex, fieldIndex });
     },
-    []
+    [],
   );
 
   const handleFieldDrop = useCallback(
@@ -526,7 +526,7 @@ export function CardSectionsEditor({
           content: {
             ...prevData.content,
             blocks: prevData.content.blocks.map((b, i) =>
-              i === targetBlockIndex ? { ...b, fields: fields as Field[] } : b
+              i === targetBlockIndex ? { ...b, fields: fields as Field[] } : b,
             ),
           },
         };
@@ -534,7 +534,7 @@ export function CardSectionsEditor({
 
       setDraggedItem(null);
     },
-    [draggedItem, onDataChange]
+    [draggedItem, onDataChange],
   );
 
   // ============================================
@@ -554,7 +554,7 @@ export function CardSectionsEditor({
         },
       }));
     },
-    [onDataChange]
+    [onDataChange],
   );
 
   const handleFooterChange = useCallback(
@@ -570,7 +570,7 @@ export function CardSectionsEditor({
         },
       }));
     },
-    [onDataChange]
+    [onDataChange],
   );
 
   // ============================================
@@ -750,6 +750,50 @@ export function CardSectionsEditor({
                 </p>
               </div>
 
+              {/* Background Opacity */}
+              <div>
+                <label
+                  htmlFor="background_opacity"
+                  className="block text-sm font-medium text-[#283618] mb-2"
+                >
+                  {t("backgroundOpacity")}
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="range"
+                    id="background_opacity"
+                    min={0}
+                    max={100}
+                    step={5}
+                    value={Math.round(
+                      (data.content.background_opacity ?? 1) * 100,
+                    )}
+                    onChange={(e) => {
+                      const nextOpacity =
+                        Math.max(
+                          0,
+                          Math.min(100, Number.parseInt(e.target.value, 10)),
+                        ) / 100;
+
+                      onDataChange((prevData) => ({
+                        ...prevData,
+                        content: {
+                          ...prevData.content,
+                          background_opacity: nextOpacity,
+                        },
+                      }));
+                    }}
+                    className="w-full accent-[#bc6c25]"
+                  />
+                  <span className="text-sm text-[#283618]/70 min-w-[42px] text-right">
+                    {Math.round((data.content.background_opacity ?? 1) * 100)}%
+                  </span>
+                </div>
+                <p className="text-xs text-[#283618]/60 mt-1">
+                  {t("backgroundOpacityHelp")}
+                </p>
+              </div>
+
               {/* Padding */}
               <div>
                 <label
@@ -867,7 +911,9 @@ export function CardSectionsEditor({
                           <button
                             onClick={() =>
                               setExpandedBlock(
-                                expandedBlock === blockIndex ? null : blockIndex
+                                expandedBlock === blockIndex
+                                  ? null
+                                  : blockIndex,
                               )
                             }
                             className={`p-1 rounded transition-colors ${
@@ -974,7 +1020,7 @@ export function CardSectionsEditor({
                   handleUpdateField(
                     editingField.blockIndex,
                     editingField.fieldIndex,
-                    updatedField
+                    updatedField,
                   );
                   setEditingField(null);
                 }}

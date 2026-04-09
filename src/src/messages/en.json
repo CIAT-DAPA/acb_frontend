@@ -2040,6 +2040,8 @@
       "backgroundImageHelp": "Select an image from visual resources to use as background",
       "backgroundColor": "Background Color",
       "backgroundColorHelp": "The color will be applied if no background image is selected",
+      "backgroundOpacity": "Background Opacity",
+      "backgroundOpacityHelp": "Controls how transparent the card background is so the template background can be seen",
       "padding": "Padding (Internal Space)",
       "paddingPlaceholder": "E.g: 16px, 1rem, 10px 20px",
       "paddingHelp": "Internal space between card border and its content",

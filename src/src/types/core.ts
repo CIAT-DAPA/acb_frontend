@@ -21,6 +21,7 @@ export interface StyleConfig {
   font?: string;
   color?: string;
   background_color?: string;
+  background_opacity?: number;
   background_image?: string; // URL de la imagen de fondo
   font_size?: number;
   font_weight?: string;

@@ -1594,9 +1594,6 @@ export default function FormBulletinPage({
                     data={previewData}
                     moreInfo={true}
                     description={true}
-                    forceGlobalHeader={
-                      creationState.currentStep === "basic-info"
-                    }
                     selectedSectionIndex={previewSectionIndex}
                     currentPageIndex={previewPageIndex}
                     onPageChange={setPreviewPageIndex}
