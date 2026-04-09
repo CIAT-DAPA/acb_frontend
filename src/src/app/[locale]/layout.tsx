@@ -62,7 +62,7 @@ const lato = Lato({
 const archivoLight = Archivo({
   variable: "--font-archivo-light",
   subsets: ["latin"],
-  weight: ["300"],
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
 });
 
 const archivoNarrow = Archivo_Narrow({

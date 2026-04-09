@@ -24,6 +24,21 @@ function getFontFamily(font?: string): string {
   return FONT_CSS_VARS[font] || font;
 }
 
+function getResolvedFontWeight(
+  font?: string,
+  fontWeight?: string | number,
+): string | number {
+  if (
+    fontWeight !== undefined &&
+    fontWeight !== null &&
+    `${fontWeight}` !== ""
+  ) {
+    return fontWeight;
+  }
+  if (font === "Archivo Light") return "300";
+  return fontWeight || "400";
+}
+
 function getBorderStyles(
   styleConfig: StyleConfig | undefined,
 ): React.CSSProperties {
@@ -78,6 +93,8 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
 
   // Fallback for visual properties if not present in effectiveStyles (e.g. from defaults)
   const contextStyles = { ...defaultGlobalStyles, ...globalStyles };
+  const resolvedFieldFont =
+    effectiveStyles.font || (globalStyles as StyleConfig).font;
 
   const fieldStyles: React.CSSProperties = {
     color:
@@ -87,7 +104,10 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
     fontSize: effectiveStyles.font_size
       ? `${effectiveStyles.font_size}px`
       : undefined, // Let it inherit if not set, or use default
-    fontWeight: (effectiveStyles.font_weight || "400") as any,
+    fontWeight: getResolvedFontWeight(
+      resolvedFieldFont,
+      effectiveStyles.font_weight,
+    ) as any,
     lineHeight: effectiveStyles.line_height || "normal",
     fontStyle: effectiveStyles.font_style || "normal",
     textDecoration: effectiveStyles.text_decoration || "none",
@@ -111,7 +131,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
   };
 
   if (field.type === "text") {
-    const showTextLabel = (field.field_config as any)?.showLabel ?? true;
+    const showTextLabel = (field.field_config as any)?.showLabel ?? false;
     const displayTextLabel = showTextLabel
       ? field.label || field.display_name
       : null;
