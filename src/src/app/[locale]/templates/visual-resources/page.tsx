@@ -57,6 +57,12 @@ export default function VisualResources() {
   const [isEditing, setIsEditing] = useState(false);
   const [availableGroups, setAvailableGroups] = useState<string[]>([]);
 
+  const getResourceTimestamp = (resource: VisualResource): number => {
+    return new Date(
+      resource.log?.updated_at || resource.log?.created_at || 0,
+    ).getTime();
+  };
+
   // Cargar recursos visuales al montar el componente (solo una vez)
   useEffect(() => {
     loadVisualResources();
@@ -90,10 +96,12 @@ export default function VisualResources() {
     setLoading(true);
     setError(null);
     try {
-      const response = await VisualResourcesService.getVisualResourcesByStatus(
-        "active"
+      const response =
+        await VisualResourcesService.getVisualResourcesByStatus("active");
+      const sortedResources = [...(response.data || [])].sort(
+        (a, b) => getResourceTimestamp(b) - getResourceTimestamp(a),
       );
-      setAllResources(response.data || []);
+      setAllResources(sortedResources);
     } catch (err) {
       setError("Error de conexión al cargar los recursos visuales");
       console.error("Error loading visual resources:", err);
@@ -103,14 +111,16 @@ export default function VisualResources() {
     }
   };
 
-  const filteredResources = allResources.filter((resource) => {
-    const matchesType =
-      filterType === "all" || resource.file_type === filterType;
-    const matchesSearch =
-      !searchTerm ||
-      resource.file_name.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesType && matchesSearch;
-  });
+  const filteredResources = allResources
+    .filter((resource) => {
+      const matchesType =
+        filterType === "all" || resource.file_type === filterType;
+      const matchesSearch =
+        !searchTerm ||
+        resource.file_name.toLowerCase().includes(searchTerm.toLowerCase());
+      return matchesType && matchesSearch;
+    })
+    .sort((a, b) => getResourceTimestamp(b) - getResourceTimestamp(a));
 
   const getResourceTags = (resource: VisualResource): string[] => {
     const tags: string[] = [resource.file_type];
@@ -180,14 +190,14 @@ export default function VisualResources() {
 
       const response = await VisualResourcesService.updateVisualResource(
         selectedResource.id,
-        updateData
+        updateData,
       );
 
       if (response.success) {
         setAllResources((prev) =>
           prev.map((r) =>
-            r.id === selectedResource.id ? { ...r, ...updateData } : r
-          )
+            r.id === selectedResource.id ? { ...r, ...updateData } : r,
+          ),
         );
         handleCloseEdit();
         showToast(t("editSuccess"), "success");
@@ -225,7 +235,7 @@ export default function VisualResources() {
       setIsDeleting(true);
       await VisualResourcesService.deleteVisualResource(resourceToDelete.id);
       setAllResources((prev) =>
-        prev.filter((r) => r.id !== resourceToDelete.id)
+        prev.filter((r) => r.id !== resourceToDelete.id),
       );
       handleCloseDeleteModal();
       showToast(t("deleteSuccess"), "success");
@@ -274,7 +284,7 @@ export default function VisualResources() {
     } catch (error) {
       console.error("Error al descargar el recurso:", error);
       alert(
-        "Error al descargar el archivo. Verifica que el archivo esté disponible."
+        "Error al descargar el archivo. Verifica que el archivo esté disponible.",
       );
     } finally {
       setDownloadingId(null);

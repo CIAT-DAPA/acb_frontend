@@ -79,6 +79,12 @@ export default function Bulletins() {
 
   const { can } = usePermissions();
 
+  const getBulletinTimestamp = (bulletin: BulletinMaster): number => {
+    return new Date(
+      bulletin.log?.updated_at || bulletin.log?.created_at || 0,
+    ).getTime();
+  };
+
   // Cargar bulletins al montar el componente
   useEffect(() => {
     loadBulletins();
@@ -142,33 +148,38 @@ export default function Bulletins() {
   const filteredBulletins = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
 
-    return bulletins.filter((bulletin) => {
-      const allowedGroups = bulletin.access_config?.allowed_groups || [];
-      const hasReadPermission = can(
-        PERMISSION_ACTIONS.Read,
-        MODULES.BULLETINS_COMPOSER,
-        allowedGroups,
-      );
-      const matchesStatus =
-        selectedStatus === "all"
-          ? bulletin.status !== "archived"
-          : bulletin.status === selectedStatus;
-      const hasKnownTemplate = Boolean(
-        bulletin.base_template_master_id &&
-        templatesMap[bulletin.base_template_master_id],
-      );
-      const matchesSearch =
-        !term ||
-        bulletin.bulletin_name.toLowerCase().includes(term) ||
-        (templatesMap[bulletin.base_template_master_id] &&
-          templatesMap[bulletin.base_template_master_id]
-            .toLowerCase()
-            .includes(term));
+    return bulletins
+      .filter((bulletin) => {
+        const allowedGroups = bulletin.access_config?.allowed_groups || [];
+        const hasReadPermission = can(
+          PERMISSION_ACTIONS.Read,
+          MODULES.BULLETINS_COMPOSER,
+          allowedGroups,
+        );
+        const matchesStatus =
+          selectedStatus === "all"
+            ? bulletin.status !== "archived"
+            : bulletin.status === selectedStatus;
+        const hasKnownTemplate = Boolean(
+          bulletin.base_template_master_id &&
+          templatesMap[bulletin.base_template_master_id],
+        );
+        const matchesSearch =
+          !term ||
+          bulletin.bulletin_name.toLowerCase().includes(term) ||
+          (templatesMap[bulletin.base_template_master_id] &&
+            templatesMap[bulletin.base_template_master_id]
+              .toLowerCase()
+              .includes(term));
 
-      return (
-        hasReadPermission && hasKnownTemplate && matchesStatus && matchesSearch
-      );
-    });
+        return (
+          hasReadPermission &&
+          hasKnownTemplate &&
+          matchesStatus &&
+          matchesSearch
+        );
+      })
+      .sort((a, b) => getBulletinTimestamp(b) - getBulletinTimestamp(a));
   }, [searchTerm, selectedStatus, bulletins, templatesMap, can]);
 
   const groupedBulletins = useMemo(() => {
@@ -216,16 +227,23 @@ export default function Bulletins() {
       .map((group) => ({
         ...group,
         bulletins: [...group.bulletins].sort((a, b) => {
-          const leftDate = new Date(
-            b.log.updated_at || b.log.created_at || 0,
-          ).getTime();
-          const rightDate = new Date(
-            a.log.updated_at || a.log.created_at || 0,
-          ).getTime();
-          return leftDate - rightDate;
+          return getBulletinTimestamp(b) - getBulletinTimestamp(a);
         }),
       }))
-      .sort((a, b) => a.templateName.localeCompare(b.templateName));
+      .sort((a, b) => {
+        const latestA = a.bulletins.length
+          ? getBulletinTimestamp(a.bulletins[0])
+          : 0;
+        const latestB = b.bulletins.length
+          ? getBulletinTimestamp(b.bulletins[0])
+          : 0;
+
+        if (latestA === latestB) {
+          return a.templateName.localeCompare(b.templateName);
+        }
+
+        return latestB - latestA;
+      });
   }, [filteredBulletins, templatesMap, t]);
 
   const handleDuplicateBulletin = (bulletin: BulletinMaster) => {

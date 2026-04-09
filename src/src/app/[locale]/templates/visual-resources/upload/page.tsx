@@ -17,6 +17,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ProtectedRoute } from "../../../../../components/ProtectedRoute";
 import { useToast } from "../../../../../components/Toast";
+import GroupSelector from "../../../components/GroupSelector";
 import {
   container,
   btnPrimary,
@@ -50,11 +51,10 @@ export default function UploadVisualResource() {
   // Estados del formulario
   const [selectedFiles, setSelectedFiles] = useState<FileWithPreview[]>([]);
   const [fileType, setFileType] = useState<VisualResourceFileType>("image");
-  const [accessType, setAccessType] = useState<"public" | "private" | "group">(
-    "public"
+  const [accessType, setAccessType] = useState<"public" | "restricted">(
+    "public",
   );
-  const [selectedGroup, setSelectedGroup] = useState<string>("");
-  const [availableGroups, setAvailableGroups] = useState<string[]>([]);
+  const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
 
   // Estados de UI
   const [isDragActive, setIsDragActive] = useState(false);
@@ -70,28 +70,10 @@ export default function UploadVisualResource() {
   // Ref para mantener referencia actual de los archivos
   const selectedFilesRef = useRef<FileWithPreview[]>(selectedFiles);
 
-  // Cargar grupos disponibles y recursos existentes al montar el componente
-  useEffect(() => {
-    loadAvailableGroups();
-  }, []);
-
   // Mantener la ref actualizada
   useEffect(() => {
     selectedFilesRef.current = selectedFiles;
   }, [selectedFiles]);
-
-  const loadAvailableGroups = async () => {
-    try {
-      const response = await VisualResourcesService.getAvailableGroups();
-      if (response.success && response.data) {
-        setAvailableGroups(response.data);
-      }
-    } catch (error) {
-      console.error("Error loading available groups:", error);
-      // Fallback: usar grupos de ejemplo si el endpoint no está disponible
-      setAvailableGroups(["Admin", "Research", "Public"]);
-    }
-  };
 
   const isValidFileType = (file: File): boolean => {
     const validTypes = {
@@ -121,7 +103,7 @@ export default function UploadVisualResource() {
       fileArray.forEach((file) => {
         if (!isValidFileType(file)) {
           errors.push(
-            `${file.name}: Tipo de archivo no válido para ${fileType}`
+            `${file.name}: Tipo de archivo no válido para ${fileType}`,
           );
           return;
         }
@@ -129,7 +111,7 @@ export default function UploadVisualResource() {
         if (!isValidFileSize(file)) {
           const maxSize = fileType === "image" ? "10MB" : "2MB";
           errors.push(
-            `${file.name}: Archivo demasiado grande (máximo ${maxSize})`
+            `${file.name}: Archivo demasiado grande (máximo ${maxSize})`,
           );
           return;
         }
@@ -156,7 +138,7 @@ export default function UploadVisualResource() {
 
       setSelectedFiles((prev) => [...prev, ...validFiles]);
     },
-    [fileType]
+    [fileType],
   );
 
   // Drag and Drop handlers
@@ -188,7 +170,7 @@ export default function UploadVisualResource() {
         handleFileSelect(files);
       }
     },
-    [handleFileSelect]
+    [handleFileSelect],
   );
 
   const removeFile = (fileId: string) => {
@@ -199,13 +181,13 @@ export default function UploadVisualResource() {
           return false;
         }
         return true;
-      })
+      }),
     );
   };
 
   const updateCustomFileName = (fileId: string, customName: string) => {
     setSelectedFiles((prev) =>
-      prev.map((file) => (file.id === fileId ? { ...file, customName } : file))
+      prev.map((file) => (file.id === fileId ? { ...file, customName } : file)),
     );
   };
 
@@ -214,13 +196,13 @@ export default function UploadVisualResource() {
       return showToast(
         "Selecciona al menos un archivo para subir",
         "error",
-        4000
+        4000,
       );
-    if (accessType === "group" && !selectedGroup)
+    if (accessType === "restricted" && selectedGroups.length === 0)
       return showToast(
-        "Selecciona un grupo para el acceso por grupo",
+        "Selecciona al menos un grupo para el acceso restringido",
         "error",
-        4000
+        4000,
       );
 
     setIsUploading(true);
@@ -263,14 +245,16 @@ export default function UploadVisualResource() {
             status: "active" as VisualResourceStatus,
             access_config: {
               type: accessType,
-              ...(accessType === "group" && { group_name: selectedGroup }),
+              ...(accessType === "restricted" && {
+                allowed_groups: selectedGroups,
+              }),
             },
           };
 
           // Usar createVisualResource con archivo y metadatos
           const response = await VisualResourcesService.createVisualResource(
             uploadMetadata,
-            file.file // Usar el archivo original
+            file.file, // Usar el archivo original
           );
 
           // Actualizar progreso a 100%
@@ -306,7 +290,7 @@ export default function UploadVisualResource() {
             successCount !== 1 ? "s" : ""
           }`,
           "success",
-          3000
+          3000,
         );
       } else if (successCount > 0 && errorCount > 0) {
         // Algunos archivos subidos correctamente, otros fallaron
@@ -317,14 +301,14 @@ export default function UploadVisualResource() {
             errorCount !== 1 ? "s fallaron" : " falló"
           }.`,
           "error",
-          5000
+          5000,
         );
       } else {
         // Ningún archivo subido
         showToast(
           "No se pudo subir ningún archivo. Revisa los errores e intenta de nuevo.",
           "error",
-          5000
+          5000,
         );
       }
     } catch (error) {
@@ -367,7 +351,7 @@ export default function UploadVisualResource() {
                 <p className={pageSubtitle}>{t("subtitle")}</p>
               </div>
               <div className="hidden lg:block rotate-12">
-                <div className="w-32 h-32 bg-gradient-to-br from-[#ffaf68] to-[#ff8c42] rounded-lg flex items-center justify-center">
+                <div className="w-32 h-32 bg-linear-to-br from-[#ffaf68] to-[#ff8c42] rounded-lg flex items-center justify-center">
                   <Upload className="h-16 w-16 text-white" />
                 </div>
               </div>
@@ -410,37 +394,33 @@ export default function UploadVisualResource() {
                     </label>
                     <select
                       value={accessType}
-                      onChange={(e) =>
-                        setAccessType(
-                          e.target.value as "public" | "private" | "group"
-                        )
-                      }
+                      onChange={(e) => {
+                        const nextType = e.target.value as
+                          | "public"
+                          | "restricted";
+                        setAccessType(nextType);
+
+                        if (nextType !== "restricted") {
+                          setSelectedGroups([]);
+                        }
+                      }}
                       className={`${inputField} cursor-pointer`}
                     >
                       <option value="public">{t("public")}</option>
-                      <option value="private">{t("private")}</option>
-                      <option value="group">{t("groupSpecific")}</option>
+                      <option value="restricted">{t("restricted")}</option>
                     </select>
                   </div>
 
-                  {/* Selector de grupo (solo si es acceso por grupo) */}
-                  {accessType === "group" && (
+                  {/* Selector de grupos (solo si es acceso restringido) */}
+                  {accessType === "restricted" && (
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-[#283618] mb-2">
-                        {t("selectGroup")}
-                      </label>
-                      <select
-                        value={selectedGroup}
-                        onChange={(e) => setSelectedGroup(e.target.value)}
-                        className={inputField}
-                      >
-                        <option value="">{t("selectGroup")}...</option>
-                        {availableGroups.map((group) => (
-                          <option key={group} value={group}>
-                            {group}
-                          </option>
-                        ))}
-                      </select>
+                      <GroupSelector
+                        selectedIds={selectedGroups}
+                        onChange={setSelectedGroups}
+                        id="visual_resource_allowed_groups"
+                        label={t("selectGroups")}
+                        placeholder={t("selectGroup")}
+                      />
                     </div>
                   )}
                 </div>
