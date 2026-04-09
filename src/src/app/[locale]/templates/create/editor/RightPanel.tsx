@@ -1211,6 +1211,55 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                   }}
                   singleColumn={true}
                 />
+
+                {isCardMode && (
+                  <div className="mt-3 rounded-md border border-gray-200 bg-gray-50 p-3">
+                    <label className="block text-xs font-medium text-gray-700 mb-2">
+                      {tCreateCard("content.backgroundOpacity")}
+                    </label>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={5}
+                      value={Math.round(
+                        (((currentObject as Section)?.style_config
+                          ?.background_opacity as number | undefined) ?? 1) *
+                          100,
+                      )}
+                      onChange={(e) => {
+                        const nextOpacity =
+                          Math.max(
+                            0,
+                            Math.min(100, Number.parseInt(e.target.value, 10)),
+                          ) / 100;
+
+                        updateSection({
+                          style_config: {
+                            ...((currentObject as Section)?.style_config || {}),
+                            background_opacity: nextOpacity,
+                          },
+                        });
+                      }}
+                      className="w-full accent-[#bc6c25]"
+                    />
+                    <div className="mt-1 flex items-center justify-between text-[11px] text-gray-500">
+                      <span>0%</span>
+                      <span>
+                        {Math.round(
+                          (((currentObject as Section)?.style_config
+                            ?.background_opacity as number | undefined) ?? 1) *
+                            100,
+                        )}
+                        %
+                      </span>
+                      <span>100%</span>
+                    </div>
+                    <p className="mt-1 text-[11px] text-gray-500">
+                      {tCreateCard("content.backgroundOpacityHelp")}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 

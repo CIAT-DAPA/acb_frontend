@@ -520,6 +520,8 @@
       "noImageSelected": "Không có hình ảnh nào được chọn",
       "backgroundImageHelp": "Chọn một hình ảnh từ các nguồn dữ liệu trực quan để sử dụng làm hình nền",
       "backgroundColorHelp": "Màu sắc sẽ được áp dụng nếu không có hình nền nào được chọn",
+      "backgroundOpacity": "Độ mờ nền",
+      "backgroundOpacityHelp": "Điều chỉnh độ trong suốt của nền thẻ để có thể thấy nền của mẫu",
       "padding": "Đệm (Khoảng trống bên trong)",
       "paddingPlaceholder": "Ví dụ: 16px, 1rem, 10px 20px",
       "paddingHelp": "Khoảng cách bên trong giữa đường viền thẻ và nội dung của thẻ",

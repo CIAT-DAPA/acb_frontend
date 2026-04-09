@@ -2038,6 +2038,8 @@
       "backgroundImageHelp": "Selecciona una imagen de los recursos visuales para usar como fondo",
       "backgroundColor": "Color de Fondo",
       "backgroundColorHelp": "El color se aplicará si no hay imagen de fondo seleccionada",
+      "backgroundOpacity": "Opacidad del Fondo",
+      "backgroundOpacityHelp": "Controla qué tan transparente es el fondo del card para dejar ver el fondo del template",
       "padding": "Padding (Espacio Interno)",
       "paddingPlaceholder": "Ej: 16px, 1rem, 10px 20px",
       "paddingHelp": "Espacio interno entre el borde del card y su contenido",

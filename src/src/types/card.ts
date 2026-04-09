@@ -20,6 +20,7 @@ export type CardType = string;
 export interface CardContent {
   background_url?: string; // URL de imagen de fondo para la card
   background_color?: string; // Color de fondo para la card (hex, rgb, etc.)
+  background_opacity?: number; // Opacidad del fondo de la card (0 a 1)
   blocks: Block[]; // Array de bloques, misma estructura que en templates
   header_config?: import("./template").HeaderFooterConfig; // Configuración opcional del encabezado
   footer_config?: import("./template").HeaderFooterConfig; // Configuración opcional del pie de página

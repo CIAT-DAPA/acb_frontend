@@ -41,6 +41,7 @@ export const CardEditorAdapter: React.FC<CardEditorAdapterProps> = ({
       footer_config: data.content.footer_config,
       style_config: {
         background_color: data.content.background_color,
+        background_opacity: data.content.background_opacity,
         background_image: data.content.background_url,
         padding: data.content.style_config?.padding,
         gap: data.content.style_config?.gap,
@@ -137,6 +138,7 @@ export const CardEditorAdapter: React.FC<CardEditorAdapterProps> = ({
                 primarySection.background_url[0]) ||
               "",
             background_color: primarySection.style_config?.background_color,
+            background_opacity: primarySection.style_config?.background_opacity,
             style_config: {
               ...prevCard.content.style_config,
               ...nextTemplate.version.content.style_config,
