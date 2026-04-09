@@ -37,6 +37,21 @@ const FONT_CSS_VARS: Record<string, string> = {
   Georgia: "Georgia, serif",
 };
 
+function getResolvedFontWeight(
+  font?: string,
+  fontWeight?: string | number,
+): string | number {
+  if (
+    fontWeight !== undefined &&
+    fontWeight !== null &&
+    `${fontWeight}` !== ""
+  ) {
+    return fontWeight;
+  }
+  if (font === "Archivo Light") return "300";
+  return fontWeight || "400";
+}
+
 export interface StyleConfiguratorProps {
   styleConfig: StyleConfig;
   onStyleChange: (updates: Partial<StyleConfig>) => void;
@@ -577,7 +592,10 @@ export function StyleConfigurator({
           <div>
             <label className={LABEL_CLASS}>{getLabel("fontWeight")}</label>
             <select
-              value={styleConfig.font_weight || "400"}
+              value={
+                styleConfig.font_weight ||
+                (styleConfig.font === "Archivo Light" ? "300" : "400")
+              }
               onChange={(e) => onStyleChange({ font_weight: e.target.value })}
               className={INPUT_BASE_CLASS}
             >
@@ -902,7 +920,10 @@ export function StyleConfigurator({
               fontSize: styleConfig.font_size
                 ? `${styleConfig.font_size}px`
                 : "16px",
-              fontWeight: styleConfig.font_weight || "400",
+              fontWeight: getResolvedFontWeight(
+                styleConfig.font,
+                styleConfig.font_weight,
+              ),
               fontStyle: styleConfig.font_style || "normal",
               textDecoration: styleConfig.text_decoration || "none",
               textAlign:
