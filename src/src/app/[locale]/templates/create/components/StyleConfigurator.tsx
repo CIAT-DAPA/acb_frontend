@@ -18,6 +18,7 @@ const AVAILABLE_FONTS = [
   "Open Sans",
   "Lato",
   "Montserrat",
+  "Archivo Light",
   "Archivo Narrow",
 ];
 
@@ -28,6 +29,7 @@ const FONT_CSS_VARS: Record<string, string> = {
   "Open Sans": "var(--font-open-sans)",
   Lato: "var(--font-lato)",
   Montserrat: "var(--font-montserrat)",
+  "Archivo Light": "var(--font-archivo-light)",
   "Archivo Narrow": "var(--font-archivo-narrow)",
   Arial: "Arial, sans-serif",
   Helvetica: "Helvetica, sans-serif",

@@ -8,6 +8,7 @@ import {
   Roboto,
   Open_Sans,
   Lato,
+  Archivo,
   Archivo_Narrow,
 } from "next/font/google";
 import "./globals.css";
@@ -58,6 +59,12 @@ const lato = Lato({
   weight: ["300", "400", "700", "900"],
 });
 
+const archivoLight = Archivo({
+  variable: "--font-archivo-light",
+  subsets: ["latin"],
+  weight: ["300"],
+});
+
 const archivoNarrow = Archivo_Narrow({
   variable: "--font-archivo-narrow",
   subsets: ["latin"],
@@ -88,7 +95,7 @@ export default async function RootLayout({ children, params }: Props) {
         />
       </head>
       <body
-        className={`${sintony.variable} ${poppins.variable} ${montserrat.variable} ${roboto.variable} ${openSans.variable} ${lato.variable} ${archivoNarrow.variable} antialiased`}
+        className={`${sintony.variable} ${poppins.variable} ${montserrat.variable} ${roboto.variable} ${openSans.variable} ${lato.variable} ${archivoLight.variable} ${archivoNarrow.variable} antialiased`}
       >
         <AuthProviderWrapper>
           <NextIntlClientProvider messages={messages}>

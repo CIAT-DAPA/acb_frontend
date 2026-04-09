@@ -80,6 +80,12 @@ export default function CardsPage() {
     return cardType;
   };
 
+  const getCardTimestamp = (card: Card): number => {
+    return new Date(
+      card.log?.updated_at || card.log?.created_at || 0,
+    ).getTime();
+  };
+
   // Función para cargar los tipos de cards desde la API
   const loadCardTypes = async () => {
     setLoadingTypes(true);
@@ -129,8 +135,11 @@ export default function CardsPage() {
         const activeCards = response.data.filter(
           (card) => card.status === "active",
         );
-        setCards(activeCards);
-        setFilteredCards(activeCards);
+        const sortedCards = [...activeCards].sort(
+          (a, b) => getCardTimestamp(b) - getCardTimestamp(a),
+        );
+        setCards(sortedCards);
+        setFilteredCards(sortedCards);
       } else {
         setError(response.message || "Error al cargar las cards");
       }
@@ -161,7 +170,11 @@ export default function CardsPage() {
       return matchesType && matchesSearch;
     });
 
-    setFilteredCards(filtered);
+    const sortedFiltered = [...filtered].sort(
+      (a, b) => getCardTimestamp(b) - getCardTimestamp(a),
+    );
+
+    setFilteredCards(sortedFiltered);
   }, [searchTerm, selectedType, cards, cardTypes, t]);
 
   // Efecto para cerrar el modal con la tecla Escape
