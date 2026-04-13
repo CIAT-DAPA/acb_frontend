@@ -100,6 +100,51 @@ function getJustifyClass(justifyContent?: string): string {
   return justifyMap[justifyContent || "start"] || "justify-start";
 }
 
+function getFieldTypeBadgeLabel(fieldType?: string): string {
+  if (!fieldType) return "Field";
+
+  return fieldType
+    .split("_")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function getSelectBackgroundUrlFromSection(
+  section?: Section | null,
+): string | undefined {
+  if (!section?.blocks?.length) {
+    return undefined;
+  }
+
+  for (const block of section.blocks) {
+    for (const field of block.fields || []) {
+      if (field.type !== "select_background") {
+        continue;
+      }
+
+      const bgOptions = (field.field_config as any)?.options || [];
+      const bgUrls = (field.field_config as any)?.backgrounds_url || [];
+
+      if (field.value) {
+        const selectedIndex = bgOptions.findIndex(
+          (opt: string) => opt === field.value,
+        );
+
+        if (selectedIndex !== -1 && bgUrls[selectedIndex]) {
+          return bgUrls[selectedIndex];
+        }
+      }
+
+      if (bgUrls.length > 0) {
+        return bgUrls[0];
+      }
+    }
+  }
+
+  return undefined;
+}
+
 /**
  * Helper function para generar estilos de borde según los lados seleccionados
  */
@@ -2726,43 +2771,43 @@ export function TemplatePreview({
 
               <div className="relative z-10 flex flex-col flex-1">
                 {cardBlockIndexes.flatMap((cardBlockIndex) => {
-                const block = cardContent.blocks[cardBlockIndex];
+                  const block = cardContent.blocks[cardBlockIndex];
 
-                if (!block) {
-                  return [];
-                }
+                  if (!block) {
+                    return [];
+                  }
 
-                const cardBlockSlice = !reviewMode
-                  ? cardBlockPage?.blockSlices?.[cardBlockIndex]
-                  : undefined;
-                const blockStyleConfig = block.style_config || {};
-                const contentStyleConfig = cardContentStyleConfig || {};
+                  const cardBlockSlice = !reviewMode
+                    ? cardBlockPage?.blockSlices?.[cardBlockIndex]
+                    : undefined;
+                  const blockStyleConfig = block.style_config || {};
+                  const contentStyleConfig = cardContentStyleConfig || {};
 
-                const effectiveBlockStyles = {
-                  ...contentStyleConfig,
-                  ...blockStyleConfig,
-                };
+                  const effectiveBlockStyles = {
+                    ...contentStyleConfig,
+                    ...blockStyleConfig,
+                  };
 
-                const blockContainerStyles: React.CSSProperties = {
-                  display: "flex",
-                  flexDirection:
-                    (block as any).layout === "horizontal" ? "row" : "column",
-                  gap: effectiveBlockStyles.gap
-                    ? `${effectiveBlockStyles.gap}px`
-                    : "8px",
-                  padding: effectiveBlockStyles.padding || undefined,
-                  backgroundColor:
-                    effectiveBlockStyles.background_color || "transparent",
-                  boxSizing: "border-box",
-                  ...getBorderStyles(block.style_config),
-                  ...(effectiveBlockStyles.background_image && {
-                    backgroundImage: `url(${getBackgroundImageUrl(
-                      effectiveBlockStyles.background_image,
-                    )})`,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                  }),
-                };
+                  const blockContainerStyles: React.CSSProperties = {
+                    display: "flex",
+                    flexDirection:
+                      (block as any).layout === "horizontal" ? "row" : "column",
+                    gap: effectiveBlockStyles.gap
+                      ? `${effectiveBlockStyles.gap}px`
+                      : "8px",
+                    padding: effectiveBlockStyles.padding || undefined,
+                    backgroundColor:
+                      effectiveBlockStyles.background_color || "transparent",
+                    boxSizing: "border-box",
+                    ...getBorderStyles(block.style_config),
+                    ...(effectiveBlockStyles.background_image && {
+                      backgroundImage: `url(${getBackgroundImageUrl(
+                        effectiveBlockStyles.background_image,
+                      )})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                    }),
+                  };
 
                   return (
                     <div
@@ -4098,6 +4143,12 @@ export function TemplatePreview({
     paginationInfo.paginatedSections[activeBasePageIndex] ||
     currentSection ||
     null;
+  const selectedSectionBackgroundUrl =
+    getSelectBackgroundUrlFromSection(baseSectionToRender);
+  const selectedSectionBackgroundImage = selectedSectionBackgroundUrl
+    ? `url("${getBackgroundImageUrl(selectedSectionBackgroundUrl)}")`
+    : undefined;
+  const hasUnifiedSectionBackground = Boolean(selectedSectionBackgroundImage);
   const currentSectionHasCardField = Boolean(
     currentSection?.blocks.some((block) =>
       block.fields.some((field) => field.type === "card"),
@@ -4215,9 +4266,11 @@ export function TemplatePreview({
             height: `${styleConfig?.bulletin_height || 638}px`,
             padding: 0,
             overflow: "hidden",
-            backgroundImage: styleConfig?.background_image
-              ? `url("${getBackgroundImageUrl(styleConfig.background_image)}")`
-              : undefined,
+            backgroundImage:
+              selectedSectionBackgroundImage ||
+              (styleConfig?.background_image
+                ? `url("${getBackgroundImageUrl(styleConfig.background_image)}")`
+                : undefined),
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
@@ -4381,37 +4434,6 @@ export function TemplatePreview({
                           renderIndex: blockIndex,
                         }));
 
-                  // Buscar campos de tipo select_background para aplicar el fondo seleccionado
-                  let dynamicBackgroundUrl = null;
-                  for (const block of section.blocks) {
-                    for (const field of block.fields) {
-                      if (field.type === "select_background") {
-                        const bgOptions =
-                          (field.field_config as any)?.options || [];
-                        const bgUrls =
-                          (field.field_config as any)?.backgrounds_url || [];
-
-                        if (field.value) {
-                          // Buscar el fondo correspondiente al valor seleccionado
-                          const selectedIndex = bgOptions.findIndex(
-                            (opt: string) => opt === field.value,
-                          );
-                          if (selectedIndex !== -1 && bgUrls[selectedIndex]) {
-                            dynamicBackgroundUrl = bgUrls[selectedIndex];
-                            break;
-                          }
-                        } else {
-                          // Si no hay valor, usar el primer fondo por defecto
-                          if (bgUrls.length > 0) {
-                            dynamicBackgroundUrl = bgUrls[0];
-                            break;
-                          }
-                        }
-                      }
-                    }
-                    if (dynamicBackgroundUrl) break;
-                  }
-
                   // Estilos aplicados a la sección completa
                   const sectionStyles = {
                     fontFamily: section.style_config?.font
@@ -4422,12 +4444,14 @@ export function TemplatePreview({
                     fontSize: section.style_config?.font_size
                       ? `${section.style_config.font_size}px`
                       : globalStyles.fontSize,
-                    backgroundColor: getColorWithOpacity(
-                      section.style_config?.background_color,
-                      section.style_config?.background_opacity,
-                    ),
-                    backgroundImage: dynamicBackgroundUrl
-                      ? `url("${getBackgroundImageUrl(dynamicBackgroundUrl)}")`
+                    backgroundColor: hasUnifiedSectionBackground
+                      ? "transparent"
+                      : getColorWithOpacity(
+                          section.style_config?.background_color,
+                          section.style_config?.background_opacity,
+                        ),
+                    backgroundImage: hasUnifiedSectionBackground
+                      ? undefined
                       : section.style_config?.background_image
                         ? `url("${getBackgroundImageUrl(
                             section.style_config.background_image,
@@ -4610,16 +4634,19 @@ export function TemplatePreview({
                               : ""
                           }`}
                           style={{
-                            backgroundColor:
-                              activeHeaderConfig.style_config
-                                ?.background_color || "transparent",
-                            backgroundImage: activeHeaderConfig.style_config
-                              ?.background_image
-                              ? `url("${getBackgroundImageUrl(
-                                  activeHeaderConfig.style_config
-                                    .background_image,
-                                )}")`
-                              : undefined,
+                            backgroundColor: hasUnifiedSectionBackground
+                              ? "transparent"
+                              : (activeHeaderConfig.style_config
+                                  ?.background_color ?? "transparent"),
+                            backgroundImage: hasUnifiedSectionBackground
+                              ? undefined
+                              : activeHeaderConfig.style_config
+                                    ?.background_image
+                                ? `url("${getBackgroundImageUrl(
+                                    activeHeaderConfig.style_config
+                                      .background_image,
+                                  )}")`
+                                : undefined,
                             backgroundSize: "cover",
                             backgroundPosition: "center",
                             backgroundRepeat: "no-repeat",
@@ -4930,6 +4957,9 @@ export function TemplatePreview({
                                                     }
                                                   : undefined,
                                             );
+                                            const isBackgroundSelectorField =
+                                              field.type ===
+                                              "select_background";
                                             const fieldSlice =
                                               visibleFieldSlices?.[fieldIndex];
 
@@ -4955,12 +4985,19 @@ export function TemplatePreview({
                                                       : "hover:ring-2 hover:ring-yellow-400"
                                                   } cursor-pointer rounded transition-all group/field`}
                                                 >
-                                                  {renderedField}
+                                                  {renderedField ??
+                                                    (isBackgroundSelectorField ? (
+                                                      <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-amber-700 bg-amber-100 border border-amber-300 rounded">
+                                                        BG
+                                                      </div>
+                                                    ) : null)}
                                                   {renderCommentBadge(fieldId)}
                                                   {selectedElementId ===
                                                     fieldId && (
                                                     <div className="absolute -top-3 -left-1 bg-blue-500 text-white text-[10px] px-2 py-0.5 rounded-t font-semibold shadow-sm z-30">
-                                                      List
+                                                      {getFieldTypeBadgeLabel(
+                                                        field.type,
+                                                      )}
                                                     </div>
                                                   )}
                                                   <div
@@ -5131,21 +5168,24 @@ export function TemplatePreview({
                               : ""
                           }`}
                           style={{
-                            backgroundColor:
-                              activeFooterConfig.style_config
-                                ?.background_color ||
-                              getColorWithOpacity(
-                                cardBackgroundColor || undefined,
-                                cardBackgroundOpacity,
-                              ) ||
-                              "transparent",
-                            backgroundImage: activeFooterConfig.style_config
-                              ?.background_image
-                              ? `url("${getBackgroundImageUrl(
-                                  activeFooterConfig.style_config
-                                    .background_image,
-                                )}")`
-                              : undefined,
+                            backgroundColor: hasUnifiedSectionBackground
+                              ? "transparent"
+                              : activeFooterConfig.style_config
+                                  ?.background_color ||
+                                getColorWithOpacity(
+                                  cardBackgroundColor || undefined,
+                                  cardBackgroundOpacity,
+                                ) ||
+                                "transparent",
+                            backgroundImage: hasUnifiedSectionBackground
+                              ? undefined
+                              : activeFooterConfig.style_config
+                                    ?.background_image
+                                ? `url("${getBackgroundImageUrl(
+                                    activeFooterConfig.style_config
+                                      .background_image,
+                                  )}")`
+                                : undefined,
                             backgroundSize: "cover",
                             backgroundPosition: "center",
                             backgroundRepeat: "no-repeat",
