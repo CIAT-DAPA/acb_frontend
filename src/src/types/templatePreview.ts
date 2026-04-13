@@ -41,6 +41,8 @@ export interface ScrollConfig {
   orientation?: ScrollOrientation;
   /** Mostrar mini-navegador lateral (default: true) */
   showMiniNav?: boolean;
+  /** Mostrar título de sección encima del preview (default: true) */
+  showSectionTitle?: boolean;
   /** Resaltar sección activa con scroll-spy (default: true) */
   highlightActive?: boolean;
   /** Espaciado entre secciones */
