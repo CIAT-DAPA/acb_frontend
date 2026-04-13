@@ -151,7 +151,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
       const section =
         selection.sectionIndex! >= 0 ? sections[selection.sectionIndex!] : null;
       return (
-        (section?.header_config?.fields?.length
+        (section?.header_config
           ? section.header_config
           : data.version.content.header_config) || {}
       );
@@ -160,7 +160,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
       const section =
         selection.sectionIndex! >= 0 ? sections[selection.sectionIndex!] : null;
       return (
-        (section?.footer_config?.fields?.length
+        (section?.footer_config
           ? section.footer_config
           : data.version.content.footer_config) || {}
       );
@@ -168,7 +168,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
     if (selection.type === "header_field") {
       const section =
         selection.sectionIndex! >= 0 ? sections[selection.sectionIndex!] : null;
-      const config = section?.header_config?.fields?.length
+      const config = section?.header_config
         ? section.header_config
         : data.version.content.header_config;
       return config?.fields?.[selection.fieldIndex!];
@@ -176,7 +176,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
     if (selection.type === "footer_field") {
       const section =
         selection.sectionIndex! >= 0 ? sections[selection.sectionIndex!] : null;
-      const config = section?.footer_config?.fields?.length
+      const config = section?.footer_config
         ? section.footer_config
         : data.version.content.footer_config;
       return config?.fields?.[selection.fieldIndex!];
@@ -187,6 +187,22 @@ export const RightPanel: React.FC<RightPanelProps> = ({
 
   const selectedSectionIndex =
     typeof selection.sectionIndex === "number" ? selection.sectionIndex : -1;
+  const selectedSection =
+    selectedSectionIndex >= 0
+      ? data.version.content.sections[selectedSectionIndex]
+      : null;
+  const hasSectionCustomHeader = Boolean(selectedSection?.header_config);
+  const hasSectionCustomFooter = Boolean(selectedSection?.footer_config);
+  const canRestoreSelectedHeaderToGlobal =
+    selection.type === "header" &&
+    selectedSectionIndex >= 0 &&
+    hasSectionCustomHeader;
+  const canRestoreSelectedFooterToGlobal =
+    selection.type === "footer" &&
+    selectedSectionIndex >= 0 &&
+    hasSectionCustomFooter;
+  const canRestoreSelectionToGlobal =
+    canRestoreSelectedHeaderToGlobal || canRestoreSelectedFooterToGlobal;
   const canReorderSelectedSection =
     selection.type === "section" &&
     selectedSectionIndex >= 0 &&
@@ -229,7 +245,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
       const section =
         selection.sectionIndex! >= 0 ? sections[selection.sectionIndex!] : null;
 
-      let config = section?.header_config?.fields?.length
+      let config = section?.header_config
         ? section.header_config
         : newData.version.content.header_config;
       if (!config && section) {
@@ -255,7 +271,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
       const section =
         selection.sectionIndex! >= 0 ? sections[selection.sectionIndex!] : null;
 
-      let config = section?.footer_config?.fields?.length
+      let config = section?.footer_config
         ? section.footer_config
         : newData.version.content.footer_config;
       if (!config && section) {
@@ -296,7 +312,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
       const section =
         selection.sectionIndex! >= 0 ? sections[selection.sectionIndex!] : null;
 
-      let config = section?.header_config?.fields?.length
+      let config = section?.header_config
         ? section.header_config
         : newData.version.content.header_config;
       if (!config) {
@@ -316,7 +332,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
       const section =
         selection.sectionIndex! >= 0 ? sections[selection.sectionIndex!] : null;
 
-      let config = section?.footer_config?.fields?.length
+      let config = section?.footer_config
         ? section.footer_config
         : newData.version.content.footer_config;
       if (!config) {
@@ -479,7 +495,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
           selection.sectionIndex! >= 0
             ? sections[selection.sectionIndex!]
             : null;
-        const config = section?.header_config?.fields?.length
+        const config = section?.header_config
           ? section.header_config
           : newData.version.content.header_config;
         config?.fields.splice(selection.fieldIndex!, 1);
@@ -488,7 +504,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
           selection.sectionIndex! >= 0
             ? sections[selection.sectionIndex!]
             : null;
-        const config = section?.footer_config?.fields?.length
+        const config = section?.footer_config
           ? section.footer_config
           : newData.version.content.footer_config;
         config?.fields.splice(selection.fieldIndex!, 1);
@@ -1497,11 +1513,39 @@ export const RightPanel: React.FC<RightPanelProps> = ({
         {["header", "footer"].includes(selection.type) && currentObject && (
           <div className="space-y-6">
             <div className="pt-4 border-t border-gray-200">
-              <h3 className="text-xs uppercase font-bold text-gray-500 mb-2">
-                {selection.type === "header"
-                  ? t("fieldEditor.editor.styles.header")
-                  : t("fieldEditor.editor.styles.footer")}
-              </h3>
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <h3 className="text-xs uppercase font-bold text-gray-500">
+                  {selection.type === "header"
+                    ? t("fieldEditor.editor.styles.header")
+                    : t("fieldEditor.editor.styles.footer")}
+                </h3>
+                {canRestoreSelectionToGlobal && (
+                  <button
+                    onClick={() => {
+                      setRestoreType(
+                        selection.type === "header" ? "header" : "footer",
+                      );
+                      setRestoreModalOpen(true);
+                    }}
+                    className="text-[10px] text-red-500 underline"
+                  >
+                    {selection.type === "header"
+                      ? t("sections.headerTab.restoreGlobal")
+                      : t("sections.footerTab.restoreGlobal")}
+                  </button>
+                )}
+              </div>
+
+              {canRestoreSelectionToGlobal && (
+                <div className="bg-amber-50 p-2 rounded border border-amber-100 mb-3">
+                  <span className="text-[10px] text-amber-700 font-medium">
+                    {selection.type === "header"
+                      ? "Custom Header Active"
+                      : "Custom Footer Active"}
+                  </span>
+                </div>
+              )}
+
               <div className="pr-1">
                 <StyleConfigurator
                   styleConfig={
