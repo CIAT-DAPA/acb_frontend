@@ -71,6 +71,7 @@ export interface SelectBackgroundFieldConfig extends SelectFieldConfig {
 
 export interface DateFieldConfig {
   date_format?: string;
+  showLabel?: boolean; // Si true, muestra el label al lado del valor en el boletin
   text_decoration?: {
     prefix?: string;
     suffix?: string;
