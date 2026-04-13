@@ -6,7 +6,6 @@ import { ScrollConfig } from "@/types/templatePreview";
 import { CreateTemplateData } from "@/types/template";
 import { Card } from "@/types/card";
 import { TemplatePreview } from "../templates/create/TemplatePreview";
-import { List, X } from "lucide-react";
 
 interface ScrollViewProps {
   data: CreateTemplateData;
@@ -34,23 +33,65 @@ export function ScrollView({
   const {
     orientation = "vertical",
     showMiniNav = true,
+    showSectionTitle = true,
     highlightActive = true,
     spacing = "comfortable",
     expandAllPages = false,
   } = config;
 
+  const isVertical = orientation === "vertical";
+
   const sections = useMemo(() => data.version.content.sections || [], [data]);
   const [activeSectionIndex, setActiveSectionIndex] = useState(initialSection);
-  const [isNavOpen, setIsNavOpen] = useState(false); // Estado del mini-nav colapsable
   const [sectionPageCounts, setSectionPageCounts] = useState<number[]>(() =>
     sections.map(() => 1),
   );
+  const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  const bulletinWidth =
+    Number(data.version.content.style_config?.bulletin_width) || 366;
+  const bulletinHeight =
+    Number(data.version.content.style_config?.bulletin_height) || 638;
+  const isMobileViewport = viewportSize.width > 0 && viewportSize.width < 768;
+
+  const mobilePreviewScale = useMemo(() => {
+    if (!isMobileViewport || isVertical) {
+      return 1;
+    }
+
+    const availableWidth = Math.max(viewportSize.width - 24, 1);
+    const availableHeight = Math.max(viewportSize.height - 140, 1);
+
+    return Math.min(
+      availableWidth / bulletinWidth,
+      availableHeight / bulletinHeight,
+      1,
+    );
+  }, [
+    isMobileViewport,
+    isVertical,
+    viewportSize.width,
+    viewportSize.height,
+    bulletinWidth,
+    bulletinHeight,
+  ]);
 
   useEffect(() => {
     setSectionPageCounts(sections.map(() => 1));
   }, [sections]);
+
+  useEffect(() => {
+    const updateViewportSize = () => {
+      setViewportSize({ width: window.innerWidth, height: window.innerHeight });
+    };
+
+    updateViewportSize();
+    window.addEventListener("resize", updateViewportSize);
+
+    return () => window.removeEventListener("resize", updateViewportSize);
+  }, []);
 
   const handleResolvedPageCount = (sectionIndex: number, pageCount: number) => {
     setSectionPageCounts((previousCounts) => {
@@ -144,117 +185,63 @@ export function ScrollView({
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const isVertical = orientation === "vertical";
-
   return (
-    <div className="template-scroll-view relative flex gap-4 w-full">
-      {/* Botón flotante para abrir mini-nav (visible en móvil) */}
-      {showMiniNav && !isNavOpen && (
-        <button
-          onClick={() => setIsNavOpen(true)}
-          className="md:hidden fixed bottom-21 right-6 w-14 h-14 bg-[#ffaf68] text-white rounded-full shadow-lg hover:bg-[#ff9d4d] transition-all hover:scale-110 flex items-center justify-center z-40"
-          aria-label={t("openNavigator")}
-        >
-          <List className="w-5 h-5" />
-        </button>
-      )}
-
-      {/* Mini navegador lateral - Colapsable en móvil */}
+    <div className="template-scroll-view relative flex gap-4 w-full h-full min-h-0">
+      {/* Mini navegador lateral - Solo desktop */}
       {showMiniNav && (
-        <>
-          {/* Overlay para cerrar en móvil */}
-          {isNavOpen && (
-            <div
-              className="md:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-30"
-              onClick={() => setIsNavOpen(false)}
-            />
-          )}
-
-          {/* Panel del navegador */}
-          <div
-            className={`
-              flex-col h-fit
-              flex gap-2 bg-white p-3 rounded-lg shadow-lg z-40
-              
-              // En móvil: panel flotante deslizable desde fuera de la pantalla
-              md:static md:top-4
-              fixed top-20 left-0 right-0 mx-4
-              
-              // Animación de entrada/salida en móvil
-              transition-transform duration-300 ease-in-out
-              ${
-                isNavOpen
-                  ? "translate-y-0"
-                  : "-translate-y-[calc(100%+6rem)] md:translate-y-0"
-              }
-              
-              // Scroll interno si hay muchas secciones
-              max-h-[60vh] md:max-h-[70vh] overflow-y-auto
-            `}
-          >
-            {/* Header con título y botón cerrar (solo móvil) */}
-            <div className="flex items-center justify-between mb-2 md:mb-1">
-              <div className="text-xs md:text-xs font-semibold text-[#283618]/70">
-                {t("sectionsCount", { count: sections.length })}
-              </div>
-              <button
-                onClick={() => setIsNavOpen(false)}
-                className="md:hidden p-1.5 hover:bg-[#bc6c25]/10 rounded transition-colors"
-                aria-label={t("closeNavigator")}
-              >
-                <X className="w-4 h-4 text-[#bc6c25]" />
-              </button>
+        <div className="hidden md:flex md:flex-col md:h-fit md:gap-2 md:bg-white md:p-3 md:rounded-lg md:shadow-lg md:z-40 md:max-h-[70vh] md:overflow-y-auto">
+          <div className="flex items-center justify-between mb-1">
+            <div className="text-xs font-semibold text-[#283618]/70">
+              {t("sectionsCount", { count: sections.length })}
             </div>
-
-            {/* Lista de secciones */}
-            {sections.map((section, index) => (
-              <button
-                key={index}
-                onClick={() => {
-                  scrollToSection(index);
-                  setIsNavOpen(false); // Cerrar en móvil después de seleccionar
-                }}
-                className={`
-                  ${isVertical ? "w-full" : "h-full"}
-                  px-2.5 md:px-3 py-1.5 md:py-2 rounded text-xs md:text-sm transition-all text-left
-                  ${
-                    activeSectionIndex === index
-                      ? "bg-[#bc6c25] text-[#fefae0] font-semibold shadow-sm"
-                      : "border border-[#bc6c25]/30 text-[#283618] hover:bg-[#bc6c25]/10 hover:border-[#bc6c25]"
-                  }
-                `}
-                aria-label={t("goToSection", { number: index + 1 })}
-                aria-current={activeSectionIndex === index ? "true" : "false"}
-              >
-                <div className="flex items-center gap-1.5 md:gap-2">
-                  <span className="font-mono text-[10px] md:text-xs opacity-70">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <span className="truncate text-xs md:text-sm">
-                    {section.display_name ||
-                      t("section", { number: index + 1 })}
-                  </span>
-                </div>
-              </button>
-            ))}
           </div>
-        </>
+
+          {sections.map((section, index) => (
+            <button
+              key={index}
+              onClick={() => {
+                scrollToSection(index);
+              }}
+              className={`
+                ${isVertical ? "w-full" : "h-full"}
+                px-2.5 md:px-3 py-1.5 md:py-2 rounded text-xs md:text-sm transition-all text-left
+                ${
+                  activeSectionIndex === index
+                    ? "bg-[#bc6c25] text-[#fefae0] font-semibold shadow-sm"
+                    : "border border-[#bc6c25]/30 text-[#283618] hover:bg-[#bc6c25]/10 hover:border-[#bc6c25]"
+                }
+              `}
+              aria-label={t("goToSection", { number: index + 1 })}
+              aria-current={activeSectionIndex === index ? "true" : "false"}
+            >
+              <div className="flex items-center gap-1.5 md:gap-2">
+                <span className="font-mono text-[10px] md:text-xs opacity-70">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <span className="truncate text-xs md:text-sm">
+                  {section.display_name || t("section", { number: index + 1 })}
+                </span>
+              </div>
+            </button>
+          ))}
+        </div>
       )}
 
       {/* Contenedor de scroll con todas las secciones */}
       <div
         ref={scrollContainerRef}
         className={`
-          flex-1 w-full
+          flex-1 w-full h-full min-h-0
           ${
             isVertical
               ? "overflow-y-auto max-h-[85vh] md:max-h-[80vh]"
-              : "overflow-x-auto md:max-w-[80vw] overflow-y-hidden"
+              : "overflow-x-auto md:max-w-[80vw] overflow-y-hidden touch-pan-x snap-x snap-mandatory md:snap-none"
           }
-          ${isVertical ? "flex-col" : "flex-row"}
+          ${isVertical ? "flex-col" : "flex-row items-start"}
           flex ${spacingMap[spacing]} 
           p-2 md:p-4
           mx-2 md:mx-0
+          my-10 md:my-0
           scrollbar-thin scrollbar-thumb-[#ffaf68] scrollbar-track-gray-100
         `}
       >
@@ -293,6 +280,7 @@ export function ScrollView({
                   data-page-index={pageIndex}
                   className={`
                     scroll-section shrink-0
+                    ${isVertical ? "" : "snap-center md:snap-start"}
                     ${
                       highlightActive && activeSectionIndex === sectionIndex
                         ? "ring-2 md:ring-4 ring-[#ffaf68] ring-offset-2 md:ring-offset-4 rounded-lg"
@@ -301,42 +289,77 @@ export function ScrollView({
                     transition-all duration-300
                   `}
                 >
-                  {/* Título de sección (con número de página si hay más de 1) */}
-                  <div className="mb-1.5 md:mb-2 px-1 md:px-2">
-                    <h3 className="text-xs md:text-sm font-semibold text-[#283618]">
-                      {section.display_name ||
-                        t("section", { number: sectionIndex + 1 })}
-                      {pageCount > 1 && (
-                        <span className="text-xs ml-2 text-[#606c38]">
-                          (
-                          {t("page", {
-                            current: pageIndex + 1,
-                            total: pageCount,
-                          })}
-                          )
-                        </span>
-                      )}
-                    </h3>
-                  </div>
+                  {showSectionTitle && (
+                    <div className="mb-1.5 md:mb-2 px-1 md:px-2">
+                      <h3 className="text-xs md:text-sm font-semibold text-[#283618]">
+                        {section.display_name ||
+                          t("section", { number: sectionIndex + 1 })}
+                        {pageCount > 1 && (
+                          <span className="text-xs ml-2 text-[#606c38]">
+                            (
+                            {t("page", {
+                              current: pageIndex + 1,
+                              total: pageCount,
+                            })}
+                            )
+                          </span>
+                        )}
+                      </h3>
+                    </div>
+                  )}
 
                   {/* Preview de la página específica.
                       Solo pageIndex=0 reporta el conteo total para evitar
                       el bucle de feedback donde las páginas recién montadas
                       reportan 1 y colapsan el conteo. */}
-                  <TemplatePreview
-                    {...sharedPreviewProps}
-                    currentResolvedPageIndex={pageIndex}
-                    hidePagination={true}
-                    onResolvedPageCount={
-                      pageIndex === 0
-                        ? (resolvedPageCount: number) =>
-                            handleResolvedPageCount(
-                              sectionIndex,
-                              resolvedPageCount,
-                            )
-                        : undefined
-                    }
-                  />
+                  {isMobileViewport && !isVertical ? (
+                    <div
+                      className="mx-auto"
+                      style={{
+                        width: `${bulletinWidth * mobilePreviewScale}px`,
+                        height: `${bulletinHeight * mobilePreviewScale}px`,
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${bulletinWidth}px`,
+                          height: `${bulletinHeight}px`,
+                          transform: `scale(${mobilePreviewScale})`,
+                          transformOrigin: "top left",
+                        }}
+                      >
+                        <TemplatePreview
+                          {...sharedPreviewProps}
+                          currentResolvedPageIndex={pageIndex}
+                          hidePagination={true}
+                          onResolvedPageCount={
+                            pageIndex === 0
+                              ? (resolvedPageCount: number) =>
+                                  handleResolvedPageCount(
+                                    sectionIndex,
+                                    resolvedPageCount,
+                                  )
+                              : undefined
+                          }
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <TemplatePreview
+                      {...sharedPreviewProps}
+                      currentResolvedPageIndex={pageIndex}
+                      hidePagination={true}
+                      onResolvedPageCount={
+                        pageIndex === 0
+                          ? (resolvedPageCount: number) =>
+                              handleResolvedPageCount(
+                                sectionIndex,
+                                resolvedPageCount,
+                              )
+                          : undefined
+                      }
+                    />
+                  )}
                 </div>
               ))}
             </div>
@@ -351,6 +374,7 @@ export function ScrollView({
               data-page-index={0}
               className={`
                 scroll-section shrink-0
+                ${isVertical ? "" : "snap-center md:snap-start"}
                 ${
                   highlightActive && activeSectionIndex === sectionIndex
                     ? "ring-2 md:ring-4 ring-[#ffaf68] ring-offset-2 md:ring-offset-4 rounded-lg"
@@ -359,20 +383,42 @@ export function ScrollView({
                 transition-all duration-300
               `}
             >
-              {/* Título de sección - Más compacto en móvil */}
-              <div className="mb-1.5 md:mb-2 px-1 md:px-2">
-                <h3 className="text-xs md:text-sm font-semibold text-[#283618]">
-                  {t("sectionNumber", { number: sectionIndex + 1 })}
-                  {section.display_name && (
-                    <span className="hidden md:inline">
-                      : {section.display_name}
-                    </span>
-                  )}
-                </h3>
-              </div>
+              {showSectionTitle && (
+                <div className="mb-1.5 md:mb-2 px-1 md:px-2">
+                  <h3 className="text-xs md:text-sm font-semibold text-[#283618]">
+                    {t("sectionNumber", { number: sectionIndex + 1 })}
+                    {section.display_name && (
+                      <span className="hidden md:inline">
+                        : {section.display_name}
+                      </span>
+                    )}
+                  </h3>
+                </div>
+              )}
 
               {/* Preview de la sección */}
-              <TemplatePreview {...sharedPreviewProps} />
+              {isMobileViewport && !isVertical ? (
+                <div
+                  className="mx-auto"
+                  style={{
+                    width: `${bulletinWidth * mobilePreviewScale}px`,
+                    height: `${bulletinHeight * mobilePreviewScale}px`,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: `${bulletinWidth}px`,
+                      height: `${bulletinHeight}px`,
+                      transform: `scale(${mobilePreviewScale})`,
+                      transformOrigin: "top left",
+                    }}
+                  >
+                    <TemplatePreview {...sharedPreviewProps} />
+                  </div>
+                </div>
+              ) : (
+                <TemplatePreview {...sharedPreviewProps} />
+              )}
             </div>
           );
         })}

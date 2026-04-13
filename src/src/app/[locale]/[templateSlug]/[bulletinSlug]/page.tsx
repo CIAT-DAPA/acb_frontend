@@ -59,7 +59,7 @@ export default function BulletinPublicPage() {
   const t = useTranslations("CreateBulletin.bulletinPreview");
 
   const [templateData, setTemplateData] = useState<CreateTemplateData | null>(
-    null
+    null,
   );
   const [cardsMetadata, setCardsMetadata] = useState<Record<string, Card>>({});
   const [loading, setLoading] = useState(true);
@@ -67,24 +67,6 @@ export default function BulletinPublicPage() {
 
   // Estados para el sistema de exportación
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-
-  // Estado para controlar la orientación según el tamaño de pantalla
-  const [isDesktop, setIsDesktop] = useState(false);
-
-  // Detectar tamaño de pantalla
-  useEffect(() => {
-    const checkScreenSize = () => {
-      setIsDesktop(window.innerWidth >= 768); // md breakpoint de Tailwind
-    };
-
-    // Verificar inicialmente
-    checkScreenSize();
-
-    // Escuchar cambios de tamaño
-    window.addEventListener("resize", checkScreenSize);
-
-    return () => window.removeEventListener("resize", checkScreenSize);
-  }, []);
 
   useEffect(() => {
     const loadBulletin = async () => {
@@ -99,9 +81,8 @@ export default function BulletinPublicPage() {
         setError(null);
 
         // Buscar el boletín por su slug
-        const response = await BulletinAPIService.getBulletinBySlug(
-          bulletinSlug
-        );
+        const response =
+          await BulletinAPIService.getBulletinBySlug(bulletinSlug);
 
         if (!response.success || !response.data) {
           throw new Error(t("errorNotFound"));
@@ -160,12 +141,12 @@ export default function BulletinPublicPage() {
         // Decodificar campos de texto
         if (templateDataFormatted.version.content.header_config?.fields) {
           decodeFields(
-            templateDataFormatted.version.content.header_config.fields
+            templateDataFormatted.version.content.header_config.fields,
           );
         }
         if (templateDataFormatted.version.content.footer_config?.fields) {
           decodeFields(
-            templateDataFormatted.version.content.footer_config.fields
+            templateDataFormatted.version.content.footer_config.fields,
           );
         }
         templateDataFormatted.version.content.sections?.forEach(
@@ -175,7 +156,7 @@ export default function BulletinPublicPage() {
                 decodeFields(block.fields);
               }
             });
-          }
+          },
         );
 
         setTemplateData(templateDataFormatted);
@@ -272,11 +253,11 @@ export default function BulletinPublicPage() {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-[#f8f9fa] to-white">
+    <div className="bg-linear-to-b from-[#f8f9fa] to-white md:h-dvh md:overflow-hidden md:flex md:flex-col">
       {/* Header con botón de regreso y exportación */}
-      <div className="bg-white border-b border-[#283618]/10 sticky top-0 z-40 shadow-sm">
+      <div className="hidden md:block bg-white border-b border-[#283618]/10 sticky top-0 z-40 shadow-sm shrink-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-14 md:h-16">
             <button
               onClick={() => router.push(`/${locale}/bulletins`)}
               className="flex items-center gap-2 text-[#283618] hover:text-[#606c38] transition-colors font-medium"
@@ -301,13 +282,15 @@ export default function BulletinPublicPage() {
       </div>
 
       {/* Preview Container */}
-      <div className="py-8 px-4">
-        <div className="max-w-7xl mx-auto">
+      <div className="py-0 px-2 md:flex-1 md:min-h-0 md:py-8 md:px-4">
+        <div className="max-w-7xl mx-auto h-auto md:h-full">
           <ScrollView
             data={templateData}
             cardsMetadata={cardsMetadata}
             config={{
-              orientation: isDesktop ? "horizontal" : "vertical",
+              orientation: "horizontal",
+              expandAllPages: true,
+              showSectionTitle: false,
             }}
           />
         </div>
