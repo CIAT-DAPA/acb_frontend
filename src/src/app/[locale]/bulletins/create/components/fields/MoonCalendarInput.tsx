@@ -2,7 +2,14 @@
 
 import React from "react";
 import { Field } from "../../../../../../types/template";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { usePathname } from "next/navigation";
+import {
+  getCanonicalSpanishMonthName,
+  getMonthIndexFromName,
+  resolveAppLocale,
+  toDateLocaleCode,
+} from "@/utils/locale";
 
 interface MoonCalendarInputProps {
   field?: Field;
@@ -32,31 +39,20 @@ export function MoonCalendarInput({
   disabled = false,
 }: MoonCalendarInputProps) {
   const t = useTranslations("CreateBulletin.moonCalendar");
+  const hookLocale = useLocale();
+  const pathname = usePathname();
+  const localeCode = toDateLocaleCode(resolveAppLocale(pathname, hookLocale));
 
   const currentDate = new Date();
   const currentYearMonth = `${currentDate.getFullYear()}-${String(
-    currentDate.getMonth() + 1
+    currentDate.getMonth() + 1,
   ).padStart(2, "0")}`;
 
   // Obtener mes y año del value o usar valor actual
   const getMonthYearFromValue = () => {
     if (value?.month && value?.year) {
-      const monthNames = [
-        "enero",
-        "febrero",
-        "marzo",
-        "abril",
-        "mayo",
-        "junio",
-        "julio",
-        "agosto",
-        "septiembre",
-        "octubre",
-        "noviembre",
-        "diciembre",
-      ];
-      const monthIndex = monthNames.indexOf(value.month.toLowerCase());
-      if (monthIndex !== -1) {
+      const monthIndex = getMonthIndexFromName(value.month);
+      if (monthIndex !== null) {
         return `${value.year}-${String(monthIndex + 1).padStart(2, "0")}`;
       }
     }
@@ -64,7 +60,7 @@ export function MoonCalendarInput({
   };
 
   const [selectedMonthYear, setSelectedMonthYear] = React.useState(
-    getMonthYearFromValue()
+    getMonthYearFromValue(),
   );
 
   // Actualizar cuando cambie el value externo
@@ -76,26 +72,12 @@ export function MoonCalendarInput({
     setSelectedMonthYear(monthYearString);
 
     const [year, month] = monthYearString.split("-");
-    const monthNames = [
-      "enero",
-      "febrero",
-      "marzo",
-      "abril",
-      "mayo",
-      "junio",
-      "julio",
-      "agosto",
-      "septiembre",
-      "octubre",
-      "noviembre",
-      "diciembre",
-    ];
-    const monthName = monthNames[parseInt(month) - 1];
+    const monthName = getCanonicalSpanishMonthName(parseInt(month, 10) - 1);
 
     onChange({
       ...value,
       month: monthName,
-      year: parseInt(year),
+      year: parseInt(year, 10),
     });
   };
 
@@ -105,7 +87,7 @@ export function MoonCalendarInput({
       | "new_moon_date"
       | "waxing_crescent_date"
       | "waning_crescent_date",
-    dateString: string
+    dateString: string,
   ) => {
     onChange({
       ...value,
@@ -131,7 +113,7 @@ export function MoonCalendarInput({
       | "new_moon_date"
       | "waxing_crescent_date"
       | "waning_crescent_date",
-    emoji: string
+    emoji: string,
   ) => {
     return (
       <div className="space-y-1">
@@ -140,6 +122,7 @@ export function MoonCalendarInput({
         </label>
         <input
           type="date"
+          lang={localeCode}
           value={value?.[phaseKey] || ""}
           onChange={(e) => handlePhaseChange(phaseKey, e.target.value)}
           disabled={disabled}
@@ -160,6 +143,7 @@ export function MoonCalendarInput({
         </label>
         <input
           type="month"
+          lang={localeCode}
           value={selectedMonthYear}
           onChange={(e) => handleMonthYearChange(e.target.value)}
           disabled={disabled}
@@ -178,13 +162,13 @@ export function MoonCalendarInput({
           {renderPhaseSelector(
             t("waningCrescent"),
             "waning_crescent_date",
-            "🌗"
+            "🌗",
           )}
           {renderPhaseSelector(t("newMoon"), "new_moon_date", "🌑")}
           {renderPhaseSelector(
             t("waxingCrescent"),
             "waxing_crescent_date",
-            "🌓"
+            "🌓",
           )}
         </div>
       </div>

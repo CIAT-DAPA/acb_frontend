@@ -1,11 +1,19 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Field, DateRangeFieldConfig } from "../../../../../../types/template";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { usePathname } from "next/navigation";
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import {
+  getLocaleDatePattern,
+  getLocalizedMonthNames,
+  getLocalizedWeekdayLabels,
+  resolveAppLocale,
+  toDateLocaleCode,
+} from "@/utils/locale";
 
 interface DateRangeInputProps {
   field?: Field;
@@ -31,6 +39,9 @@ export function DateRangeInput({
   disabled = false,
 }: DateRangeInputProps) {
   const t = useTranslations("CreateTemplate.fieldEditor.dateRangeConfig");
+  const hookLocale = useLocale();
+  const pathname = usePathname();
+  const localeCode = toDateLocaleCode(resolveAppLocale(pathname, hookLocale));
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [isOpen, setIsOpen] = useState(false);
@@ -90,12 +101,14 @@ export function DateRangeInput({
     if (!dateString) return "";
     const [year, month, day] = dateString.split("-").map(Number);
     const date = new Date(year, month - 1, day);
-    return date.toLocaleDateString("es-ES", {
+    return date.toLocaleDateString(localeCode, {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
     });
   };
+
+  const datePlaceholder = getLocaleDatePattern(localeCode);
 
   // Calendar Logic
   const getDaysInMonth = (year: number, month: number) => {
@@ -112,13 +125,13 @@ export function DateRangeInput({
 
   const handlePrevMonth = () => {
     setCurrentMonth(
-      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1)
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1),
     );
   };
 
   const handleNextMonth = () => {
     setCurrentMonth(
-      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1)
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1),
     );
   };
 
@@ -126,11 +139,11 @@ export function DateRangeInput({
     const selectedDate = new Date(
       currentMonth.getFullYear(),
       currentMonth.getMonth(),
-      day
+      day,
     );
     // Format as YYYY-MM-DD
     const dateString = `${selectedDate.getFullYear()}-${String(
-      selectedDate.getMonth() + 1
+      selectedDate.getMonth() + 1,
     ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
     if (selecting === "start") {
@@ -167,10 +180,10 @@ export function DateRangeInput({
     const date = new Date(
       currentMonth.getFullYear(),
       currentMonth.getMonth(),
-      day
+      day,
     );
     const dateString = `${date.getFullYear()}-${String(
-      date.getMonth() + 1
+      date.getMonth() + 1,
     ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
     return dateString === value.start_date || dateString === value.end_date;
   };
@@ -180,10 +193,10 @@ export function DateRangeInput({
     const date = new Date(
       currentMonth.getFullYear(),
       currentMonth.getMonth(),
-      day
+      day,
     );
     const dateString = `${date.getFullYear()}-${String(
-      date.getMonth() + 1
+      date.getMonth() + 1,
     ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
     return dateString > value.start_date && dateString < value.end_date;
   };
@@ -208,13 +221,13 @@ export function DateRangeInput({
         value.start_date ===
         `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(
           2,
-          "0"
+          "0",
         )}`;
       const isEnd =
         value.end_date ===
         `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(
           2,
-          "0"
+          "0",
         )}`;
 
       days.push(
@@ -235,27 +248,15 @@ export function DateRangeInput({
           `}
         >
           {day}
-        </button>
+        </button>,
       );
     }
 
     return days;
   };
 
-  const monthNames = [
-    "Enero",
-    "Febrero",
-    "Marzo",
-    "Abril",
-    "Mayo",
-    "Junio",
-    "Julio",
-    "Agosto",
-    "Septiembre",
-    "Octubre",
-    "Noviembre",
-    "Diciembre",
-  ];
+  const monthNames = getLocalizedMonthNames(localeCode, "long");
+  const weekDayLabels = getLocalizedWeekdayLabels(localeCode, "short");
 
   return (
     <div className="space-y-4" ref={containerRef}>
@@ -280,11 +281,11 @@ export function DateRangeInput({
             </span>
           </div>
           <div
-            className={`text-lg font-normal ${
+            className={`text-base font-normal ${
               value?.start_date ? "text-gray-900" : "text-gray-400"
             }`}
           >
-            {value?.start_date ? formatDate(value.start_date) : "DD/MM/YYYY"}
+            {value?.start_date ? formatDate(value.start_date) : datePlaceholder}
           </div>
         </div>
 
@@ -307,11 +308,11 @@ export function DateRangeInput({
             </span>
           </div>
           <div
-            className={`text-lg font-normal ${
+            className={`text-base font-normal ${
               value?.end_date ? "text-gray-900" : "text-gray-400"
             }`}
           >
-            {value?.end_date ? formatDate(value.end_date) : "DD/MM/YYYY"}
+            {value?.end_date ? formatDate(value.end_date) : datePlaceholder}
           </div>
         </div>
       </div>
@@ -340,7 +341,7 @@ export function DateRangeInput({
 
           {/* Week Days */}
           <div className="grid grid-cols-7 mb-2">
-            {["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"].map((day) => (
+            {weekDayLabels.map((day) => (
               <div
                 key={day}
                 className="h-8 flex items-center justify-center text-xs font-medium text-gray-400"

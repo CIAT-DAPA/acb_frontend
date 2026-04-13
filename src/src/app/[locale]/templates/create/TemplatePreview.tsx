@@ -17,6 +17,13 @@ import { Card } from "../../../../types/card";
 import { CardAPIService } from "../../../../services/cardService";
 import { RefreshCw } from "lucide-react";
 import { normalizeAssetUrl } from "@/utils/assetUrl";
+import {
+  getLocalizedWeekdayLabels,
+  getMonthIndexFromName,
+  getMonthNameByIndex,
+  resolveAppLocale,
+  toDateLocaleCode,
+} from "@/utils/locale";
 
 // Mapeo de fuentes a variables CSS de Next.js
 const FONT_CSS_VARS: Record<string, string> = {
@@ -1115,17 +1122,7 @@ export function TemplatePreview({
   };
 
   const hookLocale = useLocale();
-
-  // Extraer el locale actual del pathname como backup (igual que LanguageSelector)
-  const pathnameLocale = pathname.split("/")[1];
-
-  // Usar el locale del pathname si está disponible, sino el del hook
-  const locale = ["es", "en"].includes(pathnameLocale)
-    ? pathnameLocale
-    : hookLocale;
-
-  // Código de locale para formateo de fechas
-  const localeCode = locale === "es" ? "es-ES" : "en-US";
+  const localeCode = toDateLocaleCode(resolveAppLocale(pathname, hookLocale));
 
   // Estado para almacenar las cards cargadas
   const [cardsCache, setCardsCache] = useState<Map<string, Card>>(new Map());
@@ -2874,7 +2871,7 @@ export function TemplatePreview({
         );
 
       case "moon_calendar":
-        const daysOfWeek = ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"];
+        const daysOfWeek = getLocalizedWeekdayLabels(localeCode, "short");
 
         // Obtener datos del valor del campo si está en modo form
         const moonCalendarValue =
@@ -2884,50 +2881,20 @@ export function TemplatePreview({
 
         // Usar el mes y año del date picker si están disponibles, sino usar fecha actual
         const currentDate = new Date();
-        const monthNames = [
-          "enero",
-          "febrero",
-          "marzo",
-          "abril",
-          "mayo",
-          "junio",
-          "julio",
-          "agosto",
-          "septiembre",
-          "octubre",
-          "noviembre",
-          "diciembre",
-        ];
-        const defaultMonth = monthNames[currentDate.getMonth()];
+        const defaultMonthIndex = currentDate.getMonth();
         const defaultYear = currentDate.getFullYear();
 
-        const selectedMonth = moonCalendarValue.month || defaultMonth;
-        const selectedYear = moonCalendarValue.year || defaultYear;
-
-        // Determinar días del mes según el mes seleccionado
-        const DAYS_IN_MONTH_MAP: { [key: string]: number } = {
-          enero: 31,
-          febrero: 28,
-          marzo: 31,
-          abril: 30,
-          mayo: 31,
-          junio: 30,
-          julio: 31,
-          agosto: 31,
-          septiembre: 30,
-          octubre: 31,
-          noviembre: 30,
-          diciembre: 31,
-        };
-
-        const isLeapYear = (year: number) => {
-          return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
-        };
-
-        let daysInMonth = DAYS_IN_MONTH_MAP[selectedMonth] || 31;
-        if (selectedMonth === "febrero" && isLeapYear(selectedYear)) {
-          daysInMonth = 29;
-        }
+        const selectedMonthIndex =
+          getMonthIndexFromName(moonCalendarValue.month) ?? defaultMonthIndex;
+        const parsedYear = Number(moonCalendarValue.year);
+        const selectedYear = Number.isFinite(parsedYear)
+          ? parsedYear
+          : defaultYear;
+        const daysInMonth = new Date(
+          selectedYear,
+          selectedMonthIndex + 1,
+          0,
+        ).getDate();
 
         // Obtener fechas de fases lunares del valor del campo
         const fullMoonDate = moonCalendarValue.full_moon_date;
@@ -3167,26 +3134,7 @@ export function TemplatePreview({
         };
 
         // Calcular el día de la semana en que empieza el mes
-        const MONTH_INDEX: { [key: string]: number } = {
-          enero: 0,
-          febrero: 1,
-          marzo: 2,
-          abril: 3,
-          mayo: 4,
-          junio: 5,
-          julio: 6,
-          agosto: 7,
-          septiembre: 8,
-          octubre: 9,
-          noviembre: 10,
-          diciembre: 11,
-        };
-
-        const firstDayOfMonth = new Date(
-          selectedYear,
-          MONTH_INDEX[selectedMonth],
-          1,
-        );
+        const firstDayOfMonth = new Date(selectedYear, selectedMonthIndex, 1);
         const startDayOfWeek = firstDayOfMonth.getDay(); // 0 = Domingo, 1 = Lunes, etc.
 
         // Obtener configuración del título
@@ -3194,8 +3142,11 @@ export function TemplatePreview({
         const titleIcon = moonCalendarConfig?.title_icon;
         const titleLabel =
           moonCalendarConfig?.title_label || "Calendario lunar - {month}";
+        const localizedMonthName =
+          getMonthNameByIndex(selectedMonthIndex, localeCode, "long") || "";
         const displayMonth =
-          selectedMonth.charAt(0).toUpperCase() + selectedMonth.slice(1);
+          localizedMonthName.charAt(0).toUpperCase() +
+          localizedMonthName.slice(1);
         const displayTitle = titleLabel.replace("{month}", displayMonth);
 
         return (
