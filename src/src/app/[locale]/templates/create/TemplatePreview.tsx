@@ -1590,6 +1590,10 @@ export function TemplatePreview({
       case "date":
         const dateFormat =
           (field.field_config as any)?.date_format || "DD/MM/YYYY";
+        const showDateLabel = (field.field_config as any)?.showLabel ?? false;
+        const displayDateLabel = showDateLabel
+          ? field.label || field.display_name
+          : null;
 
         // Si no tiene valor, mostrar el patrón del formato
         const displayValue = field.value
@@ -1597,7 +1601,12 @@ export function TemplatePreview({
           : dateFormat;
 
         return (
-          <div key={key} style={fieldStyles}>
+          <div
+            key={key}
+            style={fieldStyles}
+            className="flex items-center gap-2"
+          >
+            {displayDateLabel && <span>{displayDateLabel}:</span>}
             {displayValue}
           </div>
         );
