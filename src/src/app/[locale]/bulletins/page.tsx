@@ -88,7 +88,7 @@ export default function Bulletins() {
   // Cargar bulletins al montar el componente
   useEffect(() => {
     loadBulletins();
-  }, []);
+  }, [locale]);
 
   // Función para cargar boletines desde la API
   const loadBulletins = async () => {
@@ -99,20 +99,11 @@ export default function Bulletins() {
       const response = await BulletinAPIService.getBulletins();
 
       if (response.success) {
-        const readableBulletins = response.data.filter((bulletin) => {
-          const allowedGroups = bulletin.access_config?.allowed_groups || [];
-          return can(
-            PERMISSION_ACTIONS.Read,
-            MODULES.BULLETINS_COMPOSER,
-            allowedGroups,
-          );
-        });
-
         setBulletins(response.data);
 
         // Obtener los nombres y thumbnails de los templates base
         const templateIds = [
-          ...new Set(readableBulletins.map((b) => b.base_template_master_id)),
+          ...new Set(response.data.map((b) => b.base_template_master_id)),
         ];
         const templatesResponse = await Promise.all(
           templateIds.map((id) =>
