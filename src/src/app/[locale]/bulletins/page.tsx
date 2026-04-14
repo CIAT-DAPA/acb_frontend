@@ -24,6 +24,7 @@ import ItemCard from "../components/ItemCard";
 import { DuplicateItemModal } from "../components/DuplicateItemModal";
 import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useAuth } from "@/hooks/useAuth";
 import { useParams } from "next/navigation";
 import {
   btnOutlineSecondary,
@@ -78,6 +79,7 @@ export default function Bulletins() {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const { can } = usePermissions();
+  const { authenticated, loading: authLoading } = useAuth();
 
   const getBulletinTimestamp = (bulletin: BulletinMaster): number => {
     return new Date(
@@ -85,10 +87,20 @@ export default function Bulletins() {
     ).getTime();
   };
 
-  // Cargar bulletins al montar el componente
+  // Cargar bulletins solo cuando la autenticación ya está resuelta
   useEffect(() => {
+    if (authLoading) {
+      return;
+    }
+
+    if (!authenticated) {
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     loadBulletins();
-  }, [locale]);
+  }, [locale, authLoading, authenticated]);
 
   // Función para cargar boletines desde la API
   const loadBulletins = async () => {

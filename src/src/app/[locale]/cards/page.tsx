@@ -41,6 +41,7 @@ import {
 import { EnumAPIService, EnumValue } from "@/services/enumService";
 import usePermissions from "@/hooks/usePermissions";
 import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function CardsPage() {
   const t = useTranslations("Cards");
@@ -63,12 +64,24 @@ export default function CardsPage() {
   // Estados para tipos de cards dinámicos
   const [cardTypes, setCardTypes] = useState<EnumValue[]>([]);
   const [loadingTypes, setLoadingTypes] = useState(true);
+  const { authenticated, loading: authLoading } = useAuth();
 
-  // Cargar cards y tipos al montar el componente
+  // Cargar cards y tipos solo cuando la autenticación ya está resuelta
   useEffect(() => {
+    if (authLoading) {
+      return;
+    }
+
+    if (!authenticated) {
+      setLoading(false);
+      setError(null);
+      setLoadingTypes(false);
+      return;
+    }
+
     loadCards();
     loadCardTypes();
-  }, []);
+  }, [authLoading, authenticated]);
 
   // Función helper para obtener el label traducido de un tipo de card
   const getCardTypeLabel = (cardType: string): string => {
