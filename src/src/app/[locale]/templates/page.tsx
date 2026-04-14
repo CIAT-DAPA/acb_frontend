@@ -33,6 +33,7 @@ import {
 import { TemplateMaster } from "@/types/template";
 import { PreviewModal } from "../components/PreviewModal";
 import { DuplicateItemModal } from "../components/DuplicateItemModal";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Templates() {
   const t = useTranslations("Templates");
@@ -64,6 +65,7 @@ export default function Templates() {
   const [previewTemplateId, setPreviewTemplateId] = useState<string | null>(
     null,
   );
+  const { authenticated, loading: authLoading } = useAuth();
 
   // Helper para obtener el nombre del autor
   const getAuthorName = (log: TemplateMaster["log"]) =>
@@ -76,10 +78,20 @@ export default function Templates() {
     ).getTime();
   };
 
-  // Cargar templates al montar el componente
+  // Cargar templates solo cuando la autenticación ya está resuelta
   useEffect(() => {
+    if (authLoading) {
+      return;
+    }
+
+    if (!authenticated) {
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     loadTemplates();
-  }, []);
+  }, [authLoading, authenticated]);
 
   // Función para cargar templates desde la API
   const loadTemplates = async () => {

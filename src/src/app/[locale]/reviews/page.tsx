@@ -19,6 +19,7 @@ import ItemCard from "../components/ItemCard";
 import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function ReviewsPage() {
   const t = useTranslations("Bulletins"); // Reusing Bulletins translations for now
@@ -35,11 +36,22 @@ export default function ReviewsPage() {
   >({});
   const { can } = usePermissions();
   const router = useRouter();
+  const { authenticated, loading: authLoading } = useAuth();
 
-  // Cargar bulletins al montar el componente
+  // Cargar bulletins solo cuando la autenticación ya está resuelta
   useEffect(() => {
+    if (authLoading) {
+      return;
+    }
+
+    if (!authenticated) {
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     loadBulletins();
-  }, []);
+  }, [authLoading, authenticated]);
 
   // Función para cargar boletines desde la API
   const loadBulletins = async () => {
