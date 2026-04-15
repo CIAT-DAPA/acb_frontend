@@ -44,7 +44,7 @@ export function FieldEditor({
     if (!currentField.style_manually_edited && containerStyle) {
       const updatedField = inheritStylesFromContainer(
         currentField,
-        containerStyle
+        containerStyle,
       );
       if (
         JSON.stringify(updatedField.style_config) !==
@@ -60,7 +60,7 @@ export function FieldEditor({
   const inheritableStyles = getInheritableStyles(containerStyle);
 
   const updateField = useCallback((updates: Partial<Field>) => {
-    setCurrentField((prev) => ({ ...prev, ...updates } as Field));
+    setCurrentField((prev) => ({ ...prev, ...updates }) as Field);
   }, []);
 
   const updateFieldConfig = useCallback(
@@ -73,10 +73,10 @@ export function FieldEditor({
               ...prev.field_config,
               ...configUpdates,
             },
-          } as Field)
+          }) as Field,
       );
     },
-    []
+    [],
   );
 
   const updateValidation = useCallback(
@@ -89,10 +89,10 @@ export function FieldEditor({
               ...prev.validation,
               ...validationUpdates,
             },
-          } as Field)
+          }) as Field,
       );
     },
-    []
+    [],
   );
 
   const updateStyleConfig = useCallback(
@@ -108,7 +108,7 @@ export function FieldEditor({
         return updated;
       });
     },
-    []
+    [],
   );
 
   const handleSave = useCallback(() => {
@@ -245,6 +245,21 @@ export function FieldEditor({
                 className="ml-2 text-sm text-[#283618]/70 cursor-pointer"
               >
                 {t("visibility.bulletin")}
+              </label>
+            </div>
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="show_in_print"
+                checked={currentField.print !== false}
+                onChange={(e) => updateField({ print: e.target.checked })}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
+              />
+              <label
+                htmlFor="show_in_print"
+                className="ml-2 text-sm text-[#283618]/70 cursor-pointer"
+              >
+                {t("visibility.print")}
               </label>
             </div>
           </div>
@@ -410,7 +425,10 @@ export function FieldEditor({
                   <button
                     onClick={() =>
                       setCurrentField(
-                        resetFieldStyleInheritance(currentField, containerStyle)
+                        resetFieldStyleInheritance(
+                          currentField,
+                          containerStyle,
+                        ),
                       )
                     }
                     className="text-blue-600 hover:text-blue-800 underline"

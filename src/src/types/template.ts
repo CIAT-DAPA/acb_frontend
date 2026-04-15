@@ -148,6 +148,7 @@ export interface FieldBase {
   label?: string;
   form: boolean;
   bulletin: boolean;
+  print?: boolean;
   style_config?: StyleConfig;
   style_manually_edited?: boolean; // Flag para indicar si los estilos han sido editados manualmente
   validation?: ValidationRules;
@@ -289,6 +290,7 @@ export interface Block {
   display_name: string;
   icon_url?: string;
   style_config?: StyleConfig;
+  print?: boolean;
   fields: Field[];
 }
 
@@ -304,6 +306,7 @@ export interface Section {
   order: number;
   style_config?: StyleConfig;
   icon_url: string;
+  print?: boolean;
   header_config?: HeaderFooterConfig; // Header específico de la sección
   footer_config?: HeaderFooterConfig; // Footer específico de la sección
   blocks: Block[];

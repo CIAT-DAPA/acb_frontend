@@ -248,6 +248,7 @@ const ItemSchemaField: React.FC<ItemSchemaFieldProps> = ({
     label: fieldDef.label || "",
     form: fieldDef.form !== undefined ? fieldDef.form : true,
     bulletin: fieldDef.bulletin !== undefined ? fieldDef.bulletin : true,
+    print: fieldDef.print !== false,
     validation: fieldDef.validation || {},
     field_config: fieldDef.field_config || {},
     style_config: fieldDef.style_config || {},
@@ -334,6 +335,7 @@ const ItemSchemaField: React.FC<ItemSchemaFieldProps> = ({
                     description: updatedField.description,
                     form: updatedField.form,
                     bulletin: updatedField.bulletin,
+                    print: updatedField.print !== false,
                     validation: updatedField.validation,
                     field_config: updatedField.field_config,
                     style_config: updatedField.style_config,
@@ -461,6 +463,7 @@ export const ListFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                   label: t("newField"),
                   form: isFormMode,
                   bulletin: true,
+                  print: true,
                   validation: {},
                 };
                 updateFieldConfig({
@@ -502,7 +505,7 @@ export const ListFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                     });
                   }}
                 />
-              )
+              ),
             )}
 
             {Object.keys(fieldConfig?.item_schema || {}).length === 0 && (
@@ -568,7 +571,7 @@ export const ListFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                             : []
                         ) as Record<string, any>[];
                         const newItems = currentItems.filter(
-                          (_, idx) => idx !== itemIndex
+                          (_, idx) => idx !== itemIndex,
                         );
                         updateField({
                           value: newItems,
@@ -624,7 +627,7 @@ export const ListFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                             }}
                           />
                         </div>
-                      )
+                      ),
                     )}
                   </div>
                 </div>

@@ -195,6 +195,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({
               blocks: [],
               background_url: [],
               icon_url: "",
+              print: true,
             },
           ],
         },

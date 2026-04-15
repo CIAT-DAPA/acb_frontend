@@ -15,6 +15,13 @@ import { useCardsMetadata } from "@/hooks/useCardsMetadata";
 export type DownloadFormat = "png" | "jpg" | "pdf";
 export type QualityOption = string;
 export type PageSize = "A4" | "Letter" | "Legal" | string;
+export type ExportTarget = "mobile" | "print";
+export type PrintGridOption = "1x1" | "2x1" | "2x2" | "3x2";
+export type PrintPaperSize =
+  | "pliego"
+  | "medio_pliego"
+  | "cuarto_pliego"
+  | "octavo_pliego";
 
 // Función helper para convertir contenido normalizado a CreateTemplateData
 function convertToTemplateData(content: NormalizedContent): CreateTemplateData {
@@ -43,10 +50,13 @@ function convertToTemplateData(content: NormalizedContent): CreateTemplateData {
 }
 
 export interface ExportConfig {
+  target: ExportTarget;
   format: DownloadFormat;
   quality: QualityOption;
   pageSize: PageSize;
   sectionsPerPage: number;
+  printGrid: PrintGridOption;
+  printPaperSize: PrintPaperSize;
   selectedSections: number[]; // Empty = todas
   showMoreInfo: boolean;
   showDescription: boolean;
@@ -133,10 +143,13 @@ export function ExportModal({
 
   // Estado del formulario
   const [config, setConfig] = useState<ExportConfig>({
+    target: "mobile",
     format: "jpg",
     quality: "low",
     pageSize: "auto",
     sectionsPerPage: 1,
+    printGrid: "2x2",
+    printPaperSize: "medio_pliego",
     selectedSections: [], // Todas por defecto
     showMoreInfo: false,
     showDescription: false,
@@ -234,6 +247,15 @@ export function ExportModal({
   }, [isOpen]);
 
   // Handlers
+  const handleTargetChange = (target: ExportTarget) => {
+    setConfig((previousConfig) => ({
+      ...previousConfig,
+      target,
+      // En modo impresión exportamos siempre PDF
+      format: target === "print" ? "pdf" : previousConfig.format,
+    }));
+  };
+
   const handleFormatChange = (format: DownloadFormat) => {
     setConfig({ ...config, format });
   };
@@ -248,6 +270,75 @@ export function ExportModal({
 
   const handleSectionsPerPageChange = (value: number) => {
     setConfig({ ...config, sectionsPerPage: value });
+  };
+
+  const handlePrintGridChange = (grid: PrintGridOption) => {
+    setConfig({ ...config, printGrid: grid });
+  };
+
+  const handlePrintPaperSizeChange = (printPaperSize: PrintPaperSize) => {
+    setConfig({ ...config, printPaperSize });
+  };
+
+  const resolveQualityPercentage = (quality: QualityOption): number => {
+    switch (quality) {
+      case "low":
+        return 65;
+      case "medium":
+        return 80;
+      case "high":
+        return 92;
+      case "ultra":
+        return 100;
+      default: {
+        const parsedQuality = Number.parseInt(quality, 10);
+        return Number.isFinite(parsedQuality) ? parsedQuality : 90;
+      }
+    }
+  };
+
+  const getSectionTotalPagesForExport = (
+    section: any,
+    includePrintVisibility: boolean,
+  ): number => {
+    let maxPages = 1;
+
+    section?.blocks?.forEach((block: any) => {
+      if (includePrintVisibility && block?.print === false) {
+        return;
+      }
+
+      block?.fields?.forEach((field: any) => {
+        if (field?.bulletin === false) {
+          return;
+        }
+
+        if (includePrintVisibility && field?.print === false) {
+          return;
+        }
+
+        if (field?.type === "list") {
+          const rawMax = field.field_config?.max_items_per_page;
+          const maxItemsPerPage = rawMax ? Number(rawMax) : 0;
+          const items = Array.isArray(field.value) ? field.value : [];
+
+          if (items.length > 0 && maxItemsPerPage > 0) {
+            maxPages = Math.max(
+              maxPages,
+              Math.ceil(items.length / maxItemsPerPage),
+            );
+          }
+        }
+
+        if (field?.type === "card" && Array.isArray(field.value)) {
+          if (field.value.length > 1) {
+            maxPages = Math.max(maxPages, field.value.length);
+          }
+        }
+      });
+    });
+
+    return maxPages;
   };
 
   const handleSectionToggle = (index: number) => {
@@ -285,26 +376,56 @@ export function ExportModal({
       };
 
       // MODO AUTO-EXPORT: El modal ejecuta la exportación internamente
-      if (autoExport && exportConfig && externalSections) {
+      if (autoExport) {
+        const sectionsForExport =
+          templateData?.version.content.sections || externalSections || [];
+        const useInternalPreview = Boolean(templateData);
+
+        const resolvedExportConfig: ExportTechnicalConfig | undefined =
+          useInternalPreview
+            ? {
+                containerSelector:
+                  '#export-preview-download [data-export-scroll-container="true"]',
+                itemSelectorTemplate: (
+                  sectionIndex: number,
+                  pageIndex: number,
+                ) =>
+                  `[data-section-index="${sectionIndex}"][data-page-index="${pageIndex}"]`,
+                getExportElement: (previewElement: Element) =>
+                  previewElement.querySelector(
+                    "#template-preview-container > div",
+                  ),
+                getSectionPages: (section: any) =>
+                  getSectionTotalPagesForExport(
+                    section,
+                    config.target === "print",
+                  ),
+              }
+            : exportConfig;
+
+        if (!resolvedExportConfig || sectionsForExport.length === 0) {
+          throw new Error(t("loadError"));
+        }
+
         await exportContent({
           // Configuración del usuario (del estado interno del modal)
           format: config.format,
-          quality:
-            typeof config.quality === "string"
-              ? parseInt(config.quality, 10)
-              : config.quality,
+          quality: resolveQualityPercentage(config.quality),
           qualityLevel: config.quality as "low" | "medium" | "high" | "ultra",
           selectedSections: config.selectedSections,
           pageSize: config.pageSize, // Tamaño de página para PDF
+          exportTarget: config.target,
+          printGrid: config.printGrid,
+          printPaperSize: config.printPaperSize,
 
           // Configuración técnica (viene de props)
-          containerSelector: exportConfig.containerSelector,
-          itemSelectorTemplate: exportConfig.itemSelectorTemplate,
-          getExportElement: exportConfig.getExportElement,
-          getSectionPages: exportConfig.getSectionPages,
+          containerSelector: resolvedExportConfig.containerSelector,
+          itemSelectorTemplate: resolvedExportConfig.itemSelectorTemplate,
+          getExportElement: resolvedExportConfig.getExportElement,
+          getSectionPages: resolvedExportConfig.getSectionPages,
 
           // Datos (vienen de props)
-          sections: externalSections,
+          sections: sectionsForExport,
           contentName: contentName,
 
           // Callbacks
@@ -317,6 +438,7 @@ export function ExportModal({
             sectionPage: t("sectionPage"),
             toPdf: t("toPdf"),
             toZip: t("toZip"),
+            composingPrintLayout: t("composingPrintLayout"),
             exportComplete: t("exportComplete"),
           },
         });
@@ -355,10 +477,13 @@ export function ExportModal({
 
   const resetModal = () => {
     setConfig({
+      target: "mobile",
       format: "pdf",
       quality: "ultra",
       pageSize: "auto",
       sectionsPerPage: 1,
+      printGrid: "2x2",
+      printPaperSize: "medio_pliego",
       selectedSections: [],
       showMoreInfo: false,
       showDescription: false,
@@ -386,6 +511,8 @@ export function ExportModal({
 
   const sectionsToExport =
     config.selectedSections.length > 0 ? config.selectedSections : allSections;
+  const availableFormats: DownloadFormat[] =
+    config.target === "print" ? ["pdf"] : ["jpg", "pdf"];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -435,13 +562,36 @@ export function ExportModal({
         {!loadingContent && !loadError && (
           <div className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-4 scrollbar-thin">
             <div className="space-y-6">
+              {/* Destino de exportación */}
+              <div>
+                <label className="block text-sm font-semibold text-[#283618] mb-3">
+                  {t("destination")}
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {(["mobile", "print"] as ExportTarget[]).map((target) => (
+                    <button
+                      key={target}
+                      onClick={() => handleTargetChange(target)}
+                      disabled={isExporting}
+                      className={`py-3 px-4 rounded text-sm transition-colors ${
+                        config.target === target
+                          ? "bg-[#bc6c25] text-[#fefae0] font-semibold"
+                          : "border-2 border-[#bc6c25] text-[#283618] hover:bg-[#bc6c25]/90 hover:text-[#fefae0]"
+                      } disabled:opacity-30 disabled:cursor-not-allowed`}
+                    >
+                      {target === "mobile" ? t("forMobile") : t("forPrint")}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Formato */}
               <div>
                 <label className="block text-sm font-semibold text-[#283618] mb-3">
                   {t("format")}
                 </label>
                 <div className="grid grid-cols-2 gap-2">
-                  {(["jpg", "pdf"] as DownloadFormat[]).map((format) => (
+                  {availableFormats.map((format) => (
                     <button
                       key={format}
                       onClick={() => handleFormatChange(format)}
@@ -493,55 +643,120 @@ export function ExportModal({
               {config.format === "pdf" && (
                 <div className="border-2 border-[#283618]/10 rounded-lg p-4 space-y-4">
                   <h3 className="font-semibold text-[#283618]">
-                    {t("pdfConfig")}
+                    {config.target === "print"
+                      ? t("printConfig")
+                      : t("pdfConfig")}
                   </h3>
 
-                  {/* Tamaño de página */}
-                  <div>
-                    <label className="block text-sm text-[#283618]/80 mb-2">
-                      {t("pageSize")}
-                    </label>
-                    <div className="grid grid-cols-4 gap-2">
-                      {(["auto", "a4", "letter", "legal"] as PageSize[]).map(
-                        (size) => (
-                          <button
-                            key={size}
-                            onClick={() => handlePageSizeChange(size)}
-                            disabled={isExporting}
-                            className={`py-2 px-3 rounded uppercase text-xs transition-colors ${
-                              config.pageSize === size
-                                ? "bg-[#bc6c25] text-[#fefae0] font-semibold"
-                                : "border-2 border-[#bc6c25] text-[#283618] hover:bg-[#bc6c25]/90 hover:text-[#fefae0]"
-                            } disabled:opacity-50`}
-                          >
-                            {size}
-                          </button>
-                        ),
-                      )}
-                    </div>
-                  </div>
+                  {config.target === "print" ? (
+                    <>
+                      {/* Grilla de impresión */}
+                      <div>
+                        <label className="block text-sm text-[#283618]/80 mb-2">
+                          {t("printGrid")}
+                        </label>
+                        <div className="grid grid-cols-4 gap-2">
+                          {(
+                            ["1x1", "2x1", "2x2", "3x2"] as PrintGridOption[]
+                          ).map((grid) => (
+                            <button
+                              key={grid}
+                              onClick={() => handlePrintGridChange(grid)}
+                              disabled={isExporting}
+                              className={`py-2 px-3 rounded text-xs transition-colors ${
+                                config.printGrid === grid
+                                  ? "bg-[#bc6c25] text-[#fefae0] font-semibold"
+                                  : "border-2 border-[#bc6c25] text-[#283618] hover:bg-[#bc6c25]/90 hover:text-[#fefae0]"
+                              } disabled:opacity-50`}
+                            >
+                              {grid}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
 
-                  {/* Secciones por página */}
-                  <div>
-                    <label className="block text-sm text-[#283618]/80 mb-2">
-                      {t("sectionsPerPage")}: {config.sectionsPerPage}
-                    </label>
-                    <input
-                      type="range"
-                      min="1"
-                      max="6"
-                      value={config.sectionsPerPage}
-                      onChange={(e) =>
-                        handleSectionsPerPageChange(parseInt(e.target.value))
-                      }
-                      disabled={isExporting}
-                      className="w-full accent-[#ffaf68]"
-                    />
-                    <div className="flex justify-between text-xs text-[#283618]/60 mt-1">
-                      <span>{t("sectionsPerPageRange")}</span>
-                      <span>{t("sectionsPerPageMax")}</span>
-                    </div>
-                  </div>
+                      {/* Tamaño de impresión */}
+                      <div>
+                        <label className="block text-sm text-[#283618]/80 mb-2">
+                          {t("printSize")}
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {(
+                            [
+                              "pliego",
+                              "medio_pliego",
+                              "cuarto_pliego",
+                              "octavo_pliego",
+                            ] as PrintPaperSize[]
+                          ).map((size) => (
+                            <button
+                              key={size}
+                              onClick={() => handlePrintPaperSizeChange(size)}
+                              disabled={isExporting}
+                              className={`py-2 px-3 rounded text-xs transition-colors ${
+                                config.printPaperSize === size
+                                  ? "bg-[#bc6c25] text-[#fefae0] font-semibold"
+                                  : "border-2 border-[#bc6c25] text-[#283618] hover:bg-[#bc6c25]/90 hover:text-[#fefae0]"
+                              } disabled:opacity-50`}
+                            >
+                              {t(size)}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {/* Tamaño de página */}
+                      <div>
+                        <label className="block text-sm text-[#283618]/80 mb-2">
+                          {t("pageSize")}
+                        </label>
+                        <div className="grid grid-cols-4 gap-2">
+                          {(
+                            ["auto", "a4", "letter", "legal"] as PageSize[]
+                          ).map((size) => (
+                            <button
+                              key={size}
+                              onClick={() => handlePageSizeChange(size)}
+                              disabled={isExporting}
+                              className={`py-2 px-3 rounded uppercase text-xs transition-colors ${
+                                config.pageSize === size
+                                  ? "bg-[#bc6c25] text-[#fefae0] font-semibold"
+                                  : "border-2 border-[#bc6c25] text-[#283618] hover:bg-[#bc6c25]/90 hover:text-[#fefae0]"
+                              } disabled:opacity-50`}
+                            >
+                              {size}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Secciones por página (mantenido para compatibilidad) */}
+                      <div>
+                        <label className="block text-sm text-[#283618]/80 mb-2">
+                          {t("sectionsPerPage")}: {config.sectionsPerPage}
+                        </label>
+                        <input
+                          type="range"
+                          min="1"
+                          max="6"
+                          value={config.sectionsPerPage}
+                          onChange={(e) =>
+                            handleSectionsPerPageChange(
+                              parseInt(e.target.value),
+                            )
+                          }
+                          disabled={isExporting}
+                          className="w-full accent-[#ffaf68]"
+                        />
+                        <div className="flex justify-between text-xs text-[#283618]/60 mt-1">
+                          <span>{t("sectionsPerPageRange")}</span>
+                          <span>{t("sectionsPerPageMax")}</span>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 
@@ -617,6 +832,7 @@ export function ExportModal({
                       data={templateData}
                       cardsMetadata={cardsMetadata}
                       cardsMetadataLoading={cardsMetadataLoading}
+                      renderForPrint={config.target === "print"}
                       config={{
                         orientation: "vertical",
                         showMiniNav: false,
@@ -636,7 +852,11 @@ export function ExportModal({
         {!loadingContent && !loadError && (
           <div className="flex-col shrink-0 bg-white border-t border-[#283618]/10 p-6 flex items-center justify-between rounded-b-xl">
             <div className="text-sm text-[#283618]/60">
-              {t("formatLabel")}:{" "}
+              {t("destinationLabel")}:{" "}
+              <span className="font-semibold">
+                {config.target === "mobile" ? t("forMobile") : t("forPrint")}
+              </span>{" "}
+              |{t("formatLabel")}:{" "}
               <span className="font-semibold uppercase">{config.format}</span> |
               {t("sectionsLabel")}:{" "}
               <span className="font-semibold">{sectionsToExport.length}</span>

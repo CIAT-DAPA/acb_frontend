@@ -32,6 +32,7 @@ export const getFieldConfigDefaults = (fieldType: string): any => {
           type: "text",
           form: true,
           bulletin: true,
+          print: true,
         },
         item_description: {
           field_id: "item_description",
@@ -39,6 +40,7 @@ export const getFieldConfigDefaults = (fieldType: string): any => {
           type: "text",
           form: true,
           bulletin: false,
+          print: true,
         },
       },
     },

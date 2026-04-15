@@ -87,6 +87,7 @@ export default function CreateTemplatePage({
                     display_name: "Sección 1",
                     blocks: [],
                     order: 0,
+                    print: true,
                   },
                 ],
         },
