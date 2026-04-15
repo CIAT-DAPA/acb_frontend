@@ -369,6 +369,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
         type: "text",
         form: true,
         bulletin: true,
+        print: true,
         field_config: getFieldConfigDefaults("text"),
       });
       return newData;
@@ -387,6 +388,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
         type: "text",
         form: true,
         bulletin: true,
+        print: true,
         field_config: getFieldConfigDefaults("text"),
       });
       return newData;
@@ -446,6 +448,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
         type: "text",
         form: true,
         bulletin: true,
+        print: true,
         field_config: getFieldConfigDefaults("text"),
       });
       return newData;
@@ -464,6 +467,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
         type: "text",
         form: true,
         bulletin: true,
+        print: true,
         field_config: getFieldConfigDefaults("text"),
       });
       return newData;
@@ -532,6 +536,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
       section.blocks.push({
         block_id: crypto.randomUUID(),
         display_name: "New Block",
+        print: true,
         fields: [],
       });
       return newData;
@@ -552,6 +557,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
         type: "text",
         form: true,
         bulletin: true,
+        print: true,
         field_config: getFieldConfigDefaults("text"),
       });
       return newData;
@@ -1194,6 +1200,18 @@ export const RightPanel: React.FC<RightPanelProps> = ({
               </div>
             </div>
 
+            <label
+              className={`${ui.imageCardClass} cursor-pointer hover:bg-gray-50 flex items-center gap-2`}
+            >
+              <input
+                type="checkbox"
+                checked={(currentObject as Section)?.print !== false}
+                onChange={(e) => updateSection({ print: e.target.checked })}
+                className={ui.checkboxClass}
+              />
+              {t("fieldEditor.editor.visibility.print")}
+            </label>
+
             <div>
               <button
                 onClick={handleAddBlock}
@@ -1589,6 +1607,18 @@ export const RightPanel: React.FC<RightPanelProps> = ({
         {/* Block Specific */}
         {selection.type === "block" && currentObject && (
           <div className="space-y-6">
+            <label
+              className={`${ui.imageCardClass} cursor-pointer hover:bg-gray-50 flex items-center gap-2`}
+            >
+              <input
+                type="checkbox"
+                checked={(currentObject as Block)?.print !== false}
+                onChange={(e) => updateBlock({ print: e.target.checked })}
+                className={ui.checkboxClass}
+              />
+              {t("fieldEditor.editor.visibility.print")}
+            </label>
+
             <div>
               <button
                 onClick={handleAddField}
@@ -1660,7 +1690,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
               </select>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3">
               <label
                 className={`${ui.imageCardClass} cursor-pointer hover:bg-gray-50 flex items-center gap-2`}
               >
@@ -1686,6 +1716,19 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                   className={ui.checkboxClass}
                 />
                 {t("fieldEditor.editor.visibility.bulletin")}
+              </label>
+              <label
+                className={`${ui.imageCardClass} cursor-pointer hover:bg-gray-50 flex items-center gap-2`}
+              >
+                <input
+                  type="checkbox"
+                  checked={(currentObject as Field)?.print !== false}
+                  onChange={(e) =>
+                    handleUpdateField({ print: e.target.checked })
+                  }
+                  className={ui.checkboxClass}
+                />
+                {t("fieldEditor.editor.visibility.print")}
               </label>
             </div>
 

@@ -13,6 +13,7 @@ interface ScrollViewProps {
   initialSection?: number;
   cardsMetadata?: Record<string, Card>;
   cardsMetadataLoading?: boolean;
+  renderForPrint?: boolean;
 }
 
 /**
@@ -27,6 +28,7 @@ export function ScrollView({
   initialSection = 0,
   cardsMetadata,
   cardsMetadataLoading = false,
+  renderForPrint = false,
 }: ScrollViewProps) {
   const t = useTranslations("ScrollView");
 
@@ -230,6 +232,7 @@ export function ScrollView({
       {/* Contenedor de scroll con todas las secciones */}
       <div
         ref={scrollContainerRef}
+        data-export-scroll-container="true"
         className={`
           flex-1 w-full h-full min-h-0
           ${
@@ -330,6 +333,7 @@ export function ScrollView({
                       >
                         <TemplatePreview
                           {...sharedPreviewProps}
+                          renderForPrint={renderForPrint}
                           currentResolvedPageIndex={pageIndex}
                           hidePagination={true}
                           onResolvedPageCount={
@@ -347,6 +351,7 @@ export function ScrollView({
                   ) : (
                     <TemplatePreview
                       {...sharedPreviewProps}
+                      renderForPrint={renderForPrint}
                       currentResolvedPageIndex={pageIndex}
                       hidePagination={true}
                       onResolvedPageCount={
@@ -413,11 +418,17 @@ export function ScrollView({
                       transformOrigin: "top left",
                     }}
                   >
-                    <TemplatePreview {...sharedPreviewProps} />
+                    <TemplatePreview
+                      {...sharedPreviewProps}
+                      renderForPrint={renderForPrint}
+                    />
                   </div>
                 </div>
               ) : (
-                <TemplatePreview {...sharedPreviewProps} />
+                <TemplatePreview
+                  {...sharedPreviewProps}
+                  renderForPrint={renderForPrint}
+                />
               )}
             </div>
           );

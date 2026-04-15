@@ -1077,6 +1077,7 @@ interface TemplatePreviewProps {
   ) => void;
   selectedElementId?: string | null;
   commentCounts?: Record<string, number>;
+  renderForPrint?: boolean;
 }
 
 // Constantes para estilos repetidos
@@ -1105,6 +1106,7 @@ export function TemplatePreview({
   onElementClick,
   selectedElementId,
   commentCounts,
+  renderForPrint = false,
 }: TemplatePreviewProps) {
   const t = useTranslations("CreateTemplate.preview");
   const pathname = usePathname();
@@ -1228,6 +1230,17 @@ export function TemplatePreview({
   const headerConfig = data.version.content.header_config;
   const footerConfig = data.version.content.footer_config;
   const sections = data.version.content.sections;
+
+  const isBlockVisibleForRender = (block: Section["blocks"][number]) =>
+    !renderForPrint || block.print !== false;
+
+  const isFieldVisibleForRender = (field: Field) =>
+    field.bulletin && (!renderForPrint || field.print !== false);
+
+  const getVisibleSectionBlocks = (section: Section) =>
+    section.blocks
+      .map((block, blockIndex) => ({ block, blockIndex }))
+      .filter(({ block }) => isBlockVisibleForRender(block));
 
   // Estilos globales aplicados
   const globalStyles = {
@@ -1762,7 +1775,12 @@ export function TemplatePreview({
           .replace("{page}", String(currentPage))
           .replace("{total}", String(totalPages));
         return (
-          <div key={key} style={fieldStyles}>
+          <div
+            key={key}
+            style={fieldStyles}
+            data-page-number-field="true"
+            data-page-number-format={format}
+          >
             {pageNumber}
           </div>
         );
@@ -3308,7 +3326,8 @@ export function TemplatePreview({
     block: Section["blocks"][number],
     blockIndex: number,
   ) => {
-    const hasCardField = block.fields.some((field) => field.type === "card");
+    const visibleFields = block.fields.filter(isFieldVisibleForRender);
+    const hasCardField = visibleFields.some((field) => field.type === "card");
     const measurementBlockStyles: React.CSSProperties = {
       backgroundColor: block.style_config?.background_color || undefined,
       backgroundImage: block.style_config?.background_image
@@ -3376,30 +3395,28 @@ export function TemplatePreview({
           className={`${hasCardField ? "flex-1" : ""}`}
           style={fieldsContainerStyle}
         >
-          {block.fields.length === 0 ? (
+          {visibleFields.length === 0 ? (
             <div className="text-sm text-[#283618]/50 italic">
               {t("noFieldsInBlock")}
             </div>
           ) : (
-            block.fields
-              .filter((field) => field.bulletin)
-              .map((field, fieldIndex) => (
-                <div
-                  key={`measurement-field-wrapper-${blockIndex}-${fieldIndex}`}
-                  data-measure-field-index={fieldIndex}
-                  style={{ display: "contents" }}
-                >
-                  {renderField(
-                    field,
-                    `measurement-field-${blockIndex}-${fieldIndex}`,
-                    block.style_config || section.style_config,
-                    fieldsLayout,
-                    undefined,
-                    undefined,
-                    { measurementFieldIndex: fieldIndex },
-                  )}
-                </div>
-              ))
+            visibleFields.map((field, fieldIndex) => (
+              <div
+                key={`measurement-field-wrapper-${blockIndex}-${fieldIndex}`}
+                data-measure-field-index={fieldIndex}
+                style={{ display: "contents" }}
+              >
+                {renderField(
+                  field,
+                  `measurement-field-${blockIndex}-${fieldIndex}`,
+                  block.style_config || section.style_config,
+                  fieldsLayout,
+                  undefined,
+                  undefined,
+                  { measurementFieldIndex: fieldIndex },
+                )}
+              </div>
+            ))
           )}
         </div>
       </div>
@@ -3434,8 +3451,16 @@ export function TemplatePreview({
 
     for (let blockIndex = 0; blockIndex < section.blocks.length; blockIndex++) {
       const block = section.blocks[blockIndex];
+      if (!isBlockVisibleForRender(block)) {
+        continue;
+      }
+
       for (let fieldIndex = 0; fieldIndex < block.fields.length; fieldIndex++) {
         const field = block.fields[fieldIndex];
+        if (!isFieldVisibleForRender(field)) {
+          continue;
+        }
+
         let currentFieldPages = 1;
         let currentInfo: PaginationInfo | undefined;
 
@@ -3663,10 +3688,14 @@ export function TemplatePreview({
       );
       const blockMeasurements: BlockMeasurement[] = measuredSection.blocks.map(
         (block, blockIndex) => {
+          if (!isBlockVisibleForRender(block)) {
+            return { height: 0 };
+          }
+
           const blockElement = blockMeasureRefs.current[blockIndex];
-          const hasCardField = block.fields.some(
-            (field) => field.type === "card",
-          );
+          const hasCardField = block.fields
+            .filter(isFieldVisibleForRender)
+            .some((field) => field.type === "card");
           const blockMeasuredHeight =
             blockElement?.scrollHeight || blockElement?.offsetHeight || 0;
           const cardBlockElements = blockElement
@@ -3782,7 +3811,7 @@ export function TemplatePreview({
                 )
                 .sort((a, b) => a.fieldIndex - b.fieldIndex)
             : [];
-          const bulletinFields = block.fields.filter((field) => field.bulletin);
+          const bulletinFields = block.fields.filter(isFieldVisibleForRender);
           const bulletinFieldCount = bulletinFields.length;
           const measuredFieldHeightsByIndex = new Map<number, number>();
           const measuredListItemHeightsByField = new Map<
@@ -4110,9 +4139,13 @@ export function TemplatePreview({
     : undefined;
   const hasUnifiedSectionBackground = Boolean(selectedSectionBackgroundImage);
   const currentSectionHasCardField = Boolean(
-    currentSection?.blocks.some((block) =>
-      block.fields.some((field) => field.type === "card"),
-    ),
+    currentSection?.blocks
+      .filter(isBlockVisibleForRender)
+      .some((block) =>
+        block.fields
+          .filter(isFieldVisibleForRender)
+          .some((field) => field.type === "card"),
+      ),
   );
   const hasPendingCardLoad =
     currentSectionHasCardField &&
@@ -4371,7 +4404,7 @@ export function TemplatePreview({
                           (blockIndex, renderIndex) => {
                             const block = section.blocks[blockIndex];
 
-                            if (!block) {
+                            if (!block || !isBlockVisibleForRender(block)) {
                               return [];
                             }
 
@@ -4388,11 +4421,13 @@ export function TemplatePreview({
                   const blockEntries =
                     measuredBlockEntries.length > 0
                       ? measuredBlockEntries
-                      : section.blocks.map((block, blockIndex) => ({
-                          block,
-                          blockIndex,
-                          renderIndex: blockIndex,
-                        }));
+                      : getVisibleSectionBlocks(section).map(
+                          ({ block, blockIndex }, renderIndex) => ({
+                            block,
+                            blockIndex,
+                            renderIndex,
+                          }),
+                        );
 
                   // Estilos aplicados a la sección completa
                   const sectionStyles = {
@@ -4446,7 +4481,15 @@ export function TemplatePreview({
                   let cardFieldValues: Record<string, any> = {}; // Valores de los campos de la card actual
 
                   for (const block of section.blocks) {
+                    if (!isBlockVisibleForRender(block)) {
+                      continue;
+                    }
+
                     for (const field of block.fields) {
+                      if (!isFieldVisibleForRender(field)) {
+                        continue;
+                      }
+
                       if (field.type === "card") {
                         let cardIdToShow: string | null = null;
 
@@ -4739,7 +4782,7 @@ export function TemplatePreview({
                         {renderCommentBadge(`section-${sectionIndex}`)}
                         {/* Bloques de la sección */}
                         <div className="space-y-1 w-full flex-1 flex flex-col overflow-hidden">
-                          {section.blocks.length === 0 ? (
+                          {blockEntries.length === 0 ? (
                             <div className="text-sm text-[#283618]/50 italic pl-4">
                               {t("noBlocksInSection")}
                             </div>
@@ -4757,9 +4800,9 @@ export function TemplatePreview({
                                 const visibleFieldSlices =
                                   blockFieldPage?.fieldSlices;
                                 // Verificar si el block contiene un field de tipo card
-                                const hasCardField = block.fields.some(
-                                  (field) => field.type === "card",
-                                );
+                                const hasCardField = block.fields
+                                  .filter(isFieldVisibleForRender)
+                                  .some((field) => field.type === "card");
 
                                 // Obtener estilos del bloque
                                 const blockStyles: React.CSSProperties = {
@@ -4874,10 +4917,10 @@ export function TemplatePreview({
                                       {(() => {
                                         const bulletinFields =
                                           block.fields.filter(
-                                            (field) => field.bulletin,
+                                            isFieldVisibleForRender,
                                           );
 
-                                        if (block.fields.length === 0) {
+                                        if (bulletinFields.length === 0) {
                                           return (
                                             <div className="text-sm text-[#283618]/50 italic">
                                               {t("noFieldsInBlock")}
@@ -5382,8 +5425,9 @@ export function TemplatePreview({
             }}
           >
             <div className="space-y-1 w-full flex flex-col">
-              {measuredSection.blocks.map((block, blockIndex) =>
-                renderMeasurementBlock(measuredSection, block, blockIndex),
+              {getVisibleSectionBlocks(measuredSection).map(
+                ({ block, blockIndex }) =>
+                  renderMeasurementBlock(measuredSection, block, blockIndex),
               )}
             </div>
           </div>

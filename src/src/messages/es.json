@@ -470,10 +470,21 @@
     },
     "exportModal": {
       "title": "Exportar Contenido",
+      "destination": "Destino",
+      "destinationLabel": "Destino",
+      "forMobile": "Celular",
+      "forPrint": "Imprimir",
       "format": "Formato de Archivo",
       "quality": "Calidad de Imagen",
       "pdfConfig": "Configuración PDF",
+      "printConfig": "Configuración de Impresión",
       "pageSize": "Tamaño de Página",
+      "printGrid": "Grid de secciones",
+      "printSize": "Tamaño de impresión",
+      "pliego": "Pliego",
+      "medio_pliego": "Medio pliego",
+      "cuarto_pliego": "Cuarto pliego",
+      "octavo_pliego": "Octavo pliego",
       "sectionsPerPage": "Secciones por Página",
       "sectionsPerPageRange": "1 (una por página)",
       "sectionsPerPageMax": "6 (grid 2x3)",
@@ -500,7 +511,8 @@
       "sectionGenerating": "Generando sección {current}",
       "sectionPage": "Página",
       "toPdf": "Convirtiendo a PDF...",
-      "toZip": "Generando archivo ZIP..."
+      "toZip": "Generando archivo ZIP...",
+      "composingPrintLayout": "Componiendo páginas de impresión..."
     }
   },
   "Authentication": {
@@ -1058,7 +1070,8 @@
         "fieldType": "Tipo de Campo",
         "visibility": {
           "form": "Mostrar en Formulario",
-          "bulletin": "Mostrar en Boletín"
+          "bulletin": "Mostrar en Boletín",
+          "print": "Mostrar en Impresión"
         },
         "configuration": "Configuración",
         "optionsLabel": "Opciones (separadas por coma)",
@@ -1097,6 +1110,7 @@
         "title": "Visibilidad",
         "form": "Mostrar en formulario de creación de boletín",
         "bulletin": "Mostrar en boletín final",
+        "print": "Mostrar en impresión",
         "formHelp": "Si no se muestra en el formulario, la etiqueta y descripción se asignarán automáticamente del nombre a mostrar"
       },
       "validation": {
