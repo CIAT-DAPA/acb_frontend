@@ -470,10 +470,21 @@
     },
     "exportModal": {
       "title": "Export Content",
+      "destination": "Destination",
+      "destinationLabel": "Destination",
+      "forMobile": "Mobile",
+      "forPrint": "Print",
       "format": "File Format",
       "quality": "Image Quality",
       "pdfConfig": "PDF Configuration",
+      "printConfig": "Print Configuration",
       "pageSize": "Page Size",
+      "printGrid": "Sections grid",
+      "printSize": "Print size",
+      "pliego": "Full sheet",
+      "medio_pliego": "Half sheet",
+      "cuarto_pliego": "Quarter sheet",
+      "octavo_pliego": "Eighth sheet",
       "sectionsPerPage": "Sections per Page",
       "sectionsPerPageRange": "1 (one per page)",
       "sectionsPerPageMax": "6 (2x3 grid)",
@@ -500,7 +511,8 @@
       "sectionGenerating": "Generating section {current}",
       "sectionPage": "Page",
       "toPdf": "Converting to PDF...",
-      "toZip": "Generating ZIP file..."
+      "toZip": "Generating ZIP file...",
+      "composingPrintLayout": "Composing print pages..."
     }
   },
   "Authentication": {
@@ -1059,7 +1071,8 @@
         "fieldType": "Field Type",
         "visibility": {
           "form": "Show in Form",
-          "bulletin": "Show in Bulletin"
+          "bulletin": "Show in Bulletin",
+          "print": "Show in Print"
         },
         "configuration": "Configuration",
         "optionsLabel": "Options (comma separated)",
@@ -1099,6 +1112,7 @@
         "title": "Visibility",
         "form": "Show in form for bulletin creation",
         "bulletin": "Show in final bulletin",
+        "print": "Show in print",
         "formHelp": "If not shown in the form, the label and description will be automatically assigned from the display name"
       },
       "validation": {

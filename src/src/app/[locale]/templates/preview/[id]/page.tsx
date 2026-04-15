@@ -7,10 +7,7 @@ import { CreateTemplateData } from "@/types/template";
 import { ContentFullPreview } from "@/app/[locale]/components/ContentFullPreview";
 import { PreviewMode } from "@/types/templatePreview";
 import { ArrowLeft, Loader2, Download } from "lucide-react";
-import {
-  ExportModal,
-  ExportConfig,
-} from "@/app/[locale]/components/ExportModal";
+import { ExportModal } from "@/app/[locale]/components/ExportModal";
 
 /**
  * Página de preview independiente para templates
@@ -26,7 +23,7 @@ export default function TemplatePreviewPage() {
   const locale = params.locale as string;
 
   const [templateData, setTemplateData] = useState<CreateTemplateData | null>(
-    null
+    null,
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,8 +38,6 @@ export default function TemplatePreviewPage() {
 
   // Estados para el sistema de exportación
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-  const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
-  const previewContainerId = "export-preview-download"; // ID del contenedor en ExportModal que contiene TemplatePreview
 
   useEffect(() => {
     const loadTemplate = async () => {
@@ -113,7 +108,7 @@ export default function TemplatePreviewPage() {
       } catch (err) {
         console.error("Error cargando template:", err);
         setError(
-          err instanceof Error ? err.message : "Error al cargar el template"
+          err instanceof Error ? err.message : "Error al cargar el template",
         );
       } finally {
         setLoading(false);
@@ -122,17 +117,6 @@ export default function TemplatePreviewPage() {
 
     loadTemplate();
   }, [templateId]);
-
-  // Handler para exportación
-  const handleExport = async (
-    config: ExportConfig,
-    onSectionChange: (index: number) => void,
-    onProgressUpdate: (current: number, message: string) => void
-  ) => {
-    // La exportación ahora se maneja internamente en ExportModal con Puppeteer
-    // No se necesita lógica adicional aquí
-    console.log("🚀 Exportación iniciada desde ExportModal");
-  };
 
   // Loading state
   if (loading) {
@@ -425,9 +409,10 @@ export default function TemplatePreviewPage() {
       <ExportModal
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
-        onExport={handleExport}
+        autoExport={true}
         totalSections={templateData.version.content.sections.length}
         contentName={templateData.master.template_name}
+        templateData={templateData}
         contentId={templateId}
         contentType="template"
       />

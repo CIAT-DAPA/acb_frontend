@@ -31,7 +31,7 @@ export function HeaderFooterConfigurator({
 }: HeaderFooterConfiguratorProps) {
   const t = useTranslations("CreateTemplate.headerFooter");
   const [editingFieldIndex, setEditingFieldIndex] = useState<number | null>(
-    null
+    null,
   );
   const [draggedItem, setDraggedItem] = useState<number | null>(null);
 
@@ -61,7 +61,7 @@ export function HeaderFooterConfigurator({
       // Propagar cambios de estilos a campos no editados manualmente
       const updatedFields = propagateContainerStyleChanges(
         config.fields || [],
-        updatedStyleConfig
+        updatedStyleConfig,
       );
 
       onConfigChange({
@@ -69,7 +69,7 @@ export function HeaderFooterConfigurator({
         fields: updatedFields,
       });
     },
-    [config, onConfigChange]
+    [config, onConfigChange],
   );
 
   const addField = useCallback(() => {
@@ -79,6 +79,7 @@ export function HeaderFooterConfigurator({
       type: "text",
       form: true,
       bulletin: true,
+      print: true,
       field_config: { subtype: "short" },
       style_manually_edited: false,
     };
@@ -86,7 +87,7 @@ export function HeaderFooterConfigurator({
     // Aplicar herencia automática de estilos del contenedor
     const fieldWithInheritedStyles = inheritStylesFromContainer(
       newField,
-      config.style_config
+      config.style_config,
     );
 
     onConfigChange({
@@ -100,7 +101,7 @@ export function HeaderFooterConfigurator({
         config.fields?.filter((_, index) => index !== fieldIndex) || [];
       onConfigChange({ fields: updatedFields });
     },
-    [config.fields, onConfigChange]
+    [config.fields, onConfigChange],
   );
 
   const updateField = useCallback(
@@ -109,7 +110,7 @@ export function HeaderFooterConfigurator({
       updatedFields[fieldIndex] = updatedField;
       onConfigChange({ fields: updatedFields });
     },
-    [config.fields, onConfigChange]
+    [config.fields, onConfigChange],
   );
 
   const reorderFields = useCallback(
@@ -119,7 +120,7 @@ export function HeaderFooterConfigurator({
       updatedFields.splice(toIndex, 0, movedField);
       onConfigChange({ fields: updatedFields });
     },
-    [config.fields, onConfigChange]
+    [config.fields, onConfigChange],
   );
 
   // Handlers para drag & drop
@@ -145,7 +146,7 @@ export function HeaderFooterConfigurator({
 
       setDraggedItem(null);
     },
-    [draggedItem, reorderFields]
+    [draggedItem, reorderFields],
   );
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
@@ -335,9 +336,7 @@ export function HeaderFooterConfigurator({
 
       {/* Modal de edición de campo */}
       {editingFieldIndex !== null && (
-        <div
-          className="fixed inset-0 bg-black/75 flex items-center justify-center z-50"
-        >
+        <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50">
           <div
             className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200"
             onClick={(e) => e.stopPropagation()}

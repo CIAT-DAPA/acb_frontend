@@ -260,10 +260,21 @@
       "exporting": "Đang xuất file...",
       "exportComplete": "Đã xuất xong!",
       "title": "Xuất nội dung",
+      "destination": "Đích xuất",
+      "destinationLabel": "Đích",
+      "forMobile": "Di động",
+      "forPrint": "In",
       "format": "Định dạng tệp",
       "quality": "Chất lượng hình ảnh",
       "pdfConfig": "Cấu hình PDF",
+      "printConfig": "Cấu hình in",
       "pageSize": "Kích thước trang",
+      "printGrid": "Lưới các phần",
+      "printSize": "Kích thước in",
+      "pliego": "Khổ lớn",
+      "medio_pliego": "Nửa khổ",
+      "cuarto_pliego": "Một phần tư khổ",
+      "octavo_pliego": "Một phần tám khổ",
       "sectionsPerPage": "Số phần trên mỗi trang",
       "sectionsPerPageRange": "1 (một trang một)",
       "sectionsPerPageMax": "6 (lưới 2x3)",
@@ -283,7 +294,8 @@
       "sectionGenerating": "Đang tạo phần {current}",
       "sectionPage": "Trang",
       "toPdf": "Đang chuyển đổi sang PDF...",
-      "toZip": "Đang tạo tệp ZIP..."
+      "toZip": "Đang tạo tệp ZIP...",
+      "composingPrintLayout": "Đang bố cục các trang in..."
     },
     "bulletinPreview": {
       "backToTemplates": "Quay lại Biểu mẫu",
@@ -1050,7 +1062,8 @@
         "fieldType": "Loại trường",
         "visibility": {
           "form": "Hiển thị trong biểu mẫu",
-          "bulletin": "Hiển thị trong bản tin"
+          "bulletin": "Hiển thị trong bản tin",
+          "print": "Hiển thị khi in"
         },
         "configuration": "Cấu hình",
         "optionsLabel": "Tùy chọn (ngăn cách bằng dấu phẩy)",
@@ -1443,6 +1456,7 @@
         "title": "Khả năng hiển thị",
         "form": "Hiển thị trong biểu mẫu để tạo bản tin",
         "bulletin": "Hiển thị trong bản tin cuối cùng",
+        "print": "Hiển thị khi in",
         "formHelp": "Nếu không hiển thị trong biểu mẫu, nhãn và mô tả sẽ được tự động gán từ tên hiển thị"
       },
       "validation": {

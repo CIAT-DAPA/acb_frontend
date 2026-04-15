@@ -196,6 +196,7 @@ const getFieldConfigDefaults = (fieldType: string): any => {
           type: "text",
           form: true,
           bulletin: true,
+          print: true,
         },
         item_description: {
           field_id: "item_description",
@@ -203,6 +204,7 @@ const getFieldConfigDefaults = (fieldType: string): any => {
           type: "text",
           form: true,
           bulletin: false,
+          print: true,
         },
       },
     },
@@ -237,6 +239,7 @@ function BlockConfiguration({
       type: "text",
       form: true,
       bulletin: true,
+      print: true,
       field_config: { subtype: "short" },
     };
 
@@ -461,6 +464,7 @@ export function SectionsStep({
       background_url: [],
       order: data.version.content.sections.length + 1,
       icon_url: "",
+      print: true,
       blocks: [],
     };
 
@@ -733,6 +737,7 @@ export function SectionsStep({
       const newBlock: Block = {
         block_id: `block_${Date.now()}`,
         display_name: t("newBlock"),
+        print: true,
         fields: [],
       };
 

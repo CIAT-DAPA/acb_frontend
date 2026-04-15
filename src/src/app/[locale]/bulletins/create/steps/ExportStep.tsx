@@ -35,7 +35,15 @@ export function ExportStep({
 
     // Buscar si hay algún field de tipo list o card que requiera paginación
     section.blocks?.forEach((block: any) => {
+      if (block?.print === false) {
+        return;
+      }
+
       block.fields?.forEach((field: any) => {
+        if (field?.bulletin === false || field?.print === false) {
+          return;
+        }
+
         // Detectar paginación para listas
         if (field.type === "list") {
           const rawMax = field.field_config?.max_items_per_page;
