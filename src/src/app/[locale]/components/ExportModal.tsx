@@ -1,7 +1,16 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { X, Download, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import {
+  X,
+  Download,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
+  ArrowUp,
+  ArrowDown,
+  GripVertical,
+} from "lucide-react";
 import { CreateTemplateData } from "@/types/template";
 import { ScrollView } from "./ScrollView";
 import { ContentService } from "@/services/contentService";
@@ -57,7 +66,7 @@ export interface ExportConfig {
   sectionsPerPage: number;
   printGrid: PrintGridOption;
   printPaperSize: PrintPaperSize;
-  selectedSections: number[]; // Empty = todas
+  selectedSections: number[]; // Orden de secciones a exportar (vacío = orden natural)
   showMoreInfo: boolean;
   showDescription: boolean;
 }
@@ -92,6 +101,8 @@ interface ExportModalProps {
   contentType?: ContentType;
   sections?: any[]; // Array de secciones para modo auto-export
   templateData?: CreateTemplateData; // Datos del template para renderizar preview (opcional si se pasa contentId)
+  sectionOrder?: number[];
+  hideSectionOrderControls?: boolean;
 }
 
 export function ExportModal({
@@ -106,6 +117,8 @@ export function ExportModal({
   contentId,
   contentType,
   templateData: externalTemplateData,
+  sectionOrder,
+  hideSectionOrderControls = false,
 }: ExportModalProps) {
   const t = useTranslations("CreateBulletin.exportModal");
   // Estado para contenido cargado dinámicamente
@@ -169,10 +182,66 @@ export function ExportModal({
 
   // Estado para el preview que vamos a capturar
   const [currentPreviewSection, setCurrentPreviewSection] = useState(0);
+  const [draggedOrderIndex, setDraggedOrderIndex] = useState<number | null>(
+    null,
+  );
+  const [dragOverOrderIndex, setDragOverOrderIndex] = useState<number | null>(
+    null,
+  );
 
   // Secciones disponibles
   const allSections = Array.from({ length: totalSections }, (_, i) => i);
-  const [selectAll, setSelectAll] = useState(true);
+  const externalSectionOrder = useMemo(() => {
+    if (!sectionOrder || sectionOrder.length === 0) {
+      return [];
+    }
+
+    const validUniqueOrder = sectionOrder.filter(
+      (index, position) =>
+        index >= 0 &&
+        index < totalSections &&
+        sectionOrder.indexOf(index) === position,
+    );
+
+    const missingIndexes = allSections.filter(
+      (index) => !validUniqueOrder.includes(index),
+    );
+
+    return [...validUniqueOrder, ...missingIndexes];
+  }, [allSections, sectionOrder, totalSections]);
+
+  // Asegurar que siempre haya un orden válido mientras el modal está abierto
+  useEffect(() => {
+    if (!isOpen || totalSections <= 0) {
+      return;
+    }
+
+    setConfig((previousConfig) => {
+      const allIndexes = Array.from({ length: totalSections }, (_, i) => i);
+      const validCurrentOrder = previousConfig.selectedSections.filter(
+        (index) => index >= 0 && index < totalSections,
+      );
+      const missingIndexes = allIndexes.filter(
+        (index) => !validCurrentOrder.includes(index),
+      );
+      const nextOrder = [...validCurrentOrder, ...missingIndexes];
+
+      const isSameOrder =
+        nextOrder.length === previousConfig.selectedSections.length &&
+        nextOrder.every(
+          (value, index) => value === previousConfig.selectedSections[index],
+        );
+
+      if (isSameOrder) {
+        return previousConfig;
+      }
+
+      return {
+        ...previousConfig,
+        selectedSections: nextOrder,
+      };
+    });
+  }, [isOpen, totalSections]);
 
   // Cargar contenido si se proporciona contentId y contentType
   useEffect(() => {
@@ -341,22 +410,85 @@ export function ExportModal({
     return maxPages;
   };
 
-  const handleSectionToggle = (index: number) => {
-    const newSections = config.selectedSections.includes(index)
-      ? config.selectedSections.filter((i) => i !== index)
-      : [...config.selectedSections, index].sort((a, b) => a - b);
+  const moveSectionInOrder = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex || toIndex < 0 || toIndex >= sectionsToExport.length) {
+      return;
+    }
 
-    setConfig({ ...config, selectedSections: newSections });
-    setSelectAll(newSections.length === totalSections);
+    const nextOrder = [...sectionsToExport];
+    const [movedSection] = nextOrder.splice(fromIndex, 1);
+    nextOrder.splice(toIndex, 0, movedSection);
+
+    setConfig((previousConfig) => ({
+      ...previousConfig,
+      selectedSections: nextOrder,
+    }));
   };
 
-  const handleSelectAllToggle = () => {
-    if (selectAll) {
-      setConfig({ ...config, selectedSections: [] });
-    } else {
-      setConfig({ ...config, selectedSections: allSections });
+  const handleResetSectionOrder = () => {
+    setConfig((previousConfig) => ({
+      ...previousConfig,
+      selectedSections: [...allSections],
+    }));
+  };
+
+  const handleSectionDragStart = (
+    orderIndex: number,
+    event: React.DragEvent<HTMLDivElement>,
+  ) => {
+    if (isExporting) return;
+
+    setDraggedOrderIndex(orderIndex);
+    setDragOverOrderIndex(orderIndex);
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", String(orderIndex));
+  };
+
+  const handleSectionDragOver = (
+    orderIndex: number,
+    event: React.DragEvent<HTMLDivElement>,
+  ) => {
+    if (isExporting || draggedOrderIndex === null) return;
+
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+
+    if (dragOverOrderIndex !== orderIndex) {
+      setDragOverOrderIndex(orderIndex);
     }
-    setSelectAll(!selectAll);
+  };
+
+  const handleSectionDrop = (
+    orderIndex: number,
+    event: React.DragEvent<HTMLDivElement>,
+  ) => {
+    event.preventDefault();
+
+    if (isExporting) return;
+
+    const transferValue = Number.parseInt(
+      event.dataTransfer.getData("text/plain"),
+      10,
+    );
+    const fromIndex =
+      draggedOrderIndex !== null && draggedOrderIndex >= 0
+        ? draggedOrderIndex
+        : transferValue;
+
+    if (Number.isNaN(fromIndex) || fromIndex < 0) {
+      setDraggedOrderIndex(null);
+      setDragOverOrderIndex(null);
+      return;
+    }
+
+    moveSectionInOrder(fromIndex, orderIndex);
+    setDraggedOrderIndex(null);
+    setDragOverOrderIndex(null);
+  };
+
+  const handleSectionDragEnd = () => {
+    setDraggedOrderIndex(null);
+    setDragOverOrderIndex(null);
   };
 
   const handleExport = async () => {
@@ -412,7 +544,7 @@ export function ExportModal({
           format: config.format,
           quality: resolveQualityPercentage(config.quality),
           qualityLevel: config.quality as "low" | "medium" | "high" | "ultra",
-          selectedSections: config.selectedSections,
+          selectedSections: sectionsToExport,
           pageSize: config.pageSize, // Tamaño de página para PDF
           exportTarget: config.target,
           printGrid: config.printGrid,
@@ -445,7 +577,14 @@ export function ExportModal({
       }
       // MODO CALLBACK: Usar el callback externo (backward compatible)
       else if (onExport) {
-        await onExport(config, setCurrentPreviewSection, handleProgressUpdate);
+        await onExport(
+          {
+            ...config,
+            selectedSections: sectionsToExport,
+          },
+          setCurrentPreviewSection,
+          handleProgressUpdate,
+        );
       } else {
         throw new Error(
           "ExportModal: Se debe proporcionar 'onExport' o habilitar 'autoExport' con 'exportConfig'",
@@ -488,8 +627,9 @@ export function ExportModal({
       showMoreInfo: false,
       showDescription: false,
     });
-    setSelectAll(true);
     setCurrentPreviewSection(0);
+    setDraggedOrderIndex(null);
+    setDragOverOrderIndex(null);
     setProgress({ current: 0, total: 100, message: "" });
     setExportStatus("idle");
     setErrorMessage("");
@@ -510,7 +650,11 @@ export function ExportModal({
   if (!isOpen) return null;
 
   const sectionsToExport =
-    config.selectedSections.length > 0 ? config.selectedSections : allSections;
+    externalSectionOrder.length > 0
+      ? externalSectionOrder
+      : config.selectedSections.length > 0
+        ? config.selectedSections
+        : allSections;
   const availableFormats: DownloadFormat[] =
     config.target === "print" ? ["pdf"] : ["jpg", "pdf"];
 
@@ -761,50 +905,100 @@ export function ExportModal({
               )}
 
               {/* Selector de secciones */}
-              <div className="border-2 border-[#283618]/10 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-[#283618]">
-                    {t("sectionsToExport")}
-                  </h3>
-                  <button
-                    onClick={handleSelectAllToggle}
-                    disabled={isExporting}
-                    className="text-sm text-[#ffaf68] hover:text-[#ff9d4d] font-medium disabled:opacity-50"
-                  >
-                    {selectAll ? t("deselectAll") : t("selectAll")}
-                  </button>
-                </div>
+              {!hideSectionOrderControls && (
+                <div className="border-2 border-[#283618]/10 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-[#283618]">
+                      {t("sectionsOrder")}
+                    </h3>
+                    <button
+                      onClick={handleResetSectionOrder}
+                      disabled={isExporting}
+                      className="text-sm text-[#ffaf68] hover:text-[#ff9d4d] font-medium disabled:opacity-50"
+                    >
+                      {t("resetOrder")}
+                    </button>
+                  </div>
+                  <p className="text-xs text-[#283618]/60 mb-3 px-2">
+                    {t("dragAndDropHint")}
+                  </p>
 
-                <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto p-2">
-                  {allSections.map((index) => {
-                    const section =
-                      templateData?.version.content.sections[index];
-                    const sectionName =
-                      section?.display_name || `${t("section")} ${index + 1}`;
+                  <div className="space-y-2 max-h-60 overflow-y-auto p-2">
+                    {sectionsToExport.map((index, orderIndex) => {
+                      const section =
+                        templateData?.version.content.sections[index];
+                      const sectionName =
+                        section?.display_name || `${t("section")} ${index + 1}`;
+                      const canMoveUp = orderIndex > 0;
+                      const canMoveDown =
+                        orderIndex < sectionsToExport.length - 1;
 
-                    return (
-                      <button
-                        key={index}
-                        onClick={() => handleSectionToggle(index)}
-                        disabled={isExporting}
-                        className={`py-2 px-3 rounded text-xs transition-all text-left ${
-                          selectAll || config.selectedSections.includes(index)
-                            ? "bg-[#bc6c25] text-[#fefae0] font-semibold"
-                            : "border-2 border-[#bc6c25] text-[#283618] hover:bg-[#bc6c25]/90 hover:text-[#fefae0]"
-                        } disabled:opacity-50`}
-                        title={sectionName}
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-[10px] opacity-70 shrink-0">
-                            {String(index + 1).padStart(2, "0")}
-                          </span>
-                          <span className="truncate">{sectionName}</span>
+                      return (
+                        <div
+                          key={index}
+                          draggable={!isExporting}
+                          onDragStart={(event) =>
+                            handleSectionDragStart(orderIndex, event)
+                          }
+                          onDragOver={(event) =>
+                            handleSectionDragOver(orderIndex, event)
+                          }
+                          onDrop={(event) =>
+                            handleSectionDrop(orderIndex, event)
+                          }
+                          onDragEnd={handleSectionDragEnd}
+                          className={`py-2 px-3 rounded text-xs border-2 bg-[#bc6c25]/5 text-[#283618] transition-colors cursor-move ${
+                            dragOverOrderIndex === orderIndex &&
+                            draggedOrderIndex !== orderIndex
+                              ? "border-[#bc6c25]"
+                              : "border-[#bc6c25]/30"
+                          }`}
+                          title={sectionName}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="shrink-0 opacity-50">
+                              <GripVertical className="w-4 h-4" />
+                            </span>
+                            <span className="font-mono text-[10px] opacity-70 shrink-0 w-7 text-center">
+                              {String(orderIndex + 1).padStart(2, "0")}
+                            </span>
+                            <span className="font-mono text-[10px] opacity-50 shrink-0 w-7 text-center">
+                              {String(index + 1).padStart(2, "0")}
+                            </span>
+                            <span className="truncate flex-1">{sectionName}</span>
+                            <div className="flex items-center gap-1 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  moveSectionInOrder(orderIndex, orderIndex - 1)
+                                }
+                                disabled={isExporting || !canMoveUp}
+                                className="p-1 rounded border border-[#bc6c25]/40 hover:bg-[#bc6c25]/15 disabled:opacity-40 disabled:cursor-not-allowed"
+                                title={t("moveUp")}
+                                aria-label={t("moveUp")}
+                              >
+                                <ArrowUp className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  moveSectionInOrder(orderIndex, orderIndex + 1)
+                                }
+                                disabled={isExporting || !canMoveDown}
+                                className="p-1 rounded border border-[#bc6c25]/40 hover:bg-[#bc6c25]/15 disabled:opacity-40 disabled:cursor-not-allowed"
+                                title={t("moveDown")}
+                                aria-label={t("moveDown")}
+                              >
+                                <ArrowDown className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
                         </div>
-                      </button>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Preview fuera de vista para exportación con Puppeteer */}
               {templateData && (
@@ -830,6 +1024,7 @@ export function ExportModal({
                   >
                     <ScrollView
                       data={templateData}
+                      sectionOrder={sectionsToExport}
                       cardsMetadata={cardsMetadata}
                       cardsMetadataLoading={cardsMetadataLoading}
                       renderForPrint={config.target === "print"}

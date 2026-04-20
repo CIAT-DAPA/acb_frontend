@@ -1051,6 +1051,7 @@ function getCompositePageDescriptor(
 interface TemplatePreviewProps {
   data: CreateTemplateData;
   selectedSectionIndex?: number;
+  sectionOrder?: number[];
   moreInfo?: boolean;
   description?: boolean;
   forceGlobalHeader?: boolean; // Forzar uso del header global en lugar del header de sección
@@ -1091,6 +1092,7 @@ const OVERFLOW_SAFETY_MARGIN_PX = 4;
 export function TemplatePreview({
   data,
   selectedSectionIndex = 0,
+  sectionOrder,
   moreInfo = false,
   description = false,
   forceGlobalHeader = false,
@@ -1230,6 +1232,26 @@ export function TemplatePreview({
   const headerConfig = data.version.content.header_config;
   const footerConfig = data.version.content.footer_config;
   const sections = data.version.content.sections;
+  const resolvedSectionOrder = useMemo(() => {
+    const naturalOrder = sections.map((_, index) => index);
+
+    if (!sectionOrder || sectionOrder.length === 0) {
+      return naturalOrder;
+    }
+
+    const validUniqueOrder = sectionOrder.filter(
+      (index, position) =>
+        index >= 0 &&
+        index < sections.length &&
+        sectionOrder.indexOf(index) === position,
+    );
+
+    const missingIndexes = naturalOrder.filter(
+      (index) => !validUniqueOrder.includes(index),
+    );
+
+    return [...validUniqueOrder, ...missingIndexes];
+  }, [sectionOrder, sections]);
 
   const isBlockVisibleForRender = (block: Section["blocks"][number]) =>
     !renderForPrint || block.print !== false;
@@ -4104,9 +4126,17 @@ export function TemplatePreview({
 
   // Calcular el número de páginas acumuladas de todas las secciones anteriores
   const getPreviousSectionsPagesCount = () => {
+    const currentOrderPosition = resolvedSectionOrder.indexOf(
+      safeSelectedSectionIndex,
+    );
+
+    if (currentOrderPosition === -1) {
+      return 0;
+    }
+
     let totalPages = 0;
-    for (let i = 0; i < safeSelectedSectionIndex; i++) {
-      totalPages += getResolvedSectionPageCount(i);
+    for (let i = 0; i < currentOrderPosition; i++) {
+      totalPages += getResolvedSectionPageCount(resolvedSectionOrder[i]);
     }
     return totalPages;
   };
@@ -4114,7 +4144,7 @@ export function TemplatePreview({
   // Calcular el número total de páginas de todo el documento
   const getTotalDocumentPages = () => {
     let totalPages = 0;
-    sections.forEach((_, sectionIndex) => {
+    resolvedSectionOrder.forEach((sectionIndex) => {
       totalPages += getResolvedSectionPageCount(sectionIndex);
     });
     return totalPages;

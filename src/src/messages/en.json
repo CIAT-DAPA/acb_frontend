@@ -488,6 +488,11 @@
       "sectionsPerPage": "Sections per Page",
       "sectionsPerPageRange": "1 (one per page)",
       "sectionsPerPageMax": "6 (2x3 grid)",
+      "sectionsOrder": "Section Export Order",
+      "resetOrder": "Reset order",
+      "dragAndDropHint": "Drag and drop a section to change its export position.",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
       "sectionsToExport": "Sections to Export",
       "selectAll": "Select all",
       "deselectAll": "Deselect all",
@@ -1641,7 +1646,12 @@
       "sectionsCount": "Sections ({count})",
       "goToSection": "Go to section {number}",
       "section": "Section {number}",
-      "sectionNumber": "Section {number}"
+      "sectionNumber": "Section {number}",
+      "page": "Page {current}/{total}",
+      "resetOrder": "Reset order",
+      "reorderHint": "Drag from this menu to change the export order.",
+      "moveUp": "Move up",
+      "moveDown": "Move down"
     }
   },
   "ScrollView": {
@@ -1652,7 +1662,11 @@
     "goToSection": "Go to section {number}",
     "section": "Section {number}",
     "sectionNumber": "Section {number}",
-    "page": "Page {current}/{total}"
+    "page": "Page {current}/{total}",
+    "resetOrder": "Reset order",
+    "reorderHint": "Drag from this menu to change the export order.",
+    "moveUp": "Move up",
+    "moveDown": "Move down"
   },
   "TemplatePreviewModal": {
     "errors": {

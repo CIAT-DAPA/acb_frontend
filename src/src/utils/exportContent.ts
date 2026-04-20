@@ -10,7 +10,7 @@ export interface ExportContentOptions {
   format: "png" | "jpg" | "pdf";
   quality: number; // 0-100
   qualityLevel: "low" | "medium" | "high" | "ultra"; // Mapea a escala
-  selectedSections: number[]; // Array de índices de secciones a exportar (vacío = todas)
+  selectedSections: number[]; // Array ordenado de índices de secciones a exportar (vacío = orden natural)
   pageSize?: string; // "auto" | "a4" | "letter" | "legal" - Solo para PDF
   exportTarget?: "mobile" | "print";
   printGrid?: "1x1" | "2x1" | "2x2" | "3x2";
@@ -688,7 +688,7 @@ export async function exportContent(
 
         options.onProgressUpdate(
           percentage,
-          `${t.sectionGenerating(sectionIndex + 1)}, ${t.sectionPage} ${
+          `${t.sectionGenerating(i + 1)}, ${t.sectionPage} ${
             pageOrderIndex + 1
           }/${totalPages}...`,
         );
@@ -1025,17 +1025,17 @@ export async function exportContent(
           // Agregar al ZIP con nombre descriptivo
           const filename =
             totalPages > 1
-              ? `seccion_${sectionIndex + 1}_pagina_${
+              ? `seccion_${i + 1}_pagina_${
                   pageOrderIndex + 1
                 }.${imageFormat}`
               : sectionsToExport.length > 1
-                ? `seccion_${sectionIndex + 1}.${imageFormat}`
+                ? `seccion_${i + 1}.${imageFormat}`
                 : `${options.contentName}.${imageFormat}`;
 
           zip.file(filename, blob);
         } catch (error) {
           console.error(
-            `Error al exportar sección ${sectionIndex + 1}, página ${
+            `Error al exportar sección ${i + 1}, página ${
               pageOrderIndex + 1
             }:`,
             error,
