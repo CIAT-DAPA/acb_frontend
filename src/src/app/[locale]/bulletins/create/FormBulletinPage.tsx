@@ -1232,7 +1232,6 @@ export default function FormBulletinPage({
           current_version_id,
           base_template_master_id,
           base_template_version_id,
-          name_machine,
           thumbnail_images,
           ...updateDataPayload
         } = masterDataWithoutLog as any;

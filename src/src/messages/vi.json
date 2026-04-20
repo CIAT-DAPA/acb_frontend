@@ -278,6 +278,11 @@
       "sectionsPerPage": "Số phần trên mỗi trang",
       "sectionsPerPageRange": "1 (một trang một)",
       "sectionsPerPageMax": "6 (lưới 2x3)",
+      "sectionsOrder": "Thứ tự các phần khi xuất",
+      "resetOrder": "Đặt lại thứ tự",
+      "dragAndDropHint": "Kéo và thả một phần để thay đổi vị trí xuất.",
+      "moveUp": "Di chuyển lên",
+      "moveDown": "Di chuyển xuống",
       "sectionsToExport": "Các mục cần xuất",
       "selectAll": "Chọn tất cả",
       "deselectAll": "Bỏ chọn tất cả",
@@ -1852,6 +1857,20 @@
         "climateData": ["Nhiệt độ: 25°C", "Độ ẩm: 65%", "Lượng mưa: 15mm"]
       }
     },
+    "scrollView": {
+      "openNavigator": "Mở trình điều hướng phần",
+      "closeNavigator": "Đóng trình điều hướng",
+      "sections": "Các phần",
+      "sectionsCount": "Các phần ({count})",
+      "goToSection": "Đi đến phần {number}",
+      "section": "Phần {number}",
+      "sectionNumber": "Phần {number}",
+      "page": "Trang {current}/{total}",
+      "resetOrder": "Đặt lại thứ tự",
+      "reorderHint": "Kéo từ menu này để đổi thứ tự xuất.",
+      "moveUp": "Di chuyển lên",
+      "moveDown": "Di chuyển xuống"
+    },
     "finish": "Tạo biểu mẫu",
     "navigation": {
       "finish": "Tạo biểu mẫu",
@@ -1896,7 +1915,11 @@
     "goToSection": "Đi đến phần {number}",
     "section": "Phần {number}",
     "sectionNumber": "Phần {number}",
-    "page": "Trang {current}/{total}"
+    "page": "Trang {current}/{total}",
+    "resetOrder": "Đặt lại thứ tự",
+    "reorderHint": "Kéo từ menu này để đổi thứ tự xuất.",
+    "moveUp": "Di chuyển lên",
+    "moveDown": "Di chuyển xuống"
   },
   "ContentFullPreview": {
     "errors": {
