@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useTranslations } from "next-intl";
+import { ArrowDown, ArrowUp, GripVertical } from "lucide-react";
 import { ScrollConfig } from "@/types/templatePreview";
 import { CreateTemplateData } from "@/types/template";
 import { Card } from "@/types/card";
@@ -14,6 +15,9 @@ interface ScrollViewProps {
   cardsMetadata?: Record<string, Card>;
   cardsMetadataLoading?: boolean;
   renderForPrint?: boolean;
+  sectionOrder?: number[];
+  allowSectionReorder?: boolean;
+  onSectionOrderChange?: (order: number[]) => void;
 }
 
 /**
@@ -29,6 +33,9 @@ export function ScrollView({
   cardsMetadata,
   cardsMetadataLoading = false,
   renderForPrint = false,
+  sectionOrder,
+  allowSectionReorder = false,
+  onSectionOrderChange,
 }: ScrollViewProps) {
   const t = useTranslations("ScrollView");
 
@@ -44,9 +51,35 @@ export function ScrollView({
   const isVertical = orientation === "vertical";
 
   const sections = useMemo(() => data.version.content.sections || [], [data]);
+  const orderedSectionIndexes = useMemo(() => {
+    const naturalOrder = sections.map((_, index) => index);
+
+    if (!sectionOrder || sectionOrder.length === 0) {
+      return naturalOrder;
+    }
+
+    const validUniqueOrder = sectionOrder.filter(
+      (index, position) =>
+        index >= 0 &&
+        index < sections.length &&
+        sectionOrder.indexOf(index) === position,
+    );
+
+    const missingIndexes = naturalOrder.filter(
+      (index) => !validUniqueOrder.includes(index),
+    );
+
+    return [...validUniqueOrder, ...missingIndexes];
+  }, [sectionOrder, sections]);
   const [activeSectionIndex, setActiveSectionIndex] = useState(initialSection);
   const [sectionPageCounts, setSectionPageCounts] = useState<number[]>(() =>
     sections.map(() => 1),
+  );
+  const [draggedOrderIndex, setDraggedOrderIndex] = useState<number | null>(
+    null,
+  );
+  const [dragOverOrderIndex, setDragOverOrderIndex] = useState<number | null>(
+    null,
   );
   const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -105,6 +138,94 @@ export function ScrollView({
       nextCounts[sectionIndex] = pageCount;
       return nextCounts;
     });
+  };
+
+  const moveSectionInOrder = (fromIndex: number, toIndex: number) => {
+    if (
+      !allowSectionReorder ||
+      !onSectionOrderChange ||
+      fromIndex === toIndex ||
+      toIndex < 0 ||
+      toIndex >= orderedSectionIndexes.length
+    ) {
+      return;
+    }
+
+    const nextOrder = [...orderedSectionIndexes];
+    const [movedSection] = nextOrder.splice(fromIndex, 1);
+    nextOrder.splice(toIndex, 0, movedSection);
+    onSectionOrderChange(nextOrder);
+  };
+
+  const handleResetSectionOrder = () => {
+    if (!allowSectionReorder || !onSectionOrderChange) {
+      return;
+    }
+
+    onSectionOrderChange(sections.map((_, index) => index));
+  };
+
+  const handleSectionDragStart = (
+    orderIndex: number,
+    event: React.DragEvent<HTMLDivElement>,
+  ) => {
+    if (!allowSectionReorder || !onSectionOrderChange) return;
+
+    setDraggedOrderIndex(orderIndex);
+    setDragOverOrderIndex(orderIndex);
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", String(orderIndex));
+  };
+
+  const handleSectionDragOver = (
+    orderIndex: number,
+    event: React.DragEvent<HTMLDivElement>,
+  ) => {
+    if (!allowSectionReorder || draggedOrderIndex === null) {
+      return;
+    }
+
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+
+    if (dragOverOrderIndex !== orderIndex) {
+      setDragOverOrderIndex(orderIndex);
+    }
+  };
+
+  const handleSectionDrop = (
+    orderIndex: number,
+    event: React.DragEvent<HTMLDivElement>,
+  ) => {
+    event.preventDefault();
+
+    if (!allowSectionReorder || !onSectionOrderChange) {
+      return;
+    }
+
+    const transferValue = Number.parseInt(
+      event.dataTransfer.getData("text/plain"),
+      10,
+    );
+    const fromIndex =
+      draggedOrderIndex !== null && draggedOrderIndex >= 0
+        ? draggedOrderIndex
+        : transferValue;
+
+    if (Number.isNaN(fromIndex) || fromIndex < 0) {
+      setDraggedOrderIndex(null);
+      setDragOverOrderIndex(null);
+      return;
+    }
+
+    moveSectionInOrder(fromIndex, orderIndex);
+    setDraggedOrderIndex(null);
+    setDragOverOrderIndex(null);
+  };
+
+  const handleSectionDragEnd = () => {
+    setDraggedOrderIndex(null);
+    setDragOverOrderIndex(null);
   };
 
   // Mapeo de spacing a valores CSS
@@ -198,34 +319,112 @@ export function ScrollView({
             </div>
           </div>
 
-          {sections.map((section, index) => (
+          {allowSectionReorder && onSectionOrderChange && (
             <button
-              key={index}
-              onClick={() => {
-                scrollToSection(index);
-              }}
-              className={`
-                ${isVertical ? "w-full" : "h-full"}
-                px-2.5 md:px-3 py-1.5 md:py-2 rounded text-xs md:text-sm transition-all text-left
-                ${
-                  activeSectionIndex === index
-                    ? "bg-[#bc6c25] text-[#fefae0] font-semibold shadow-sm"
-                    : "border border-[#bc6c25]/30 text-[#283618] hover:bg-[#bc6c25]/10 hover:border-[#bc6c25]"
-                }
-              `}
-              aria-label={t("goToSection", { number: index + 1 })}
-              aria-current={activeSectionIndex === index ? "true" : "false"}
+              onClick={handleResetSectionOrder}
+              className="text-xs text-[#bc6c25] hover:text-[#a55a1f] text-left"
             >
-              <div className="flex items-center gap-1.5 md:gap-2">
-                <span className="font-mono text-[10px] md:text-xs opacity-70">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <span className="truncate text-xs md:text-sm">
-                  {section.display_name || t("section", { number: index + 1 })}
-                </span>
-              </div>
+              {t("resetOrder")}
             </button>
-          ))}
+          )}
+
+          {allowSectionReorder && onSectionOrderChange && (
+            <p className="text-[11px] text-[#283618]/55 leading-tight mb-1">
+              {t("reorderHint")}
+            </p>
+          )}
+
+          {orderedSectionIndexes.map((sectionIndex, orderIndex) => {
+            const section = sections[sectionIndex];
+            const canMoveUp = orderIndex > 0;
+            const canMoveDown = orderIndex < orderedSectionIndexes.length - 1;
+
+            return (
+              <div
+                key={`${sectionIndex}-${orderIndex}`}
+                draggable={allowSectionReorder && Boolean(onSectionOrderChange)}
+                onDragStart={(event) =>
+                  handleSectionDragStart(orderIndex, event)
+                }
+                onDragOver={(event) => handleSectionDragOver(orderIndex, event)}
+                onDrop={(event) => handleSectionDrop(orderIndex, event)}
+                onDragEnd={handleSectionDragEnd}
+                className={`rounded transition-colors ${
+                  dragOverOrderIndex === orderIndex &&
+                  draggedOrderIndex !== orderIndex
+                    ? "bg-[#bc6c25]/10"
+                    : ""
+                }`}
+              >
+                <div className="w-full flex items-center gap-1">
+                  {allowSectionReorder && onSectionOrderChange && (
+                    <span className="opacity-45 px-1">
+                      <GripVertical className="w-3.5 h-3.5" />
+                    </span>
+                  )}
+                  <button
+                    onClick={() => {
+                      scrollToSection(orderIndex);
+                    }}
+                    className={`
+                      flex-1 min-w-0 w-full
+                      px-2.5 md:px-3 py-1.5 md:py-2 rounded text-xs md:text-sm transition-all text-left
+                      ${
+                        activeSectionIndex === orderIndex
+                          ? "bg-[#bc6c25] text-[#fefae0] font-semibold shadow-sm"
+                          : "border border-[#bc6c25]/30 text-[#283618] hover:bg-[#bc6c25]/10 hover:border-[#bc6c25]"
+                      }
+                    `}
+                    aria-label={t("goToSection", { number: orderIndex + 1 })}
+                    aria-current={
+                      activeSectionIndex === orderIndex ? "true" : "false"
+                    }
+                  >
+                    <div className="w-full flex items-center gap-1.5 md:gap-2">
+                      <span className="font-mono text-[10px] md:text-xs opacity-70">
+                        {String(orderIndex + 1).padStart(2, "0")}
+                      </span>
+                      <span className="flex-1 min-w-0 truncate text-xs md:text-sm">
+                        {section?.display_name ||
+                          t("section", { number: orderIndex + 1 })}
+                      </span>
+                    </div>
+                  </button>
+
+                  {allowSectionReorder && onSectionOrderChange && (
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          moveSectionInOrder(orderIndex, orderIndex - 1);
+                        }}
+                        disabled={!canMoveUp}
+                        className="p-1 rounded border border-[#bc6c25]/40 hover:bg-[#bc6c25]/10 disabled:opacity-40 disabled:cursor-not-allowed"
+                        aria-label={t("moveUp")}
+                        title={t("moveUp")}
+                      >
+                        <ArrowUp className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          moveSectionInOrder(orderIndex, orderIndex + 1);
+                        }}
+                        disabled={!canMoveDown}
+                        className="p-1 rounded border border-[#bc6c25]/40 hover:bg-[#bc6c25]/10 disabled:opacity-40 disabled:cursor-not-allowed"
+                        aria-label={t("moveDown")}
+                        title={t("moveDown")}
+                      >
+                        <ArrowDown className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -248,7 +447,8 @@ export function ScrollView({
           scrollbar-thin scrollbar-thumb-[#ffaf68] scrollbar-track-gray-100
         `}
       >
-        {sections.map((section, sectionIndex) => {
+        {orderedSectionIndexes.map((sectionIndex, orderIndex) => {
+          const section = sections[sectionIndex];
           const pageCount = expandAllPages
             ? sectionPageCounts[sectionIndex] || 1
             : 1;
@@ -256,6 +456,7 @@ export function ScrollView({
           const sharedPreviewProps = {
             data,
             selectedSectionIndex: sectionIndex,
+            sectionOrder: orderedSectionIndexes,
             cardsMetadata,
             cardsMetadataLoading,
             resolvedSectionPageCounts: sectionPageCounts,
@@ -269,7 +470,7 @@ export function ScrollView({
             // Con pageCount=1 inicial se renderiza 1 entrada; cuando sube a N se
             // agregan entradas sin desmontar la existente en pageIndex=0.
             <div
-              key={sectionIndex}
+              key={`${sectionIndex}-${orderIndex}`}
               className={`flex gap-4 ${isVertical ? "flex-col" : ""}`}
               data-section-index={sectionIndex}
             >
@@ -277,7 +478,7 @@ export function ScrollView({
                 <div
                   key={`${sectionIndex}-${pageIndex}`}
                   ref={(el) => {
-                    if (pageIndex === 0) sectionRefs.current[sectionIndex] = el;
+                    if (pageIndex === 0) sectionRefs.current[orderIndex] = el;
                   }}
                   data-section-index={sectionIndex}
                   data-page-index={pageIndex}
@@ -285,7 +486,7 @@ export function ScrollView({
                     scroll-section shrink-0
                     ${isVertical ? "" : "snap-center md:snap-start"}
                     ${
-                      highlightActive && activeSectionIndex === sectionIndex
+                      highlightActive && activeSectionIndex === orderIndex
                         ? "ring-2 md:ring-4 ring-[#ffaf68] ring-offset-2 md:ring-offset-4 rounded-lg"
                         : ""
                     }
@@ -296,7 +497,7 @@ export function ScrollView({
                     <div className="mb-1.5 md:mb-2 px-1 md:px-2">
                       <h3 className="text-xs md:text-sm font-semibold text-[#283618]">
                         {section.display_name ||
-                          t("section", { number: sectionIndex + 1 })}
+                          t("section", { number: orderIndex + 1 })}
                         {pageCount > 1 && (
                           <span className="text-xs ml-2 text-[#606c38]">
                             (
@@ -371,9 +572,9 @@ export function ScrollView({
           ) : (
             // Modo normal: una sección
             <div
-              key={sectionIndex}
+              key={`${sectionIndex}-${orderIndex}`}
               ref={(el) => {
-                sectionRefs.current[sectionIndex] = el;
+                sectionRefs.current[orderIndex] = el;
               }}
               data-section-index={sectionIndex}
               data-page-index={0}
@@ -381,7 +582,7 @@ export function ScrollView({
                 scroll-section shrink-0
                 ${isVertical ? "" : "snap-center md:snap-start"}
                 ${
-                  highlightActive && activeSectionIndex === sectionIndex
+                  highlightActive && activeSectionIndex === orderIndex
                     ? "ring-2 md:ring-4 ring-[#ffaf68] ring-offset-2 md:ring-offset-4 rounded-lg"
                     : ""
                 }
@@ -391,7 +592,7 @@ export function ScrollView({
               {showSectionTitle && (
                 <div className="mb-1.5 md:mb-2 px-1 md:px-2">
                   <h3 className="text-xs md:text-sm font-semibold text-[#283618]">
-                    {t("sectionNumber", { number: sectionIndex + 1 })}
+                    {t("sectionNumber", { number: orderIndex + 1 })}
                     {section.display_name && (
                       <span className="hidden md:inline">
                         : {section.display_name}

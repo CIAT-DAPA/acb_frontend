@@ -341,7 +341,9 @@ export class BulletinAPIService extends BaseAPIService {
     bulletinSlug: string,
   ): Promise<APIResponse<BulletinWithCurrentVersion>> {
     try {
-      const data = await this.get<any>(`/bulletins/by-slug/${bulletinSlug}`);
+      const data = await this.get<any>(
+        `/bulletins/by-slug/${encodeURIComponent(bulletinSlug)}`,
+      );
 
       // La API devuelve { master, current_version, cards_metadata }
       // Normalizar el master para tener _id en lugar de id

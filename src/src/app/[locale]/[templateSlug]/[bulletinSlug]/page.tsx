@@ -62,6 +62,7 @@ export default function BulletinPublicPage() {
     null,
   );
   const [cardsMetadata, setCardsMetadata] = useState<Record<string, Card>>({});
+  const [sectionOrder, setSectionOrder] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -85,7 +86,7 @@ export default function BulletinPublicPage() {
           await BulletinAPIService.getBulletinBySlug(bulletinSlug);
 
         if (!response.success || !response.data) {
-          throw new Error(t("errorNotFound"));
+          throw new Error(response.message || t("errorNotFound"));
         }
 
         const {
@@ -160,6 +161,11 @@ export default function BulletinPublicPage() {
         );
 
         setTemplateData(templateDataFormatted);
+        setSectionOrder(
+          templateDataFormatted.version.content.sections.map(
+            (_, index) => index,
+          ),
+        );
         setCardsMetadata(cards_metadata || {});
       } catch (err) {
         console.error("Error cargando boletín:", err);
@@ -287,6 +293,9 @@ export default function BulletinPublicPage() {
           <ScrollView
             data={templateData}
             cardsMetadata={cardsMetadata}
+            sectionOrder={sectionOrder}
+            allowSectionReorder={true}
+            onSectionOrderChange={setSectionOrder}
             config={{
               orientation: "horizontal",
               expandAllPages: true,
@@ -302,6 +311,8 @@ export default function BulletinPublicPage() {
         onClose={() => setIsExportModalOpen(false)}
         sections={templateData.version.content.sections}
         contentName={templateData.master.template_name}
+        sectionOrder={sectionOrder}
+        hideSectionOrderControls={true}
         exportConfig={exportConfig}
         templateData={templateData}
         autoExport={true}

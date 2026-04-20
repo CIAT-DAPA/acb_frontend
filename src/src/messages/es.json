@@ -488,6 +488,11 @@
       "sectionsPerPage": "Secciones por Página",
       "sectionsPerPageRange": "1 (una por página)",
       "sectionsPerPageMax": "6 (grid 2x3)",
+      "sectionsOrder": "Orden de Secciones a Exportar",
+      "resetOrder": "Restablecer orden",
+      "dragAndDropHint": "Arrastra y suelta una sección para cambiar su posición en la exportación.",
+      "moveUp": "Subir",
+      "moveDown": "Bajar",
       "sectionsToExport": "Secciones a Exportar",
       "selectAll": "Seleccionar todas",
       "deselectAll": "Deseleccionar todas",
@@ -1639,7 +1644,12 @@
       "sectionsCount": "Secciones ({count})",
       "goToSection": "Ir a sección {number}",
       "section": "Sección {number}",
-      "sectionNumber": "Sección {number}"
+      "sectionNumber": "Sección {number}",
+      "page": "Página {current}/{total}",
+      "resetOrder": "Restablecer orden",
+      "reorderHint": "Arrastra desde este menú para cambiar el orden de exportación.",
+      "moveUp": "Subir",
+      "moveDown": "Bajar"
     }
   },
   "ScrollView": {
@@ -1650,7 +1660,11 @@
     "goToSection": "Ir a sección {number}",
     "section": "Sección {number}",
     "sectionNumber": "Sección {number}",
-    "page": "Página {current}/{total}"
+    "page": "Página {current}/{total}",
+    "resetOrder": "Restablecer orden",
+    "reorderHint": "Arrastra desde este menú para cambiar el orden de exportación.",
+    "moveUp": "Subir",
+    "moveDown": "Bajar"
   },
   "TemplatePreviewModal": {
     "errors": {
