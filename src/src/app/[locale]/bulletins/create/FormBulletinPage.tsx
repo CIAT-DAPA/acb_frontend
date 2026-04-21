@@ -193,6 +193,29 @@ const EXPORT_CONFIG = {
   getSectionPages,
 };
 
+const RANDOM_SLUG_SUFFIX_LENGTH = 6;
+
+const createRandomSlugSuffix = () =>
+  Math.random()
+    .toString(36)
+    .slice(2, 2 + RANDOM_SLUG_SUFFIX_LENGTH);
+
+const generateUniqueMachineName = (
+  baseSlug: string,
+  existingSlugs: string[],
+): string => {
+  if (!existingSlugs.includes(baseSlug)) {
+    return baseSlug;
+  }
+
+  let candidate = `${baseSlug}_${createRandomSlugSuffix()}`;
+  while (existingSlugs.includes(candidate)) {
+    candidate = `${baseSlug}_${createRandomSlugSuffix()}`;
+  }
+
+  return candidate;
+};
+
 export default function FormBulletinPage({
   mode = "create",
   bulletinId,
@@ -465,7 +488,21 @@ export default function FormBulletinPage({
             monthName.charAt(0).toUpperCase() + monthName.slice(1);
           const currentYear = new Date().getFullYear();
           const defaultBulletinName = `${master.template_name} - ${capitalizedMonth} ${currentYear}`;
-          const defaultNameMachine = slugify(defaultBulletinName);
+          const defaultNameMachineBase = slugify(defaultBulletinName);
+
+          let slugNamesForValidation = existingSlugNames;
+          if (slugNamesForValidation.length === 0) {
+            const slugResponse = await BulletinAPIService.getAllSlugNames();
+            if (slugResponse.success && slugResponse.data) {
+              slugNamesForValidation = slugResponse.data;
+              setExistingSlugNames(slugResponse.data);
+            }
+          }
+
+          const defaultNameMachine = generateUniqueMachineName(
+            defaultNameMachineBase,
+            slugNamesForValidation,
+          );
 
           // Helper para inicializar el valor de un campo según su tipo
           const initializeFieldValue = (field: Field) => {
@@ -568,7 +605,7 @@ export default function FormBulletinPage({
         setIsLoading(false);
       }
     },
-    [showToast, t],
+    [existingSlugNames, locale, showToast, t],
   );
 
   // Función para actualizar datos del boletín
