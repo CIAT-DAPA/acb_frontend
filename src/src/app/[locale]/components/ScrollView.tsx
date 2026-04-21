@@ -358,7 +358,7 @@ export function ScrollView({
               >
                 <div className="w-full flex items-center gap-1">
                   {allowSectionReorder && onSectionOrderChange && (
-                    <span className="opacity-45 px-1">
+                    <span className="opacity-45 px-1 cursor-grab">
                       <GripVertical className="w-3.5 h-3.5" />
                     </span>
                   )}

@@ -495,17 +495,31 @@ export default function Bulletins() {
                       const isEditableStatus =
                         status === "draft" || status === "rejected";
                       const showEditBtn = canEdit && isEditableStatus;
+                      const showViewBtn = isPublished;
                       const showDuplicateBtn = canEdit;
                       const showShareBtn = isPublished;
                       const showDeleteBtn = canDelete && isPublished;
 
+                      const templateNameMachine =
+                        templateNameMachineMap[
+                          bulletin.base_template_master_id
+                        ];
+                      const bulletinViewerUrl =
+                        templateNameMachine && bulletin.name_machine
+                          ? `/${locale}/${templateNameMachine}/${bulletin.name_machine}`
+                          : null;
+
+                      const handleView = () => {
+                        if (!bulletinViewerUrl) {
+                          return;
+                        }
+
+                        window.location.href = bulletinViewerUrl;
+                      };
+
                       const handleShare = () => {
-                        const templateNameMachine =
-                          templateNameMachineMap[
-                            bulletin.base_template_master_id
-                          ];
-                        if (templateNameMachine && bulletin.name_machine) {
-                          const url = `${window.location.origin}/${locale}/${templateNameMachine}/${bulletin.name_machine}`;
+                        if (bulletinViewerUrl) {
+                          const url = `${window.location.origin}${bulletinViewerUrl}`;
                           setShareData({ url });
                           setShowShareModal(true);
                         }
@@ -540,6 +554,12 @@ export default function Bulletins() {
                             templateThumbnailsMap[
                               bulletin.base_template_master_id
                             ] || []
+                          }
+                          previewBtn={showViewBtn}
+                          onPreview={
+                            showViewBtn && bulletinViewerUrl
+                              ? handleView
+                              : undefined
                           }
                           editBtn={showEditBtn}
                           onEdit={() =>
