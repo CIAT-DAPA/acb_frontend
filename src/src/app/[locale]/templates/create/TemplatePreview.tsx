@@ -3047,6 +3047,10 @@ export function TemplatePreview({
         ) => {
           const daysBetween = endDay - startDay + 1;
 
+          if (daysBetween <= 0) {
+            return;
+          }
+
           for (let d = startDay; d <= endDay; d++) {
             // Para reversa, queremos que el último día tenga la última imagen de la transición
             // y el primer día tenga la primera imagen
@@ -3054,6 +3058,9 @@ export function TemplatePreview({
             let imageIndex: number;
 
             if (daysBetween <= totalImages) {
+              if (daysBetween === 1) {
+                imageIndex = reverse ? totalImages : 1;
+              } else {
               // Mapear al rango de imágenes disponibles, pero desde el final hacia el inicio en reversa
               if (reverse) {
                 // Invertir: último día del mes debe tener la última imagen (más cercana a la fase)
@@ -3064,6 +3071,7 @@ export function TemplatePreview({
                 imageIndex = Math.round(ratio * (totalImages - 1)) + 1;
               }
               imageIndex = Math.max(1, Math.min(imageIndex, totalImages));
+              }
             } else {
               if (position === 0) {
                 imageIndex = reverse ? totalImages : 1;
