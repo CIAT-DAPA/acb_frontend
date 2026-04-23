@@ -104,7 +104,6 @@ export type AccessType = (typeof ACCESS_TYPES)[number];
 export const MODULES = {
   BULLETINS_COMPOSER: "bulletins_composer",
   TEMPLATE_MANAGEMENT: "template_management",
-  DASHBOARD_BULLETINS: "dashboard_bulletins",
   REVIEW: "review",
   CARD_MANAGEMENT: "card_management",
   ACCESS_CONTROL: "access_control",

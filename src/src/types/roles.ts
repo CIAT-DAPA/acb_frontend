@@ -31,7 +31,6 @@ export interface CRUDPermissions {
 export interface RolePermissions {
   bulletins_composer: CRUDPermissions; // Permisos para crear y editar boletines
   template_management: CRUDPermissions; // Permisos para gestionar plantillas
-  dashboard_bulletins: CRUDPermissions; // Permisos para ver el listado de boletines
   review: CRUDPermissions; // Permisos para gestionar el proceso de revisión
   card_management: CRUDPermissions; // Permisos para gestionar cards o contenidos reutilizables
   access_control: CRUDPermissions; // Permisos para gestionar usuarios, roles y grupos
