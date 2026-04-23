@@ -60,7 +60,6 @@ export default function EditRolePage() {
   const [permissions, setPermissions] = useState<RolePermissions>({
     bulletins_composer: { c: false, r: false, u: false, d: false },
     template_management: { c: false, r: false, u: false, d: false },
-    dashboard_bulletins: { c: false, r: false, u: false, d: false },
     review: { c: false, r: false, u: false, d: false },
     card_management: { c: false, r: false, u: false, d: false },
     access_control: { c: false, r: false, u: false, d: false },
@@ -90,7 +89,26 @@ export default function EditRolePage() {
         const role = response.data;
         setRoleName(role.role_name);
         setDescription(role.description);
-        setPermissions(role.permissions);
+        setPermissions({
+          bulletins_composer:
+            role.permissions.bulletins_composer ||
+            ({ c: false, r: false, u: false, d: false } as const),
+          template_management:
+            role.permissions.template_management ||
+            ({ c: false, r: false, u: false, d: false } as const),
+          review:
+            role.permissions.review ||
+            ({ c: false, r: false, u: false, d: false } as const),
+          card_management:
+            role.permissions.card_management ||
+            ({ c: false, r: false, u: false, d: false } as const),
+          access_control:
+            role.permissions.access_control ||
+            ({ c: false, r: false, u: false, d: false } as const),
+          external_integrations:
+            role.permissions.external_integrations ||
+            ({ c: false, r: false, u: false, d: false } as const),
+        });
       } else {
         showToast(response.message || "Error al cargar el rol", "error", 4000);
         router.push("/roles");
@@ -122,7 +140,7 @@ export default function EditRolePage() {
 
     // Verificar que al menos un permiso esté habilitado
     const hasAnyPermission = Object.values(permissions).some((module) =>
-      Object.values(module).some((value) => value)
+      Object.values(module).some((value) => value),
     );
 
     if (!hasAnyPermission) {
@@ -136,7 +154,7 @@ export default function EditRolePage() {
   // Actualizar un permiso específico
   const togglePermission = (
     module: PermissionModule,
-    operation: CRUDOperation
+    operation: CRUDOperation,
   ) => {
     setPermissions((prev) => ({
       ...prev,
@@ -164,7 +182,7 @@ export default function EditRolePage() {
   // Habilitar/deshabilitar todos los permisos de una operación CRUD
   const toggleAllOperationPermissions = (operation: CRUDOperation) => {
     const allEnabled = Object.keys(permissions).every(
-      (module) => permissions[module as PermissionModule][operation]
+      (module) => permissions[module as PermissionModule][operation],
     );
     setPermissions((prev) => {
       const newPermissions = { ...prev };
@@ -254,7 +272,7 @@ export default function EditRolePage() {
                 <p className={pageSubtitle}>{t("subtitleEdit")}</p>
               </div>
               <div className="hidden lg:block">
-                <div className="w-32 h-32 bg-gradient-to-br from-[#606c38] to-[#283618] rounded-lg flex items-center justify-center rotate-6">
+                <div className="w-32 h-32 bg-linear-to-br from-[#606c38] to-[#283618] rounded-lg flex items-center justify-center rotate-6">
                   <Shield className="h-16 w-16 text-white" />
                 </div>
               </div>
@@ -335,14 +353,14 @@ export default function EditRolePage() {
                   <div className="text-sm text-[#283618]/70">
                     {t("permissionsEnabled")}:{" "}
                     <span className="font-semibold text-[#606c38]">
-                      {countEnabledPermissions()} / 28
+                      {countEnabledPermissions()} / 24
                     </span>
                   </div>
                 </div>
 
                 {errors.permissions && (
                   <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-                    <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
                     <p className="text-sm text-red-700">{errors.permissions}</p>
                   </div>
                 )}
@@ -373,11 +391,11 @@ export default function EditRolePage() {
                                     op === "c"
                                       ? "create"
                                       : op === "r"
-                                      ? "read"
-                                      : op === "u"
-                                      ? "update"
-                                      : "delete"
-                                  }`
+                                        ? "read"
+                                        : op === "u"
+                                          ? "update"
+                                          : "delete"
+                                  }`,
                                 )}
                               </span>
                             </button>
@@ -393,7 +411,6 @@ export default function EditRolePage() {
                         [
                           "bulletins_composer",
                           "template_management",
-                          "dashboard_bulletins",
                           "review",
                           "card_management",
                           "access_control",
@@ -402,10 +419,10 @@ export default function EditRolePage() {
                       ).map((module) => {
                         const modulePerms = permissions[module];
                         const allEnabled = Object.values(modulePerms).every(
-                          (v) => v
+                          (v) => v,
                         );
                         const someEnabled = Object.values(modulePerms).some(
-                          (v) => v
+                          (v) => v,
                         );
                         const moduleData = getModuleInfo(module);
 
@@ -440,7 +457,7 @@ export default function EditRolePage() {
                                     className="w-5 h-5 text-[#606c38] border-gray-300 rounded focus:ring-[#606c38] cursor-pointer"
                                   />
                                 </td>
-                              )
+                              ),
                             )}
                             <td className="px-4 py-3 text-center border border-gray-200">
                               <button
@@ -453,15 +470,15 @@ export default function EditRolePage() {
                                   allEnabled
                                     ? "bg-[#606c38] text-white hover:bg-[#283618]"
                                     : someEnabled
-                                    ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-                                    : "bg-gray-100 text-[#283618]/80 hover:bg-gray-200"
+                                      ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+                                      : "bg-gray-100 text-[#283618]/80 hover:bg-gray-200"
                                 }`}
                               >
                                 {allEnabled
                                   ? t("uncheckAll")
                                   : someEnabled
-                                  ? t("complete")
-                                  : t("checkAll")}
+                                    ? t("complete")
+                                    : t("checkAll")}
                               </button>
                             </td>
                           </tr>

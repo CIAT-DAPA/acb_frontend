@@ -23,7 +23,7 @@ export function TemplateSelectionStep({
   const [searchTerm, setSearchTerm] = useState("");
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [previewTemplateId, setPreviewTemplateId] = useState<string | null>(
-    null
+    null,
   );
 
   useEffect(() => {
@@ -37,7 +37,7 @@ export function TemplateSelectionStep({
       if (response.success) {
         // Filtrar solo templates activos
         const activeTemplates = response.data.filter(
-          (t) => t.status === "active"
+          (t) => t.status === "active",
         );
         setTemplates(activeTemplates);
       }
@@ -49,7 +49,7 @@ export function TemplateSelectionStep({
   };
 
   const filteredTemplates = templates.filter((template) =>
-    template.template_name.toLowerCase().includes(searchTerm.toLowerCase())
+    template.template_name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const handlePreview = (templateId: string) => {
@@ -107,7 +107,7 @@ export function TemplateSelectionStep({
             >
               <div className="flex items-start gap-4">
                 {/* Thumbnail */}
-                <div className="w-20 h-28 bg-gray-100 rounded flex-shrink-0 relative overflow-hidden group/thumb">
+                <div className="w-20 h-28 bg-gray-100 rounded shrink-0 relative overflow-hidden group/thumb">
                   {template.thumbnail_images && template.thumbnail_images[0] ? (
                     <Image
                       src={template.thumbnail_images[0]}
@@ -158,7 +158,7 @@ export function TemplateSelectionStep({
 
               {/* Selected indicator - Esquina inferior derecha */}
               {selectedTemplateId === template._id && (
-                <div className="absolute top-3 right-3 flex-shrink-0">
+                <div className="absolute top-3 right-3 shrink-0">
                   <div className="w-6 h-6 rounded-full bg-[#283618] flex items-center justify-center shadow-md">
                     <svg
                       className="w-4 h-4 text-white"
