@@ -60,7 +60,6 @@ export default function CreateRolePage() {
   const [permissions, setPermissions] = useState<RolePermissions>({
     bulletins_composer: { c: false, r: false, u: false, d: false },
     template_management: { c: false, r: false, u: false, d: false },
-    dashboard_bulletins: { c: false, r: false, u: false, d: false },
     review: { c: false, r: false, u: false, d: false },
     card_management: { c: false, r: false, u: false, d: false },
     access_control: { c: false, r: false, u: false, d: false },
@@ -93,7 +92,7 @@ export default function CreateRolePage() {
 
     // Verificar que al menos un permiso esté habilitado
     const hasAnyPermission = Object.values(permissions).some((module) =>
-      Object.values(module).some((value) => value)
+      Object.values(module).some((value) => value),
     );
 
     if (!hasAnyPermission) {
@@ -107,7 +106,7 @@ export default function CreateRolePage() {
   // Actualizar un permiso específico
   const togglePermission = (
     module: PermissionModule,
-    operation: CRUDOperation
+    operation: CRUDOperation,
   ) => {
     setPermissions((prev) => ({
       ...prev,
@@ -135,7 +134,7 @@ export default function CreateRolePage() {
   // Habilitar/deshabilitar todos los permisos de una operación CRUD
   const toggleAllOperationPermissions = (operation: CRUDOperation) => {
     const allEnabled = Object.keys(permissions).every(
-      (module) => permissions[module as PermissionModule][operation]
+      (module) => permissions[module as PermissionModule][operation],
     );
     setPermissions((prev) => {
       const newPermissions = { ...prev };
@@ -205,7 +204,7 @@ export default function CreateRolePage() {
                 <p className={pageSubtitle}>{t("subtitle")}</p>
               </div>
               <div className="hidden lg:block">
-                <div className="w-32 h-32 bg-gradient-to-br from-[#606c38] to-[#283618] rounded-lg flex items-center justify-center rotate-6">
+                <div className="w-32 h-32 bg-linear-to-br from-[#606c38] to-[#283618] rounded-lg flex items-center justify-center rotate-6">
                   <Shield className="h-16 w-16 text-white" />
                 </div>
               </div>
@@ -286,14 +285,14 @@ export default function CreateRolePage() {
                   <div className="text-sm text-[#283618]/70">
                     {t("permissionsEnabled")}:{" "}
                     <span className="font-semibold text-[#606c38]">
-                      {countEnabledPermissions()} / 28
+                      {countEnabledPermissions()} / 24
                     </span>
                   </div>
                 </div>
 
                 {errors.permissions && (
                   <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-                    <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
                     <p className="text-sm text-red-700">{errors.permissions}</p>
                   </div>
                 )}
@@ -324,11 +323,11 @@ export default function CreateRolePage() {
                                     op === "c"
                                       ? "create"
                                       : op === "r"
-                                      ? "read"
-                                      : op === "u"
-                                      ? "update"
-                                      : "delete"
-                                  }`
+                                        ? "read"
+                                        : op === "u"
+                                          ? "update"
+                                          : "delete"
+                                  }`,
                                 )}
                               </span>
                             </button>
@@ -344,7 +343,6 @@ export default function CreateRolePage() {
                         [
                           "bulletins_composer",
                           "template_management",
-                          "dashboard_bulletins",
                           "review",
                           "card_management",
                           "access_control",
@@ -353,10 +351,10 @@ export default function CreateRolePage() {
                       ).map((module) => {
                         const modulePerms = permissions[module];
                         const allEnabled = Object.values(modulePerms).every(
-                          (v) => v
+                          (v) => v,
                         );
                         const someEnabled = Object.values(modulePerms).some(
-                          (v) => v
+                          (v) => v,
                         );
                         const moduleData = getModuleInfo(module);
 
@@ -391,7 +389,7 @@ export default function CreateRolePage() {
                                     className="w-5 h-5 text-[#606c38] border-gray-300 rounded focus:ring-[#606c38] cursor-pointer"
                                   />
                                 </td>
-                              )
+                              ),
                             )}
                             <td className="px-4 py-3 text-center border border-gray-200">
                               <button
@@ -404,15 +402,15 @@ export default function CreateRolePage() {
                                   allEnabled
                                     ? "bg-[#606c38] text-white hover:bg-[#283618]"
                                     : someEnabled
-                                    ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-                                    : "bg-gray-100 text-[#283618]/80 hover:bg-gray-200"
+                                      ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+                                      : "bg-gray-100 text-[#283618]/80 hover:bg-gray-200"
                                 }`}
                               >
                                 {allEnabled
                                   ? t("uncheckAll")
                                   : someEnabled
-                                  ? t("complete")
-                                  : t("checkAll")}
+                                    ? t("complete")
+                                    : t("checkAll")}
                               </button>
                             </td>
                           </tr>

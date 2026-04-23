@@ -43,6 +43,7 @@ import { useToast } from "../../../../components/Toast";
 import { btnOutlineSecondary, btnPrimary } from "../../components/ui";
 import { slugify, isValidSlug } from "../../../../utils/slugify";
 import { BulletinComment } from "@/types/bulletin"; // Updated to use renamed BulletinComment type
+import { MODULES, PERMISSION_ACTIONS } from "../../../../types/core";
 
 // Funciones para codificar/decodificar valores de texto
 const encodeTextFieldValue = (value: any): any => {
@@ -224,12 +225,17 @@ export default function FormBulletinPage({
 }: FormBulletinPageProps) {
   const t = useTranslations("CreateBulletin");
   const { userInfo } = useAuth();
-  const { isAdminAnywhere } = usePermissions();
+  const { can } = usePermissions();
   const router = useRouter();
   const params = useParams();
   const locale = (params.locale as string) || "es";
   const { showToast } = useToast();
   const isEditMode = mode === "edit";
+  const hasReviewCrudPermissions =
+    can(PERMISSION_ACTIONS.Create, MODULES.REVIEW) ||
+    can(PERMISSION_ACTIONS.Read, MODULES.REVIEW) ||
+    can(PERMISSION_ACTIONS.Update, MODULES.REVIEW) ||
+    can(PERMISSION_ACTIONS.Delete, MODULES.REVIEW);
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [publishedBulletinId, setPublishedBulletinId] = useState<string | null>(
     null,
@@ -1175,13 +1181,23 @@ export default function FormBulletinPage({
 
     setIsLoading(true);
     try {
+      // Mantener el boletín en draft hasta completar el flujo de publicación
+      // para evitar estados inconsistentes si falla algún paso intermedio.
+      const draftData = {
+        ...creationState.data,
+        master: {
+          ...creationState.data.master,
+          status: "draft" as BulletinStatus,
+        },
+      };
+
       // Extraer todas las imágenes temporales para moverlas a permanentes
-      const tempImages = extractImageUrls(creationState.data).filter((url) =>
+      const tempImages = extractImageUrls(draftData).filter((url) =>
         url.includes("/bulletins/temp/"),
       );
 
       // Mover imágenes a almacenamiento permanente
-      let finalizedData = creationState.data;
+      let finalizedData = draftData;
       if (tempImages.length > 0) {
         const finalizeResponse = await fetch("/api/finalize-bulletin-images", {
           method: "POST",
@@ -1241,31 +1257,24 @@ export default function FormBulletinPage({
             urlMap.set(tempUrl, permanentImages[index]);
           });
 
-          finalizedData = JSON.parse(JSON.stringify(creationState.data));
+          finalizedData = JSON.parse(JSON.stringify(draftData));
           updateImageUrls(finalizedData, urlMap);
         }
       }
 
-      // Asegurarse de que el estado sea published
-      const publishedData = {
-        ...finalizedData,
-        master: {
-          ...finalizedData.master,
-          status: "published" as BulletinStatus,
-        },
-      };
-
       // Codificar los campos de texto antes de guardar
-      const encodedData = encodeTextFields(publishedData);
+      const encodedData = encodeTextFields(finalizedData);
+
+      let currentBulletinId = bulletinId;
 
       if (isEditMode && bulletinId) {
         // MODO EDICIÓN: Actualizar el boletín existente
         const { log: masterLog, ...masterDataWithoutLog } = encodedData.master;
 
-        // 1. Actualizar bulletin master con status published
-        // Filtramos campos inmutables o problemáticos
+        // El cambio de estado se hace por workflow, no por update directo
         const {
           _id,
+          status,
           current_version_id,
           base_template_master_id,
           base_template_version_id,
@@ -1284,13 +1293,18 @@ export default function FormBulletinPage({
           );
         }
 
-        const { log: versionLog, ...versionDataWithoutLog } =
-          encodedData.version;
+        const {
+          _id: _,
+          log: versionLog,
+          bulletin_master_id: __,
+          previous_version_id: ___,
+          ...versionDataWithoutLog
+        } = encodedData.version as any;
 
-        // 2. Crear nueva versión con los cambios
+        // Crear nueva versión con los cambios
         const versionResponse = await BulletinAPIService.createBulletinVersion(
           bulletinId,
-          versionDataWithoutLog,
+          versionDataWithoutLog as any,
         );
 
         if (!versionResponse.success) {
@@ -1298,9 +1312,6 @@ export default function FormBulletinPage({
             versionResponse.message || "Error al crear la versión del boletín",
           );
         }
-
-        setPublishedBulletinId(bulletinId);
-        setShowPublishModal(true);
       } else {
         // MODO CREACIÓN: Crear nuevo bulletin
         const { log: masterLog, ...masterDataWithoutLog } = encodedData.master;
@@ -1316,13 +1327,19 @@ export default function FormBulletinPage({
 
         const newBulletinId =
           (masterResponse.data as any).id || masterResponse.data._id;
+        currentBulletinId = newBulletinId;
 
-        const { log: versionLog, ...versionDataWithoutLog } =
-          encodedData.version;
+        const {
+          _id: _,
+          log: versionLog,
+          bulletin_master_id: __,
+          previous_version_id: ___,
+          ...versionDataWithoutLog
+        } = encodedData.version as any;
 
         const versionResponse = await BulletinAPIService.createBulletinVersion(
           newBulletinId,
-          versionDataWithoutLog,
+          versionDataWithoutLog as any,
         );
 
         if (!versionResponse.success) {
@@ -1330,10 +1347,17 @@ export default function FormBulletinPage({
             versionResponse.message || "Error al crear la versión del boletín",
           );
         }
-
-        setPublishedBulletinId(newBulletinId);
-        setShowPublishModal(true);
       }
+
+      if (!currentBulletinId) {
+        throw new Error("ID de boletín no válido para publicar");
+      }
+
+      // Publicar usando el endpoint de workflow para respetar transiciones válidas
+      await ReviewService.publishDirect(currentBulletinId);
+
+      setPublishedBulletinId(currentBulletinId);
+      setShowPublishModal(true);
     } catch (error) {
       console.error("Error publishing bulletin:", error);
       showToast(error instanceof Error ? error.message : t("error"), "error");
@@ -1658,7 +1682,9 @@ export default function FormBulletinPage({
           <button
             onClick={handleSubmitForReview}
             disabled={isLoading}
-            className={`${btnOutlineSecondary} disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2`}
+            className={`${
+              hasReviewCrudPermissions ? btnOutlineSecondary : btnPrimary
+            } disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2`}
           >
             <CheckCircle className="w-4 h-4" />
             {t("navigation.sendToReview")}
@@ -1672,7 +1698,7 @@ export default function FormBulletinPage({
             {t("navigation.export")}
           </button>
 
-          {isAdminAnywhere && (
+          {hasReviewCrudPermissions && (
             <button
               onClick={handlePublish}
               disabled={isLoading}

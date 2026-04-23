@@ -22,7 +22,7 @@ import {
 import { RoleAPIService } from "../../../services/roleService";
 import { ProtectedRoute } from "../../../components/ProtectedRoute";
 import { Role } from "@/types/roles";
-import { PermissionModule } from "@/types/core";
+import { MODULES, PermissionModule } from "@/types/core";
 import {
   container,
   searchField,
@@ -35,6 +35,10 @@ import Link from "next/link";
 
 export default function RolesPage() {
   const t = useTranslations("Roles");
+
+  const isPermissionModule = (module: string): module is PermissionModule => {
+    return Object.values(MODULES).includes(module as PermissionModule);
+  };
 
   // Función para obtener etiquetas de módulos con traducciones
   const getModuleLabel = (module: PermissionModule): string => {
@@ -97,7 +101,7 @@ export default function RolesPage() {
       const filtered = roles.filter(
         (role) =>
           role.role_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          role.description.toLowerCase().includes(searchTerm.toLowerCase())
+          role.description.toLowerCase().includes(searchTerm.toLowerCase()),
       );
       setFilteredRoles(filtered);
     }
@@ -110,7 +114,7 @@ export default function RolesPage() {
 
   // Función para obtener el total de permisos posibles
   const getTotalPossiblePermissions = (): number => {
-    return 7 * 4; // 7 módulos × 4 operaciones CRUD
+    return 6 * 4; // 6 módulos × 4 operaciones CRUD
   };
 
   return (
@@ -304,61 +308,59 @@ export default function RolesPage() {
                               {t("table.modulesAndPermissions")}
                             </h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                              {(
-                                Object.keys(
-                                  role.permissions
-                                ) as PermissionModule[]
-                              ).map((module) => {
-                                const perms = role.permissions[module];
-                                const hasAnyPermission = Object.values(
-                                  perms
-                                ).some((v) => v);
+                              {Object.keys(role.permissions)
+                                .filter(isPermissionModule)
+                                .map((module) => {
+                                  const perms = role.permissions[module];
+                                  const hasAnyPermission = Object.values(
+                                    perms,
+                                  ).some((v) => v);
 
-                                // Solo mostrar módulos con al menos un permiso
-                                if (!hasAnyPermission) return null;
+                                  // Solo mostrar módulos con al menos un permiso
+                                  if (!hasAnyPermission) return null;
 
-                                return (
-                                  <div
-                                    key={module}
-                                    className="bg-gray-50 rounded-lg p-3 border border-gray-200"
-                                  >
-                                    <div className="flex items-center gap-2 mb-2">
-                                      <CheckCircle className="h-4 w-4 text-[#606c38]" />
-                                      <span className="text-sm font-medium text-[#283618]">
-                                        {getModuleLabel(module)}
-                                      </span>
+                                  return (
+                                    <div
+                                      key={module}
+                                      className="bg-gray-50 rounded-lg p-3 border border-gray-200"
+                                    >
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <CheckCircle className="h-4 w-4 text-[#606c38]" />
+                                        <span className="text-sm font-medium text-[#283618]">
+                                          {getModuleLabel(module)}
+                                        </span>
+                                      </div>
+
+                                      {/* Permisos CRUD */}
+                                      <div className="flex gap-2 flex-wrap">
+                                        {perms.c && (
+                                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                            <Edit3 className="h-4 w-4 mr-1" />{" "}
+                                            {t("crud.create")}
+                                          </span>
+                                        )}
+                                        {perms.r && (
+                                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                            <Eye className="h-4 w-4 mr-1" />{" "}
+                                            {t("crud.read")}
+                                          </span>
+                                        )}
+                                        {perms.u && (
+                                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            <RefreshCcw className="h-4 w-4 mr-1" />{" "}
+                                            {t("crud.update")}
+                                          </span>
+                                        )}
+                                        {perms.d && (
+                                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                            <Trash2 className="h-4 w-4 mr-1" />{" "}
+                                            {t("crud.delete")}
+                                          </span>
+                                        )}
+                                      </div>
                                     </div>
-
-                                    {/* Permisos CRUD */}
-                                    <div className="flex gap-2 flex-wrap">
-                                      {perms.c && (
-                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                                          <Edit3 className="h-4 w-4 mr-1" />{" "}
-                                          {t("crud.create")}
-                                        </span>
-                                      )}
-                                      {perms.r && (
-                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                                          <Eye className="h-4 w-4 mr-1" />{" "}
-                                          {t("crud.read")}
-                                        </span>
-                                      )}
-                                      {perms.u && (
-                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
-                                          <RefreshCcw className="h-4 w-4 mr-1" />{" "}
-                                          {t("crud.update")}
-                                        </span>
-                                      )}
-                                      {perms.d && (
-                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                                          <Trash2 className="h-4 w-4 mr-1" />{" "}
-                                          {t("crud.delete")}
-                                        </span>
-                                      )}
-                                    </div>
-                                  </div>
-                                );
-                              })}
+                                  );
+                                })}
                             </div>
 
                             {/* Mensaje si no hay módulos habilitados */}
@@ -408,13 +410,6 @@ export default function RolesPage() {
                   <span>
                     <strong>template_management:</strong>{" "}
                     {t("permissionsInfo.templateManagement")}
-                  </span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="font-medium">•</span>
-                  <span>
-                    <strong>dashboard_bulletins:</strong>{" "}
-                    {t("permissionsInfo.dashboardBulletins")}
                   </span>
                 </div>
                 <div className="flex items-start gap-2">

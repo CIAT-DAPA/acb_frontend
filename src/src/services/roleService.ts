@@ -29,6 +29,15 @@ export interface GetRolesResponse {
  * - GET /roles/name/{name} - Obtener roles por nombre
  */
 export class RoleAPIService extends BaseAPIService {
+  private static readonly ACTIVE_PERMISSION_MODULES = [
+    "bulletins_composer",
+    "template_management",
+    "review",
+    "card_management",
+    "access_control",
+    "external_integrations",
+  ] as const;
+
   /**
    * Obtiene la lista de todos los roles
    * GET /roles/
@@ -99,7 +108,7 @@ export class RoleAPIService extends BaseAPIService {
    * POST /roles/
    */
   static async createRole(
-    roleData: Omit<Role, "_id" | "log">
+    roleData: Omit<Role, "_id" | "log">,
   ): Promise<APIResponse<Role>> {
     try {
       const data = await this.post<any>("/roles/", roleData);
@@ -125,7 +134,7 @@ export class RoleAPIService extends BaseAPIService {
    */
   static async updateRole(
     id: string,
-    roleData: Partial<Role>
+    roleData: Partial<Role>,
   ): Promise<APIResponse<Role>> {
     try {
       const data = await this.put<any>(`/roles/${id}`, roleData);
@@ -140,9 +149,7 @@ export class RoleAPIService extends BaseAPIService {
       return {
         success: false,
         message:
-          error instanceof Error
-            ? error.message
-            : "Error al actualizar el rol",
+          error instanceof Error ? error.message : "Error al actualizar el rol",
       };
     }
   }
@@ -154,7 +161,7 @@ export class RoleAPIService extends BaseAPIService {
   static async getRolesByName(name: string): Promise<GetRolesResponse> {
     try {
       const data = await this.get<any>(
-        `/roles/name/${encodeURIComponent(name)}`
+        `/roles/name/${encodeURIComponent(name)}`,
       );
       const roles = data.roles || data.data || data;
 
@@ -193,7 +200,7 @@ export class RoleAPIService extends BaseAPIService {
   static hasPermission(
     role: Role,
     module: keyof Role["permissions"],
-    operation: "c" | "r" | "u" | "d"
+    operation: "c" | "r" | "u" | "d",
   ): boolean {
     try {
       return role.permissions[module]?.[operation] ?? false;
@@ -210,7 +217,9 @@ export class RoleAPIService extends BaseAPIService {
   static getTotalPermissions(role: Role): number {
     try {
       let total = 0;
-      Object.values(role.permissions).forEach((modulePermissions) => {
+      RoleAPIService.ACTIVE_PERMISSION_MODULES.forEach((module) => {
+        const modulePermissions = role.permissions[module];
+        if (!modulePermissions) return;
         Object.values(modulePermissions).forEach((value) => {
           if (value) total++;
         });
@@ -229,9 +238,11 @@ export class RoleAPIService extends BaseAPIService {
   static getEnabledModules(role: Role): string[] {
     try {
       const enabledModules: string[] = [];
-      Object.entries(role.permissions).forEach(([module, permissions]) => {
+      RoleAPIService.ACTIVE_PERMISSION_MODULES.forEach((module) => {
+        const permissions = role.permissions[module];
+        if (!permissions) return;
         const hasAnyPermission = Object.values(permissions).some(
-          (value) => value
+          (value) => value,
         );
         if (hasAnyPermission) {
           enabledModules.push(module);
@@ -257,7 +268,6 @@ export class RoleAPIService extends BaseAPIService {
     const requiredModules = [
       "bulletins_composer",
       "template_management",
-      "dashboard_bulletins",
       "review",
       "card_management",
       "access_control",
@@ -273,9 +283,7 @@ export class RoleAPIService extends BaseAPIService {
         // Verificar que cada módulo tenga las 4 operaciones CRUD
         ["c", "r", "u", "d"].forEach((op) => {
           if (!(op in modulePerms)) {
-            errors.push(
-              `Falta la operación '${op}' en el módulo: ${module}`
-            );
+            errors.push(`Falta la operación '${op}' en el módulo: ${module}`);
           }
         });
       }
