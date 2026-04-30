@@ -44,6 +44,13 @@ import {
 } from "@/types/template";
 import Link from "next/link";
 import Image from "next/image";
+import {
+  setMetaTag,
+  setCanonicalUrl,
+  generateArticleSchema,
+  injectSchema,
+  generateBreadcrumbSchema,
+} from "@/utils/seoUtils";
 
 // Helper functions for decoding fields
 const decodeTextFieldValue = (value: any): any => {
@@ -459,6 +466,60 @@ export default function ReviewBulletinPage() {
     loadBulletinData();
     loadComments();
   }, [bulletinId]);
+
+  // SEO: Actualizar metadatos cuando se carga el boletín
+  useEffect(() => {
+    if (!bulletin?.master?.bulletin_name) {
+      return;
+    }
+
+    const bulletinTitle = bulletin.master.bulletin_name;
+    const description = bulletin.master.description
+      ? bulletin.master.description.substring(0, 160)
+      : `Revisión de boletín ${bulletinTitle}`;
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+    const canonicalUrl = bulletinId
+      ? `${baseUrl}/${locale}/reviews/${bulletinId}`
+      : "";
+
+    document.title = `${bulletinTitle} - Bulletin builder`;
+    setMetaTag("description", description);
+    setMetaTag("og:title", bulletinTitle, true);
+    setMetaTag(
+      "og:description",
+      bulletin.master.description || `Revisión de boletín: ${bulletinTitle}`,
+      true,
+    );
+    setMetaTag("og:type", "article", true);
+    setMetaTag("article:author", "CIAT", true);
+    setMetaTag("twitter:title", bulletinTitle, false);
+    setMetaTag("twitter:description", description, false);
+    setMetaTag("twitter:card", "summary_large_image", false);
+
+    if (canonicalUrl) {
+      setMetaTag("og:url", canonicalUrl, true);
+      setCanonicalUrl(canonicalUrl);
+      injectSchema(
+        generateArticleSchema({
+          title: bulletinTitle,
+          description,
+          author: "CIAT",
+          url: canonicalUrl,
+          datePublished:
+            bulletin.master.log?.created_at || new Date().toISOString(),
+          dateModified:
+            bulletin.master.log?.updated_at || new Date().toISOString(),
+        }),
+      );
+      injectSchema(
+        generateBreadcrumbSchema([
+          { name: "Home", url: baseUrl },
+          { name: "Revisiones", url: `${baseUrl}/${locale}/reviews` },
+          { name: bulletinTitle, url: canonicalUrl },
+        ]),
+      );
+    }
+  }, [bulletin, locale, bulletinId]);
 
   const loadComments = async () => {
     try {

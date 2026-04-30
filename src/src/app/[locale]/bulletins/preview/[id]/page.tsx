@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { CreateTemplateData, Field, Block, Section } from "@/types/template";
 import { Card } from "@/types/card";
 import { ArrowLeft, Loader2, Download } from "lucide-react";
@@ -11,6 +11,13 @@ import {
 } from "@/app/[locale]/components/ExportModal";
 import BulletinAPIService from "@/services/bulletinService";
 import { useTranslations } from "next-intl";
+import {
+  setMetaTag,
+  setCanonicalUrl,
+  generateArticleSchema,
+  injectSchema,
+  generateBreadcrumbSchema,
+} from "@/utils/seoUtils";
 
 // Función para decodificar valores de campos de texto
 const decodeTextFieldValue = (value: any): any => {
@@ -43,20 +50,26 @@ import { ScrollView } from "@/app/[locale]/components/ScrollView";
 
 /**
  * Página de preview independiente para boletines
- * Permite visualizar cualquier boletin por su ID publicado
+ * Permite visualizar boletines por ID en dos modos:
+ * - Publicado (default)
+ * - Versión actual (version=current), útil para review/pending_review
  *
  * Ruta: /[locale]/bulletins/preview/[id]
  * Ejemplo: /es/bulletins/preview/68d2d1417194ce27a63033b2
+ * Ejemplo interno: /es/bulletins/preview/68d2d1417194ce27a63033b2?version=current
  */
 export default function TemplatePreviewPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const bulletinId = params.id as string;
   const locale = params.locale as string;
   const t = useTranslations("CreateBulletin.bulletinPreview");
+  const previewVersion = searchParams.get("version");
+  const useCurrentVersion = previewVersion === "current";
 
   const [templateData, setTemplateData] = useState<CreateTemplateData | null>(
-    null
+    null,
   );
   const [cardsMetadata, setCardsMetadata] = useState<Record<string, Card>>({});
   const [loading, setLoading] = useState(true);
@@ -67,6 +80,60 @@ export default function TemplatePreviewPage() {
 
   // Estado para controlar la orientación según el tamaño de pantalla
   const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    if (!templateData?.master?.template_name) {
+      return;
+    }
+
+    const bulletinTitle = templateData.master.template_name;
+    const description = templateData.master.description
+      ? templateData.master.description.substring(0, 160)
+      : `Visualiza el boletín ${bulletinTitle}`;
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+    const canonicalUrl = bulletinId
+      ? `${baseUrl}/${locale}/bulletins/preview/${bulletinId}`
+      : "";
+
+    document.title = `${bulletinTitle} - Bulletin builder`;
+    setMetaTag("description", description);
+    setMetaTag("og:title", bulletinTitle, true);
+    setMetaTag(
+      "og:description",
+      templateData.master.description ||
+        `Boletín agroclimático: ${bulletinTitle}`,
+      true,
+    );
+    setMetaTag("og:type", "article", true);
+    setMetaTag("article:author", "CIAT", true);
+    setMetaTag("twitter:title", bulletinTitle, false);
+    setMetaTag("twitter:description", description, false);
+    setMetaTag("twitter:card", "summary_large_image", false);
+
+    if (canonicalUrl) {
+      setMetaTag("og:url", canonicalUrl, true);
+      setCanonicalUrl(canonicalUrl);
+      injectSchema(
+        generateArticleSchema({
+          title: bulletinTitle,
+          description,
+          author: "CIAT",
+          url: canonicalUrl,
+          datePublished:
+            templateData.master.log?.created_at || new Date().toISOString(),
+          dateModified:
+            templateData.master.log?.updated_at || new Date().toISOString(),
+        }),
+      );
+      injectSchema(
+        generateBreadcrumbSchema([
+          { name: "Home", url: baseUrl },
+          { name: "Boletines", url: `${baseUrl}/${locale}/bulletins` },
+          { name: bulletinTitle, url: canonicalUrl },
+        ]),
+      );
+    }
+  }, [templateData, locale, bulletinId]);
 
   // Detectar tamaño de pantalla
   useEffect(() => {
@@ -95,10 +162,9 @@ export default function TemplatePreviewPage() {
         setLoading(true);
         setError(null);
 
-        // Obtener el template master y su versión actual en una sola llamada
-        const response = await BulletinAPIService.getBulletinPublished(
-          bulletinId
-        );
+        const response = useCurrentVersion
+          ? await BulletinAPIService.getCurrentVersion(bulletinId)
+          : await BulletinAPIService.getBulletinPublished(bulletinId);
 
         if (!response.success || !response.data) {
           throw new Error(t("errorNotFound"));
@@ -108,7 +174,7 @@ export default function TemplatePreviewPage() {
           master: bulletinMaster,
           current_version: currentVersion,
           cards_metadata,
-        } = response.data;
+        } = response.data as any;
 
         // Validar que la versión tenga contenido
         if (!currentVersion.data || !currentVersion.data.sections) {
@@ -157,12 +223,12 @@ export default function TemplatePreviewPage() {
         // Decodificar campos de texto
         if (templateDataFormatted.version.content.header_config?.fields) {
           decodeFields(
-            templateDataFormatted.version.content.header_config.fields
+            templateDataFormatted.version.content.header_config.fields,
           );
         }
         if (templateDataFormatted.version.content.footer_config?.fields) {
           decodeFields(
-            templateDataFormatted.version.content.footer_config.fields
+            templateDataFormatted.version.content.footer_config.fields,
           );
         }
         templateDataFormatted.version.content.sections?.forEach(
@@ -172,7 +238,7 @@ export default function TemplatePreviewPage() {
                 decodeFields(block.fields);
               }
             });
-          }
+          },
         );
 
         setTemplateData(templateDataFormatted);
@@ -186,7 +252,7 @@ export default function TemplatePreviewPage() {
     };
 
     loadTemplate();
-  }, [bulletinId]);
+  }, [bulletinId, useCurrentVersion]);
 
   // Función helper para calcular el número total de páginas de una sección
   const getSectionTotalPages = (section: any): number => {

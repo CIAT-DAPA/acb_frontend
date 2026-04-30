@@ -8,7 +8,7 @@ import {
   pageTitle,
   searchField,
 } from "../components/ui";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import Image from "next/image";
 import { Loader2, Search } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -23,6 +23,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 export default function ReviewsPage() {
   const t = useTranslations("Bulletins"); // Reusing Bulletins translations for now
+  const tNavbar = useTranslations("Navbar");
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,6 +38,11 @@ export default function ReviewsPage() {
   const { can } = usePermissions();
   const router = useRouter();
   const { authenticated, loading: authLoading } = useAuth();
+
+  // Establecer el título de la página
+  useEffect(() => {
+    document.title = `Bulletin builder - ${tNavbar("reviews")}`;
+  }, [tNavbar]);
 
   // Cargar bulletins solo cuando la autenticación ya está resuelta
   useEffect(() => {

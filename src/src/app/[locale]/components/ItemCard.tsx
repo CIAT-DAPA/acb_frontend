@@ -12,12 +12,22 @@ import {
   Tag,
   Copy,
   Share2,
+  Globe,
+  Lock,
+  Users,
 } from "lucide-react";
 import {
   getStatusBadgeClass,
   getStatusBadgeConfig,
 } from "@/utils/statusHelpers";
 import { normalizeAssetUrl } from "@/utils/assetUrl";
+
+// Información de acceso
+export interface AccessInfo {
+  type: "public" | "restricted" | "private";
+  groupName?: string; // Nombre del grupo si es restricted
+  groupId?: string; // ID del grupo si es restricted
+}
 
 // Props base compartidas
 interface BaseItemCardProps {
@@ -26,6 +36,7 @@ interface BaseItemCardProps {
   image?: string;
   type: "template" | "visual-resource" | "card";
   author: string;
+  accessInfo?: AccessInfo; // Información de acceso
 
   // Botones de acción (opcionales y compartidos)
   previewBtn?: boolean;
@@ -129,6 +140,42 @@ export default function ItemCard(props: ItemCardProps) {
   // Helper para manejar errores de imágenes
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
     e.currentTarget.src = IMAGE_FALLBACK;
+  };
+
+  // Renderizar información de acceso
+  const renderAccessInfo = () => {
+    if (!props.accessInfo) return null;
+
+    const { type, groupName } = props.accessInfo;
+
+    if (type === "public") {
+      return (
+        <div className="flex items-center gap-1 text-xs  text-gray-600">
+          <Globe className="h-3 w-3" />
+          <span>{t("public")}</span>
+        </div>
+      );
+    }
+
+    if (type === "restricted" && groupName) {
+      return (
+        <div className="flex items-center gap-1 text-xs  text-gray-600">
+          <Users className="h-3 w-3" />
+          <span>{groupName}</span>
+        </div>
+      );
+    }
+
+    if (type === "private") {
+      return (
+        <div className="flex items-center gap-1 text-xs text-gray-600">
+          <Lock className="h-3 w-3" />
+          <span>{t("private")}</span>
+        </div>
+      );
+    }
+
+    return null;
   };
 
   // Renderizar botones de acción compartidos
@@ -294,12 +341,15 @@ export default function ItemCard(props: ItemCardProps) {
               {t("by")} {props.author}
             </span>
           </div>
-          <div className="flex items-center gap-1 text-xs text-[#283618]/60">
+          <div className="flex items-center gap-1 text-xs text-[#283618]/60 mb-1">
             <Calendar className="h-3 w-3" />
             <span>
               {t("lastModified")}: {props.lastModified}
             </span>
           </div>
+          {renderAccessInfo() && (
+            <div className="mb-1">{renderAccessInfo()}</div>
+          )}
           {props.templateBaseName && (
             <div className="flex items-center gap-1 text-xs text-[#283618]/60 mt-1">
               <Tag className="h-3 w-3" />
@@ -340,6 +390,8 @@ export default function ItemCard(props: ItemCardProps) {
             {t("updatedBy")} {props.author}
           </p>
         )}
+
+        {renderAccessInfo() && <div className="mb-2">{renderAccessInfo()}</div>}
 
         {/* Tags (visual-resource y card) */}
         {(props.type === "visual-resource" || props.type === "card") &&

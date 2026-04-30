@@ -14,6 +14,13 @@ import { TemplateAPIService } from "@/services/templateService";
 import { useTranslations } from "next-intl";
 import { ScrollView } from "@/app/[locale]/components/ScrollView";
 import { btnPrimary } from "../../components/ui";
+import {
+  setMetaTag,
+  setCanonicalUrl,
+  generateArticleSchema,
+  injectSchema,
+  generateBreadcrumbSchema,
+} from "@/utils/seoUtils";
 
 // Función para decodificar valores de campos de texto
 const decodeTextFieldValue = (value: any): any => {
@@ -68,6 +75,58 @@ export default function BulletinPublicPage() {
 
   // Estados para el sistema de exportación
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+
+  // SEO: Actualizar metadatos cuando se carga el boletín
+  useEffect(() => {
+    if (!templateData?.master?.template_name) {
+      return;
+    }
+
+    const bulletinTitle = templateData.master.template_name;
+    const description = templateData.master.description
+      ? templateData.master.description.substring(0, 160)
+      : `Visualiza el boletín ${bulletinTitle}`;
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+    const canonicalUrl = `${baseUrl}/${locale}/${templateSlug}/${bulletinSlug}`;
+
+    document.title = `${bulletinTitle} - Bulletin builder`;
+    setMetaTag("description", description);
+    setMetaTag("og:title", bulletinTitle, true);
+    setMetaTag(
+      "og:description",
+      templateData.master.description ||
+        `Boletín agroclimático: ${bulletinTitle}`,
+      true,
+    );
+    setMetaTag("og:type", "article", true);
+    setMetaTag("og:url", canonicalUrl, true);
+    setMetaTag("article:author", "CIAT", true);
+    setMetaTag("twitter:title", bulletinTitle, false);
+    setMetaTag("twitter:description", description, false);
+    setMetaTag("twitter:card", "summary_large_image", false);
+
+    setCanonicalUrl(canonicalUrl);
+
+    injectSchema(
+      generateArticleSchema({
+        title: bulletinTitle,
+        description,
+        author: "CIAT",
+        url: canonicalUrl,
+        datePublished:
+          templateData.master.log?.created_at || new Date().toISOString(),
+        dateModified:
+          templateData.master.log?.updated_at || new Date().toISOString(),
+      }),
+    );
+    injectSchema(
+      generateBreadcrumbSchema([
+        { name: "Home", url: baseUrl },
+        { name: "Boletines", url: `${baseUrl}/${locale}/bulletins` },
+        { name: bulletinTitle, url: canonicalUrl },
+      ]),
+    );
+  }, [templateData, locale, templateSlug, bulletinSlug]);
 
   useEffect(() => {
     const loadBulletin = async () => {
