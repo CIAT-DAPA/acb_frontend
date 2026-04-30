@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import {
@@ -45,6 +45,12 @@ import { useAuth } from "@/hooks/useAuth";
 
 export default function CardsPage() {
   const t = useTranslations("Cards");
+  const tNavbar = useTranslations("Navbar");
+
+  // Establecer el título de la página
+  useEffect(() => {
+    document.title = `Bulletin builder - ${tNavbar("cards")}`;
+  }, [tNavbar]);
   const { showToast } = useToast();
   const { can } = usePermissions();
   const [searchTerm, setSearchTerm] = useState("");

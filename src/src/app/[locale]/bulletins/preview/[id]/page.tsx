@@ -11,6 +11,13 @@ import {
 } from "@/app/[locale]/components/ExportModal";
 import BulletinAPIService from "@/services/bulletinService";
 import { useTranslations } from "next-intl";
+import {
+  setMetaTag,
+  setCanonicalUrl,
+  generateArticleSchema,
+  injectSchema,
+  generateBreadcrumbSchema,
+} from "@/utils/seoUtils";
 
 // Función para decodificar valores de campos de texto
 const decodeTextFieldValue = (value: any): any => {
@@ -62,7 +69,7 @@ export default function TemplatePreviewPage() {
   const useCurrentVersion = previewVersion === "current";
 
   const [templateData, setTemplateData] = useState<CreateTemplateData | null>(
-    null
+    null,
   );
   const [cardsMetadata, setCardsMetadata] = useState<Record<string, Card>>({});
   const [loading, setLoading] = useState(true);
@@ -73,6 +80,60 @@ export default function TemplatePreviewPage() {
 
   // Estado para controlar la orientación según el tamaño de pantalla
   const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    if (!templateData?.master?.template_name) {
+      return;
+    }
+
+    const bulletinTitle = templateData.master.template_name;
+    const description = templateData.master.description
+      ? templateData.master.description.substring(0, 160)
+      : `Visualiza el boletín ${bulletinTitle}`;
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+    const canonicalUrl = bulletinId
+      ? `${baseUrl}/${locale}/bulletins/preview/${bulletinId}`
+      : "";
+
+    document.title = `${bulletinTitle} - Bulletin builder`;
+    setMetaTag("description", description);
+    setMetaTag("og:title", bulletinTitle, true);
+    setMetaTag(
+      "og:description",
+      templateData.master.description ||
+        `Boletín agroclimático: ${bulletinTitle}`,
+      true,
+    );
+    setMetaTag("og:type", "article", true);
+    setMetaTag("article:author", "CIAT", true);
+    setMetaTag("twitter:title", bulletinTitle, false);
+    setMetaTag("twitter:description", description, false);
+    setMetaTag("twitter:card", "summary_large_image", false);
+
+    if (canonicalUrl) {
+      setMetaTag("og:url", canonicalUrl, true);
+      setCanonicalUrl(canonicalUrl);
+      injectSchema(
+        generateArticleSchema({
+          title: bulletinTitle,
+          description,
+          author: "CIAT",
+          url: canonicalUrl,
+          datePublished:
+            templateData.master.log?.created_at || new Date().toISOString(),
+          dateModified:
+            templateData.master.log?.updated_at || new Date().toISOString(),
+        }),
+      );
+      injectSchema(
+        generateBreadcrumbSchema([
+          { name: "Home", url: baseUrl },
+          { name: "Boletines", url: `${baseUrl}/${locale}/bulletins` },
+          { name: bulletinTitle, url: canonicalUrl },
+        ]),
+      );
+    }
+  }, [templateData, locale, bulletinId]);
 
   // Detectar tamaño de pantalla
   useEffect(() => {
@@ -162,12 +223,12 @@ export default function TemplatePreviewPage() {
         // Decodificar campos de texto
         if (templateDataFormatted.version.content.header_config?.fields) {
           decodeFields(
-            templateDataFormatted.version.content.header_config.fields
+            templateDataFormatted.version.content.header_config.fields,
           );
         }
         if (templateDataFormatted.version.content.footer_config?.fields) {
           decodeFields(
-            templateDataFormatted.version.content.footer_config.fields
+            templateDataFormatted.version.content.footer_config.fields,
           );
         }
         templateDataFormatted.version.content.sections?.forEach(
@@ -177,7 +238,7 @@ export default function TemplatePreviewPage() {
                 decodeFields(block.fields);
               }
             });
-          }
+          },
         );
 
         setTemplateData(templateDataFormatted);

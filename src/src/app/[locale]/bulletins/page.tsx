@@ -2,7 +2,7 @@
 
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useToast } from "@/components/Toast";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import Image from "next/image";
 import {
   Loader2,
@@ -50,6 +50,12 @@ export default function Bulletins() {
   const { showToast } = useToast();
   const params = useParams();
   const locale = (params.locale as string) || "es";
+  const tNavbar = useTranslations("Navbar");
+
+  // Establecer el título de la página
+  useEffect(() => {
+    document.title = `Bulletin builder - ${tNavbar("bulletins")}`;
+  }, [tNavbar]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<BulletinStatus | "all">(
     "all",
@@ -164,11 +170,11 @@ export default function Bulletins() {
   // Función helper para obtener la información de acceso
   const getAccessInfo = (bulletin: BulletinMaster): AccessInfo => {
     const accessType = bulletin.access_config?.access_type || "private";
-    
+
     if (accessType === "public") {
       return { type: "public" };
     }
-    
+
     if (accessType === "restricted" && bulletin.access_config?.allowed_groups) {
       const groupId = bulletin.access_config.allowed_groups[0];
       const groupName = groupsMap[groupId];
@@ -178,7 +184,7 @@ export default function Bulletins() {
         groupName: groupName || groupId,
       };
     }
-    
+
     return { type: "private" };
   };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
@@ -38,6 +38,12 @@ import { useAuth } from "@/hooks/useAuth";
 
 export default function Templates() {
   const t = useTranslations("Templates");
+  const tNavbar = useTranslations("Navbar");
+
+  // Establecer el título de la página
+  useEffect(() => {
+    document.title = `Bulletin builder - ${tNavbar("templates")}`;
+  }, [tNavbar]);
   const { showToast } = useToast();
   const { can } = usePermissions();
   const params = useParams();
@@ -137,11 +143,11 @@ export default function Templates() {
   // Función helper para obtener la información de acceso
   const getAccessInfo = (template: TemplateMaster): AccessInfo => {
     const accessType = template.access_config?.access_type || "private";
-    
+
     if (accessType === "public") {
       return { type: "public" };
     }
-    
+
     if (accessType === "restricted" && template.access_config?.allowed_groups) {
       const groupId = template.access_config.allowed_groups[0];
       const groupName = groupsMap[groupId];
@@ -151,7 +157,7 @@ export default function Templates() {
         groupName: groupName || groupId,
       };
     }
-    
+
     return { type: "private" };
   };
 
