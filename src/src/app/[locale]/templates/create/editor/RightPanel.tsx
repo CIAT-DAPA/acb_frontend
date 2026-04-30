@@ -9,7 +9,7 @@ import {
 } from "@/types/template";
 import { EditorSelection } from "./types";
 import { getFieldConfigDefaults } from "@/app/[locale]/templates/create/editor/utils";
-import { Trash2, Move, Plus, ArrowUp, ArrowDown, X } from "lucide-react";
+import { Trash2, Move, Plus, ArrowUp, ArrowDown, Copy, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { StyleConfigurator } from "@/app/[locale]/templates/create/components/StyleConfigurator";
 import * as ui from "../../../components/ui";
@@ -35,6 +35,7 @@ interface RightPanelProps {
   data: CreateTemplateData;
   onUpdate: (updater: (prev: CreateTemplateData) => CreateTemplateData) => void;
   onMoveSection?: (fromIndex: number, toIndex: number) => void;
+  onDuplicateSection?: (sectionIndex: number) => void;
   // Card specific props
   isCardMode?: boolean;
   cardType?: string;
@@ -48,6 +49,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
   data,
   onUpdate,
   onMoveSection,
+  onDuplicateSection,
   isCardMode = false,
   cardType,
   cardTags,
@@ -212,6 +214,10 @@ export const RightPanel: React.FC<RightPanelProps> = ({
   const canMoveSelectedSectionDown =
     canReorderSelectedSection &&
     selectedSectionIndex < data.version.content.sections.length - 1;
+  const canDuplicateSelectedSection =
+    selection.type === "section" &&
+    selectedSectionIndex >= 0 &&
+    Boolean(onDuplicateSection);
 
   // Actions
   const updateField = (updates: Partial<Field>) => {
@@ -1132,7 +1138,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                 <div className="rounded-md bg-white p-2 text-gray-500 border border-gray-200">
                   <Move size={14} />
                 </div>
-                <div>
+                <div className="flex-1 min-w-0">
                   <h3 className="text-xs uppercase font-bold text-gray-500">
                     {t("sections.overview.pageOrder")}
                   </h3>
@@ -1140,6 +1146,17 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                     {t("sections.overview.pageOrderHelp")}
                   </p>
                 </div>
+
+                <button
+                  type="button"
+                  title={t("sections.section.duplicate")}
+                  aria-label={t("sections.section.duplicate")}
+                  disabled={!canDuplicateSelectedSection}
+                  className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-600 transition-colors hover:border-blue-500 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => onDuplicateSection?.(selectedSectionIndex)}
+                >
+                  <Copy size={14} />
+                </button>
               </div>
 
               <div className="flex gap-2">
