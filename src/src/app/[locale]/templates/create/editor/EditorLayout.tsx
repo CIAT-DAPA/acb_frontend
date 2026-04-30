@@ -240,6 +240,79 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({
     }));
   };
 
+  const handleDuplicateSection = (sectionIndex: number) => {
+    const sectionsCount = data.version.content.sections.length;
+
+    if (sectionIndex < 0 || sectionIndex >= sectionsCount) {
+      return;
+    }
+
+    const duplicatedSectionIndex = sectionIndex + 1;
+
+    onUpdate((prev) => {
+      const sections = prev.version.content.sections;
+      const sourceSection = sections[sectionIndex];
+
+      if (!sourceSection) {
+        return prev;
+      }
+
+      const duplicatedSection = structuredClone(sourceSection);
+      duplicatedSection.section_id = crypto.randomUUID();
+      duplicatedSection.display_name = `${sourceSection.display_name || "Sección"} (Copia)`;
+
+      duplicatedSection.blocks = (duplicatedSection.blocks || []).map((block) => ({
+        ...block,
+        block_id: crypto.randomUUID(),
+        fields: (block.fields || []).map((field) => ({
+          ...field,
+          field_id: crypto.randomUUID(),
+        })),
+      }));
+
+      if (duplicatedSection.header_config?.fields) {
+        duplicatedSection.header_config.fields = duplicatedSection.header_config.fields.map(
+          (field) => ({
+            ...field,
+            field_id: crypto.randomUUID(),
+          }),
+        );
+      }
+
+      if (duplicatedSection.footer_config?.fields) {
+        duplicatedSection.footer_config.fields = duplicatedSection.footer_config.fields.map(
+          (field) => ({
+            ...field,
+            field_id: crypto.randomUUID(),
+          }),
+        );
+      }
+
+      const nextSections = [...sections];
+      nextSections.splice(duplicatedSectionIndex, 0, duplicatedSection);
+
+      return {
+        ...prev,
+        version: {
+          ...prev.version,
+          content: {
+            ...prev.version.content,
+            sections: nextSections.map((section, index) => ({
+              ...section,
+              order: index,
+            })),
+          },
+        },
+      };
+    });
+
+    setSelection({
+      type: "section",
+      sectionIndex: duplicatedSectionIndex,
+      id: `section-${duplicatedSectionIndex}`,
+    });
+  };
+
   return (
     <div className="flex flex-col h-[calc(100vh-80px)] w-full bg-gray-100 overflow-hidden">
       <TopBar
@@ -283,6 +356,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({
             data={data}
             onUpdate={onUpdate}
             onMoveSection={handleMoveSection}
+            onDuplicateSection={handleDuplicateSection}
             // @ts-ignore - Dynamic props for Card Mode
             isCardMode={isCardMode}
             cardType={cardType}
