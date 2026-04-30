@@ -190,7 +190,10 @@ export function ExportModal({
   );
 
   // Secciones disponibles
-  const allSections = Array.from({ length: totalSections }, (_, i) => i);
+  const allSections = useMemo(
+    () => Array.from({ length: totalSections }, (_, i) => i),
+    [totalSections],
+  );
   const externalSectionOrder = useMemo(() => {
     if (!sectionOrder || sectionOrder.length === 0) {
       return [];
@@ -411,7 +414,11 @@ export function ExportModal({
   };
 
   const moveSectionInOrder = (fromIndex: number, toIndex: number) => {
-    if (fromIndex === toIndex || toIndex < 0 || toIndex >= sectionsToExport.length) {
+    if (
+      fromIndex === toIndex ||
+      toIndex < 0 ||
+      toIndex >= sectionsToExport.length
+    ) {
       return;
     }
 
@@ -491,6 +498,61 @@ export function ExportModal({
     setDragOverOrderIndex(null);
   };
 
+  const waitForExportPreviewReady = async (
+    selectedSections: number[],
+    sectionsForExport: any[],
+    resolvedExportConfig: ExportTechnicalConfig,
+  ) => {
+    const maxAttempts = 30;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => resolve());
+        });
+      });
+
+      const container = document.querySelector(
+        resolvedExportConfig.containerSelector,
+      );
+
+      if (!container) {
+        continue;
+      }
+
+      const allPagesReady = selectedSections.every((sectionIndex) => {
+        const section = sectionsForExport[sectionIndex];
+        const totalPages = resolvedExportConfig.getSectionPages(section);
+
+        return Array.from({ length: totalPages }).every((_, pageIndex) => {
+          const previewElement = container.querySelector(
+            resolvedExportConfig.itemSelectorTemplate(sectionIndex, pageIndex),
+          );
+
+          if (!previewElement) {
+            return false;
+          }
+
+          const exportElement =
+            resolvedExportConfig.getExportElement(previewElement);
+
+          return Boolean(exportElement);
+        });
+      });
+
+      if (allPagesReady) {
+        return;
+      }
+    }
+
+    console.warn(
+      "El preview de exportación no terminó de renderizar todas las páginas.",
+      {
+        selectedSections,
+      },
+    );
+  };
+
   const handleExport = async () => {
     setIsExporting(true);
     setExportStatus("idle");
@@ -522,7 +584,7 @@ export function ExportModal({
                   sectionIndex: number,
                   pageIndex: number,
                 ) =>
-                  `[data-section-index="${sectionIndex}"][data-page-index="${pageIndex}"]`,
+                  `[data-export-page="true"][data-section-index="${sectionIndex}"][data-page-index="${pageIndex}"]`,
                 getExportElement: (previewElement: Element) =>
                   previewElement.querySelector(
                     "#template-preview-container > div",
@@ -538,6 +600,12 @@ export function ExportModal({
         if (!resolvedExportConfig || sectionsForExport.length === 0) {
           throw new Error(t("loadError"));
         }
+
+        await waitForExportPreviewReady(
+          sectionsToExport,
+          sectionsForExport,
+          resolvedExportConfig,
+        );
 
         await exportContent({
           // Configuración del usuario (del estado interno del modal)
@@ -965,7 +1033,9 @@ export function ExportModal({
                             <span className="font-mono text-[10px] opacity-50 shrink-0 w-7 text-center">
                               {String(index + 1).padStart(2, "0")}
                             </span>
-                            <span className="truncate flex-1">{sectionName}</span>
+                            <span className="truncate flex-1">
+                              {sectionName}
+                            </span>
                             <div className="flex items-center gap-1 shrink-0">
                               <button
                                 type="button"
@@ -1066,7 +1136,7 @@ export function ExportModal({
               </button>
               <button
                 onClick={handleExport}
-                disabled={isExporting}
+                disabled={isExporting || cardsMetadataLoading}
                 className={`${ui.btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 <Download className="w-5 h-5" />

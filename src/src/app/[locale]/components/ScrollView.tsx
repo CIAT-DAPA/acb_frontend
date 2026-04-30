@@ -341,7 +341,7 @@ export function ScrollView({
 
             return (
               <div
-                key={`${sectionIndex}-${orderIndex}`}
+                key={sectionIndex}
                 draggable={allowSectionReorder && Boolean(onSectionOrderChange)}
                 onDragStart={(event) =>
                   handleSectionDragStart(orderIndex, event)
@@ -470,7 +470,7 @@ export function ScrollView({
             // Con pageCount=1 inicial se renderiza 1 entrada; cuando sube a N se
             // agregan entradas sin desmontar la existente en pageIndex=0.
             <div
-              key={`${sectionIndex}-${orderIndex}`}
+              key={sectionIndex}
               className={`flex gap-4 ${isVertical ? "flex-col" : ""}`}
               data-section-index={sectionIndex}
             >
@@ -480,6 +480,7 @@ export function ScrollView({
                   ref={(el) => {
                     if (pageIndex === 0) sectionRefs.current[orderIndex] = el;
                   }}
+                  data-export-page="true"
                   data-section-index={sectionIndex}
                   data-page-index={pageIndex}
                   className={`
@@ -572,10 +573,11 @@ export function ScrollView({
           ) : (
             // Modo normal: una sección
             <div
-              key={`${sectionIndex}-${orderIndex}`}
+              key={sectionIndex}
               ref={(el) => {
                 sectionRefs.current[orderIndex] = el;
               }}
+              data-export-page="true"
               data-section-index={sectionIndex}
               data-page-index={0}
               className={`
