@@ -16,8 +16,9 @@ import {
   User,
 } from "lucide-react";
 import Image from "next/image";
-import ItemCard from "../components/ItemCard";
+import ItemCard, { AccessInfo } from "../components/ItemCard";
 import { TemplateAPIService } from "../../../services/templateService";
+import { GroupAPIService } from "../../../services/groupService";
 import { ProtectedRoute } from "../../../components/ProtectedRoute";
 import usePermissions from "@/hooks/usePermissions";
 import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
@@ -59,6 +60,9 @@ export default function Templates() {
   const [duplicateTemplateName, setDuplicateTemplateName] = useState("");
   const [duplicateTemplateDescription, setDuplicateTemplateDescription] =
     useState("");
+
+  // State for groups
+  const [groupsMap, setGroupsMap] = useState<Record<string, string>>({});
 
   // Estados para el modal de preview
   const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -110,6 +114,16 @@ export default function Templates() {
       if (response.success) {
         setTemplates(sortedTemplates);
         setFilteredTemplates(sortedTemplates);
+
+        // Cargar grupos para mapear IDs a nombres
+        const groupsResponse = await GroupAPIService.getGroups();
+        if (groupsResponse.success) {
+          const newGroupsMap: Record<string, string> = {};
+          groupsResponse.data.forEach((group) => {
+            newGroupsMap[group._id!] = group.group_name;
+          });
+          setGroupsMap(newGroupsMap);
+        }
       } else {
         setError(response.message || t("loadError"));
       }
@@ -118,6 +132,27 @@ export default function Templates() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Función helper para obtener la información de acceso
+  const getAccessInfo = (template: TemplateMaster): AccessInfo => {
+    const accessType = template.access_config?.access_type || "private";
+    
+    if (accessType === "public") {
+      return { type: "public" };
+    }
+    
+    if (accessType === "restricted" && template.access_config?.allowed_groups) {
+      const groupId = template.access_config.allowed_groups[0];
+      const groupName = groupsMap[groupId];
+      return {
+        type: "restricted",
+        groupId,
+        groupName: groupName || groupId,
+      };
+    }
+    
+    return { type: "private" };
   };
 
   // Filtrar templates cuando cambia el término de búsqueda
@@ -392,6 +427,7 @@ export default function Templates() {
                       ).toLocaleDateString()}
                       thumbnailImages={template.thumbnail_images}
                       totalSections={template.section_count}
+                      accessInfo={getAccessInfo(template)}
                       previewBtn={true}
                       onPreview={() => handlePreviewTemplate(template._id!)}
                       editBtn={canEdit}

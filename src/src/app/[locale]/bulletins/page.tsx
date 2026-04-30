@@ -20,7 +20,8 @@ import { BulletinMaster, BulletinStatus } from "@/types/bulletin";
 import BulletinAPIService from "@/services/bulletinService";
 import { TemplateAPIService } from "@/services/templateService";
 import { ReviewService } from "@/services/reviewService";
-import ItemCard from "../components/ItemCard";
+import { GroupAPIService } from "@/services/groupService";
+import ItemCard, { AccessInfo } from "../components/ItemCard";
 import { DuplicateItemModal } from "../components/DuplicateItemModal";
 import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -63,6 +64,9 @@ export default function Bulletins() {
   const [templateThumbnailsMap, setTemplateThumbnailsMap] = useState<
     Record<string, string[]>
   >({});
+
+  // State for groups
+  const [groupsMap, setGroupsMap] = useState<Record<string, string>>({});
 
   // State for Share Modal
   const [showShareModal, setShowShareModal] = useState(false);
@@ -137,6 +141,16 @@ export default function Bulletins() {
         setTemplatesMap(newTemplatesMap);
         setTemplateNameMachineMap(newTemplateNameMachineMap);
         setTemplateThumbnailsMap(newThumbnailsMap);
+
+        // Cargar grupos para mapear IDs a nombres
+        const groupsResponse = await GroupAPIService.getGroups();
+        if (groupsResponse.success) {
+          const newGroupsMap: Record<string, string> = {};
+          groupsResponse.data.forEach((group) => {
+            newGroupsMap[group._id!] = group.group_name;
+          });
+          setGroupsMap(newGroupsMap);
+        }
       } else {
         setError(response.message || "Error al cargar los boletines");
       }
@@ -145,6 +159,27 @@ export default function Bulletins() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Función helper para obtener la información de acceso
+  const getAccessInfo = (bulletin: BulletinMaster): AccessInfo => {
+    const accessType = bulletin.access_config?.access_type || "private";
+    
+    if (accessType === "public") {
+      return { type: "public" };
+    }
+    
+    if (accessType === "restricted" && bulletin.access_config?.allowed_groups) {
+      const groupId = bulletin.access_config.allowed_groups[0];
+      const groupName = groupsMap[groupId];
+      return {
+        type: "restricted",
+        groupId,
+        groupName: groupName || groupId,
+      };
+    }
+    
+    return { type: "private" };
   };
 
   // Filtrar boletines cuando cambia el término de búsqueda
@@ -565,6 +600,7 @@ export default function Bulletins() {
                               bulletin.base_template_master_id
                             ] || []
                           }
+                          accessInfo={getAccessInfo(bulletin)}
                           previewBtn={showViewBtn}
                           onPreview={showViewBtn ? handleView : undefined}
                           editBtn={showEditBtn}
