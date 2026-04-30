@@ -401,10 +401,23 @@ export async function exportContent(
 
   // Determinar secciones a exportar
   const totalSections = options.sections.length;
-  const selectedSectionsToExport =
+
+  const naturalSectionOrder = Array.from(
+    { length: totalSections },
+    (_, index) => index,
+  );
+
+  const selectedSectionsToExport = (
     options.selectedSections.length > 0
       ? options.selectedSections
-      : Array.from({ length: totalSections }, (_, i) => i);
+      : naturalSectionOrder
+  ).filter(
+    (sectionIndex, position, array) =>
+      Number.isInteger(sectionIndex) &&
+      sectionIndex >= 0 &&
+      sectionIndex < totalSections &&
+      array.indexOf(sectionIndex) === position,
+  );
   const sectionsToExport = selectedSectionsToExport.filter((sectionIndex) => {
     if (!isPrintTarget) {
       return true;
@@ -424,6 +437,11 @@ export async function exportContent(
     }
 
     const zip = new JSZip();
+
+    const capturedFiles: Array<{
+      filename: string;
+      blob: Blob;
+    }> = [];
 
     // Para PDF, generamos PNG de alta calidad y luego convertimos
     const imageFormat =
@@ -496,8 +514,8 @@ export async function exportContent(
     let currentStep = 0;
 
     // Notificar cambio inicial de sección
-    if (options.onSectionChange) {
-      options.onSectionChange(0);
+    if (options.onSectionChange && sectionsToExport.length > 0) {
+      options.onSectionChange(sectionsToExport[0]);
     }
 
     // Esperar a que el contenedor se monte con todas las secciones expandidas
@@ -512,10 +530,26 @@ export async function exportContent(
       );
     }
 
-    const getRenderedPageIndexes = (sectionIndex: number) => {
-      const renderedPages = scrollContainer.querySelectorAll(
-        `[data-section-index="${sectionIndex}"][data-page-index]`,
+    const getRenderedPageElements = (sectionIndex: number) => {
+      const strictSelector = `[data-export-page="true"][data-section-index="${sectionIndex}"][data-page-index]`;
+
+      const strictPages = Array.from(
+        scrollContainer.querySelectorAll(strictSelector),
       );
+
+      if (strictPages.length > 0) {
+        return strictPages;
+      }
+
+      return Array.from(
+        scrollContainer.querySelectorAll(
+          `[data-section-index="${sectionIndex}"][data-page-index]`,
+        ),
+      );
+    };
+
+    const getRenderedPageIndexes = (sectionIndex: number) => {
+      const renderedPages = getRenderedPageElements(sectionIndex);
 
       const uniquePageIndexes = new Set<number>();
 
@@ -547,11 +581,7 @@ export async function exportContent(
     };
 
     const areRenderedSectionPagesReady = (sectionIndex: number) => {
-      const renderedPages = Array.from(
-        scrollContainer.querySelectorAll(
-          `[data-section-index="${sectionIndex}"][data-page-index]`,
-        ),
-      );
+      const renderedPages = getRenderedPageElements(sectionIndex);
 
       if (renderedPages.length === 0) {
         return false;
@@ -703,12 +733,9 @@ export async function exportContent(
         );
 
         if (!previewElement) {
-          console.warn(
-            `⚠️ No se encontró preview para sección ${
-              sectionIndex + 1
-            }, página ${pageOrderIndex + 1}`,
+          throw new Error(
+            `No se encontró preview exportable para sección original ${sectionIndex}, página ${pageIndex}.`,
           );
-          continue;
         }
 
         // Obtener el elemento a exportar
@@ -722,12 +749,9 @@ export async function exportContent(
           : defaultExportElement;
 
         if (!exportElement) {
-          console.warn(
-            `⚠️ No se encontró elemento de exportación en sección ${
-              sectionIndex + 1
-            }, página ${pageOrderIndex + 1}`,
+          throw new Error(
+            `No se encontró elemento de exportación para sección original ${sectionIndex}, página ${pageIndex}.`,
           );
-          continue;
         }
 
         const currentPdfPageNumber = isPrintTarget
@@ -1023,21 +1047,25 @@ export async function exportContent(
           const blob = await response.blob();
 
           // Agregar al ZIP con nombre descriptivo
+          const sectionLabel = String(i + 1).padStart(3, "0");
+          const pageLabel = String(pageOrderIndex + 1).padStart(3, "0");
+
           const filename =
             totalPages > 1
-              ? `seccion_${i + 1}_pagina_${
-                  pageOrderIndex + 1
-                }.${imageFormat}`
+              ? `seccion_${sectionLabel}_pagina_${pageLabel}.${imageFormat}`
               : sectionsToExport.length > 1
-                ? `seccion_${i + 1}.${imageFormat}`
+                ? `seccion_${sectionLabel}.${imageFormat}`
                 : `${options.contentName}.${imageFormat}`;
 
           zip.file(filename, blob);
+
+          capturedFiles.push({
+            filename,
+            blob,
+          });
         } catch (error) {
           console.error(
-            `Error al exportar sección ${i + 1}, página ${
-              pageOrderIndex + 1
-            }:`,
+            `Error al exportar sección ${i + 1}, página ${pageOrderIndex + 1}:`,
             error,
           );
           throw error;
@@ -1262,12 +1290,10 @@ export async function exportContent(
       let isFirstPage = true;
 
       // Obtener todos los archivos del ZIP
-      const files = Object.keys(zip.files).sort();
+      const files = capturedFiles;
 
       for (let fileIndex = 0; fileIndex < files.length; fileIndex++) {
-        const filename = files[fileIndex];
-        const file = zip.files[filename];
-        const blob = await file.async("blob");
+        const { blob } = files[fileIndex];
 
         // Micro-progreso durante conversión a PDF (dentro del último paso)
         // Progreso va de 99% a 100% mientras se agregan imágenes
