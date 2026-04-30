@@ -491,11 +491,13 @@ export default function Bulletins() {
 
                       const status = bulletin.status;
                       const isPublished = status === "published";
+                      const isInReviewFlow =
+                        status === "review" || status === "pending_review";
 
                       const isEditableStatus =
                         status === "draft" || status === "rejected";
                       const showEditBtn = canEdit && isEditableStatus;
-                      const showViewBtn = isPublished;
+                      const showViewBtn = isPublished || isInReviewFlow;
                       const showDuplicateBtn = canEdit;
                       const showShareBtn = isPublished;
                       const showDeleteBtn = canDelete && isPublished;
@@ -508,13 +510,21 @@ export default function Bulletins() {
                         templateNameMachine && bulletin.name_machine
                           ? `/${locale}/${templateNameMachine}/${bulletin.name_machine}`
                           : null;
+                      const bulletinInternalPreviewUrl = bulletin._id
+                        ? `/${locale}/bulletins/preview/${bulletin._id}?version=current`
+                        : null;
 
                       const handleView = () => {
-                        if (!bulletinViewerUrl) {
+                        // Publicados: mantener navegación al visor público.
+                        if (isPublished && bulletinViewerUrl) {
+                          window.location.href = bulletinViewerUrl;
                           return;
                         }
 
-                        window.location.href = bulletinViewerUrl;
+                        // En revisión/pendiente: abrir vista full-page con versión actual.
+                        if (bulletinInternalPreviewUrl) {
+                          window.location.href = bulletinInternalPreviewUrl;
+                        }
                       };
 
                       const handleShare = () => {
@@ -556,11 +566,7 @@ export default function Bulletins() {
                             ] || []
                           }
                           previewBtn={showViewBtn}
-                          onPreview={
-                            showViewBtn && bulletinViewerUrl
-                              ? handleView
-                              : undefined
-                          }
+                          onPreview={showViewBtn ? handleView : undefined}
                           editBtn={showEditBtn}
                           onEdit={() =>
                             (window.location.href = `/bulletins/${bulletin._id}/edit`)

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { CreateTemplateData, Field, Block, Section } from "@/types/template";
 import { Card } from "@/types/card";
 import { ArrowLeft, Loader2, Download } from "lucide-react";
@@ -43,17 +43,23 @@ import { ScrollView } from "@/app/[locale]/components/ScrollView";
 
 /**
  * Página de preview independiente para boletines
- * Permite visualizar cualquier boletin por su ID publicado
+ * Permite visualizar boletines por ID en dos modos:
+ * - Publicado (default)
+ * - Versión actual (version=current), útil para review/pending_review
  *
  * Ruta: /[locale]/bulletins/preview/[id]
  * Ejemplo: /es/bulletins/preview/68d2d1417194ce27a63033b2
+ * Ejemplo interno: /es/bulletins/preview/68d2d1417194ce27a63033b2?version=current
  */
 export default function TemplatePreviewPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const bulletinId = params.id as string;
   const locale = params.locale as string;
   const t = useTranslations("CreateBulletin.bulletinPreview");
+  const previewVersion = searchParams.get("version");
+  const useCurrentVersion = previewVersion === "current";
 
   const [templateData, setTemplateData] = useState<CreateTemplateData | null>(
     null
@@ -95,10 +101,9 @@ export default function TemplatePreviewPage() {
         setLoading(true);
         setError(null);
 
-        // Obtener el template master y su versión actual en una sola llamada
-        const response = await BulletinAPIService.getBulletinPublished(
-          bulletinId
-        );
+        const response = useCurrentVersion
+          ? await BulletinAPIService.getCurrentVersion(bulletinId)
+          : await BulletinAPIService.getBulletinPublished(bulletinId);
 
         if (!response.success || !response.data) {
           throw new Error(t("errorNotFound"));
@@ -108,7 +113,7 @@ export default function TemplatePreviewPage() {
           master: bulletinMaster,
           current_version: currentVersion,
           cards_metadata,
-        } = response.data;
+        } = response.data as any;
 
         // Validar que la versión tenga contenido
         if (!currentVersion.data || !currentVersion.data.sections) {
@@ -186,7 +191,7 @@ export default function TemplatePreviewPage() {
     };
 
     loadTemplate();
-  }, [bulletinId]);
+  }, [bulletinId, useCurrentVersion]);
 
   // Función helper para calcular el número total de páginas de una sección
   const getSectionTotalPages = (section: any): number => {
