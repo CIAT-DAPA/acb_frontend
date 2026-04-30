@@ -73,7 +73,12 @@ const archivoNarrow = Archivo_Narrow({
 
 export const metadata: Metadata = {
   title: "Bulletin builder",
-  description: "App to create agroclimatic bulletins",
+  description: "Bulletin builder",
+  keywords: ["bulletin", "agroclimatic", "climate", "agriculture", "weather"],
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default async function RootLayout({ children, params }: Props) {
@@ -83,6 +88,10 @@ export default async function RootLayout({ children, params }: Props) {
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#606c38" />
+        <link rel="manifest" href="/manifest.json" />
         <link
           rel="icon"
           href="/faviconDark.ico"
@@ -92,6 +101,21 @@ export default async function RootLayout({ children, params }: Props) {
           rel="icon"
           href="/favicon.ico"
           media="(prefers-color-scheme: dark)"
+        />
+        <link
+          rel="alternate"
+          hrefLang="es"
+          href="https://bulletinbuilder.ciat.cgiar.org/es"
+        />
+        <link
+          rel="alternate"
+          hrefLang="en"
+          href="https://bulletinbuilder.ciat.cgiar.org/en"
+        />
+        <link
+          rel="alternate"
+          hrefLang="vi"
+          href="https://bulletinbuilder.ciat.cgiar.org/vi"
         />
       </head>
       <body

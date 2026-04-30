@@ -238,6 +238,8 @@
     "page": "trang",
     "pages": "các trang",
     "section": "Phần",
+    "public": "Công khai",
+    "private": "Riêng tư",
     "statusDraft": "Bản nháp",
     "statusPublished": "Đã xuất bản",
     "statusArchived": "Đã lưu trữ",
@@ -673,6 +675,8 @@
     "page": "trang",
     "pages": "các trang",
     "section": "Phần",
+    "public": "Công khai",
+    "private": "Riêng tư",
     "by": "Bởi",
     "cardTypes": {
       "pest_or_disease": "Sâu hoặc bệnh",

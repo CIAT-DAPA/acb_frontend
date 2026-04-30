@@ -2,7 +2,7 @@
 
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useToast } from "@/components/Toast";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import Image from "next/image";
 import {
   Loader2,
@@ -20,7 +20,8 @@ import { BulletinMaster, BulletinStatus } from "@/types/bulletin";
 import BulletinAPIService from "@/services/bulletinService";
 import { TemplateAPIService } from "@/services/templateService";
 import { ReviewService } from "@/services/reviewService";
-import ItemCard from "../components/ItemCard";
+import { GroupAPIService } from "@/services/groupService";
+import ItemCard, { AccessInfo } from "../components/ItemCard";
 import { DuplicateItemModal } from "../components/DuplicateItemModal";
 import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -49,6 +50,12 @@ export default function Bulletins() {
   const { showToast } = useToast();
   const params = useParams();
   const locale = (params.locale as string) || "es";
+  const tNavbar = useTranslations("Navbar");
+
+  // Establecer el título de la página
+  useEffect(() => {
+    document.title = `Bulletin builder - ${tNavbar("bulletins")}`;
+  }, [tNavbar]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<BulletinStatus | "all">(
     "all",
@@ -63,6 +70,9 @@ export default function Bulletins() {
   const [templateThumbnailsMap, setTemplateThumbnailsMap] = useState<
     Record<string, string[]>
   >({});
+
+  // State for groups
+  const [groupsMap, setGroupsMap] = useState<Record<string, string>>({});
 
   // State for Share Modal
   const [showShareModal, setShowShareModal] = useState(false);
@@ -137,6 +147,16 @@ export default function Bulletins() {
         setTemplatesMap(newTemplatesMap);
         setTemplateNameMachineMap(newTemplateNameMachineMap);
         setTemplateThumbnailsMap(newThumbnailsMap);
+
+        // Cargar grupos para mapear IDs a nombres
+        const groupsResponse = await GroupAPIService.getGroups();
+        if (groupsResponse.success) {
+          const newGroupsMap: Record<string, string> = {};
+          groupsResponse.data.forEach((group) => {
+            newGroupsMap[group._id!] = group.group_name;
+          });
+          setGroupsMap(newGroupsMap);
+        }
       } else {
         setError(response.message || "Error al cargar los boletines");
       }
@@ -145,6 +165,27 @@ export default function Bulletins() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Función helper para obtener la información de acceso
+  const getAccessInfo = (bulletin: BulletinMaster): AccessInfo => {
+    const accessType = bulletin.access_config?.access_type || "private";
+
+    if (accessType === "public") {
+      return { type: "public" };
+    }
+
+    if (accessType === "restricted" && bulletin.access_config?.allowed_groups) {
+      const groupId = bulletin.access_config.allowed_groups[0];
+      const groupName = groupsMap[groupId];
+      return {
+        type: "restricted",
+        groupId,
+        groupName: groupName || groupId,
+      };
+    }
+
+    return { type: "private" };
   };
 
   // Filtrar boletines cuando cambia el término de búsqueda
@@ -491,11 +532,13 @@ export default function Bulletins() {
 
                       const status = bulletin.status;
                       const isPublished = status === "published";
+                      const isInReviewFlow =
+                        status === "review" || status === "pending_review";
 
                       const isEditableStatus =
                         status === "draft" || status === "rejected";
                       const showEditBtn = canEdit && isEditableStatus;
-                      const showViewBtn = isPublished;
+                      const showViewBtn = isPublished || isInReviewFlow;
                       const showDuplicateBtn = canEdit;
                       const showShareBtn = isPublished;
                       const showDeleteBtn = canDelete && isPublished;
@@ -508,13 +551,21 @@ export default function Bulletins() {
                         templateNameMachine && bulletin.name_machine
                           ? `/${locale}/${templateNameMachine}/${bulletin.name_machine}`
                           : null;
+                      const bulletinInternalPreviewUrl = bulletin._id
+                        ? `/${locale}/bulletins/preview/${bulletin._id}?version=current`
+                        : null;
 
                       const handleView = () => {
-                        if (!bulletinViewerUrl) {
+                        // Publicados: mantener navegación al visor público.
+                        if (isPublished && bulletinViewerUrl) {
+                          window.location.href = bulletinViewerUrl;
                           return;
                         }
 
-                        window.location.href = bulletinViewerUrl;
+                        // En revisión/pendiente: abrir vista full-page con versión actual.
+                        if (bulletinInternalPreviewUrl) {
+                          window.location.href = bulletinInternalPreviewUrl;
+                        }
                       };
 
                       const handleShare = () => {
@@ -555,12 +606,9 @@ export default function Bulletins() {
                               bulletin.base_template_master_id
                             ] || []
                           }
+                          accessInfo={getAccessInfo(bulletin)}
                           previewBtn={showViewBtn}
-                          onPreview={
-                            showViewBtn && bulletinViewerUrl
-                              ? handleView
-                              : undefined
-                          }
+                          onPreview={showViewBtn ? handleView : undefined}
                           editBtn={showEditBtn}
                           onEdit={() =>
                             (window.location.href = `/bulletins/${bulletin._id}/edit`)

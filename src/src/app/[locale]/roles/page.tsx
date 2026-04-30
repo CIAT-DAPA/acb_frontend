@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useState, useEffect } from "react";
 import {
   Shield,
@@ -35,6 +35,12 @@ import Link from "next/link";
 
 export default function RolesPage() {
   const t = useTranslations("Roles");
+  const tNavbar = useTranslations("Navbar");
+
+  // Establecer el título de la página
+  useEffect(() => {
+    document.title = `Bulletin builder - ${tNavbar("roles")}`;
+  }, [tNavbar]);
 
   const isPermissionModule = (module: string): module is PermissionModule => {
     return Object.values(MODULES).includes(module as PermissionModule);

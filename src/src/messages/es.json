@@ -189,6 +189,8 @@
     "page": "página",
     "pages": "páginas",
     "section": "Sección",
+    "public": "Público",
+    "private": "Privado",
     "statusDraft": "Borrador",
     "statusPublished": "Publicado",
     "statusArchived": "Archivado",
@@ -1952,6 +1954,8 @@
     "page": "página",
     "pages": "páginas",
     "section": "Sección",
+    "public": "Público",
+    "private": "Privado",
     "preview": "Vista Previa",
     "download": "Descargar",
     "cardTypes": {

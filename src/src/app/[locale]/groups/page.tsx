@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useState, useEffect } from "react";
 import {
   Users,
@@ -32,6 +32,12 @@ import { PERMISSION_ACTIONS, MODULES } from "@/types/core";
 
 export default function GroupsPage() {
   const t = useTranslations("Groups");
+  const tNavbar = useTranslations("Navbar");
+
+  // Establecer el título de la página
+  useEffect(() => {
+    document.title = `Bulletin builder - ${tNavbar("groups")}`;
+  }, [tNavbar]);
   const { can, isSuperadmin } = usePermissions();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -80,9 +86,9 @@ export default function GroupsPage() {
         ? groups
         : groups.filter((g) =>
             [g.group_name, g.country, g.description].some((field) =>
-              field.toLowerCase().includes(term)
-            )
-          )
+              field.toLowerCase().includes(term),
+            ),
+          ),
     );
   }, [searchTerm, groups]);
 
@@ -261,7 +267,7 @@ export default function GroupsPage() {
                               {can(
                                 PERMISSION_ACTIONS.Update,
                                 MODULES.ACCESS_CONTROL,
-                                [groupId]
+                                [groupId],
                               ) && (
                                 <Link
                                   href={`/groups/${groupId}/edit`}
@@ -346,7 +352,7 @@ export default function GroupsPage() {
                                             </span>
                                           </td>
                                         </tr>
-                                      )
+                                      ),
                                     )}
                                   </tbody>
                                 </table>
