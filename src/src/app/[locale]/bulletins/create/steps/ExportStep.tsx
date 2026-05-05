@@ -33,7 +33,9 @@ export function ExportStep({
   const getSectionTotalPages = (section: any): number => {
     let maxPages = 1;
 
-    // Buscar si hay algún field de tipo list o card que requiera paginación
+    // Las secciones ya están flattened, así que no hay más repeatable_pages
+    // Solo contar paginación de lists y cards
+
     section.blocks?.forEach((block: any) => {
       if (block?.print === false) {
         return;

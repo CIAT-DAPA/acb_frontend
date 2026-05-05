@@ -18,6 +18,10 @@ import {
   Block,
   Field,
 } from "../../../../types/template";
+import type {
+  BulletinSection,
+  BulletinSectionPage,
+} from "../../../../types/bulletin";
 
 import { TemplateSelectionStep } from "./steps/TemplateSelectionStep";
 import { BasicInfoStep } from "./steps/BasicInfoStep";
@@ -84,6 +88,22 @@ const encodeTextFields = (data: CreateBulletinData): CreateBulletinData => {
     });
   };
 
+  const encodeSectionPages = (section: BulletinSection) => {
+    section.repeatable_pages?.forEach((page) => {
+      if (page.header_config?.fields) {
+        encodeFieldsArray(page.header_config.fields);
+      }
+      if (page.footer_config?.fields) {
+        encodeFieldsArray(page.footer_config.fields);
+      }
+      page.blocks?.forEach((block) => {
+        if (block.fields) {
+          encodeFieldsArray(block.fields);
+        }
+      });
+    });
+  };
+
   // Codificar header y footer
   if (encodedData.version.data.header_config?.fields) {
     encodeFieldsArray(encodedData.version.data.header_config.fields);
@@ -99,6 +119,8 @@ const encodeTextFields = (data: CreateBulletinData): CreateBulletinData => {
         encodeFieldsArray(block.fields);
       }
     });
+
+    encodeSectionPages(section as BulletinSection);
   });
 
   return encodedData;
@@ -123,6 +145,22 @@ const decodeTextFields = (data: CreateBulletinData): CreateBulletinData => {
     });
   };
 
+  const decodeSectionPages = (section: BulletinSection) => {
+    section.repeatable_pages?.forEach((page) => {
+      if (page.header_config?.fields) {
+        decodeFieldsArray(page.header_config.fields);
+      }
+      if (page.footer_config?.fields) {
+        decodeFieldsArray(page.footer_config.fields);
+      }
+      page.blocks?.forEach((block) => {
+        if (block.fields) {
+          decodeFieldsArray(block.fields);
+        }
+      });
+    });
+  };
+
   // Decodificar header y footer
   if (decodedData.version.data.header_config?.fields) {
     decodeFieldsArray(decodedData.version.data.header_config.fields);
@@ -138,10 +176,85 @@ const decodeTextFields = (data: CreateBulletinData): CreateBulletinData => {
         decodeFieldsArray(block.fields);
       }
     });
+
+    decodeSectionPages(section as BulletinSection);
   });
 
   return decodedData;
 };
+
+const createBlankFieldValue = (field: Field): any => {
+  switch (field.type) {
+    case "list":
+    case "card":
+      return [];
+    case "climate_data_puntual":
+    case "moon_calendar":
+      return {};
+    case "date_range":
+      return {
+        start_date: "",
+        end_date: "",
+        start_moon_phase: undefined,
+        end_moon_phase: undefined,
+      };
+    case "number":
+      return null;
+    case "text_with_icon":
+    case "text":
+    case "select":
+    case "searchable":
+    case "select_with_icons":
+    case "select_background":
+    case "date":
+    case "image_upload":
+    default:
+      return "";
+  }
+};
+
+const cloneFieldForRepeatablePage = (field: Field): Field => {
+  const cloned = structuredClone(field);
+  cloned.field_id = crypto.randomUUID();
+  // Solo limpiar el valor si el campo es editable (form=true)
+  if (cloned.form) {
+    cloned.value = createBlankFieldValue(cloned);
+  }
+  return cloned;
+};
+
+const cloneHeaderFooterForRepeatablePage = (config?: {
+  style_config?: any;
+  fields: Field[];
+}): { style_config?: any; fields: Field[] } | undefined => {
+  if (!config) {
+    return undefined;
+  }
+
+  return {
+    ...structuredClone(config),
+    fields: (config.fields || []).map(cloneFieldForRepeatablePage),
+  };
+};
+
+const createRepeatablePageFromSection = (
+  section: Pick<
+    Section,
+    "display_name" | "blocks" | "header_config" | "footer_config"
+  >,
+  pageTitle?: string,
+  pageIndex = 1,
+): BulletinSectionPage => ({
+  page_id: crypto.randomUUID(),
+  page_title: pageTitle || `Página ${pageIndex}`,
+  header_config: cloneHeaderFooterForRepeatablePage(section.header_config),
+  footer_config: cloneHeaderFooterForRepeatablePage(section.footer_config),
+  blocks: (section.blocks || []).map((block) => ({
+    ...structuredClone(block),
+    block_id: crypto.randomUUID(),
+    fields: (block.fields || []).map(cloneFieldForRepeatablePage),
+  })),
+});
 
 interface FormBulletinPageProps {
   mode?: "create" | "edit";
@@ -443,6 +556,20 @@ export default function FormBulletinPage({
       section.blocks.forEach((block) => {
         extractFromFields(block.fields);
       });
+
+      section.repeatable_pages?.forEach((page) => {
+        if (page.header_config?.fields) {
+          extractFromFields(page.header_config.fields);
+        }
+
+        if (page.footer_config?.fields) {
+          extractFromFields(page.footer_config.fields);
+        }
+
+        page.blocks.forEach((block) => {
+          extractFromFields(block.fields);
+        });
+      });
     });
 
     return imageUrls;
@@ -523,6 +650,62 @@ export default function FormBulletinPage({
             return field.value || null;
           };
 
+          const initializeSectionAsBulletin = (
+            section: Section,
+          ): BulletinSection => {
+            const initializedBlocks = section.blocks.map((block: Block) => ({
+              ...block,
+              fields: block.fields.map((field: Field) => ({
+                ...field,
+                value: initializeFieldValue(field),
+              })),
+            }));
+
+            const initializedHeaderConfig = section.header_config
+              ? {
+                  ...section.header_config,
+                  fields: section.header_config.fields.map((field: Field) => ({
+                    ...field,
+                    value: initializeFieldValue(field),
+                  })),
+                }
+              : undefined;
+
+            const initializedFooterConfig = section.footer_config
+              ? {
+                  ...section.footer_config,
+                  fields: section.footer_config.fields.map((field: Field) => ({
+                    ...field,
+                    value: initializeFieldValue(field),
+                  })),
+                }
+              : undefined;
+
+            const bulletinSection: BulletinSection = {
+              ...section,
+              header_config: initializedHeaderConfig,
+              footer_config: initializedFooterConfig,
+              blocks: initializedBlocks,
+            };
+
+            if (section.repeatable) {
+              bulletinSection.repeatable_pages = [
+                createRepeatablePageFromSection(
+                  {
+                    display_name: section.display_name,
+                    blocks: initializedBlocks as any,
+                    header_config: initializedHeaderConfig as any,
+                    footer_config: initializedFooterConfig as any,
+                  },
+                  section.display_name || "Página 1",
+                  1,
+                ),
+              ];
+            }
+
+            return bulletinSection;
+          };
+
           // Inicializar datos del boletín con la estructura del template
           setCreationState((prev) => ({
             ...prev,
@@ -567,38 +750,9 @@ export default function FormBulletinPage({
                         ),
                       }
                     : { fields: [] },
-                  sections: content.sections.map((section: Section) => ({
-                    ...section,
-                    header_config: section.header_config
-                      ? {
-                          ...section.header_config,
-                          fields: section.header_config.fields.map(
-                            (field: Field) => ({
-                              ...field,
-                              value: initializeFieldValue(field),
-                            }),
-                          ),
-                        }
-                      : undefined,
-                    footer_config: section.footer_config
-                      ? {
-                          ...section.footer_config,
-                          fields: section.footer_config.fields.map(
-                            (field: Field) => ({
-                              ...field,
-                              value: initializeFieldValue(field),
-                            }),
-                          ),
-                        }
-                      : undefined,
-                    blocks: section.blocks.map((block: Block) => ({
-                      ...block,
-                      fields: block.fields.map((field: Field) => ({
-                        ...field,
-                        value: initializeFieldValue(field),
-                      })),
-                    })),
-                  })),
+                  sections: content.sections.map((section: Section) =>
+                    initializeSectionAsBulletin(section),
+                  ),
                 },
               },
             },
@@ -1248,6 +1402,20 @@ export default function FormBulletinPage({
               section.blocks.forEach((block) => {
                 updateFields(block.fields);
               });
+
+              section.repeatable_pages?.forEach((page) => {
+                if (page.header_config?.fields) {
+                  updateFields(page.header_config.fields);
+                }
+
+                if (page.footer_config?.fields) {
+                  updateFields(page.footer_config.fields);
+                }
+
+                page.blocks.forEach((block) => {
+                  updateFields(block.fields);
+                });
+              });
             });
           };
 
@@ -1423,6 +1591,25 @@ export default function FormBulletinPage({
     };
   }, [creationState]);
 
+  const exportSections = useMemo(() => {
+    return creationState.data.version.data.sections.flatMap((section) => {
+      if (!section.repeatable || !section.repeatable_pages?.length) {
+        return [section];
+      }
+
+      return section.repeatable_pages.map((page, pageIndex) => ({
+        ...section,
+        section_id: page.page_id || `${section.section_id}-${pageIndex}`,
+        display_name: page.page_title || section.display_name,
+        header_config: page.header_config || section.header_config,
+        footer_config: page.footer_config || section.footer_config,
+        blocks: page.blocks,
+        repeatable_pages: undefined,
+        active_page_index: pageIndex,
+      }));
+    });
+  }, [creationState.data.version.data.sections]);
+
   // Datos completos para exportación (siempre incluye todas las secciones)
   const exportData = useMemo((): CreateTemplateData | null => {
     if (!creationState.selectedTemplateId) {
@@ -1450,11 +1637,11 @@ export default function FormBulletinPage({
           style_config: creationState.data.version.data.style_config || {},
           header_config: creationState.data.version.data.header_config,
           footer_config: creationState.data.version.data.footer_config,
-          sections: creationState.data.version.data.sections, // SIEMPRE TODAS
+          sections: exportSections, // SIEMPRE TODAS, expandiendo las repetibles
         },
       },
     };
-  }, [creationState.data, creationState.selectedTemplateId]);
+  }, [creationState.data, creationState.selectedTemplateId, exportSections]);
 
   // Renderizar contenido del paso actual
   const renderStepContent = () => {

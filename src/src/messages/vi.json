@@ -368,7 +368,9 @@
       "noFields": "Phần này không có ô cài đặt",
       "headerFields": "Các ô nhập liệu ở Đầu trang",
       "footerFields": "Các ô nhập liệu ở Chân trang",
-      "notFound": "Không tìm thấy phần này"
+      "notFound": "Không tìm thấy phần này",
+      "addNewPage": "Trang mới",
+      "deleteCurrentPage": "Xóa trang hiện tại"
     },
     "title": "Tạo bản tin",
     "subtitle": "Tạo bản tin thời tiết nông vụ mới bằng cách sử dụng biểu mẫu",

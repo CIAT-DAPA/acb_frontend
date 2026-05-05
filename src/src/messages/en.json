@@ -353,7 +353,9 @@
       "noFields": "This section has no configurable fields",
       "headerFields": "Header Fields",
       "footerFields": "Footer Fields",
-      "notFound": "Section not found"
+      "notFound": "Section not found",
+      "addNewPage": "New page",
+      "deleteCurrentPage": "Delete current page"
     },
     "fillData": {
       "sectionProgress": "Section {current} of {total}",
