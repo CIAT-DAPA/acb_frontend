@@ -447,7 +447,10 @@
       "item": "Mục {index}",
       "removeItem": "Xóa mục",
       "maxCharacters": "Tối đa {max} ký tự",
-      "noItems": "Không có mục nào. Nhấn \"Thêm mục\" để bắt đầu."
+      "noItems": "Không có mục nào. Nhấn \"Thêm mục\" để bắt đầu.",
+      "icons": "Biểu tượng",
+      "changeIcon": "Thay đổi biểu tượng",
+      "selectIcon": "Chọn biểu tượng"
     },
     "climateField": {
       "noParameters": "Không có tham số khí hậu nào được cấu hình"

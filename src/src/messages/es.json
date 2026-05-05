@@ -381,7 +381,10 @@
       "item": "Item {index}",
       "removeItem": "Eliminar item",
       "maxCharacters": "Máximo {max} caracteres",
-      "noItems": "No hay items. Haz clic en \"Agregar item\" para comenzar."
+      "noItems": "No hay items. Haz clic en \"Agregar item\" para comenzar.",
+      "icons": "Iconos",
+      "changeIcon": "Cambiar icono",
+      "selectIcon": "Seleccionar icono"
     },
     "climateField": {
       "noParameters": "No hay parámetros climáticos configurados"
