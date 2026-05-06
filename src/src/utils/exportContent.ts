@@ -71,6 +71,14 @@ const PRINT_PAPER_SIZE_MM: Record<string, [number, number]> = {
   octavo_pliego: [250, 350],
 };
 
+const waitForPaint = async (frames = 2) => {
+  for (let index = 0; index < frames; index++) {
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => resolve());
+    });
+  }
+};
+
 type CapturedImage = {
   dataUrl: string;
   width: number;
@@ -519,7 +527,7 @@ export async function exportContent(
     }
 
     // Esperar a que el contenedor se monte con todas las secciones expandidas
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    await waitForPaint(3);
 
     // Obtener el contenedor principal
     const scrollContainer = document.querySelector(options.containerSelector);
@@ -596,7 +604,7 @@ export async function exportContent(
       sectionIndex: number,
       pageIndex: number,
     ) => {
-      for (let attempt = 0; attempt < 32; attempt++) {
+      for (let attempt = 0; attempt < 20; attempt++) {
         const previewElement = scrollContainer.querySelector(
           options.itemSelectorTemplate(sectionIndex, pageIndex),
         );
@@ -605,7 +613,7 @@ export async function exportContent(
           return previewElement;
         }
 
-        await new Promise((resolve) => setTimeout(resolve, 200));
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
 
       return scrollContainer.querySelector(
@@ -618,7 +626,7 @@ export async function exportContent(
       let stableIterations = 0;
       let latestCounts = new Map<number, number>();
 
-      for (let attempt = 0; attempt < 20; attempt++) {
+      for (let attempt = 0; attempt < 12; attempt++) {
         const nextCounts = new Map<number, number>();
 
         sectionsToExport.forEach((sectionIndex) => {
@@ -654,7 +662,7 @@ export async function exportContent(
           previousSignature = signature;
         }
 
-        await new Promise((resolve) => setTimeout(resolve, 250));
+        await new Promise((resolve) => setTimeout(resolve, 120));
       }
 
       return latestCounts;
@@ -723,8 +731,8 @@ export async function exportContent(
           }/${totalPages}...`,
         );
 
-        // Pequeño delay para asegurar que la sección esté renderizada
-        await new Promise((resolve) => setTimeout(resolve, 300));
+        // Espera corta para permitir el repintado antes de capturar
+        await waitForPaint(2);
 
         // Buscar el elemento de preview específico
         const previewElement = await waitForRenderedPageReady(
@@ -843,8 +851,8 @@ export async function exportContent(
         // Esperar a que las fuentes se carguen
         await document.fonts.ready;
 
-        // Delay adicional para asegurar renderizado completo
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        // Espera corta adicional para estabilizar layout tras carga de fuentes
+        await waitForPaint(2);
 
         // Calcular escala según la calidad seleccionada
         let scale = 1;

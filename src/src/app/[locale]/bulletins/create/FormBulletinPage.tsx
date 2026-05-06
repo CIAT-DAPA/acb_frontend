@@ -637,17 +637,77 @@ export default function FormBulletinPage({
             slugNamesForValidation,
           );
 
+          const decodeListItemValue = (item: any) => {
+            if (typeof item === "string") {
+              return decodeTextFieldValue(item);
+            }
+
+            if (item && typeof item === "object" && !Array.isArray(item)) {
+              const nextItem = { ...item } as Record<string, any>;
+              const textLikeKeys = [
+                "text",
+                "label",
+                "title",
+                "description",
+                "value",
+              ];
+
+              textLikeKeys.forEach((key) => {
+                if (typeof nextItem[key] === "string") {
+                  nextItem[key] = decodeTextFieldValue(nextItem[key]);
+                }
+              });
+
+              return nextItem;
+            }
+
+            return item;
+          };
+
+          const decodeTextWithIconValue = (value: any) => {
+            if (typeof value === "string") {
+              return decodeTextFieldValue(value);
+            }
+
+            if (value && typeof value === "object" && !Array.isArray(value)) {
+              const nextValue = { ...value } as Record<string, any>;
+              const textLikeKeys = [
+                "text",
+                "label",
+                "title",
+                "description",
+                "value",
+              ];
+
+              textLikeKeys.forEach((key) => {
+                if (typeof nextValue[key] === "string") {
+                  nextValue[key] = decodeTextFieldValue(nextValue[key]);
+                }
+              });
+
+              return nextValue;
+            }
+
+            return value;
+          };
+
           // Helper para inicializar el valor de un campo según su tipo
           const initializeFieldValue = (field: Field) => {
             if (field.type === "list") {
-              // Para campos de tipo list, inicializar como array vacío
-              return field.value || [];
+              // Para list, mantener ítems existentes pero decodificando texto serializado
+              return Array.isArray(field.value)
+                ? field.value.map(decodeListItemValue)
+                : [];
             }
-            if (field.type === "text" || field.type === "text_with_icon") {
-              // Para campos de texto, inicializar como string vacío
-              return field.value || "";
+            if (field.type === "text") {
+              // Para texto plano, decodificar valores URL-encoded heredados de plantilla
+              return decodeTextFieldValue(field.value || "");
             }
-            return field.value || null;
+            if (field.type === "text_with_icon") {
+              // text_with_icon puede venir como string u objeto; decodificar ambos formatos
+              return decodeTextWithIconValue(field.value);
+            }
+            return field.value ?? null;
           };
 
           const initializeSectionAsBulletin = (

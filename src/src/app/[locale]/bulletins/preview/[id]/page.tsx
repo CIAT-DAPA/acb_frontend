@@ -31,19 +31,73 @@ const decodeTextFieldValue = (value: any): any => {
   return value;
 };
 
+const decodeObjectTextValues = (value: any): any => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return value;
+  }
+
+  const nextValue = { ...value } as Record<string, any>;
+  const textLikeKeys = ["text", "label", "title", "description", "value"];
+
+  textLikeKeys.forEach((key) => {
+    if (typeof nextValue[key] === "string") {
+      nextValue[key] = decodeTextFieldValue(nextValue[key]);
+    }
+  });
+
+  return nextValue;
+};
+
 // Función para decodificar todos los campos de texto en una estructura
 const decodeFields = (fields: Field[]) => {
   fields.forEach((field) => {
-    if (field.type === "text" || field.type === "text_with_icon") {
+    if (field.type === "text") {
       field.value = decodeTextFieldValue(field.value);
+    } else if (field.type === "text_with_icon") {
+      field.value =
+        typeof field.value === "string"
+          ? decodeTextFieldValue(field.value)
+          : decodeObjectTextValues(field.value);
     } else if (field.type === "list" && Array.isArray(field.value)) {
       field.value = field.value.map((item: any) => {
         if (typeof item === "string") {
           return decodeTextFieldValue(item);
         }
-        return item;
+        return decodeObjectTextValues(item);
       });
     }
+  });
+};
+
+const decodeSectionFields = (section: Section) => {
+  if (section.header_config?.fields) {
+    decodeFields(section.header_config.fields);
+  }
+
+  if (section.footer_config?.fields) {
+    decodeFields(section.footer_config.fields);
+  }
+
+  section.blocks?.forEach((block: Block) => {
+    if (block.fields) {
+      decodeFields(block.fields);
+    }
+  });
+
+  (section as any).repeatable_pages?.forEach((page: any) => {
+    if (page.header_config?.fields) {
+      decodeFields(page.header_config.fields);
+    }
+
+    if (page.footer_config?.fields) {
+      decodeFields(page.footer_config.fields);
+    }
+
+    page.blocks?.forEach((block: Block) => {
+      if (block.fields) {
+        decodeFields(block.fields);
+      }
+    });
   });
 };
 import { ScrollView } from "@/app/[locale]/components/ScrollView";
@@ -233,11 +287,7 @@ export default function TemplatePreviewPage() {
         }
         templateDataFormatted.version.content.sections?.forEach(
           (section: Section) => {
-            section.blocks?.forEach((block: Block) => {
-              if (block.fields) {
-                decodeFields(block.fields);
-              }
-            });
+            decodeSectionFields(section);
           },
         );
 
