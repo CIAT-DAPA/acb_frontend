@@ -353,7 +353,9 @@
       "noFields": "Esta sección no tiene campos configurables",
       "headerFields": "Campos del Encabezado",
       "footerFields": "Campos del Pie de Página",
-      "notFound": "Sección no encontrada"
+      "notFound": "Sección no encontrada",
+      "addNewPage": "Nueva página",
+      "deleteCurrentPage": "Eliminar página actual"
     },
     "fillData": {
       "sectionProgress": "Sección {current} de {total}",
@@ -381,7 +383,10 @@
       "item": "Item {index}",
       "removeItem": "Eliminar item",
       "maxCharacters": "Máximo {max} caracteres",
-      "noItems": "No hay items. Haz clic en \"Agregar item\" para comenzar."
+      "noItems": "No hay items. Haz clic en \"Agregar item\" para comenzar.",
+      "icons": "Iconos",
+      "changeIcon": "Cambiar icono",
+      "selectIcon": "Seleccionar icono"
     },
     "climateField": {
       "noParameters": "No hay parámetros climáticos configurados"

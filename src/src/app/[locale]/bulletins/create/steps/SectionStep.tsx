@@ -2,7 +2,12 @@
 
 import React from "react";
 import { useTranslations } from "next-intl";
-import { CreateBulletinData, BulletinComment } from "../../../../../types/bulletin";
+import {
+  CreateBulletinData,
+  BulletinComment,
+  BulletinSection,
+  BulletinSectionPage,
+} from "../../../../../types/bulletin";
 import { Field } from "../../../../../types/template";
 import {
   ListFieldEditor,
@@ -30,7 +35,7 @@ interface SectionStepProps {
 
 // Helper para normalizar valores de date_range
 const normalizeDateRangeValue = (
-  value: any
+  value: any,
 ): {
   start_date: string;
   end_date: string;
@@ -52,7 +57,7 @@ const normalizeDateRangeValue = (
 const normalizeCardValue = (value: any): string[] => {
   if (!Array.isArray(value)) return [];
   return value.map((item: any) =>
-    typeof item === "string" ? item : item.cardId || item._id || item
+    typeof item === "string" ? item : item.cardId || item._id || item,
   );
 };
 
@@ -72,11 +77,241 @@ export function SectionStep({
     return <div className="text-center py-8 text-red-500">{t("notFound")}</div>;
   }
 
+  const isRepeatableSection = Boolean(
+    section.repeatable && section.repeatable_pages?.length,
+  );
+  const repeatablePages = section.repeatable_pages || [];
+  const resolvedPageIndex = isRepeatableSection
+    ? Math.min(
+        Math.max(currentPageIndex ?? 0, 0),
+        Math.max(repeatablePages.length - 1, 0),
+      )
+    : 0;
+  const activeRepeatablePage = isRepeatableSection
+    ? repeatablePages[resolvedPageIndex]
+    : undefined;
+
+  const blankFieldValue = (field: Field): any => {
+    switch (field.type) {
+      case "list":
+      case "card":
+        return [];
+      case "climate_data_puntual":
+      case "moon_calendar":
+        return {};
+      case "date_range":
+        return { start_date: "", end_date: "" };
+      case "number":
+        return null;
+      default:
+        return "";
+    }
+  };
+
+  const cloneFieldsWithBlankValues = (fields: Field[] | undefined) =>
+    (fields || []).map((field) => ({
+      ...field,
+      field_id: crypto.randomUUID(),
+      value: blankFieldValue(field),
+    }));
+
+  const cloneFieldsForRepeatablePage = (fields: Field[] | undefined) =>
+    (fields || []).map((field) => {
+      const clonedField = structuredClone(field);
+      clonedField.field_id = crypto.randomUUID();
+      if (clonedField.form) {
+        clonedField.value = blankFieldValue(clonedField);
+      }
+      return clonedField;
+    });
+
+  const buildRepeatablePageFromSource = (
+    sourcePage: BulletinSectionPage,
+    pageTitle: string,
+  ): BulletinSectionPage => ({
+    page_id: crypto.randomUUID(),
+    page_title: pageTitle,
+    header_config: sourcePage.header_config
+      ? {
+          ...sourcePage.header_config,
+          fields: cloneFieldsForRepeatablePage(sourcePage.header_config.fields),
+        }
+      : undefined,
+    footer_config: sourcePage.footer_config
+      ? {
+          ...sourcePage.footer_config,
+          fields: cloneFieldsForRepeatablePage(sourcePage.footer_config.fields),
+        }
+      : undefined,
+    blocks: (sourcePage.blocks || []).map((block) => ({
+      ...block,
+      block_id: crypto.randomUUID(),
+      fields: cloneFieldsForRepeatablePage(block.fields),
+    })),
+  });
+
+  const syncSectionFromRepeatablePage = (
+    nextData: CreateBulletinData,
+    page: BulletinSectionPage,
+    pageIndex: number,
+  ) => {
+    const nextSection = nextData.version.data.sections[
+      sectionIndex
+    ] as BulletinSection;
+    nextSection.page_title = page.page_title;
+    nextSection.header_config = page.header_config
+      ? structuredClone(page.header_config)
+      : undefined;
+    nextSection.footer_config = page.footer_config
+      ? structuredClone(page.footer_config)
+      : undefined;
+    nextSection.blocks = structuredClone(page.blocks);
+    nextSection.active_page_index = pageIndex;
+  };
+
+  const updateRepeatablePage = (
+    pageIndex: number,
+    updater: (page: BulletinSectionPage) => BulletinSectionPage,
+  ) => {
+    onUpdate((prev) => {
+      const next = structuredClone(prev);
+      const nextSection = next.version.data.sections[
+        sectionIndex
+      ] as BulletinSection;
+      const currentPage = nextSection.repeatable_pages?.[pageIndex];
+
+      if (!nextSection.repeatable_pages || !currentPage) {
+        return prev;
+      }
+
+      const updatedPage = updater(structuredClone(currentPage));
+      nextSection.repeatable_pages[pageIndex] = updatedPage;
+      syncSectionFromRepeatablePage(next, updatedPage, pageIndex);
+      return next;
+    });
+  };
+
+  const handleSelectPage = (pageIndex: number) => {
+    if (!isRepeatableSection || pageIndex === resolvedPageIndex) {
+      return;
+    }
+
+    onPageChange?.(pageIndex);
+    onUpdate((prev) => {
+      const next = structuredClone(prev);
+      const nextSection = next.version.data.sections[
+        sectionIndex
+      ] as BulletinSection;
+      const targetPage = nextSection.repeatable_pages?.[pageIndex];
+
+      if (!nextSection.repeatable_pages || !targetPage) {
+        return prev;
+      }
+
+      syncSectionFromRepeatablePage(next, targetPage, pageIndex);
+      return next;
+    });
+  };
+
+  const handleAddPage = () => {
+    if (!isRepeatableSection) {
+      return;
+    }
+
+    const nextPageIndex = repeatablePages.length;
+    const sourcePage = activeRepeatablePage ?? repeatablePages[0];
+
+    if (!sourcePage) {
+      return;
+    }
+
+    const newPage = buildRepeatablePageFromSource(
+      sourcePage,
+      `Página ${nextPageIndex + 1}`,
+    );
+
+    onUpdate((prev) => {
+      const next = structuredClone(prev);
+      const nextSection = next.version.data.sections[
+        sectionIndex
+      ] as BulletinSection;
+
+      if (!nextSection.repeatable_pages) {
+        nextSection.repeatable_pages = [];
+      }
+
+      nextSection.repeatable_pages.push(newPage);
+      syncSectionFromRepeatablePage(next, newPage, nextPageIndex);
+      return next;
+    });
+
+    onPageChange?.(nextPageIndex);
+  };
+
+  const handleDeletePage = () => {
+    if (!isRepeatableSection || repeatablePages.length <= 1) {
+      return;
+    }
+
+    const pageIndexToDelete = resolvedPageIndex;
+    const nextPageIndex = Math.max(0, resolvedPageIndex - 1);
+
+    onUpdate((prev) => {
+      const next = structuredClone(prev);
+      const nextSection = next.version.data.sections[
+        sectionIndex
+      ] as BulletinSection;
+
+      if (
+        !nextSection.repeatable_pages ||
+        nextSection.repeatable_pages.length <= 1
+      ) {
+        return prev;
+      }
+
+      nextSection.repeatable_pages.splice(pageIndexToDelete, 1);
+      const targetPage = nextSection.repeatable_pages[nextPageIndex];
+
+      if (!targetPage) {
+        return prev;
+      }
+
+      syncSectionFromRepeatablePage(next, targetPage, nextPageIndex);
+      return next;
+    });
+
+    onPageChange?.(nextPageIndex);
+  };
+
+  const sectionToRender: BulletinSection =
+    isRepeatableSection && activeRepeatablePage
+      ? {
+          ...section,
+          header_config:
+            activeRepeatablePage.header_config || section.header_config,
+          footer_config:
+            activeRepeatablePage.footer_config || section.footer_config,
+          blocks: activeRepeatablePage.blocks,
+        }
+      : section;
+
   const handleFieldChange = (
     blockIndex: number,
     fieldIndex: number,
-    value: any
+    value: any,
   ) => {
+    if (isRepeatableSection) {
+      updateRepeatablePage(resolvedPageIndex, (page) => {
+        const nextPage = structuredClone(page);
+        nextPage.blocks[blockIndex].fields[fieldIndex] = {
+          ...nextPage.blocks[blockIndex].fields[fieldIndex],
+          value,
+        };
+        return nextPage;
+      });
+      return;
+    }
+
     onUpdate((prev) => ({
       ...prev,
       version: {
@@ -92,13 +327,13 @@ export function SectionStep({
                       ? {
                           ...block,
                           fields: block.fields.map((field, fIdx) =>
-                            fIdx === fieldIndex ? { ...field, value } : field
+                            fIdx === fieldIndex ? { ...field, value } : field,
                           ),
                         }
-                      : block
+                      : block,
                   ),
                 }
-              : sec
+              : sec,
           ),
         },
       },
@@ -106,6 +341,20 @@ export function SectionStep({
   };
 
   const handleHeaderFieldChange = (fieldIndex: number, value: any) => {
+    if (isRepeatableSection) {
+      updateRepeatablePage(resolvedPageIndex, (page) => {
+        const nextPage = structuredClone(page);
+        if (nextPage.header_config?.fields?.[fieldIndex]) {
+          nextPage.header_config.fields[fieldIndex] = {
+            ...nextPage.header_config.fields[fieldIndex],
+            value,
+          };
+        }
+        return nextPage;
+      });
+      return;
+    }
+
     onUpdate((prev) => ({
       ...prev,
       version: {
@@ -120,12 +369,12 @@ export function SectionStep({
                     ? {
                         ...sec.header_config,
                         fields: sec.header_config.fields.map((field, fIdx) =>
-                          fIdx === fieldIndex ? { ...field, value } : field
+                          fIdx === fieldIndex ? { ...field, value } : field,
                         ),
                       }
                     : undefined,
                 }
-              : sec
+              : sec,
           ),
         },
       },
@@ -133,6 +382,20 @@ export function SectionStep({
   };
 
   const handleFooterFieldChange = (fieldIndex: number, value: any) => {
+    if (isRepeatableSection) {
+      updateRepeatablePage(resolvedPageIndex, (page) => {
+        const nextPage = structuredClone(page);
+        if (nextPage.footer_config?.fields?.[fieldIndex]) {
+          nextPage.footer_config.fields[fieldIndex] = {
+            ...nextPage.footer_config.fields[fieldIndex],
+            value,
+          };
+        }
+        return nextPage;
+      });
+      return;
+    }
+
     onUpdate((prev) => ({
       ...prev,
       version: {
@@ -147,12 +410,12 @@ export function SectionStep({
                     ? {
                         ...sec.footer_config,
                         fields: sec.footer_config.fields.map((field, fIdx) =>
-                          fIdx === fieldIndex ? { ...field, value } : field
+                          fIdx === fieldIndex ? { ...field, value } : field,
                         ),
                       }
                     : undefined,
                 }
-              : sec
+              : sec,
           ),
         },
       },
@@ -170,7 +433,10 @@ export function SectionStep({
           Comentarios
         </div>
         {comments.map((comment, idx) => (
-          <div key={idx} className="mb-2 last:mb-0 border-b border-yellow-200 last:border-0 pb-2 last:pb-0">
+          <div
+            key={idx}
+            className="mb-2 last:mb-0 border-b border-yellow-200 last:border-0 pb-2 last:pb-0"
+          >
             <div className="flex justify-between items-start mb-0.5">
               <span className="font-semibold text-yellow-900 text-xs">
                 {comment.author_first_name || "Reviewer"}
@@ -179,18 +445,22 @@ export function SectionStep({
                 {new Date(comment.created_at).toLocaleDateString()}
               </span>
             </div>
-            <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-wrap">{comment.text}</p>
+            <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-wrap">
+              {comment.text}
+            </p>
             {comment.replies && comment.replies.length > 0 && (
-                <div className="ml-3 mt-2 border-l-2 border-yellow-300 pl-3 bg-white/50 p-2 rounded-sm">
-                  {comment.replies.map((reply, rIdx) => (
-                    <div key={rIdx} className="mb-1 last:mb-0">
-                      <div className="flex gap-1 items-baseline">
-                         <span className="font-semibold text-xs text-yellow-800">{reply.author_first_name}: </span>
-                         <p className="text-xs text-gray-600">{reply.text}</p>
-                      </div>
+              <div className="ml-3 mt-2 border-l-2 border-yellow-300 pl-3 bg-white/50 p-2 rounded-sm">
+                {comment.replies.map((reply, rIdx) => (
+                  <div key={rIdx} className="mb-1 last:mb-0">
+                    <div className="flex gap-1 items-baseline">
+                      <span className="font-semibold text-xs text-yellow-800">
+                        {reply.author_first_name}:{" "}
+                      </span>
+                      <p className="text-xs text-gray-600">{reply.text}</p>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         ))}
@@ -334,23 +604,23 @@ export function SectionStep({
 
   const renderHeaderField = (field: Field, fieldIndex: number) => {
     return renderFieldByType(field, (value) =>
-      handleHeaderFieldChange(fieldIndex, value)
+      handleHeaderFieldChange(fieldIndex, value),
     );
   };
 
   const renderFooterField = (field: Field, fieldIndex: number) => {
     return renderFieldByType(field, (value) =>
-      handleFooterFieldChange(fieldIndex, value)
+      handleFooterFieldChange(fieldIndex, value),
     );
   };
 
   const renderField = (
     field: Field,
     blockIndex: number,
-    fieldIndex: number
+    fieldIndex: number,
   ) => {
     return renderFieldByType(field, (value) =>
-      handleFieldChange(blockIndex, fieldIndex, value)
+      handleFieldChange(blockIndex, fieldIndex, value),
     );
   };
 
@@ -363,15 +633,35 @@ export function SectionStep({
         <p className="text-sm text-[#606c38] mb-4">{t("description")}</p>
       </div>
 
+      {isRepeatableSection && (
+        <div className="flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={handleDeletePage}
+            disabled={repeatablePages.length <= 1}
+            className="px-3 py-3 text-sm bg-red-600 text-white rounded hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {t("deleteCurrentPage")}
+          </button>
+          <button
+            type="button"
+            onClick={handleAddPage}
+            className="px-3 py-3 text-sm bg-[#283618] text-white rounded hover:bg-[#606c38] transition-colors"
+          >
+            + {t("addNewPage")}
+          </button>
+        </div>
+      )}
+
       {/* Campos del header de la sección con form=true */}
-      {section.header_config?.fields &&
-        section.header_config.fields.some((field) => field.form) && (
+      {sectionToRender.header_config?.fields &&
+        sectionToRender.header_config.fields.some((field) => field.form) && (
           <div className="border-t pt-4">
             <h4 className="text-md font-semibold text-[#283618] mb-4">
               {t("headerFields", { defaultValue: "Header Fields" })}
             </h4>
             <div className="space-y-4">
-              {section.header_config.fields.map((field, fieldIndex) => {
+              {sectionToRender.header_config.fields.map((field, fieldIndex) => {
                 if (!field.form) {
                   return null;
                 }
@@ -395,7 +685,7 @@ export function SectionStep({
           </div>
         )}
 
-      {section.blocks.map((block, blockIndex) => {
+      {sectionToRender.blocks.map((block, blockIndex) => {
         // Filtrar solo los campos que tienen form=true
         const formFields = block.fields.filter((field) => field.form);
 
@@ -435,14 +725,14 @@ export function SectionStep({
       })}
 
       {/* Campos del footer de la sección con form=true */}
-      {section.footer_config?.fields &&
-        section.footer_config.fields.some((field) => field.form) && (
+      {sectionToRender.footer_config?.fields &&
+        sectionToRender.footer_config.fields.some((field) => field.form) && (
           <div className="border-t pt-4 mt-6">
             <h4 className="text-md font-semibold text-[#283618] mb-4">
               {t("footerFields")}
             </h4>
             <div className="space-y-4">
-              {section.footer_config.fields.map((field, fieldIndex) => {
+              {sectionToRender.footer_config.fields.map((field, fieldIndex) => {
                 if (!field.form) {
                   return null;
                 }
@@ -466,8 +756,8 @@ export function SectionStep({
           </div>
         )}
 
-      {section.blocks.every(
-        (block) => !block.fields.some((field) => field.form)
+      {sectionToRender.blocks.every(
+        (block) => !block.fields.some((field) => field.form),
       ) && (
         <div className="text-center py-8 text-[#606c38]">{t("noFields")}</div>
       )}

@@ -24,6 +24,7 @@ import {
   ClimateDataField,
 } from "./index";
 import { btnOutlineSecondary } from "@/app/[locale]/components/ui";
+import { VisualResourceSelector } from "../../../../templates/create/components/VisualResourceSelector";
 
 interface ListFieldEditorProps {
   field: Field;
@@ -39,6 +40,11 @@ export function ListFieldEditor({
   const t = useTranslations("CreateBulletin.listField");
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set([0]));
   const [showHelp, setShowHelp] = useState(false);
+  const [showIconSelector, setShowIconSelector] = useState(false);
+  const [editingIconTarget, setEditingIconTarget] = useState<{
+    itemIndex: number;
+    fieldId: string;
+  } | null>(null);
 
   // Obtener el esquema de items de la configuración del campo
   const itemSchema =
@@ -64,6 +70,9 @@ export function ListFieldEditor({
       switch (fieldDef.type) {
         case "climate_data_puntual":
           newItem[fieldId] = {};
+          break;
+        case "text_with_icon":
+          newItem[fieldId] = { text: "", icon: "" };
           break;
         case "number":
           newItem[fieldId] = null;
@@ -354,6 +363,8 @@ export function ListFieldEditor({
       switch (type) {
         case "climate_data_puntual":
           return {};
+        case "text_with_icon":
+          return { text: "", icon: "" };
         case "number":
           return null;
         case "date":
@@ -380,6 +391,75 @@ export function ListFieldEditor({
             maxLength={fieldDef.validation?.max_length}
           />
         );
+
+      case "text_with_icon": {
+        const itemValue =
+          typeof fieldValue === "string"
+            ? { text: fieldValue, icon: "" }
+            : fieldValue || {};
+        const textValue = itemValue.text || "";
+        const selectedIcon = itemValue.icon || "";
+
+        const handleTextChange = (text: string) => {
+          handleChange({ text, icon: selectedIcon });
+        };
+
+        const handleOpenIconSelector = () => {
+          setEditingIconTarget({ itemIndex, fieldId });
+          setShowIconSelector(true);
+        };
+
+        return (
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                {fieldDef.label || fieldId}
+              </label>
+              <input
+                type="text"
+                value={textValue}
+                onChange={(e) => handleTextChange(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#283618] text-sm"
+                placeholder={fieldDef.description || fieldDef.label}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                {t("icons")}
+              </label>
+              <div className="flex items-center space-x-2">
+                {selectedIcon ? (
+                  <div className="flex items-center space-x-2 flex-1">
+                    <div className="relative w-12 h-12 border border-gray-300 rounded-md overflow-hidden bg-gray-50 flex items-center justify-center">
+                      <img
+                        src={selectedIcon}
+                        alt="Selected icon"
+                        className="w-8 h-8 object-contain"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleOpenIconSelector}
+                      className={`${btnOutlineSecondary} whitespace-nowrap`}
+                    >
+                      {t("changeIcon")}
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleOpenIconSelector}
+                    className={`${btnOutlineSecondary} w-full`}
+                  >
+                    {t("selectIcon")}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      }
 
       case "number":
         return (
@@ -614,6 +694,43 @@ export function ListFieldEditor({
           <p className="text-sm">{t("noItems")}</p>
         </div>
       )}
+
+      <VisualResourceSelector
+        isOpen={showIconSelector}
+        onClose={() => {
+          setShowIconSelector(false);
+          setEditingIconTarget(null);
+        }}
+        onSelect={(iconUrl) => {
+          if (!editingIconTarget) return;
+
+          const { itemIndex, fieldId } = editingIconTarget;
+          const currentItem = value[itemIndex] || {};
+          const currentFieldValue = currentItem[fieldId];
+          const normalizedFieldValue =
+            typeof currentFieldValue === "string"
+              ? { text: currentFieldValue, icon: "" }
+              : currentFieldValue || { text: "", icon: "" };
+
+          handleFieldChange(itemIndex, fieldId, {
+            text: normalizedFieldValue.text || "",
+            icon: iconUrl,
+          });
+        }}
+        title="Seleccionar icono"
+        resourceType="icon"
+        selectedUrl={
+          editingIconTarget
+            ? (() => {
+                const { itemIndex, fieldId } = editingIconTarget;
+                const currentItem = value[itemIndex] || {};
+                const currentFieldValue = currentItem[fieldId];
+                if (typeof currentFieldValue === "string") return "";
+                return currentFieldValue?.icon || "";
+              })()
+            : undefined
+        }
+      />
     </div>
   );
 }

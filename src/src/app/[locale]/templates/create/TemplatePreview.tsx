@@ -3474,6 +3474,32 @@ export function TemplatePreview({
       return { totalPages: 1, paginatedSections: [] };
     }
 
+    const repeatablePages = (section as any).repeatable_pages as
+      | Array<{
+          page_id?: string;
+          page_title?: string;
+          header_config?: Section["header_config"];
+          footer_config?: Section["footer_config"];
+          blocks: Section["blocks"];
+        }>
+      | undefined;
+
+    if (Array.isArray(repeatablePages) && repeatablePages.length > 0) {
+      const paginatedSections = repeatablePages.map((page, pageIndex) => ({
+        ...JSON.parse(JSON.stringify(section)),
+        section_id: page.page_id || `${section.section_id || "section"}-${pageIndex}`,
+        display_name: page.page_title || section.display_name,
+        header_config: page.header_config || section.header_config,
+        footer_config: page.footer_config || section.footer_config,
+        blocks: page.blocks || section.blocks,
+      }));
+
+      return {
+        totalPages: paginatedSections.length,
+        paginatedSections,
+      };
+    }
+
     // Buscar si hay algún field de tipo list o card que requiera paginación
     // Iteramos sobre TODOS los campos para encontrar el que requiera más páginas
     let maxPagesFound = 1;
