@@ -34,16 +34,28 @@ export interface BulletinHeaderFooterConfig {
   fields: Field[]; // Campos con valores
 }
 
+export interface BulletinSectionPage {
+  page_id: string;
+  page_title: string;
+  header_config?: BulletinHeaderFooterConfig;
+  footer_config?: BulletinHeaderFooterConfig;
+  blocks: BulletinBlock[];
+}
+
 export interface BulletinSection {
   section_id: string;
   display_name: string;
+  page_title?: string;
+  active_page_index?: number;
   background_url: string[];
   order: number;
   style_config?: StyleConfig;
   icon_url: string;
+  repeatable?: boolean;
   header_config?: BulletinHeaderFooterConfig; // Header específico de la sección con valores
   footer_config?: BulletinHeaderFooterConfig; // Footer específico de la sección con valores
   blocks: BulletinBlock[];
+  repeatable_pages?: BulletinSectionPage[];
 }
 
 export interface BulletinVersionData {

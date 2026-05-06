@@ -1229,6 +1229,20 @@ export const RightPanel: React.FC<RightPanelProps> = ({
               {t("fieldEditor.editor.visibility.print")}
             </label>
 
+            <label
+              className={`${ui.imageCardClass} cursor-pointer hover:bg-gray-50 flex items-center gap-2`}
+            >
+              <input
+                type="checkbox"
+                checked={Boolean((currentObject as Section)?.repeatable)}
+                onChange={(e) =>
+                  updateSection({ repeatable: e.target.checked })
+                }
+                className={ui.checkboxClass}
+              />
+              Sección repetible
+            </label>
+
             <div>
               <button
                 onClick={handleAddBlock}
