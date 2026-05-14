@@ -828,6 +828,14 @@ export default function FormBulletinPage({
     [existingSlugNames, locale, showToast, t],
   );
 
+    // Si ya hay un template seleccionado (p. ej. navegando desde otro flujo),
+    // asegurarnos de cargar su versión más reciente cuando estemos en modo creación.
+    useEffect(() => {
+      if (!isEditMode && creationState.selectedTemplateId) {
+        loadTemplateVersion(creationState.selectedTemplateId);
+      }
+    }, [creationState.selectedTemplateId, isEditMode, loadTemplateVersion]);
+
   // Función para actualizar datos del boletín
   const updateBulletinData = useCallback(
     (updater: (prev: CreateBulletinData) => CreateBulletinData) => {
@@ -1899,6 +1907,8 @@ export default function FormBulletinPage({
                 >
                   <TemplatePreview
                     data={previewData}
+                    reviewMode={true}
+                    hidePagination={true}
                     moreInfo={true}
                     description={true}
                     selectedSectionIndex={previewSectionIndex}
