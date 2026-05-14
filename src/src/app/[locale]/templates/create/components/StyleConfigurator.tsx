@@ -68,6 +68,7 @@ export interface StyleConfiguratorProps {
     fontSize?: boolean;
     fontWeight?: boolean;
     lineHeight?: boolean;
+    wordSpace?: boolean;
     fontStyle?: boolean;
     textDecoration?: boolean;
     textAlign?: boolean;
@@ -635,6 +636,24 @@ export function StyleConfigurator({
           </div>
         )}
 
+        {enabledFields.wordSpace && (
+          <div>
+            <label className={LABEL_CLASS}>{getLabel("wordSpace")}</label>
+            <input
+              type="text"
+              value={styleConfig.word_space || ""}
+              onChange={(e) => onStyleChange({ word_space: e.target.value })}
+              className={INPUT_BASE_CLASS}
+              placeholder="0.05em, 2px, normal"
+            />
+            {inheritedStyles?.word_space && (
+              <p className={INHERITED_TEXT_CLASS}>
+                {t("inherited")}: {inheritedStyles.word_space}
+              </p>
+            )}
+          </div>
+        )}
+
         {enabledFields.fontStyle &&
           renderSelectField(
             "font_style",
@@ -929,6 +948,7 @@ export function StyleConfigurator({
               textAlign:
                 (styleConfig.text_align as "left" | "center" | "right") ||
                 "left",
+              wordSpacing: styleConfig.word_space || undefined,
               padding: styleConfig.padding || "24px",
               ...(styleConfig.border_width && {
                 border: `${styleConfig.border_width} solid ${

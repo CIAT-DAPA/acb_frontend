@@ -1915,6 +1915,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                     font: true,
                     fontSize: true,
                     fontWeight: true,
+                    wordSpace: true,
                     primaryColor: true,
                     secondaryColor: true,
                     backgroundColor: true,
