@@ -1232,6 +1232,7 @@ export function TemplatePreview({
   const headerConfig = data.version.content.header_config;
   const footerConfig = data.version.content.footer_config;
   const sections = data.version.content.sections;
+
   const resolvedSectionOrder = useMemo(() => {
     const naturalOrder = sections.map((_, index) => index);
 
