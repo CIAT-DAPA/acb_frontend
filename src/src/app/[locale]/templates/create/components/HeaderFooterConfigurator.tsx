@@ -184,6 +184,7 @@ export function HeaderFooterConfigurator({
             backgroundImage: true,
             fontSize: true,
             textAlign: true,
+            wordSpace: true,
             borderColor: true,
             borderWidth: true,
             borderRadius: true,

@@ -26,6 +26,7 @@ export function combineStyles(
       combined.icon_use_original_color = parentStyle.icon_use_original_color;
     if (parentStyle.font_weight) combined.font_weight = parentStyle.font_weight;
     if (parentStyle.line_height) combined.line_height = parentStyle.line_height;
+    if (parentStyle.word_space) combined.word_space = parentStyle.word_space;
     if (parentStyle.font_style) combined.font_style = parentStyle.font_style;
     if (parentStyle.text_decoration)
       combined.text_decoration = parentStyle.text_decoration;
@@ -62,6 +63,7 @@ export function combineStyles(
       combined.icon_use_original_color = childStyle.icon_use_original_color;
     if (childStyle.font_weight) combined.font_weight = childStyle.font_weight;
     if (childStyle.line_height) combined.line_height = childStyle.line_height;
+    if (childStyle.word_space) combined.word_space = childStyle.word_space;
     if (childStyle.font_style) combined.font_style = childStyle.font_style;
     if (childStyle.text_decoration)
       combined.text_decoration = childStyle.text_decoration;
@@ -168,6 +170,9 @@ export function inheritStylesFromContainer(
   }
   if (containerStyle.line_height) {
     inheritedStyles.line_height = containerStyle.line_height;
+  }
+  if (containerStyle.word_space) {
+    inheritedStyles.word_space = containerStyle.word_space;
   }
   if (containerStyle.font_style) {
     inheritedStyles.font_style = containerStyle.font_style;
@@ -289,6 +294,9 @@ export function getInheritableStyles(
   }
   if (containerStyle.line_height) {
     inheritable.line_height = containerStyle.line_height;
+  }
+  if (containerStyle.word_space) {
+    inheritable.word_space = containerStyle.word_space;
   }
   if (containerStyle.font_style) {
     inheritable.font_style = containerStyle.font_style;
