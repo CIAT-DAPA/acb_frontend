@@ -490,6 +490,7 @@ export function FieldEditor({
               currentField.type === "select_with_icons",
             fontWeight: true,
             lineHeight: true,
+            wordSpace: true,
             fontStyle: true,
             textDecoration: true,
             textAlign: true,

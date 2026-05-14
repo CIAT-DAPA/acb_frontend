@@ -25,7 +25,7 @@ interface GeneralConfigStepProps {
   data: CreateTemplateData;
   errors: Record<string, string[]>;
   onDataChange: (
-    updater: (prevData: CreateTemplateData) => CreateTemplateData
+    updater: (prevData: CreateTemplateData) => CreateTemplateData,
   ) => void;
   onErrorsChange: (errors: Record<string, string[]>) => void;
 }
@@ -54,7 +54,7 @@ export function GeneralConfigStep({
       ([key, dims]) =>
         key !== "custom" &&
         dims.width === currentWidth &&
-        dims.height === currentHeight
+        dims.height === currentHeight,
     );
 
     if (matchingPreset) {
@@ -80,7 +80,7 @@ export function GeneralConfigStep({
         },
       }));
     },
-    [onDataChange]
+    [onDataChange],
   );
 
   const handleCommitMessageChange = useCallback(
@@ -93,7 +93,7 @@ export function GeneralConfigStep({
         },
       }));
     },
-    [onDataChange]
+    [onDataChange],
   );
 
   const handlePresetChange = useCallback(
@@ -108,7 +108,7 @@ export function GeneralConfigStep({
         });
       }
     },
-    [updateStyleConfig]
+    [updateStyleConfig],
   );
 
   const handleManualDimensionChange = useCallback(
@@ -120,7 +120,7 @@ export function GeneralConfigStep({
       // Al cambiar manualmente, cambiar a custom
       setSelectedPreset("custom");
     },
-    [updateStyleConfig]
+    [updateStyleConfig],
   );
 
   const currentStyleConfig = data.version.content.style_config || {};
@@ -207,7 +207,7 @@ export function GeneralConfigStep({
                 onChange={(e) =>
                   handleManualDimensionChange(
                     "width",
-                    parseInt(e.target.value) || 638
+                    parseInt(e.target.value) || 638,
                   )
                 }
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
@@ -231,7 +231,7 @@ export function GeneralConfigStep({
                 onChange={(e) =>
                   handleManualDimensionChange(
                     "height",
-                    parseInt(e.target.value) || 366
+                    parseInt(e.target.value) || 366,
                   )
                 }
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
@@ -258,6 +258,7 @@ export function GeneralConfigStep({
             fontSize: true,
             fontWeight: true,
             lineHeight: true,
+            wordSpace: true,
             textAlign: true,
             // Deshabilitamos bulletinWidth y bulletinHeight aquí
             bulletinWidth: false,

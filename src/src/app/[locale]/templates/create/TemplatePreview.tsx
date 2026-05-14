@@ -1274,6 +1274,7 @@ export function TemplatePreview({
       styleConfig?.font_weight,
     ),
     lineHeight: styleConfig?.line_height || "normal",
+    wordSpacing: styleConfig?.word_space || undefined,
     backgroundColor: styleConfig?.background_color || "#ffffff",
     textAlign:
       (styleConfig?.text_align as "left" | "center" | "right") || "left",
@@ -1407,6 +1408,7 @@ export function TemplatePreview({
       ),
       lineHeight:
         effectiveStyles.line_height || globalStyles.lineHeight || "normal",
+      wordSpacing: effectiveStyles.word_space || globalStyles.wordSpacing,
       fontStyle: effectiveStyles.font_style || "normal",
       textDecoration: effectiveStyles.text_decoration || "none",
       textAlign:
@@ -3061,16 +3063,17 @@ export function TemplatePreview({
               if (daysBetween === 1) {
                 imageIndex = reverse ? totalImages : 1;
               } else {
-              // Mapear al rango de imágenes disponibles, pero desde el final hacia el inicio en reversa
-              if (reverse) {
-                // Invertir: último día del mes debe tener la última imagen (más cercana a la fase)
-                const ratio = (daysBetween - 1 - position) / (daysBetween - 1);
-                imageIndex = Math.round(ratio * (totalImages - 1)) + 1;
-              } else {
-                const ratio = position / (daysBetween - 1);
-                imageIndex = Math.round(ratio * (totalImages - 1)) + 1;
-              }
-              imageIndex = Math.max(1, Math.min(imageIndex, totalImages));
+                // Mapear al rango de imágenes disponibles, pero desde el final hacia el inicio en reversa
+                if (reverse) {
+                  // Invertir: último día del mes debe tener la última imagen (más cercana a la fase)
+                  const ratio =
+                    (daysBetween - 1 - position) / (daysBetween - 1);
+                  imageIndex = Math.round(ratio * (totalImages - 1)) + 1;
+                } else {
+                  const ratio = position / (daysBetween - 1);
+                  imageIndex = Math.round(ratio * (totalImages - 1)) + 1;
+                }
+                imageIndex = Math.max(1, Math.min(imageIndex, totalImages));
               }
             } else {
               if (position === 0) {
@@ -3487,7 +3490,8 @@ export function TemplatePreview({
     if (Array.isArray(repeatablePages) && repeatablePages.length > 0) {
       const paginatedSections = repeatablePages.map((page, pageIndex) => ({
         ...JSON.parse(JSON.stringify(section)),
-        section_id: page.page_id || `${section.section_id || "section"}-${pageIndex}`,
+        section_id:
+          page.page_id || `${section.section_id || "section"}-${pageIndex}`,
         display_name: page.page_title || section.display_name,
         header_config: page.header_config || section.header_config,
         footer_config: page.footer_config || section.footer_config,

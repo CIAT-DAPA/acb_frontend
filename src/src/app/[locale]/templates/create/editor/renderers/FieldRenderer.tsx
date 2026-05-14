@@ -109,6 +109,7 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
       effectiveStyles.font_weight,
     ) as any,
     lineHeight: effectiveStyles.line_height || "normal",
+    wordSpacing: effectiveStyles.word_space,
     fontStyle: effectiveStyles.font_style || "normal",
     textDecoration: effectiveStyles.text_decoration || "none",
     textAlign: (effectiveStyles.text_align as any) || "left",
