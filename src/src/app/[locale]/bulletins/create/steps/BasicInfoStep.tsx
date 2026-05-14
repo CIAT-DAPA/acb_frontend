@@ -3,7 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { slugify, isValidSlug } from "../../../../../utils/slugify";
-import { CreateBulletinData, BulletinComment } from "../../../../../types/bulletin";
+import {
+  CreateBulletinData,
+  BulletinComment,
+} from "../../../../../types/bulletin";
 import { Field } from "../../../../../types/template";
 import { BulletinAPIService } from "../../../../../services/bulletinService";
 import {
@@ -96,7 +99,7 @@ export function BasicInfoStep({
               ...prev.version.data.header_config,
               fields: prev.version.data.header_config!.fields.map(
                 (field, idx) =>
-                  idx === fieldIndex ? { ...field, value } : field
+                  idx === fieldIndex ? { ...field, value } : field,
               ),
             },
           },
@@ -116,7 +119,7 @@ export function BasicInfoStep({
           footer_config: {
             ...prev.version.data.footer_config,
             fields: prev.version.data.footer_config!.fields.map((field, idx) =>
-              idx === fieldIndex ? { ...field, value } : field
+              idx === fieldIndex ? { ...field, value } : field,
             ),
           },
         },
@@ -134,7 +137,10 @@ export function BasicInfoStep({
           Comentarios
         </div>
         {comments.map((comment, idx) => (
-          <div key={idx} className="mb-2 last:mb-0 border-b border-yellow-200 last:border-0 pb-2 last:pb-0">
+          <div
+            key={idx}
+            className="mb-2 last:mb-0 border-b border-yellow-200 last:border-0 pb-2 last:pb-0"
+          >
             <div className="flex justify-between items-start mb-0.5">
               <span className="font-semibold text-yellow-900 text-xs">
                 {comment.author_first_name || "Reviewer"}
@@ -143,18 +149,22 @@ export function BasicInfoStep({
                 {new Date(comment.created_at).toLocaleDateString()}
               </span>
             </div>
-            <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-wrap">{comment.text}</p>
+            <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-wrap">
+              {comment.text}
+            </p>
             {comment.replies && comment.replies.length > 0 && (
-                <div className="ml-3 mt-2 border-l-2 border-yellow-300 pl-3 bg-white/50 p-2 rounded-sm">
-                  {comment.replies.map((reply, rIdx) => (
-                    <div key={rIdx} className="mb-1 last:mb-0">
-                      <div className="flex gap-1 items-baseline">
-                         <span className="font-semibold text-xs text-yellow-800">{reply.author_first_name}: </span>
-                         <p className="text-xs text-gray-600">{reply.text}</p>
-                      </div>
+              <div className="ml-3 mt-2 border-l-2 border-yellow-300 pl-3 bg-white/50 p-2 rounded-sm">
+                {comment.replies.map((reply, rIdx) => (
+                  <div key={rIdx} className="mb-1 last:mb-0">
+                    <div className="flex gap-1 items-baseline">
+                      <span className="font-semibold text-xs text-yellow-800">
+                        {reply.author_first_name}:{" "}
+                      </span>
+                      <p className="text-xs text-gray-600">{reply.text}</p>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         ))}
@@ -186,6 +196,7 @@ export function BasicInfoStep({
             field={field}
             value={fieldValue as string}
             onChange={(value) => handleChange(index, value)}
+            maxLength={field.validation?.max_length}
           />
         );
 
@@ -231,6 +242,7 @@ export function BasicInfoStep({
             field={field}
             value={fieldValue as string}
             onChange={(value) => handleChange(index, value)}
+            maxLength={field.validation?.max_length}
           />
         );
 
@@ -264,6 +276,7 @@ export function BasicInfoStep({
             onChange={(e) => handleChange(index, e.target.value)}
             placeholder={field.description || field.label}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#283618]"
+            maxLength={field.validation?.max_length}
           />
         );
     }
@@ -274,10 +287,10 @@ export function BasicInfoStep({
   const footerFields = bulletinData.version.data.footer_config?.fields || [];
 
   const editableHeaderFields = headerFields.filter(
-    (field) => field.form === true
+    (field) => field.form === true,
   );
   const editableFooterFields = footerFields.filter(
-    (field) => field.form === true
+    (field) => field.form === true,
   );
 
   const isValid = bulletinData.master.bulletin_name.trim().length > 0;
