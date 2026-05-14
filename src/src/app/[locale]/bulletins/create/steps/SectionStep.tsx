@@ -490,6 +490,7 @@ export function SectionStep({
             field={field}
             value={fieldValue as string}
             onChange={onChange}
+            maxLength={field.validation?.max_length}
           />
         );
 
@@ -553,6 +554,7 @@ export function SectionStep({
             field={field}
             value={fieldValue as string}
             onChange={onChange}
+            maxLength={field.validation?.max_length}
           />
         );
 
@@ -597,6 +599,7 @@ export function SectionStep({
             onChange={(e) => onChange(e.target.value)}
             placeholder={field.description || field.label}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#283618]"
+            maxLength={field.validation?.max_length}
           />
         );
     }
