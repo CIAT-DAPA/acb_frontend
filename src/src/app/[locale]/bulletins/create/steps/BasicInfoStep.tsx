@@ -15,6 +15,7 @@ import {
   TextWithIconInput,
   NumberInput,
   DateInput,
+  DateRangeInput,
   SelectInput,
   SearchableInput,
   ImageUploadInput,
@@ -36,6 +37,29 @@ export function BasicInfoStep({
 }: BasicInfoStepProps) {
   const t = useTranslations("CreateBulletin");
   const tHeader = useTranslations("CreateBulletin.headerFooter");
+
+  // Helper para normalizar valores de date_range
+  const normalizeDateRangeValue = (
+    value: any,
+  ): {
+    start_date: string;
+    end_date: string;
+    start_moon_phase?: string;
+    end_moon_phase?: string;
+  } => {
+    if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+      return {
+        start_date: value.start_date || "",
+        end_date: value.end_date || "",
+        start_moon_phase: value.start_moon_phase,
+        end_moon_phase: value.end_moon_phase,
+      };
+    }
+    return {
+      start_date: "",
+      end_date: "",
+    };
+  };
 
   // Estado para controlar si el name_machine está siendo editado manualmente
   const [isManualNameMachine, setIsManualNameMachine] = useState(false);
@@ -214,6 +238,15 @@ export function BasicInfoStep({
           <DateInput
             field={field}
             value={fieldValue as string}
+            onChange={(value) => handleChange(index, value)}
+          />
+        );
+
+      case "date_range":
+        return (
+          <DateRangeInput
+            field={field}
+            value={normalizeDateRangeValue(fieldValue)}
             onChange={(value) => handleChange(index, value)}
           />
         );
