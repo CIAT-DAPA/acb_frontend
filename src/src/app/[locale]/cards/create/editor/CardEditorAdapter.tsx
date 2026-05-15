@@ -44,7 +44,7 @@ export const CardEditorAdapter: React.FC<CardEditorAdapterProps> = ({
         background_opacity: data.content.background_opacity,
         background_image: data.content.background_url,
         padding: data.content.style_config?.padding,
-        gap: data.content.style_config?.gap,
+        gap: data.content.style_config?.gap || "1rem",
         ...data.content.style_config,
       },
       // Store card-specific info in section metadata if needed
