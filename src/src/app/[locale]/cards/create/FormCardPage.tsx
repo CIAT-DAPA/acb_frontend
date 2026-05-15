@@ -346,7 +346,9 @@ export default function FormCardPage({
             <h3 className="text-xl font-semibold text-[#283618] mb-4">
               {t("preview.title")}
             </h3>
-            <CardPreview data={creationState.data} />
+            <div className="rounded-lg overflow-hidden">
+              <CardPreview data={creationState.data} />
+            </div>
           </div>
         </div>
       </div>
