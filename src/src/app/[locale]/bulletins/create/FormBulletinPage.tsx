@@ -27,7 +27,7 @@ import { TemplateSelectionStep } from "./steps/TemplateSelectionStep";
 import { BasicInfoStep } from "./steps/BasicInfoStep";
 import { SectionStep } from "./steps/SectionStep";
 import { ExportStep } from "./steps/ExportStep";
-import { TemplatePreview } from "../../templates/create/TemplatePreview";
+import { UnifiedBulletinPreview } from "../../components/UnifiedBulletinPreview";
 import { CreateTemplateData } from "../../../../types/template";
 import { ExportModal } from "../../components/ExportModal";
 import Link from "next/link";
@@ -828,13 +828,13 @@ export default function FormBulletinPage({
     [existingSlugNames, locale, showToast, t],
   );
 
-    // Si ya hay un template seleccionado (p. ej. navegando desde otro flujo),
-    // asegurarnos de cargar su versión más reciente cuando estemos en modo creación.
-    useEffect(() => {
-      if (!isEditMode && creationState.selectedTemplateId) {
-        loadTemplateVersion(creationState.selectedTemplateId);
-      }
-    }, [creationState.selectedTemplateId, isEditMode, loadTemplateVersion]);
+  // Si ya hay un template seleccionado (p. ej. navegando desde otro flujo),
+  // asegurarnos de cargar su versión más reciente cuando estemos en modo creación.
+  useEffect(() => {
+    if (!isEditMode && creationState.selectedTemplateId) {
+      loadTemplateVersion(creationState.selectedTemplateId);
+    }
+  }, [creationState.selectedTemplateId, isEditMode, loadTemplateVersion]);
 
   // Función para actualizar datos del boletín
   const updateBulletinData = useCallback(
@@ -1905,9 +1905,9 @@ export default function FormBulletinPage({
                   id="bulletin-preview-container"
                   className="rounded-lg overflow-hidden"
                 >
-                  <TemplatePreview
+                  <UnifiedBulletinPreview
                     data={previewData}
-                    reviewMode={true}
+                    variant="single"
                     hidePagination={true}
                     moreInfo={true}
                     description={true}

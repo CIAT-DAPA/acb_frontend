@@ -12,7 +12,7 @@ import {
 import BulletinAPIService from "@/services/bulletinService";
 import { TemplateAPIService } from "@/services/templateService";
 import { useTranslations } from "next-intl";
-import { ScrollView } from "@/app/[locale]/components/ScrollView";
+import { UnifiedBulletinPreview } from "@/app/[locale]/components/UnifiedBulletinPreview";
 import { btnPrimary } from "../../components/ui";
 import {
   setMetaTag,
@@ -399,13 +399,14 @@ export default function BulletinPublicPage() {
       {/* Preview Container */}
       <div className="py-0 px-2 md:flex-1 md:min-h-0 md:py-8 md:px-4">
         <div className="max-w-7xl mx-auto h-auto md:h-full">
-          <ScrollView
+          <UnifiedBulletinPreview
             data={templateData}
+            variant="full-scroll"
             cardsMetadata={cardsMetadata}
             sectionOrder={sectionOrder}
             allowSectionReorder={true}
             onSectionOrderChange={setSectionOrder}
-            config={{
+            scrollConfig={{
               orientation: "horizontal",
               expandAllPages: true,
               showSectionTitle: false,
