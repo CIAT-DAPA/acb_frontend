@@ -8,7 +8,7 @@ import {
   hasCardTypeTranslation,
 } from "../../../../types/card";
 import { CreateTemplateData, Section } from "../../../../types/template";
-import { TemplatePreview } from "../../templates/create/TemplatePreview";
+import { UnifiedBulletinPreview } from "@/app/[locale]/components/UnifiedBulletinPreview";
 
 interface CardPreviewProps {
   data: CreateCardData;
@@ -81,8 +81,9 @@ export function CardPreview({ data }: CardPreviewProps) {
   }, [data, t, getCardTypeLabel]);
 
   return (
-    <TemplatePreview
+    <UnifiedBulletinPreview
       data={templateData}
+      variant="single"
       selectedSectionIndex={0}
       moreInfo={true}
       description={true}
