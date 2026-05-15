@@ -46,7 +46,7 @@ export function CardPreview({ data }: CardPreviewProps) {
         background_opacity: data.content.background_opacity,
         background_image: data.content.background_url,
         padding: data.content.style_config?.padding,
-        gap: data.content.style_config?.gap,
+        gap: data.content.style_config?.gap || "1rem",
       },
       header_config: data.content.header_config,
       footer_config: data.content.footer_config,
@@ -81,12 +81,14 @@ export function CardPreview({ data }: CardPreviewProps) {
   }, [data, t, getCardTypeLabel]);
 
   return (
-    <UnifiedBulletinPreview
-      data={templateData}
-      variant="single"
-      selectedSectionIndex={0}
-      moreInfo={true}
-      description={true}
-    />
+    <div id="card-preview-container" className="rounded-lg overflow-hidden">
+      <UnifiedBulletinPreview
+        data={templateData}
+        variant="single"
+        selectedSectionIndex={0}
+        moreInfo={true}
+        description={true}
+      />
+    </div>
   );
 }
