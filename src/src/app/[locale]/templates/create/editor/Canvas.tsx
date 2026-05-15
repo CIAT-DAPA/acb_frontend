@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { CreateTemplateData } from "@/types/template";
 import { EditorSelection, CanvasState } from "./types";
-import { TemplatePreview } from "../TemplatePreview";
+import { UnifiedBulletinPreview } from "@/app/[locale]/components/UnifiedBulletinPreview";
 import * as ui from "../../../components/ui";
 import { useTranslations } from "next-intl";
 import { Layers, GripVertical } from "lucide-react";
@@ -591,8 +591,9 @@ export const Canvas: React.FC<CanvasProps> = ({
           {!data.version.content.sections ||
           data.version.content.sections.length === 0 ? (
             <div className="w-max bg-white shadow-xl">
-              <TemplatePreview
+              <UnifiedBulletinPreview
                 data={data}
+                variant="single"
                 reviewMode={true}
                 onElementClick={handleElementClick}
                 selectedSectionIndex={0}
@@ -633,8 +634,9 @@ export const Canvas: React.FC<CanvasProps> = ({
                         key={`section-${index}-page-${pageIndex}`}
                         className="w-max bg-white shadow-xl"
                       >
-                        <TemplatePreview
+                        <UnifiedBulletinPreview
                           data={data}
+                          variant="single"
                           reviewMode={true}
                           onElementClick={handleElementClick}
                           selectedSectionIndex={index}

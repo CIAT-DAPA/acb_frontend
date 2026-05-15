@@ -7,7 +7,7 @@ import {
   ExportModal,
   ExportTechnicalConfig,
 } from "@/app/[locale]/components/ExportModal";
-import { ContentFullPreview } from "@/app/[locale]/components/ContentFullPreview";
+import { UnifiedBulletinPreview } from "@/app/[locale]/components/UnifiedBulletinPreview";
 
 interface ExportStepProps {
   previewData: CreateTemplateData;
@@ -97,9 +97,9 @@ export function ExportStep({
         id="bulletin-export-preview"
         className="bg-white rounded-lg shadow-sm border border-[#283618]/10 overflow-hidden"
       >
-        <ContentFullPreview
+        <UnifiedBulletinPreview
           data={previewData}
-          mode="scroll"
+          variant="full-scroll"
           scrollConfig={{
             orientation: "horizontal",
             showMiniNav: true,
@@ -107,7 +107,6 @@ export function ExportStep({
             spacing: "comfortable",
             expandAllPages: true,
           }}
-          allowModeToggle={false}
           className="w-full"
         />
       </div>
