@@ -2205,10 +2205,10 @@ export function TemplatePreview({
                                   key={fieldIndex}
                                   className={
                                     (isGridLayout
-                                      ? `flex gap-1 items-center ${justifyClass} min-w-0 ${reviewMode ? "cursor-pointer hover:bg-black/5 p-1 rounded transition-colors" : ""}`
+                                      ? `flex gap-1 items-center ${justifyClass} min-w-0 ${reviewMode ? "cursor-pointer hover:bg-black/5 rounded transition-colors" : ""}`
                                       : shouldExpand
-                                        ? `flex-1 min-w-[120px] ${reviewMode ? "cursor-pointer hover:bg-black/5 p-1 rounded transition-colors" : ""}`
-                                        : `shrink-0 ${reviewMode ? "cursor-pointer hover:bg-black/5 p-1 rounded transition-colors" : ""}`) +
+                                        ? `flex-1 min-w-[120px] ${reviewMode ? "cursor-pointer hover:bg-black/5 rounded transition-colors" : ""}`
+                                        : `shrink-0 ${reviewMode ? "cursor-pointer hover:bg-black/5 rounded transition-colors" : ""}`) +
                                     (isSubfieldSelected
                                       ? " ring-2 ring-emerald-500 bg-emerald-50 relative z-30"
                                       : "")

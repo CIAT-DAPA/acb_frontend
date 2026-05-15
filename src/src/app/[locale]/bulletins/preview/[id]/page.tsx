@@ -100,7 +100,7 @@ const decodeSectionFields = (section: Section) => {
     });
   });
 };
-import { ScrollView } from "@/app/[locale]/components/ScrollView";
+import { UnifiedBulletinPreview } from "@/app/[locale]/components/UnifiedBulletinPreview";
 
 /**
  * Página de preview independiente para boletines
@@ -456,9 +456,10 @@ export default function TemplatePreviewPage() {
 
           {/* Componente de Preview - Sin padding en móvil */}
           <div className="w-full" id="bulletin-export-preview">
-            <ScrollView
+            <UnifiedBulletinPreview
               data={templateData}
-              config={{
+              variant="full-scroll"
+              scrollConfig={{
                 orientation: "horizontal",
                 showMiniNav: true,
                 highlightActive: true,
