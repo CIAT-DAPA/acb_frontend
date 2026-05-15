@@ -343,6 +343,7 @@ export function CardSectionsEditor({
               prevData.content.blocks.length + 1
             }`,
             fields: [],
+            style_config: {},
           },
         ],
       },

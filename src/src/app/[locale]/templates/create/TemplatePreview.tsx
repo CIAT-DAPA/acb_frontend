@@ -198,6 +198,43 @@ function getBorderStyles(
   return styles;
 }
 
+/**
+ * Normaliza valores CSS, añadiendo unidades solo si es necesario
+ * Ejemplos:
+ * - normalizeCSSValue("16") → "16px"
+ * - normalizeCSSValue("16px") → "16px"
+ * - normalizeCSSValue("1rem") → "1rem"
+ * - normalizeCSSValue(undefined) → undefined
+ */
+function normalizeCSSValue(
+  value?: string | number,
+  defaultUnit: string = "px",
+): string | undefined {
+  if (value === undefined || value === null || value === "") {
+    return undefined;
+  }
+
+  const strValue = String(value).trim();
+
+  // Si ya tiene unidades CSS válidas, devolverlo como está
+  if (
+    /^-?\d+(\.\d+)?(px|rem|em|%|vw|vh|vmin|vmax|ex|ch|pt|pc|in|cm|mm|Q|s|ms|Hz|kHz)$/i.test(
+      strValue,
+    )
+  ) {
+    return strValue;
+  }
+
+  // Si es un número puro, añadir la unidad por defecto
+  if (/^-?\d+(\.\d+)?$/.test(strValue)) {
+    return `${strValue}${defaultUnit}`;
+  }
+
+  // Si no cumple ningún patrón, devolverlo tal cual
+  // (puede ser un valor CSS válido como "auto", "inherit", etc.)
+  return strValue;
+}
+
 type OverflowSlice = {
   offset: number;
   height: number;
@@ -2841,9 +2878,7 @@ export function TemplatePreview({
                     display: "flex",
                     flexDirection:
                       (block as any).layout === "horizontal" ? "row" : "column",
-                    gap: effectiveBlockStyles.gap
-                      ? `${effectiveBlockStyles.gap}px`
-                      : "8px",
+                    gap: normalizeCSSValue(effectiveBlockStyles.gap) || "8px",
                     padding: effectiveBlockStyles.padding || undefined,
                     backgroundColor:
                       effectiveBlockStyles.background_color || "transparent",

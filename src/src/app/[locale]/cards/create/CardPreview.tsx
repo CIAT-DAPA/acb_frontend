@@ -32,6 +32,16 @@ export function CardPreview({ data }: CardPreviewProps) {
       creator_last_name: null,
     };
 
+    // Deep copy de bloques para asegurar que se preservan los estilos
+    const preservedBlocks = data.content.blocks.map((block) => ({
+      ...block,
+      style_config: {
+        ...block.style_config,
+        // Si no tiene padding explícito, dejar que lo maneje el bloque mismo
+        // Si no tiene gap explícito, dejar que lo maneje el bloque mismo
+      },
+    }));
+
     const section: Section = {
       section_id: "card_section",
       display_name: data.card_name || t("untitled"),
@@ -40,13 +50,13 @@ export function CardPreview({ data }: CardPreviewProps) {
         : [],
       order: 0,
       icon_url: "",
-      blocks: data.content.blocks,
+      blocks: preservedBlocks,
       style_config: {
         background_color: data.content.background_color,
         background_opacity: data.content.background_opacity,
         background_image: data.content.background_url,
         padding: data.content.style_config?.padding,
-        gap: data.content.style_config?.gap || "1rem",
+        gap: data.content.style_config?.gap || "16px",
       },
       header_config: data.content.header_config,
       footer_config: data.content.footer_config,
