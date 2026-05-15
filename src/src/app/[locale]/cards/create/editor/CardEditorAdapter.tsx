@@ -27,6 +27,15 @@ export const CardEditorAdapter: React.FC<CardEditorAdapterProps> = ({
 
   // Transform CreateCardData to CreateTemplateData
   const templateData = useMemo((): CreateTemplateData => {
+    // Deep copy de bloques para asegurar que se preservan los estilos
+    const preservedBlocks = (data.content.blocks || []).map((block) => ({
+      ...block,
+      style_config: {
+        ...block.style_config,
+        // Los estilos se preservan en su totalidad
+      },
+    }));
+
     // Construct a single section from card content
     const cardSection: Section = {
       section_id: "card_section", // Fixed ID for the single card section
@@ -36,7 +45,7 @@ export const CardEditorAdapter: React.FC<CardEditorAdapterProps> = ({
         : [],
       order: 0,
       icon_url: "",
-      blocks: data.content.blocks || [],
+      blocks: preservedBlocks,
       header_config: data.content.header_config,
       footer_config: data.content.footer_config,
       style_config: {
@@ -44,7 +53,7 @@ export const CardEditorAdapter: React.FC<CardEditorAdapterProps> = ({
         background_opacity: data.content.background_opacity,
         background_image: data.content.background_url,
         padding: data.content.style_config?.padding,
-        gap: data.content.style_config?.gap || "1rem",
+        gap: data.content.style_config?.gap || "16px",
         ...data.content.style_config,
       },
       // Store card-specific info in section metadata if needed
