@@ -81,14 +81,12 @@ export function CardPreview({ data }: CardPreviewProps) {
   }, [data, t, getCardTypeLabel]);
 
   return (
-    <div id="card-preview-container" className="rounded-lg overflow-hidden">
-      <UnifiedBulletinPreview
-        data={templateData}
-        variant="single"
-        selectedSectionIndex={0}
-        moreInfo={true}
-        description={true}
-      />
-    </div>
+    <UnifiedBulletinPreview
+      data={templateData}
+      variant="single"
+      selectedSectionIndex={0}
+      moreInfo={true}
+      description={true}
+    />
   );
 }
