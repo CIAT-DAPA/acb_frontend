@@ -143,6 +143,7 @@ export function FieldEditor({
         ...fieldToSave,
         field_config: {
           date_format: currentConfig?.date_format || "YYYY-MM-DD",
+          showLabel: currentConfig?.showLabel,
           start_date_label: currentConfig?.start_date_label || "Start Date",
           start_date_description: currentConfig?.start_date_description || "",
           end_date_label: currentConfig?.end_date_label || "End Date",

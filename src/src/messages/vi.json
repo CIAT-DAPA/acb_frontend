@@ -1309,6 +1309,8 @@
         }
       },
       "dateRangeConfig": {
+        "showLabel": "Hiển thị nhãn của phạm vi",
+        "showLabelHelp": "Nếu bật, nhãn của trường sẽ hiển thị bên cạnh phạm vi ngày",
         "showMoonPhases": "Hiển thị chu kỳ mặt trăng",
         "showMoonPhasesHelp": "Hiển thị biểu tượng chu kỳ mặt trăng bên cạnh mỗi ngày",
         "moonPhasesConfigTitle": "Cấu hình chu kỳ mặt trăng",
