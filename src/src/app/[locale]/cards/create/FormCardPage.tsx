@@ -342,7 +342,10 @@ export default function FormCardPage({
           </div>
 
           {/* Right Panel - Preview Section */}
-          <div className="lg:sticky lg:top-24 h-fit">
+          <div className="lg:sticky lg:top-24 h-fit bg-white rounded-lg shadow-lg p-6">
+            <h3 className="text-xl font-semibold text-[#283618] mb-4">
+              {t("preview.title")}
+            </h3>
             <CardPreview data={creationState.data} />
           </div>
         </div>
