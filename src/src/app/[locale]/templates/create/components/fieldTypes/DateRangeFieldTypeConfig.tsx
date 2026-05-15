@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { DateRangeFieldConfig } from "../../../../../../types/template";
 import { BaseFieldTypeConfigProps } from "./BaseFieldTypeConfig";
 import {
+  helpTextClass,
   labelClass,
   labelXsClass,
   inputClass,
@@ -33,6 +34,7 @@ export const DateRangeFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
   const t = useTranslations("CreateTemplate.fieldEditor.dateRangeConfig");
 
   const config = (currentField.field_config as DateRangeFieldConfig) || {};
+  const showLabel = config.showLabel ?? false;
 
   return (
     <div className="space-y-4">
@@ -50,6 +52,20 @@ export const DateRangeFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
             </option>
           ))}
         </select>
+      </div>
+
+      {/* Mostrar etiqueta del rango */}
+      <div>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={showLabel}
+            onChange={(e) => updateFieldConfig({ showLabel: e.target.checked })}
+            className="w-4 h-4 text-[#283618] border-gray-300 rounded focus:ring-[#283618]"
+          />
+          <span className={labelClass}>{t("showLabel")}</span>
+        </label>
+        <p className={helpTextClass}>{t("showLabelHelp")}</p>
       </div>
 
       {/* Mostrar Fases de Luna */}

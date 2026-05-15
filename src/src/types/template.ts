@@ -80,6 +80,7 @@ export interface DateFieldConfig {
 
 export interface DateRangeFieldConfig {
   date_format?: string;
+  showLabel?: boolean; // Si true, muestra la etiqueta del rango al lado del valor
   start_date_label: string;
   start_date_description: string;
   end_date_label: string;

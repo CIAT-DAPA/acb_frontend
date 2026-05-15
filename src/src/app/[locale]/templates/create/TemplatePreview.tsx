@@ -1689,6 +1689,11 @@ export function TemplatePreview({
       case "date_range":
         const dateRangeFormat =
           (field.field_config as any)?.date_format || "DD/MM/YYYY";
+        const showDateRangeLabel =
+          (field.field_config as any)?.showLabel ?? false;
+        const displayDateRangeLabel = showDateRangeLabel
+          ? field.label || field.display_name
+          : null;
         const showMoonPhases =
           (field.field_config as any)?.show_moon_phases || false;
 
@@ -1747,8 +1752,13 @@ export function TemplatePreview({
           }
 
           return (
-            <div key={key} style={fieldStyles}>
-              {rangeDisplay}
+            <div
+              key={key}
+              style={fieldStyles}
+              className={displayDateRangeLabel ? "flex items-center gap-2" : undefined}
+            >
+              {displayDateRangeLabel && <span>{displayDateRangeLabel}:</span>}
+              <span>{rangeDisplay}</span>
             </div>
           );
         }
@@ -1823,8 +1833,13 @@ export function TemplatePreview({
 
         // Sin lunas: formato tradicional
         return (
-          <div key={key} style={fieldStyles}>
-            {`${startDateDisplay} - ${endDateDisplay}`}
+          <div
+            key={key}
+            style={fieldStyles}
+            className={displayDateRangeLabel ? "flex items-center gap-2" : undefined}
+          >
+            {displayDateRangeLabel && <span>{displayDateRangeLabel}:</span>}
+            <span>{`${startDateDisplay} - ${endDateDisplay}`}</span>
           </div>
         );
 
