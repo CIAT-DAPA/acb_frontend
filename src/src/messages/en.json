@@ -1245,6 +1245,8 @@
       },
       "dateRangeConfig": {
         "format": "Date Format",
+        "showLabel": "Show range label",
+        "showLabelHelp": "If enabled, the field label will be shown next to the date range",
         "showMoonPhases": "Show moon phases with dates",
         "showMoonPhasesHelp": "Display moon phase icons next to each date",
         "moonPhasesConfigTitle": "Moon Phase Configuration",

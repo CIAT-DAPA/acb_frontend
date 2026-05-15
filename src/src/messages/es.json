@@ -1243,6 +1243,8 @@
       },
       "dateRangeConfig": {
         "format": "Formato de Fecha",
+        "showLabel": "Mostrar etiqueta del rango",
+        "showLabelHelp": "Si está activado, se mostrará el label del campo junto al rango de fechas",
         "showMoonPhases": "Mostrar fases de luna con fechas",
         "showMoonPhasesHelp": "Muestra íconos de fase lunar junto a cada fecha",
         "moonPhasesConfigTitle": "Configuración de Fases Lunares",
