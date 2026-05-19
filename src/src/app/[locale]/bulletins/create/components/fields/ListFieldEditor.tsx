@@ -386,7 +386,7 @@ export function ListFieldEditor({
 
     const newValue = [...value, newItem];
     onChange(newValue);
-    setExpandedItems(new Set([...expandedItems, value.length]));
+    setExpandedItems(new Set([value.length]));
   };
 
   // Eliminar un item
@@ -396,9 +396,24 @@ export function ListFieldEditor({
     }
     const newValue = value.filter((_, i) => i !== index);
     onChange(newValue);
-    const newExpanded = new Set(expandedItems);
-    newExpanded.delete(index);
-    setExpandedItems(newExpanded);
+
+    const nextExpanded = new Set<number>();
+    const currentExpandedIndex = [...expandedItems][0];
+
+    if (currentExpandedIndex !== undefined) {
+      if (currentExpandedIndex === index) {
+        const fallbackIndex = Math.min(index, newValue.length - 1);
+        if (fallbackIndex >= 0) {
+          nextExpanded.add(fallbackIndex);
+        }
+      } else if (currentExpandedIndex > index) {
+        nextExpanded.add(currentExpandedIndex - 1);
+      } else {
+        nextExpanded.add(currentExpandedIndex);
+      }
+    }
+
+    setExpandedItems(nextExpanded);
   };
 
   // Actualizar el valor de un campo dentro de un item
@@ -421,13 +436,12 @@ export function ListFieldEditor({
 
   // Toggle expand/collapse de un item
   const toggleExpand = (index: number) => {
-    const newExpanded = new Set(expandedItems);
-    if (newExpanded.has(index)) {
-      newExpanded.delete(index);
+    const currentExpandedIndex = [...expandedItems][0];
+    if (currentExpandedIndex === index) {
+      setExpandedItems(new Set());
     } else {
-      newExpanded.add(index);
+      setExpandedItems(new Set([index]));
     }
-    setExpandedItems(newExpanded);
   };
 
   // Renderizar un campo individual dentro del item
