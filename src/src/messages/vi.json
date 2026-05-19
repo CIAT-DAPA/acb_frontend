@@ -1245,6 +1245,7 @@
         "selectIcon": "Chọn biểu tượng",
         "changeIcon": "Thay đổi",
         "selectIconFor": "Chọn biểu tượng cho tùy chọn",
+        "noIcon": "Không có biểu tượng",
         "allowMultiple": "Cho phép lựa chọn nhiều",
         "allowMultipleHelp": "Nếu được cho phép, người dùng sẽ có thể chọn nhiều tùy chọn",
         "showLabel": "Hiển thị nhãn bên cạnh biểu tượng",

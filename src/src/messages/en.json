@@ -1387,7 +1387,8 @@
         "iconSelected": "Icon selected",
         "changeIcon": "Change",
         "selectIcon": "Select icon",
-        "selectIconFor": "Select Icon for Option"
+        "selectIconFor": "Select Icon for Option",
+        "noIcon": "No icon"
       },
       "searchableConfig": {
         "options": "Available Options",
