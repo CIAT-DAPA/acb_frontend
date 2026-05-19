@@ -100,6 +100,7 @@ export function ExportStep({
         <UnifiedBulletinPreview
           data={previewData}
           variant="full-scroll"
+          cardEmptyStateMode="select-card"
           scrollConfig={{
             orientation: "horizontal",
             showMiniNav: true,
