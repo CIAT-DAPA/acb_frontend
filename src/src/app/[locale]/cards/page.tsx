@@ -1,8 +1,8 @@
 "use client";
 
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Plus,
   Search,
@@ -15,6 +15,10 @@ import {
   Layers,
   Grid3x3,
   FileStack,
+  Folder,
+  FolderOpen,
+  ChevronRight,
+  ArrowLeft,
 } from "lucide-react";
 import Image from "next/image";
 import ItemCard from "../components/ItemCard";
@@ -43,6 +47,15 @@ import usePermissions from "@/hooks/usePermissions";
 import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
 import { useAuth } from "@/hooks/useAuth";
 
+const UNTAGGED_FOLDER_KEY = "__untagged__";
+
+const formatFolderLabel = (tag: string) =>
+  tag
+    .replace(/[-_]+/g, " ")
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/\b\w/g, (match) => match.toUpperCase());
+
 export default function CardsPage() {
   const t = useTranslations("Cards");
   const tNavbar = useTranslations("Navbar");
@@ -70,6 +83,9 @@ export default function CardsPage() {
   // Estados para tipos de cards dinámicos
   const [cardTypes, setCardTypes] = useState<EnumValue[]>([]);
   const [loadingTypes, setLoadingTypes] = useState(true);
+  const [selectedFolderKey, setSelectedFolderKey] = useState<string | null>(
+    null,
+  );
   const { authenticated, loading: authLoading } = useAuth();
 
   // Cargar cards y tipos solo cuando la autenticación ya está resuelta
@@ -104,6 +120,11 @@ export default function CardsPage() {
       card.log?.updated_at || card.log?.created_at || 0,
     ).getTime();
   };
+
+  const getFolderLabel = (folderKey: string) =>
+    folderKey === UNTAGGED_FOLDER_KEY
+      ? t("untaggedFolder")
+      : formatFolderLabel(folderKey);
 
   // Función para cargar los tipos de cards desde la API
   const loadCardTypes = async () => {
@@ -195,6 +216,102 @@ export default function CardsPage() {
 
     setFilteredCards(sortedFiltered);
   }, [searchTerm, selectedType, cards, cardTypes, t]);
+
+  const folderGroups = useMemo(() => {
+    const groups = new Map<
+      string,
+      {
+        key: string;
+        label: string;
+        cards: Card[];
+      }
+    >();
+
+    filteredCards.forEach((card) => {
+      const tags = Array.isArray(card.tags)
+        ? card.tags.map((tag) => tag.trim()).filter(Boolean)
+        : [];
+
+      const folderTags = tags.length > 0 ? tags : [UNTAGGED_FOLDER_KEY];
+
+      folderTags.forEach((tag) => {
+        const folderKey =
+          tag === UNTAGGED_FOLDER_KEY ? UNTAGGED_FOLDER_KEY : tag.toLowerCase();
+
+        if (!groups.has(folderKey)) {
+          groups.set(folderKey, {
+            key: folderKey,
+            label: getFolderLabel(folderKey),
+            cards: [],
+          });
+        }
+
+        groups.get(folderKey)?.cards.push(card);
+      });
+    });
+
+    return Array.from(groups.values()).sort((a, b) => {
+      if (b.cards.length !== a.cards.length) {
+        return b.cards.length - a.cards.length;
+      }
+
+      return a.label.localeCompare(b.label);
+    });
+  }, [filteredCards, t]);
+
+  const folderRows = useMemo(() => {
+    return folderGroups.map((folder) => {
+      const latestCard = [...folder.cards].sort(
+        (a, b) => getCardTimestamp(b) - getCardTimestamp(a),
+      )[0];
+      const latestStats = latestCard
+        ? CardAPIService.getCardStats(latestCard)
+        : null;
+      const hasSharedAccess = folder.cards.some((card) => {
+        const allowedGroups = card.access_config?.allowed_groups || [];
+        return (
+          card.access_config?.access_type !== "private" ||
+          allowedGroups.length > 0
+        );
+      });
+
+      return {
+        ...folder,
+        modifiedLabel: latestStats
+          ? latestStats.updatedAt.toLocaleDateString()
+          : "-",
+        modifiedBy: latestStats?.createdBy || "-",
+        fileSizeLabel: t("folderFileCount", { count: folder.cards.length }),
+        sharingLabel: hasSharedAccess ? t("shared") : t("private"),
+        activityLabel: latestCard ? latestCard.card_name : t("noActivity"),
+      };
+    });
+  }, [folderGroups, t]);
+
+  const selectedFolderCards = useMemo(() => {
+    if (!selectedFolderKey) {
+      return [];
+    }
+
+    return filteredCards.filter((card) => {
+      const tags = Array.isArray(card.tags)
+        ? card.tags.map((tag) => tag.trim()).filter(Boolean)
+        : [];
+
+      if (selectedFolderKey === UNTAGGED_FOLDER_KEY) {
+        return tags.length === 0;
+      }
+
+      return tags.some((tag) => tag.toLowerCase() === selectedFolderKey);
+    });
+  }, [filteredCards, selectedFolderKey]);
+
+  const selectedFolderLabel = selectedFolderKey
+    ? folderGroups.find((folder) => folder.key === selectedFolderKey)?.label ||
+      getFolderLabel(selectedFolderKey)
+    : "";
+
+  const isFolderView = Boolean(selectedFolderKey);
 
   // Efecto para cerrar el modal con la tecla Escape
   useEffect(() => {
@@ -348,10 +465,9 @@ export default function CardsPage() {
 
         {/* Content Section */}
         <div className={`${container} py-8`}>
-          {/* Search Bar, Filtros y Botones */}
+          {/* Search Bar, Filters and Folder Header */}
           <div className="flex flex-col gap-4 mb-8">
             <div className="flex gap-4">
-              {/* Search Bar */}
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#283618]/50" />
                 <input
@@ -359,60 +475,45 @@ export default function CardsPage() {
                   placeholder={t("searchPlaceholder")}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className={searchField}
+                  className={`${searchField} pl-10`}
                 />
               </div>
 
-              {/* Botón Crear (condicionado) */}
-              {can(PERMISSION_ACTIONS.Create, MODULES.CARD_MANAGEMENT) && (
-                <Link
-                  href="/cards/create"
-                  className={`${btnPrimary} whitespace-nowrap`}
-                >
-                  <Plus className="h-5 w-5" />
-                  <span>{t("createNew")}</span>
-                </Link>
-              )}
+              <Link
+                href="/cards/create"
+                className={`${btnPrimary} whitespace-nowrap flex items-center gap-2`}
+              >
+                <Plus className="h-4 w-4" />
+                {t("createNew")}
+              </Link>
             </div>
 
-            {/* Filtro por tipo */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-2">
-              <span className="text-sm font-medium text-[#283618] whitespace-nowrap">
-                {t("filterByType")}:
-              </span>
+            <div className="flex flex-wrap gap-3">
               <button
                 onClick={() => setSelectedType("all")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap cursor-pointer ${
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                   selectedType === "all"
-                    ? "bg-[#606c38] text-white"
-                    : "bg-white text-[#283618] border border-gray-200 hover:bg-gray-50"
+                    ? "bg-[#606c38] text-white shadow-md"
+                    : "bg-white text-[#283618] border border-[#283618]/10 hover:bg-[#fefae0]"
                 }`}
               >
                 {t("allTypes")}
               </button>
-              {loadingTypes ? (
-                <div className="flex items-center gap-2 px-4 py-2">
-                  <Loader2 className="h-4 w-4 animate-spin text-[#606c38]" />
-                  <span className="text-sm text-[#283618]/60">
-                    {t("loading")}
-                  </span>
-                </div>
-              ) : (
-                cardTypes.map((type) => (
-                  <button
-                    key={type.value}
-                    onClick={() => setSelectedType(type.value)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap flex items-center gap-2 cursor-pointer ${
-                      selectedType === type.value
-                        ? "bg-[#606c38] text-white"
-                        : "bg-white text-[#283618] border border-gray-200 hover:bg-gray-50"
-                    }`}
-                  >
-                    <span>{getCardTypeIcon(type.value)}</span>
-                    <span>{getCardTypeLabel(type.value)}</span>
-                  </button>
-                ))
-              )}
+
+              {cardTypes.map((type) => (
+                <button
+                  key={type.value}
+                  onClick={() => setSelectedType(type.value)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
+                    selectedType === type.value
+                      ? "bg-[#606c38] text-white shadow-md"
+                      : "bg-white text-[#283618] border border-[#283618]/10 hover:bg-[#fefae0]"
+                  }`}
+                >
+                  <span>{getCardTypeIcon(type.value)}</span>
+                  <span>{getCardTypeLabel(type.value)}</span>
+                </button>
+              ))}
             </div>
           </div>
 
@@ -434,103 +535,201 @@ export default function CardsPage() {
             </div>
           )}
 
-          {/* Cards Grid */}
-          {!loading && !error && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredCards.map((card, index) => {
-                const stats = CardAPIService.getCardStats(card);
-                const allowedGroups = card.access_config?.allowed_groups || [];
-                const canEdit = can(
-                  PERMISSION_ACTIONS.Update,
-                  MODULES.CARD_MANAGEMENT,
-                  allowedGroups,
-                );
-                const canDelete = can(
-                  PERMISSION_ACTIONS.Delete,
-                  MODULES.CARD_MANAGEMENT,
-                  allowedGroups,
-                );
-
-                return (
-                  <ItemCard
-                    key={card._id || `card-${index}`}
-                    type="card"
-                    id={card._id!}
-                    name={card.card_name}
-                    author={stats.createdBy}
-                    lastModified={stats.updatedAt.toLocaleDateString()}
-                    thumbnailImages={
-                      card.thumbnail_images ? card.thumbnail_images : undefined
-                    }
-                    tags={card.tags}
-                    badge={
-                      <div className="flex items-center gap-1 text-xs">
-                        <span>{getCardTypeIcon(card.card_type)}</span>
-                        <span>{getCardTypeLabel(card.card_type)}</span>
-                      </div>
-                    }
-                    metadata={
-                      <div className="flex items-center gap-3 text-xs text-[#283618]/60">
-                        <div className="flex items-center gap-1">
-                          <Layers className="h-3 w-3" />
-                          <span>
-                            {stats.blocksCount} {t("blocks")}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Grid3x3 className="h-3 w-3" />
-                          <span>
-                            {stats.fieldsCount} {t("fields")}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <FileStack className="h-3 w-3" />
-                          <span>
-                            {stats.templatesCount} {t("templates")}
-                          </span>
-                        </div>
-                      </div>
-                    }
-                    editBtn={canEdit}
-                    onEdit={
-                      canEdit
-                        ? () =>
-                            (window.location.href = `/cards/${card._id}/edit`)
-                        : undefined
-                    }
-                    duplicateBtn={canEdit}
-                    onDuplicate={
-                      canEdit ? () => handleDuplicateCard(card) : undefined
-                    }
-                    isDuplicating={
-                      isDuplicating && cardToDuplicate?._id === card._id
-                    }
-                    deleteBtn={canDelete}
-                    onDelete={
-                      canDelete ? () => handleDeleteCard(card) : undefined
-                    }
-                    isDeleting={isDeleting && cardToDelete?._id === card._id}
-                  />
-                );
-              })}
+          {/* Breadcrumb for Folder View */}
+          {isFolderView && (
+            <div className="mb-6 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setSelectedFolderKey(null)}
+                className="flex items-center gap-2 text-sm font-medium text-[#606c38] hover:text-[#283618] transition-colors"
+              >
+                <Folder className="h-4 w-4" />
+                Folders
+              </button>
+              <ChevronRight className="h-4 w-4 text-[#606c38]" />
+              <span className="text-sm font-medium text-[#283618]">
+                {selectedFolderLabel}
+              </span>
             </div>
           )}
 
+          {/* Cards Grid */}
+          {!loading && !error && (
+            <>
+              {!isFolderView ? (
+                <div className="overflow-hidden rounded-3xl border border-white/70 bg-white shadow-sm">
+                  <div className="grid grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,0.9fr)_minmax(0,1.2fr)] border-b border-[#283618]/10 bg-[#fefae0]/70 px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#606c38]">
+                    <div>{t("nameColumn")}</div>
+                    <div>{t("modifiedColumn")}</div>
+                    <div>{t("modifiedByColumn")}</div>
+                    <div>{t("fileSizeColumn")}</div>
+                    <div>{t("activityColumn")}</div>
+                  </div>
+
+                  <div className="divide-y divide-[#283618]/8">
+                    {folderRows.map((folder) => (
+                      <button
+                        key={folder.key}
+                        type="button"
+                        onClick={() => setSelectedFolderKey(folder.key)}
+                        className="grid w-full grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,0.9fr)_minmax(0,1.2fr)] items-center px-5 py-4 text-left transition-colors hover:bg-[#fefae0]/60"
+                      >
+                        <div className="flex min-w-0 items-center gap-3 pr-3">
+                          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#606c38]/10 text-[#606c38]">
+                            <Folder className="h-6 w-6" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="truncate text-sm font-medium text-[#283618]">
+                              {folder.label}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-sm text-[#283618]/75">
+                          <Calendar className="h-4 w-4 shrink-0 text-[#606c38]" />
+                          <span>{folder.modifiedLabel}</span>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-sm text-[#283618]/75">
+                          <User className="h-4 w-4 shrink-0 text-[#606c38]" />
+                          <span className="truncate">{folder.modifiedBy}</span>
+                        </div>
+
+                        <div className="text-sm text-[#283618]/75">
+                          {folder.fileSizeLabel}
+                        </div>
+
+                        <div className="flex items-center justify-between gap-2 text-sm text-[#283618]/75">
+                          <span className="truncate">
+                            {folder.activityLabel}
+                          </span>
+                          <ChevronRight className="h-4 w-4 shrink-0 text-[#606c38]" />
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {selectedFolderCards.map((card, index) => {
+                    const stats = CardAPIService.getCardStats(card);
+                    const allowedGroups =
+                      card.access_config?.allowed_groups || [];
+                    const canEdit = can(
+                      PERMISSION_ACTIONS.Update,
+                      MODULES.CARD_MANAGEMENT,
+                      allowedGroups,
+                    );
+                    const canDelete = can(
+                      PERMISSION_ACTIONS.Delete,
+                      MODULES.CARD_MANAGEMENT,
+                      allowedGroups,
+                    );
+
+                    return (
+                      <ItemCard
+                        key={card._id || `card-${index}`}
+                        type="card"
+                        id={card._id!}
+                        name={card.card_name}
+                        author={stats.createdBy}
+                        lastModified={stats.updatedAt.toLocaleDateString()}
+                        thumbnailImages={
+                          card.thumbnail_images
+                            ? card.thumbnail_images
+                            : undefined
+                        }
+                        tags={card.tags}
+                        badge={
+                          <div className="flex items-center gap-1 text-xs">
+                            <span>{getCardTypeIcon(card.card_type)}</span>
+                            <span>{getCardTypeLabel(card.card_type)}</span>
+                          </div>
+                        }
+                        metadata={
+                          <div className="flex items-center gap-3 text-xs text-[#283618]/60">
+                            <div className="flex items-center gap-1">
+                              <Layers className="h-3 w-3" />
+                              <span>
+                                {stats.blocksCount} {t("blocks")}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Grid3x3 className="h-3 w-3" />
+                              <span>
+                                {stats.fieldsCount} {t("fields")}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <FileStack className="h-3 w-3" />
+                              <span>
+                                {stats.templatesCount} {t("templates")}
+                              </span>
+                            </div>
+                          </div>
+                        }
+                        editBtn={canEdit}
+                        onEdit={
+                          canEdit
+                            ? () =>
+                                (window.location.href = `/cards/${card._id}/edit`)
+                            : undefined
+                        }
+                        duplicateBtn={canEdit}
+                        onDuplicate={
+                          canEdit ? () => handleDuplicateCard(card) : undefined
+                        }
+                        isDuplicating={
+                          isDuplicating && cardToDuplicate?._id === card._id
+                        }
+                        deleteBtn={canDelete}
+                        onDelete={
+                          canDelete ? () => handleDeleteCard(card) : undefined
+                        }
+                        isDeleting={
+                          isDeleting && cardToDelete?._id === card._id
+                        }
+                      />
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          )}
+
           {/* Empty State */}
-          {!loading && !error && filteredCards.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-[#283618]/60 mb-4">
+          {!loading && !error && !isFolderView && folderGroups.length === 0 && (
+            <div className="rounded-3xl border border-dashed border-[#606c38]/30 bg-white/80 px-8 py-14 text-center shadow-sm">
+              <Folder className="mx-auto h-12 w-12 text-[#606c38]/35" />
+              <p className="mt-4 text-[#283618]/60">
                 {searchTerm || selectedType !== "all"
-                  ? t("noResults")
-                  : t("noResults")}
+                  ? t("noFolders")
+                  : t("noFolders")}
               </p>
               {can(PERMISSION_ACTIONS.Create, MODULES.CARD_MANAGEMENT) && (
-                <Link href="/cards/create" className={btnPrimary}>
+                <Link href="/cards/create" className={`${btnPrimary} mt-5`}>
                   {t("createFirst")}
                 </Link>
               )}
             </div>
           )}
+
+          {!loading &&
+            !error &&
+            isFolderView &&
+            selectedFolderCards.length === 0 && (
+              <div className="rounded-3xl border border-dashed border-[#606c38]/30 bg-white/80 px-8 py-14 text-center shadow-sm">
+                <FolderOpen className="mx-auto h-12 w-12 text-[#606c38]/35" />
+                <p className="mt-4 text-[#283618]/60">{t("folderEmpty")}</p>
+                <button
+                  type="button"
+                  onClick={() => setSelectedFolderKey(null)}
+                  className={`${btnPrimary} mt-5`}
+                >
+                  {t("backToFolders")}
+                </button>
+              </div>
+            )}
         </div>
       </main>
 
