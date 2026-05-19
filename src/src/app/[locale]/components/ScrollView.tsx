@@ -18,6 +18,7 @@ interface ScrollViewProps {
   sectionOrder?: number[];
   allowSectionReorder?: boolean;
   onSectionOrderChange?: (order: number[]) => void;
+  cardEmptyStateMode?: "first-available" | "select-card";
 }
 
 /**
@@ -32,6 +33,7 @@ export function ScrollView({
   initialSection = 0,
   cardsMetadata,
   cardsMetadataLoading = false,
+  cardEmptyStateMode = "first-available",
   renderForPrint = false,
   sectionOrder,
   allowSectionReorder = false,
@@ -462,6 +464,7 @@ export function ScrollView({
             resolvedSectionPageCounts: sectionPageCounts,
             onResolvedPageCount: (resolvedPageCount: number) =>
               handleResolvedPageCount(sectionIndex, resolvedPageCount),
+            cardEmptyStateMode,
           };
 
           return expandAllPages ? (

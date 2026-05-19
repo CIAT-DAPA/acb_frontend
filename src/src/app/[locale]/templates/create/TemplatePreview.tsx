@@ -1116,6 +1116,7 @@ interface TemplatePreviewProps {
   selectedElementId?: string | null;
   commentCounts?: Record<string, number>;
   renderForPrint?: boolean;
+  cardEmptyStateMode?: "first-available" | "select-card";
 }
 
 // Constantes para estilos repetidos
@@ -1146,6 +1147,7 @@ export function TemplatePreview({
   selectedElementId,
   commentCounts,
   renderForPrint = false,
+  cardEmptyStateMode = "first-available",
 }: TemplatePreviewProps) {
   const t = useTranslations("CreateTemplate.preview");
   const pathname = usePathname();
@@ -1755,7 +1757,9 @@ export function TemplatePreview({
             <div
               key={key}
               style={fieldStyles}
-              className={displayDateRangeLabel ? "flex items-center gap-2" : undefined}
+              className={
+                displayDateRangeLabel ? "flex items-center gap-2" : undefined
+              }
             >
               {displayDateRangeLabel && <span>{displayDateRangeLabel}:</span>}
               <span>{rangeDisplay}</span>
@@ -1836,7 +1840,9 @@ export function TemplatePreview({
           <div
             key={key}
             style={fieldStyles}
-            className={displayDateRangeLabel ? "flex items-center gap-2" : undefined}
+            className={
+              displayDateRangeLabel ? "flex items-center gap-2" : undefined
+            }
           >
             {displayDateRangeLabel && <span>{displayDateRangeLabel}:</span>}
             <span>{`${startDateDisplay} - ${endDateDisplay}`}</span>
@@ -2746,11 +2752,17 @@ export function TemplatePreview({
               cardItems.push(parsed);
             }
           }
-        } else if (availableCardIds.length > 0) {
-          // Si no hay valor (preview del template), mostrar el primer card disponible
-          const parsed = parseCardFieldItem(availableCardIds[0]);
-          if (parsed) {
-            cardItems.push(parsed);
+        } else if (cardEmptyStateMode === "first-available") {
+          const availableCardIds = getAvailableCardIdsFromConfig(
+            field.field_config,
+            resolvedCardsCache,
+          );
+
+          if (availableCardIds.length > 0) {
+            const parsed = parseCardFieldItem(availableCardIds[0]);
+            if (parsed) {
+              cardItems.push(parsed);
+            }
           }
         }
 
@@ -4638,14 +4650,16 @@ export function TemplatePreview({
                         ) {
                           cardIdToShow = field.value;
                         } else {
-                          // Fallback: usar el primer card disponible (preview de template)
-                          const availableCardIds =
-                            getAvailableCardIdsFromConfig(
-                              field.field_config,
-                              resolvedCardsCache,
-                            );
-                          if (availableCardIds.length > 0) {
-                            cardIdToShow = availableCardIds[0];
+                          // If no explicit selection exists, optionally fall back to the first available card.
+                          if (cardEmptyStateMode === "first-available") {
+                            const availableCardIds =
+                              getAvailableCardIdsFromConfig(
+                                field.field_config,
+                                resolvedCardsCache,
+                              );
+                            if (availableCardIds.length > 0) {
+                              cardIdToShow = availableCardIds[0];
+                            }
                           }
                         }
 

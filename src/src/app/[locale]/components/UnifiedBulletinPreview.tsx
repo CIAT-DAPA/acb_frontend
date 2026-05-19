@@ -49,6 +49,7 @@ interface UnifiedBulletinPreviewProps {
   ) => void;
   selectedElementId?: string | null;
   commentCounts?: Record<string, number>;
+  cardEmptyStateMode?: "first-available" | "select-card";
 }
 
 export function UnifiedBulletinPreview({
@@ -77,6 +78,7 @@ export function UnifiedBulletinPreview({
   onElementClick,
   selectedElementId,
   commentCounts,
+  cardEmptyStateMode = "first-available",
 }: UnifiedBulletinPreviewProps) {
   if (variant === "full-scroll") {
     return (
@@ -91,6 +93,7 @@ export function UnifiedBulletinPreview({
           sectionOrder={sectionOrder}
           allowSectionReorder={allowSectionReorder}
           onSectionOrderChange={onSectionOrderChange}
+          cardEmptyStateMode={cardEmptyStateMode}
         />
       </div>
     );
@@ -118,6 +121,7 @@ export function UnifiedBulletinPreview({
         selectedElementId={selectedElementId}
         commentCounts={commentCounts}
         renderForPrint={renderForPrint}
+        cardEmptyStateMode={cardEmptyStateMode}
       />
     </div>
   );
