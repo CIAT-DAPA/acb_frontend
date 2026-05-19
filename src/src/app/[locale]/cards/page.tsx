@@ -283,7 +283,6 @@ export default function CardsPage() {
         modifiedBy: latestStats?.createdBy || "-",
         fileSizeLabel: t("folderFileCount", { count: folder.cards.length }),
         sharingLabel: hasSharedAccess ? t("shared") : t("private"),
-        activityLabel: latestCard ? latestCard.card_name : t("noActivity"),
       };
     });
   }, [folderGroups, t]);
@@ -558,12 +557,11 @@ export default function CardsPage() {
             <>
               {!isFolderView ? (
                 <div className="overflow-hidden rounded-3xl border border-white/70 bg-white shadow-sm">
-                  <div className="grid grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,0.9fr)_minmax(0,1.2fr)] border-b border-[#283618]/10 bg-[#fefae0]/70 px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#606c38]">
+                  <div className="grid grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,0.9fr)] border-b border-[#283618]/10 bg-[#fefae0]/70 px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#606c38]">
                     <div>{t("nameColumn")}</div>
                     <div>{t("modifiedColumn")}</div>
                     <div>{t("modifiedByColumn")}</div>
                     <div>{t("fileSizeColumn")}</div>
-                    <div>{t("activityColumn")}</div>
                   </div>
 
                   <div className="divide-y divide-[#283618]/8">
@@ -572,7 +570,7 @@ export default function CardsPage() {
                         key={folder.key}
                         type="button"
                         onClick={() => setSelectedFolderKey(folder.key)}
-                        className="grid w-full grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,0.9fr)_minmax(0,1.2fr)] items-center px-5 py-4 text-left transition-colors hover:bg-[#fefae0]/60"
+                        className="grid w-full grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,0.9fr)] items-center px-5 py-4 text-left transition-colors hover:bg-[#fefae0]/60"
                       >
                         <div className="flex min-w-0 items-center gap-3 pr-3">
                           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#606c38]/10 text-[#606c38]">
@@ -597,13 +595,6 @@ export default function CardsPage() {
 
                         <div className="text-sm text-[#283618]/75">
                           {folder.fileSizeLabel}
-                        </div>
-
-                        <div className="flex items-center justify-between gap-2 text-sm text-[#283618]/75">
-                          <span className="truncate">
-                            {folder.activityLabel}
-                          </span>
-                          <ChevronRight className="h-4 w-4 shrink-0 text-[#606c38]" />
                         </div>
                       </button>
                     ))}
