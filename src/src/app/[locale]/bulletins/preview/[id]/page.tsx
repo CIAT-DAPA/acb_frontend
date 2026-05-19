@@ -467,6 +467,7 @@ export default function TemplatePreviewPage() {
                 expandAllPages: true,
               }}
               cardsMetadata={cardsMetadata}
+              cardEmptyStateMode="select-card"
             />
           </div>
         </div>

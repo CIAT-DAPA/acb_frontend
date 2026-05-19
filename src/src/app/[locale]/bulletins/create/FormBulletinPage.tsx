@@ -1914,6 +1914,7 @@ export default function FormBulletinPage({
                     selectedSectionIndex={previewSectionIndex}
                     currentPageIndex={previewPageIndex}
                     onPageChange={setPreviewPageIndex}
+                    cardEmptyStateMode="select-card"
                   />
                 </div>
               ) : (

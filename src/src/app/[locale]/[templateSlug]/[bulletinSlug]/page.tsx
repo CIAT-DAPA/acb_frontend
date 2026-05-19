@@ -406,6 +406,7 @@ export default function BulletinPublicPage() {
             sectionOrder={sectionOrder}
             allowSectionReorder={true}
             onSectionOrderChange={setSectionOrder}
+            cardEmptyStateMode="select-card"
             scrollConfig={{
               orientation: "horizontal",
               expandAllPages: true,
