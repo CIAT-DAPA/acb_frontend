@@ -1626,7 +1626,7 @@ export function TemplatePreview({
             style={{ ...fieldStyles, display: "flex", gap: "8px" }}
             className={`flex items-center gap-2 ${justifyClass}`}
           >
-            {iconToShow ? (
+            {iconToShow && (
               <SmartIcon
                 src={iconToShow}
                 style={{
@@ -1641,8 +1641,6 @@ export function TemplatePreview({
                 preserveOriginalColors={selectUseOriginalColor}
                 alt="Selected icon"
               />
-            ) : (
-              <span style={{ fontSize: `${selectIconSize}px` }}>❓</span>
             )}
             {showLabel && labelToShow && <span>{labelToShow}</span>}
           </div>
