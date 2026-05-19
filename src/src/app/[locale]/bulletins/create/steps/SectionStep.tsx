@@ -61,6 +61,52 @@ const normalizeCardValue = (value: any): string[] => {
   );
 };
 
+// Helper para extraer tags de cards seleccionadas en la primera sección con cards
+const getFirstCardSectionTags = (
+  sections: BulletinSection[],
+  currentSectionIndex: number,
+): string[] => {
+  // Buscar la primera sección con cards antes de la actual
+  for (let i = 0; i < currentSectionIndex; i++) {
+    const section = sections[i];
+    const allFields = [
+      ...(section.header_config?.fields || []),
+      ...(section.blocks?.flatMap((b) => b.fields) || []),
+      ...(section.footer_config?.fields || []),
+      ...(section.repeatable_pages?.flatMap((p) => [
+        ...(p.header_config?.fields || []),
+        ...p.blocks.flatMap((b) => b.fields),
+        ...(p.footer_config?.fields || []),
+      ]) || []),
+    ];
+
+    const cardFields = allFields.filter((f) => f.type === "card");
+
+    if (cardFields.length > 0) {
+      // Encontramos la primera sección con cards
+      const selectedCardIds: string[] = [];
+      cardFields.forEach((field) => {
+        const value = field.value;
+        if (Array.isArray(value)) {
+          selectedCardIds.push(
+            ...value.map((item: any) =>
+              typeof item === "string"
+                ? item
+                : (item as any).cardId || (item as any)._id || item,
+            ),
+          );
+        }
+      });
+
+      // Aquí necesitaríamos acceso a los datos de cards para extraer tags
+      // Por ahora, retornaremos los IDs seleccionados y filtraremos en CardFieldInput
+      return selectedCardIds;
+    }
+  }
+
+  return [];
+};
+
 export function SectionStep({
   bulletinData,
   sectionIndex,
@@ -559,6 +605,10 @@ export function SectionStep({
         );
 
       case "card":
+        const precedingCardIds = getFirstCardSectionTags(
+          bulletinData.version.data.sections,
+          sectionIndex,
+        );
         return (
           <CardFieldInput
             field={field}
@@ -566,6 +616,8 @@ export function SectionStep({
             onChange={onChange}
             currentPageIndex={currentPageIndex}
             onPageChange={onPageChange}
+            sectionIndex={sectionIndex}
+            precedingCardIds={precedingCardIds}
           />
         );
 
