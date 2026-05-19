@@ -180,6 +180,12 @@ export function CardFieldInput({
     setError(null);
 
     try {
+      const shouldCascadeFilter =
+        Array.isArray(precedingCardIds) &&
+        precedingCardIds.length > 0 &&
+        sectionIndex !== undefined &&
+        sectionIndex > 0;
+
       const explicitIds = Array.isArray(availableCardIds)
         ? availableCardIds.filter(Boolean)
         : [];
@@ -187,7 +193,11 @@ export function CardFieldInput({
         ? availableCardTags.filter(Boolean)
         : [];
 
-      if (explicitIds.length === 0 && configuredTags.length === 0) {
+      if (
+        explicitIds.length === 0 &&
+        configuredTags.length === 0 &&
+        !shouldCascadeFilter
+      ) {
         setAvailableCards([]);
         return;
       }
@@ -241,18 +251,22 @@ export function CardFieldInput({
         (card) => card.status === "active",
       );
 
+      if (shouldCascadeFilter && filtered.length === 0) {
+        const allCardsResult = await CardAPIService.getCards();
+        if (allCardsResult.success) {
+          filtered = allCardsResult.data.filter(
+            (card) => card.status === "active",
+          );
+        }
+      }
+
       // Si hay un card_type específico, filtrar por ese tipo
       if (cardType) {
         filtered = filtered.filter((card) => card.card_type === cardType);
       }
 
       // Filtrar por tags compartidos con cards anteriores si está disponible
-      if (
-        Array.isArray(precedingCardIds) &&
-        precedingCardIds.length > 0 &&
-        sectionIndex !== undefined &&
-        sectionIndex > 0
-      ) {
+      if (shouldCascadeFilter) {
         // Obtener todas las cards para extraer tags de las cards anteriores
         const allCardsResult = await CardAPIService.getCards();
         if (allCardsResult.success) {
@@ -264,7 +278,7 @@ export function CardFieldInput({
           const precedingTags = new Set<string>();
           precedingCards.forEach((card) => {
             if (Array.isArray(card.tags)) {
-              card.tags.forEach((tag) => precedingTags.add(tag));
+              card.tags.forEach((tag) => precedingTags.add(normalizeTag(tag)));
             }
           });
 
@@ -274,7 +288,9 @@ export function CardFieldInput({
               if (!Array.isArray(card.tags) || card.tags.length === 0) {
                 return false;
               }
-              return card.tags.some((tag) => precedingTags.has(tag));
+              return card.tags.some((tag) =>
+                precedingTags.has(normalizeTag(tag)),
+              );
             });
           }
         }
