@@ -209,6 +209,14 @@ export const SelectWithIconsFieldTypeConfig: React.FC<
                       {t("selectWithIconsConfig.selectIcon")}
                     </button>
                   )}
+                  <button
+                    type="button"
+                    onClick={() => updateIcon(index, "")}
+                    className="px-2 py-1.5 text-xs border border-gray-300 rounded hover:bg-gray-50 text-gray-600 whitespace-nowrap"
+                    title={t("selectWithIconsConfig.noIcon")}
+                  >
+                    {t("selectWithIconsConfig.noIcon")}
+                  </button>
                 </div>
               </div>
 

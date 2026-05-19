@@ -37,6 +37,8 @@ interface CardFieldInputProps {
   disabled?: boolean;
   currentPageIndex?: number; // Índice de la página actual del preview
   onPageChange?: (pageIndex: number) => void; // Callback para cambiar de página
+  sectionIndex?: number; // Índice de la sección actual
+  precedingCardIds?: string[]; // IDs de cards seleccionadas en la primera sección con cards
 }
 
 interface SelectedCardData {
@@ -96,6 +98,8 @@ export function CardFieldInput({
   disabled = false,
   currentPageIndex = 0,
   onPageChange,
+  sectionIndex,
+  precedingCardIds,
 }: CardFieldInputProps) {
   const t = useTranslations("CreateBulletin.cardField");
   const [availableCards, setAvailableCards] = useState<Card[]>([]);
@@ -114,7 +118,7 @@ export function CardFieldInput({
   // Cargar las cards disponibles
   useEffect(() => {
     loadAvailableCards();
-  }, [field?.field_id]);
+  }, [field?.field_id, precedingCardIds?.length, sectionIndex]);
 
   // Sincronizar selectedCards con value
   useEffect(() => {
@@ -240,6 +244,40 @@ export function CardFieldInput({
       // Si hay un card_type específico, filtrar por ese tipo
       if (cardType) {
         filtered = filtered.filter((card) => card.card_type === cardType);
+      }
+
+      // Filtrar por tags compartidos con cards anteriores si está disponible
+      if (
+        Array.isArray(precedingCardIds) &&
+        precedingCardIds.length > 0 &&
+        sectionIndex !== undefined &&
+        sectionIndex > 0
+      ) {
+        // Obtener todas las cards para extraer tags de las cards anteriores
+        const allCardsResult = await CardAPIService.getCards();
+        if (allCardsResult.success) {
+          const precedingCards = allCardsResult.data.filter((card) =>
+            precedingCardIds.includes(card._id!),
+          );
+
+          // Extraer todos los tags únicos de las cards anteriores
+          const precedingTags = new Set<string>();
+          precedingCards.forEach((card) => {
+            if (Array.isArray(card.tags)) {
+              card.tags.forEach((tag) => precedingTags.add(tag));
+            }
+          });
+
+          // Si hay tags anteriores, filtrar para mostrar solo cards que compartan al menos un tag
+          if (precedingTags.size > 0) {
+            filtered = filtered.filter((card) => {
+              if (!Array.isArray(card.tags) || card.tags.length === 0) {
+                return false;
+              }
+              return card.tags.some((tag) => precedingTags.has(tag));
+            });
+          }
+        }
       }
 
       setAvailableCards(filtered);
