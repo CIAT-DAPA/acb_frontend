@@ -150,13 +150,91 @@ export function ListFieldEditor({
     return values.map((value) => value.replace(/^"|"$/g, ""));
   };
 
-  const handleCsvUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const decodeCsvBuffer = (buffer: ArrayBuffer) => {
+    const bytes = new Uint8Array(buffer);
+
+    const hasUtf16LePattern = (() => {
+      if (bytes.length < 4) return false;
+      let zeroCount = 0;
+      const sampleLength = Math.min(bytes.length, 2000);
+      for (let i = 1; i < sampleLength; i += 2) {
+        if (bytes[i] === 0x00) {
+          zeroCount += 1;
+        }
+      }
+      return zeroCount > sampleLength / 8;
+    })();
+
+    const hasUtf16BePattern = (() => {
+      if (bytes.length < 4) return false;
+      let zeroCount = 0;
+      const sampleLength = Math.min(bytes.length, 2000);
+      for (let i = 0; i < sampleLength; i += 2) {
+        if (bytes[i] === 0x00) {
+          zeroCount += 1;
+        }
+      }
+      return zeroCount > sampleLength / 8;
+    })();
+
+    if (
+      bytes.length >= 3 &&
+      bytes[0] === 0xef &&
+      bytes[1] === 0xbb &&
+      bytes[2] === 0xbf
+    ) {
+      return new TextDecoder("utf-8").decode(bytes.slice(3));
+    }
+
+    if (bytes.length >= 2 && bytes[0] === 0xff && bytes[1] === 0xfe) {
+      return new TextDecoder("utf-16le").decode(bytes.slice(2));
+    }
+
+    if (bytes.length >= 2 && bytes[0] === 0xfe && bytes[1] === 0xff) {
+      return new TextDecoder("utf-16be").decode(bytes.slice(2));
+    }
+
+    if (hasUtf16LePattern && !hasUtf16BePattern) {
+      return new TextDecoder("utf-16le").decode(bytes);
+    }
+
+    if (hasUtf16BePattern && !hasUtf16LePattern) {
+      return new TextDecoder("utf-16be").decode(bytes);
+    }
+
+    const encodings = ["utf-8", "windows-1258", "windows-1252", "iso-8859-1"];
+
+    for (const encoding of encodings) {
+      try {
+        const decoded = new TextDecoder(encoding, {
+          fatal: encoding === "utf-8",
+        }).decode(bytes);
+
+        if (encoding === "utf-8") {
+          if (decoded.includes("�") || decoded.includes("\u0000")) {
+            continue;
+          }
+        }
+
+        return decoded;
+      } catch {
+        continue;
+      }
+    }
+
+    return new TextDecoder("utf-8").decode(bytes);
+  };
+
+  const handleCsvUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const text = e.target?.result as string;
+    try {
+      const buffer = await file.arrayBuffer();
+      const text = decodeCsvBuffer(buffer);
+
       if (!text) return;
 
       const lines = text.split(/\r\n|\n/);
@@ -263,10 +341,10 @@ export function ListFieldEditor({
         }
         setExpandedItems(newExpanded);
       }
-    };
-    reader.readAsText(file);
-    // Reset input
-    event.target.value = "";
+    } finally {
+      // Reset input
+      event.target.value = "";
+    }
   };
 
   // Agregar un nuevo item
