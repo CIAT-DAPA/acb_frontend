@@ -102,21 +102,6 @@ export default async function RootLayout({ children, params }: Props) {
           href="/favicon.ico"
           media="(prefers-color-scheme: dark)"
         />
-        <link
-          rel="alternate"
-          hrefLang="es"
-          href="https://bulletin.aclimate.org/es"
-        />
-        <link
-          rel="alternate"
-          hrefLang="en"
-          href="https://bulletin.aclimate.org/en"
-        />
-        <link
-          rel="alternate"
-          hrefLang="vi"
-          href="https://bulletin.aclimate.org/vi"
-        />
       </head>
       <body
         className={`${sintony.variable} ${poppins.variable} ${montserrat.variable} ${roboto.variable} ${openSans.variable} ${lato.variable} ${archivoLight.variable} ${archivoNarrow.variable} antialiased`}

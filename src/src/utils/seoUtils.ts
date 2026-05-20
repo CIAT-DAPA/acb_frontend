@@ -9,7 +9,11 @@ export interface BulletinSchemaData {
   datePublished?: string;
   dateModified?: string;
   url: string;
+  inLanguage?: string;
 }
+
+const SEO_SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://bulletin.aclimate.org";
 
 /**
  * Limpiar meta tags duplicados de charset
@@ -48,13 +52,13 @@ export function generateArticleSchema(data: BulletinSchemaData): string {
     datePublished: data.datePublished || new Date().toISOString(),
     dateModified: data.dateModified || new Date().toISOString(),
     url: data.url,
-    inLanguage: "es",
+    inLanguage: data.inLanguage || "es",
     publisher: {
       "@type": "Organization",
       name: "CIAT",
       logo: {
         "@type": "ImageObject",
-        url: "https://bulletinbuilder.ciat.cgiar.org/assets/logo.png",
+        url: `${SEO_SITE_URL}/assets/logo.png`,
       },
     },
   };
@@ -75,8 +79,8 @@ export function generateOrganizationSchema(): string {
     "@type": "Organization",
     name: "Bulletin Builder",
     description: "Platform for creating agroclimatic bulletins",
-    url: "https://bulletinbuilder.ciat.cgiar.org",
-    logo: "https://bulletinbuilder.ciat.cgiar.org/assets/logo.png",
+    url: SEO_SITE_URL,
+    logo: `${SEO_SITE_URL}/assets/logo.png`,
     sameAs: [
       "https://www.facebook.com/ciat",
       "https://twitter.com/ciat",
