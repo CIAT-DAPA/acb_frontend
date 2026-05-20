@@ -105,17 +105,17 @@ export default async function RootLayout({ children, params }: Props) {
         <link
           rel="alternate"
           hrefLang="es"
-          href="https://bulletinbuilder.ciat.cgiar.org/es"
+          href="https://bulletin.aclimate.org/es"
         />
         <link
           rel="alternate"
           hrefLang="en"
-          href="https://bulletinbuilder.ciat.cgiar.org/en"
+          href="https://bulletin.aclimate.org/en"
         />
         <link
           rel="alternate"
           hrefLang="vi"
-          href="https://bulletinbuilder.ciat.cgiar.org/vi"
+          href="https://bulletin.aclimate.org/vi"
         />
       </head>
       <body
