@@ -32,7 +32,15 @@ import {
 
 interface CardFieldInputProps {
   field?: Field;
-  value: string[]; // Array de IDs de cards seleccionadas
+  value: Array<
+    | string
+    | {
+        cardId?: string;
+        fieldValues?: Record<string, any>;
+        _id?: string;
+        id?: string;
+      }
+  >;
   onChange: (value: string[]) => void;
   disabled?: boolean;
   currentPageIndex?: number; // Índice de la página actual del preview
@@ -51,6 +59,20 @@ const normalizeTag = (value: unknown): string =>
   String(value ?? "")
     .trim()
     .toLowerCase();
+
+const getCardIdFromValue = (
+  item:
+    | string
+    | {
+        cardId?: string;
+        fieldValues?: Record<string, any>;
+        _id?: string;
+        id?: string;
+      },
+): string => {
+  if (typeof item === "string") return item;
+  return item.cardId || item._id || item.id || "";
+};
 
 // Helper para extraer valores por defecto de una card
 const getDefaultFieldValues = (card: Card) => {
@@ -126,7 +148,7 @@ export function CardFieldInput({
       const newSelectedCards: SelectedCardData[] = value
         .map((item) => {
           // El item puede ser un string (cardId) o un objeto con {cardId, fieldValues}
-          const cardId = typeof item === "string" ? item : (item as any).cardId;
+          const cardId = getCardIdFromValue(item);
           const existingFieldValues =
             typeof item === "object" && (item as any).fieldValues
               ? (item as any).fieldValues
@@ -306,7 +328,7 @@ export function CardFieldInput({
 
   // Agregar una nueva card
   const handleAddCard = (cardId: string) => {
-    if (value.includes(cardId)) return;
+    if (value.some((item) => getCardIdFromValue(item) === cardId)) return;
 
     const card = availableCards.find((c) => c._id === cardId);
     const defaultValues = card ? getDefaultFieldValues(card) : {};
