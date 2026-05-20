@@ -1908,7 +1908,6 @@ export default function FormBulletinPage({
                   <UnifiedBulletinPreview
                     data={previewData}
                     variant="single"
-                    hidePagination={true}
                     moreInfo={true}
                     description={true}
                     selectedSectionIndex={previewSectionIndex}

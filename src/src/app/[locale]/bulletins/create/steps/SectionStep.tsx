@@ -53,14 +53,6 @@ const normalizeDateRangeValue = (
   return { start_date: "", end_date: "" };
 };
 
-// Helper para normalizar valores de card
-const normalizeCardValue = (value: any): string[] => {
-  if (!Array.isArray(value)) return [];
-  return value.map((item: any) =>
-    typeof item === "string" ? item : item.cardId || item._id || item,
-  );
-};
-
 // Helper para extraer tags de cards seleccionadas en la primera sección con cards
 const getFirstCardSectionTags = (
   sections: BulletinSection[],
@@ -615,7 +607,7 @@ export function SectionStep({
         return (
           <CardFieldInput
             field={field}
-            value={normalizeCardValue(fieldValue)}
+            value={Array.isArray(fieldValue) ? fieldValue : []}
             onChange={onChange}
             currentPageIndex={currentPageIndex}
             onPageChange={onPageChange}
