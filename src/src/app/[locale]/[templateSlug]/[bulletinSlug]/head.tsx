@@ -16,6 +16,44 @@ type BulletinPublicHeadProps = {
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://bulletin.aclimate.org";
 
+const LOCALIZED_TEXT: Record<
+  string,
+  {
+    home: string;
+    bulletins: string;
+    defaultDescription: string;
+    ogLocale: string;
+    locales: string[];
+    languageCode: string;
+  }
+> = {
+  es: {
+    home: "Inicio",
+    bulletins: "Boletines",
+    defaultDescription:
+      "Consulta el boletín publicado con contenido actualizado y visor interactivo.",
+    ogLocale: "es_ES",
+    locales: ["es", "en", "vi"],
+    languageCode: "es",
+  },
+  en: {
+    home: "Home",
+    bulletins: "Bulletins",
+    defaultDescription: "View the published bulletin in an interactive reader.",
+    ogLocale: "en_US",
+    locales: ["en", "es", "vi"],
+    languageCode: "en",
+  },
+  vi: {
+    home: "Trang chủ",
+    bulletins: "Bản tin",
+    defaultDescription: "Xem bản tin đã xuất bản trong trình xem tương tác.",
+    ogLocale: "vi_VN",
+    locales: ["vi", "en", "es"],
+    languageCode: "vi",
+  },
+};
+
 function buildCanonicalUrl(
   locale: string,
   templateSlug: string,
@@ -46,6 +84,7 @@ function toAbsoluteUrl(url?: string): string {
 }
 
 export default async function Head({ params }: BulletinPublicHeadProps) {
+  const localeText = LOCALIZED_TEXT[params.locale] || LOCALIZED_TEXT.es;
   const canonicalUrl = buildCanonicalUrl(
     params.locale,
     params.templateSlug,
@@ -53,8 +92,7 @@ export default async function Head({ params }: BulletinPublicHeadProps) {
   );
 
   let bulletinTitle = params.bulletinSlug;
-  let description =
-    "Consulta el boletín publicado con contenido actualizado y visor interactivo.";
+  let description = localeText.defaultDescription;
   let publishedAt = new Date().toISOString();
   let modifiedAt = publishedAt;
   let imageUrl = "";
@@ -68,14 +106,24 @@ export default async function Head({ params }: BulletinPublicHeadProps) {
       bulletinTitle = response.data.master.bulletin_name || bulletinTitle;
       description = response.data.master.description
         ? truncate(response.data.master.description, 160)
-        : `Visualiza el boletín ${bulletinTitle}`;
+        : `${localeText.home === "Home" ? "View" : localeText.home === "Trang chủ" ? "Xem" : "Visualiza"} ${params.locale === "vi" ? "bản tin" : localeText.bulletins.toLowerCase()} ${bulletinTitle}`;
       publishedAt = response.data.master.log?.created_at || publishedAt;
       modifiedAt = response.data.master.log?.updated_at || modifiedAt;
       imageUrl = toAbsoluteUrl(response.data.master.thumbnail_images?.[0]);
     }
   } catch {
-    description = `Visualiza el boletín ${bulletinTitle}`;
+    description =
+      params.locale === "en"
+        ? `View the published bulletin ${bulletinTitle}`
+        : params.locale === "vi"
+          ? `Xem bản tin đã xuất bản ${bulletinTitle}`
+          : `Visualiza el boletín publicado ${bulletinTitle}`;
   }
+
+  const alternateLocales = localeText.locales.map((locale) => ({
+    locale,
+    href: buildCanonicalUrl(locale, params.templateSlug, params.bulletinSlug),
+  }));
 
   const articleSchema = generateArticleSchema({
     title: bulletinTitle,
@@ -84,11 +132,15 @@ export default async function Head({ params }: BulletinPublicHeadProps) {
     url: canonicalUrl,
     datePublished: publishedAt,
     dateModified: modifiedAt,
+    inLanguage: localeText.languageCode,
   });
 
   const breadcrumbSchema = generateBreadcrumbSchema([
-    { name: "Home", url: SITE_URL },
-    { name: "Boletines", url: `${SITE_URL}/${params.locale}/bulletins` },
+    { name: localeText.home, url: SITE_URL },
+    {
+      name: localeText.bulletins,
+      url: `${SITE_URL}/${params.locale}/bulletins`,
+    },
     { name: bulletinTitle, url: canonicalUrl },
   ]);
 
@@ -98,7 +150,17 @@ export default async function Head({ params }: BulletinPublicHeadProps) {
       <meta name="description" content={description} />
       <meta name="robots" content="index,follow" />
       <link rel="canonical" href={canonicalUrl} />
+      {alternateLocales.map((alternate) => (
+        <link
+          key={alternate.locale}
+          rel="alternate"
+          hrefLang={alternate.locale}
+          href={alternate.href}
+        />
+      ))}
+      <link rel="alternate" hrefLang="x-default" href={canonicalUrl} />
       <meta property="og:type" content="article" />
+      <meta property="og:locale" content={localeText.ogLocale} />
       <meta property="og:site_name" content="Bulletin Builder" />
       <meta property="og:title" content={bulletinTitle} />
       <meta property="og:description" content={description} />
