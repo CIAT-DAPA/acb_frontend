@@ -251,12 +251,32 @@ export function CardFieldInput({
         (card) => card.status === "active",
       );
 
-      if (shouldCascadeFilter && filtered.length === 0) {
-        const allCardsResult = await CardAPIService.getCards();
-        if (allCardsResult.success) {
-          filtered = allCardsResult.data.filter(
-            (card) => card.status === "active",
-          );
+      // Preparar conjunto de tags heredados (si aplica) obteniendo solo las cards necesarias
+      let precedingTagsSet: Set<string> | null = null;
+      if (shouldCascadeFilter) {
+        precedingTagsSet = new Set<string>();
+        const fetches = precedingCardIds.map((id) =>
+          CardAPIService.getCardById(id).catch(() => ({ success: false })),
+        );
+        const results = await Promise.all(fetches);
+        results.forEach((res: any) => {
+          if (res && res.success && res.data && Array.isArray(res.data.tags)) {
+            res.data.tags.forEach((tag: string) =>
+              precedingTagsSet!.add(normalizeTag(tag)),
+            );
+          }
+        });
+
+        // Si no obtuvimos cards desde configuración y tenemos tags heredados,
+        // pedir directamente por tags para poblar 'filtered'
+        if (filtered.length === 0 && precedingTagsSet.size > 0) {
+          const tagsArray = Array.from(precedingTagsSet);
+          const byTagsResult = await CardAPIService.getCardsByTags(tagsArray);
+          if (byTagsResult.success) {
+            filtered = byTagsResult.data.filter(
+              (card) => card.status === "active",
+            );
+          }
         }
       }
 
@@ -265,35 +285,14 @@ export function CardFieldInput({
         filtered = filtered.filter((card) => card.card_type === cardType);
       }
 
-      // Filtrar por tags compartidos con cards anteriores si está disponible
-      if (shouldCascadeFilter) {
-        // Obtener todas las cards para extraer tags de las cards anteriores
-        const allCardsResult = await CardAPIService.getCards();
-        if (allCardsResult.success) {
-          const precedingCards = allCardsResult.data.filter((card) =>
-            precedingCardIds.includes(card._id!),
+      // Aplicar filtrado por tags heredados si los tenemos
+      if (precedingTagsSet && precedingTagsSet.size > 0) {
+        filtered = filtered.filter((card) => {
+          if (!Array.isArray(card.tags) || card.tags.length === 0) return false;
+          return card.tags.some((tag) =>
+            precedingTagsSet!.has(normalizeTag(tag)),
           );
-
-          // Extraer todos los tags únicos de las cards anteriores
-          const precedingTags = new Set<string>();
-          precedingCards.forEach((card) => {
-            if (Array.isArray(card.tags)) {
-              card.tags.forEach((tag) => precedingTags.add(normalizeTag(tag)));
-            }
-          });
-
-          // Si hay tags anteriores, filtrar para mostrar solo cards que compartan al menos un tag
-          if (precedingTags.size > 0) {
-            filtered = filtered.filter((card) => {
-              if (!Array.isArray(card.tags) || card.tags.length === 0) {
-                return false;
-              }
-              return card.tags.some((tag) =>
-                precedingTags.has(normalizeTag(tag)),
-              );
-            });
-          }
-        }
+        });
       }
 
       setAvailableCards(filtered);
