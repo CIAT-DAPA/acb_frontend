@@ -66,8 +66,10 @@ const getFirstCardSectionTags = (
   sections: BulletinSection[],
   currentSectionIndex: number,
 ): string[] => {
-  // Buscar la primera sección con cards antes de la actual
-  for (let i = 0; i < currentSectionIndex; i++) {
+  // Buscar hacia atrás desde la sección actual la sección previa MÁS CERCANA
+  // que tenga cards seleccionadas. Ignorar secciones que tengan campos card
+  // pero sin valores seleccionados.
+  for (let i = currentSectionIndex - 1; i >= 0; i--) {
     const section = sections[i];
     const allFields = [
       ...(section.header_config?.fields || []),
@@ -75,7 +77,7 @@ const getFirstCardSectionTags = (
       ...(section.footer_config?.fields || []),
       ...(section.repeatable_pages?.flatMap((p) => [
         ...(p.header_config?.fields || []),
-        ...p.blocks.flatMap((b) => b.fields),
+        ...(p.blocks?.flatMap((b) => b.fields) || []),
         ...(p.footer_config?.fields || []),
       ]) || []),
     ];
@@ -83,11 +85,11 @@ const getFirstCardSectionTags = (
     const cardFields = allFields.filter((f) => f.type === "card");
 
     if (cardFields.length > 0) {
-      // Encontramos la primera sección con cards
+      // Extraer solo los IDs que ya estén seleccionados en esa sección
       const selectedCardIds: string[] = [];
       cardFields.forEach((field) => {
         const value = field.value;
-        if (Array.isArray(value)) {
+        if (Array.isArray(value) && value.length > 0) {
           selectedCardIds.push(
             ...value.map((item: any) =>
               typeof item === "string"
@@ -98,9 +100,10 @@ const getFirstCardSectionTags = (
         }
       });
 
-      // Aquí necesitaríamos acceso a los datos de cards para extraer tags
-      // Por ahora, retornaremos los IDs seleccionados y filtraremos en CardFieldInput
-      return selectedCardIds;
+      // Si encontramos IDs seleccionados, retornarlos; si no, seguir buscando atrás
+      if (selectedCardIds.length > 0) {
+        return selectedCardIds;
+      }
     }
   }
 
