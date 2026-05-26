@@ -45,13 +45,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       return entries;
     }
 
-    const publicBulletins = publishedResponse.data.filter(
-      (bulletin) => bulletin.access_config?.access_type === "public",
-    );
-
     const templateIds = Array.from(
       new Set(
-        publicBulletins
+        publishedResponse.data
           .map((bulletin) => bulletin.base_template_master_id)
           .filter((id): id is string => Boolean(id)),
       ),
@@ -70,7 +66,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }),
     );
 
-    for (const bulletin of publicBulletins) {
+    for (const bulletin of publishedResponse.data) {
       const templateSlug = templateSlugMap.get(
         bulletin.base_template_master_id,
       );
