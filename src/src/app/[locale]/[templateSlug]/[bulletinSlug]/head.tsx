@@ -54,12 +54,8 @@ const LOCALIZED_TEXT: Record<
   },
 };
 
-function buildCanonicalUrl(
-  locale: string,
-  templateSlug: string,
-  bulletinSlug: string,
-) {
-  return `${SITE_URL}/${locale}/${templateSlug}/${bulletinSlug}`;
+function buildCanonicalUrl(locale: string, bulletinSlug: string) {
+  return `${SITE_URL}/${locale}/bulletins/${bulletinSlug}`;
 }
 
 function truncate(value: string, maxLength: number): string {
@@ -85,11 +81,7 @@ function toAbsoluteUrl(url?: string): string {
 
 export default async function Head({ params }: BulletinPublicHeadProps) {
   const localeText = LOCALIZED_TEXT[params.locale] || LOCALIZED_TEXT.es;
-  const canonicalUrl = buildCanonicalUrl(
-    params.locale,
-    params.templateSlug,
-    params.bulletinSlug,
-  );
+  const canonicalUrl = buildCanonicalUrl(params.locale, params.bulletinSlug);
 
   let bulletinTitle = params.bulletinSlug;
   let description = localeText.defaultDescription;
@@ -122,7 +114,7 @@ export default async function Head({ params }: BulletinPublicHeadProps) {
 
   const alternateLocales = localeText.locales.map((locale) => ({
     locale,
-    href: buildCanonicalUrl(locale, params.templateSlug, params.bulletinSlug),
+    href: buildCanonicalUrl(locale, params.bulletinSlug),
   }));
 
   const articleSchema = generateArticleSchema({
