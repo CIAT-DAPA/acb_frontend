@@ -611,7 +611,7 @@ export default function Bulletins() {
                           onPreview={showViewBtn ? handleView : undefined}
                           editBtn={showEditBtn}
                           onEdit={() =>
-                            (window.location.href = `/bulletins/${bulletin._id}/edit`)
+                            (window.location.href = `/bulletins/edit/${bulletin._id}`)
                           }
                           duplicateBtn={showDuplicateBtn}
                           onDuplicate={
