@@ -50,11 +50,11 @@ export default function DashboardPage() {
   // Determine which tabs the user can read
   const canReadTemplates = can(
     PERMISSION_ACTIONS.Read,
-    MODULES.TEMPLATE_MANAGEMENT
+    MODULES.TEMPLATE_MANAGEMENT,
   );
   const canReadBulletins = can(
     PERMISSION_ACTIONS.Read,
-    MODULES.BULLETINS_COMPOSER
+    MODULES.BULLETINS_COMPOSER,
   );
   const canReadCards = can(PERMISSION_ACTIONS.Read, MODULES.CARD_MANAGEMENT);
 
@@ -76,7 +76,7 @@ export default function DashboardPage() {
   // Ensure the active tab is the first available one for the user
   const [active, setActive] = useState<TabKey>(getFirstAvailableTab());
   const [typePreview, setTypePreview] = useState<ContentType>(
-    getFirstAvailableContentType()
+    getFirstAvailableContentType(),
   );
 
   // If permissions change at runtime, ensure active tab remains valid
@@ -112,10 +112,10 @@ export default function DashboardPage() {
 
   // Status filters (empty array = "All")
   const [bulletinStatusFilter, setBulletinStatusFilter] = useState<string[]>(
-    []
+    [],
   );
   const [templateStatusFilter, setTemplateStatusFilter] = useState<string[]>(
-    []
+    [],
   );
   const [cardStatusFilter, setCardStatusFilter] = useState<string[]>([]);
 
@@ -225,7 +225,7 @@ export default function DashboardPage() {
     // Apply status filter (only if not empty = not "All")
     if (templateStatusFilter.length > 0) {
       filtered = filtered.filter((tpl) =>
-        templateStatusFilter.includes(tpl.status)
+        templateStatusFilter.includes(tpl.status),
       );
     }
 
@@ -233,7 +233,7 @@ export default function DashboardPage() {
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter((tpl) =>
-        tpl.template_name.toLowerCase().includes(term)
+        tpl.template_name.toLowerCase().includes(term),
       );
     }
 
@@ -286,7 +286,7 @@ export default function DashboardPage() {
     // Apply status filter (only if not empty = not "All")
     if (cardStatusFilter.length > 0) {
       filtered = filtered.filter((card) =>
-        cardStatusFilter.includes(card.status)
+        cardStatusFilter.includes(card.status),
       );
     }
 
@@ -294,7 +294,7 @@ export default function DashboardPage() {
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter((card) =>
-        card.card_name.toLowerCase().includes(term)
+        card.card_name.toLowerCase().includes(term),
       );
     }
 
@@ -347,7 +347,7 @@ export default function DashboardPage() {
     // Apply status filter (only if not empty = not "All")
     if (bulletinStatusFilter.length > 0) {
       filtered = filtered.filter((bull) =>
-        bulletinStatusFilter.includes(bull.status)
+        bulletinStatusFilter.includes(bull.status),
       );
     }
 
@@ -355,7 +355,7 @@ export default function DashboardPage() {
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter((bull) =>
-        bull.bulletin_name.toLowerCase().includes(term)
+        bull.bulletin_name.toLowerCase().includes(term),
       );
     }
 
@@ -511,7 +511,7 @@ export default function DashboardPage() {
   // Selection handlers
   const toggleSelectItem = (id: string) => {
     setSelectedItems((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
     );
   };
 
@@ -520,8 +520,8 @@ export default function DashboardPage() {
       active === "bulletins"
         ? filteredBulletins
         : active === "templates"
-        ? filteredTemplates
-        : filteredCards;
+          ? filteredTemplates
+          : filteredCards;
 
     if (selectedItems.length === currentItems.length) {
       setSelectedItems([]);
@@ -557,7 +557,7 @@ export default function DashboardPage() {
         showToast?.(
           t("deleteSuccess", { name: itemToDelete.name || id }),
           "success",
-          3000
+          3000,
         );
         // remove locally
         if (type === "templates")
@@ -576,7 +576,7 @@ export default function DashboardPage() {
           error: err?.message || "",
         }),
         "error",
-        5000
+        5000,
       );
     } finally {
       setIsDeleting(false);
@@ -963,7 +963,8 @@ export default function DashboardPage() {
                     .filter(
                       (template, index, array) =>
                         template._id &&
-                        array.findIndex((t) => t._id === template._id) === index
+                        array.findIndex((t) => t._id === template._id) ===
+                          index,
                     )
                     .map((template) => {
                       const allowedGroups =
@@ -971,12 +972,12 @@ export default function DashboardPage() {
                       const canEdit = can(
                         PERMISSION_ACTIONS.Update,
                         MODULES.TEMPLATE_MANAGEMENT,
-                        allowedGroups
+                        allowedGroups,
                       );
                       const canDelete = can(
                         PERMISSION_ACTIONS.Delete,
                         MODULES.TEMPLATE_MANAGEMENT,
-                        allowedGroups
+                        allowedGroups,
                       );
 
                       return (
@@ -997,13 +998,13 @@ export default function DashboardPage() {
                           lastModified={
                             template.log.updated_at
                               ? new Date(
-                                  template.log.updated_at
+                                  template.log.updated_at,
                                 ).toLocaleDateString()
                               : template.log.created_at
-                              ? new Date(
-                                  template.log.created_at
-                                ).toLocaleDateString()
-                              : ""
+                                ? new Date(
+                                    template.log.created_at,
+                                  ).toLocaleDateString()
+                                : ""
                           }
                           thumbnailImages={template.thumbnail_images || []}
                           previewBtn={true}
@@ -1024,7 +1025,7 @@ export default function DashboardPage() {
                                   handleDelete(
                                     template._id!,
                                     "templates",
-                                    template.template_name
+                                    template.template_name,
                                   )
                               : undefined
                           }
@@ -1051,14 +1052,14 @@ export default function DashboardPage() {
                     can(
                       PERMISSION_ACTIONS.Update,
                       MODULES.TEMPLATE_MANAGEMENT,
-                      item.access_config?.allowed_groups || []
+                      item.access_config?.allowed_groups || [],
                     )
                   }
                   canDelete={(item) =>
                     can(
                       PERMISSION_ACTIONS.Delete,
                       MODULES.TEMPLATE_MANAGEMENT,
-                      item.access_config?.allowed_groups || []
+                      item.access_config?.allowed_groups || [],
                     )
                   }
                   getItemId={(item) => item._id!}
@@ -1111,12 +1112,12 @@ export default function DashboardPage() {
                     const canEdit = can(
                       PERMISSION_ACTIONS.Update,
                       MODULES.BULLETINS_COMPOSER,
-                      allowedGroups
+                      allowedGroups,
                     );
                     const canDelete = can(
                       PERMISSION_ACTIONS.Delete,
                       MODULES.BULLETINS_COMPOSER,
-                      allowedGroups
+                      allowedGroups,
                     );
                     const creatorName =
                       b.log.creator_first_name && b.log.creator_last_name
@@ -1136,8 +1137,8 @@ export default function DashboardPage() {
                           b.log.updated_at
                             ? new Date(b.log.updated_at).toLocaleDateString()
                             : b.log.created_at
-                            ? new Date(b.log.created_at).toLocaleDateString()
-                            : ""
+                              ? new Date(b.log.created_at).toLocaleDateString()
+                              : ""
                         }
                         thumbnailImages={b.thumbnail_images || []}
                         previewBtn={true}
@@ -1146,7 +1147,7 @@ export default function DashboardPage() {
                         editBtn={canEdit}
                         onEdit={
                           canEdit
-                            ? () => router.push(`/bulletins/${b._id}/edit`)
+                            ? () => router.push(`/bulletins/edit/${b._id}`)
                             : undefined
                         }
                         deleteBtn={canDelete}
@@ -1156,7 +1157,7 @@ export default function DashboardPage() {
                                 handleDelete(
                                   b._id!,
                                   "bulletins",
-                                  b.bulletin_name
+                                  b.bulletin_name,
                                 )
                             : undefined
                         }
@@ -1173,7 +1174,7 @@ export default function DashboardPage() {
                   onToggleSelect={toggleSelectItem}
                   onToggleSelectAll={toggleSelectAll}
                   onView={(item) => handlePreview(item._id!, "bulletin")}
-                  onEdit={(item) => router.push(`/bulletins/${item._id}/edit`)}
+                  onEdit={(item) => router.push(`/bulletins/edit/${item._id}`)}
                   onDelete={(item) =>
                     handleDelete(item._id!, "bulletins", item.bulletin_name)
                   }
@@ -1181,14 +1182,14 @@ export default function DashboardPage() {
                     can(
                       PERMISSION_ACTIONS.Update,
                       MODULES.BULLETINS_COMPOSER,
-                      item.access_config?.allowed_groups || []
+                      item.access_config?.allowed_groups || [],
                     )
                   }
                   canDelete={(item) =>
                     can(
                       PERMISSION_ACTIONS.Delete,
                       MODULES.BULLETINS_COMPOSER,
-                      item.access_config?.allowed_groups || []
+                      item.access_config?.allowed_groups || [],
                     )
                   }
                   getItemId={(item) => item._id!}
@@ -1238,12 +1239,12 @@ export default function DashboardPage() {
                     const canEdit = can(
                       PERMISSION_ACTIONS.Update,
                       MODULES.CARD_MANAGEMENT,
-                      allowedGroups
+                      allowedGroups,
                     );
                     const canDelete = can(
                       PERMISSION_ACTIONS.Delete,
                       MODULES.CARD_MANAGEMENT,
-                      allowedGroups
+                      allowedGroups,
                     );
 
                     return (
@@ -1257,8 +1258,8 @@ export default function DashboardPage() {
                           c.log.updated_at
                             ? new Date(c.log.updated_at).toLocaleDateString()
                             : c.log.created_at
-                            ? new Date(c.log.created_at).toLocaleDateString()
-                            : ""
+                              ? new Date(c.log.created_at).toLocaleDateString()
+                              : ""
                         }
                         thumbnailImages={c.thumbnail_images || []}
                         previewBtn={true}
@@ -1296,14 +1297,14 @@ export default function DashboardPage() {
                     can(
                       PERMISSION_ACTIONS.Update,
                       MODULES.CARD_MANAGEMENT,
-                      item.access_config?.allowed_groups || []
+                      item.access_config?.allowed_groups || [],
                     )
                   }
                   canDelete={(item) =>
                     can(
                       PERMISSION_ACTIONS.Delete,
                       MODULES.CARD_MANAGEMENT,
-                      item.access_config?.allowed_groups || []
+                      item.access_config?.allowed_groups || [],
                     )
                   }
                   getItemId={(item) => item._id!}

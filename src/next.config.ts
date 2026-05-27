@@ -6,6 +6,15 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  async redirects() {
+    return [
+      {
+        source: "/bulletins/:id/edit",
+        destination: "/bulletins/edit/:id",
+        permanent: false,
+      },
+    ];
+  },
   // Configuración para Puppeteer (actualizado a la nueva API)
   serverExternalPackages: ["puppeteer-core", "puppeteer"],
   webpack: (config) => {
