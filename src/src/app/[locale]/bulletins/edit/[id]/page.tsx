@@ -4,19 +4,14 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Loader2 } from "lucide-react";
-import FormBulletinPage from "../../create/FormBulletinPage";
-import { BulletinAPIService } from "../../../../../services/bulletinService";
-import {
-  CreateBulletinData,
-  BulletinStatus,
-} from "../../../../../types/bulletin";
-import { ProtectedRoute } from "../../../../../components/ProtectedRoute";
+import FormBulletinPage from "@/app/[locale]/bulletins/create/FormBulletinPage";
+import { BulletinAPIService } from "@/services/bulletinService";
+import { CreateBulletinData, BulletinStatus, BulletinComment } from "@/types/bulletin";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
 import { useAuth } from "@/hooks/useAuth";
-import { slugify } from "../../../../../utils/slugify";
+import { slugify } from "@/utils/slugify";
 import { ReviewService } from "@/services/reviewService";
-import { ReviewComment } from "@/types/review";
-import { BulletinComment } from "@/types/bulletin"; // Ensure alias is used consistently
 
 export default function EditBulletinPage() {
   const params = useParams();
@@ -27,9 +22,7 @@ export default function EditBulletinPage() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [initialData, setInitialData] = useState<CreateBulletinData | null>(
-    null,
-  );
+  const [initialData, setInitialData] = useState<CreateBulletinData | null>(null);
   const [comments, setComments] = useState<BulletinComment[]>([]);
 
   useEffect(() => {
@@ -70,15 +63,9 @@ export default function EditBulletinPage() {
       }
 
       const { master, current_version: currentVersion } = response.data;
-      console.log("Bulletin master y versión cargados:", {
-        master,
-        currentVersion,
-      });
 
       if (!currentVersion || !currentVersion.data) {
-        console.warn(
-          "La versión actual no tiene data, usando valores por defecto",
-        );
+        console.warn("La versión actual no tiene data, usando valores por defecto");
         setError(t("editBulletin.errorNoVersion"));
         return;
       }
@@ -86,7 +73,7 @@ export default function EditBulletinPage() {
       const bulletinData: CreateBulletinData = {
         master: {
           bulletin_name: master.bulletin_name,
-          name_machine: master.name_machine || slugify(master.bulletin_name), // Generar automáticamente si no existe
+          name_machine: master.name_machine || slugify(master.bulletin_name),
           status: master.status as BulletinStatus,
           log: master.log,
           base_template_master_id: master.base_template_master_id,
@@ -113,9 +100,7 @@ export default function EditBulletinPage() {
       setInitialData(bulletinData);
     } catch (err) {
       console.error("Error loading bulletin:", err);
-      setError(
-        err instanceof Error ? err.message : t("editBulletin.errorGeneric"),
-      );
+      setError(err instanceof Error ? err.message : t("editBulletin.errorGeneric"));
     } finally {
       setLoading(false);
     }
@@ -124,15 +109,10 @@ export default function EditBulletinPage() {
   const loadComments = async () => {
     try {
       const response = await ReviewService.getReviewHistory(bulletinId);
-
-      // 1. Normalizamos la respuesta: si viene en .data bien, si no, usamos el objeto completo
       const historyData = (response as any).data || response;
 
-      // 2. Cambiamos la validación: verificamos si existen comentarios o ciclos
       if (historyData && (historyData.comments || historyData.active_cycle)) {
-        const transformReviewCommentToComment = (
-          reviewComment: any,
-        ): BulletinComment => ({
+        const transformReviewCommentToComment = (reviewComment: any): BulletinComment => ({
           comment_id: reviewComment.comment_id,
           target_element: {
             section_id: reviewComment.target_element?.section_id || undefined,
@@ -141,48 +121,41 @@ export default function EditBulletinPage() {
           },
           text: reviewComment.text,
           author_id: reviewComment.author_id,
-          author_first_name: reviewComment.author_first_name || reviewComment.reviewer_first_name, // Fallback to reviewer name if author name is missing
+          author_first_name: reviewComment.author_first_name || reviewComment.reviewer_first_name,
           author_last_name: reviewComment.author_last_name || reviewComment.reviewer_last_name,
           created_at: new Date(reviewComment.created_at),
           replies: reviewComment.replies?.map(transformReviewCommentToComment) || [],
           bulletin_version_id: reviewComment.bulletin_version_id || "",
         });
 
-        // Use Set to avoid duplicate comments
         const processedCommentsMap = new Map<string, BulletinComment>();
 
         const addCommentsToMap = (commentsToAdd: any[]) => {
-            commentsToAdd.forEach(c => {
-                 if(c && c.comment_id) {
-                     processedCommentsMap.set(c.comment_id, transformReviewCommentToComment(c));
-                 }
-            });
+          commentsToAdd.forEach((comment) => {
+            if (comment && comment.comment_id) {
+              processedCommentsMap.set(comment.comment_id, transformReviewCommentToComment(comment));
+            }
+          });
         };
-
 
         if (Array.isArray(historyData.comments)) {
           addCommentsToMap(historyData.comments);
         }
-        
+
         if (historyData.active_cycle?.comments && Array.isArray(historyData.active_cycle.comments)) {
-            addCommentsToMap(historyData.active_cycle.comments);
+          addCommentsToMap(historyData.active_cycle.comments);
         }
 
-        // Also check if there are comments in other cycles if needed, or if the backend returns them all in root
-        if(historyData.review_cycles && Array.isArray(historyData.review_cycles)) {
-            historyData.review_cycles.forEach((cycle: any) => {
-                if(cycle.comments && Array.isArray(cycle.comments)) {
-                    addCommentsToMap(cycle.comments);
-                }
-            });
+        if (historyData.review_cycles && Array.isArray(historyData.review_cycles)) {
+          historyData.review_cycles.forEach((cycle: any) => {
+            if (cycle.comments && Array.isArray(cycle.comments)) {
+              addCommentsToMap(cycle.comments);
+            }
+          });
         }
 
         const processedComments = Array.from(processedCommentsMap.values());
-        
-        console.log("✅ Comentarios encontrados y procesados:", processedComments);
         setComments(processedComments);
-      } else {
-        console.warn("⚠️ No se encontraron comentarios en la respuesta:", response);
       }
     } catch (error) {
       console.error("❌ Error en la petición de comentarios:", error);
@@ -212,12 +185,8 @@ export default function EditBulletinPage() {
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="text-center max-w-md mx-auto px-4">
             <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-red-800 mb-2">
-                {t("editBulletin.errorTitle")}
-              </h2>
-              <p className="text-red-600 mb-4">
-                {error || t("editBulletin.errorNoData")}
-              </p>
+              <h2 className="text-xl font-semibold text-red-800 mb-2">{t("editBulletin.errorTitle")}</h2>
+              <p className="text-red-600 mb-4">{error || t("editBulletin.errorNoData")}</p>
               <button
                 onClick={() => router.push("/bulletins")}
                 className="bg-[#283618] hover:bg-[#606c38] text-white px-6 py-2 rounded-lg font-medium transition-colors"
@@ -242,7 +211,7 @@ export default function EditBulletinPage() {
         mode="edit"
         bulletinId={bulletinId}
         initialData={initialData}
-        comments={comments as any} // Temporary cast to resolve type mismatch
+        comments={comments as any}
       />
     </ProtectedRoute>
   );
