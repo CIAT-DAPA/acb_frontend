@@ -17,7 +17,7 @@
     "loading": "Đang tải...",
     "user": "Người dùng",
     "defaultInitial": "U",
-    "brand": "Trình tạo Bản tin"
+    "brand": "Công cụ xây dựng bản tin"
   },
   "Partners": {
     "title": "Đối tác của chúng tôi",
@@ -38,13 +38,13 @@
       "edit": "Chỉnh sửa",
       "description": "Miêu tả",
       "role": "Vai trò",
-      "activePermissions": "Các Quyền đã được kích hoạt",
+      "activePermissions": "Quyền truy cập đã kích hoạt",
       "enabledModules": "Các mô-đun được kích hoạt",
-      "actions": "Các hành động",
+      "actions": "Các hoạt động",
       "viewDetails": "Xem chi tiết",
       "modulesCount": "{count} / 7 mô-đun",
       "hide": "Ẩn",
-      "activePermissionsLabel": "Các Quyền đã được kích hoạt",
+      "activePermissionsLabel": "Quyền truy cập đã kích hoạt",
       "enabledModulesLabel": "của 7 mô-đun được kích hoạt",
       "enabledModulesCount": "{count} trong số 7 mô-đun được bật",
       "modulesAndPermissions": "Các Mô-đun và Quyền hạn CRUD:",
@@ -99,7 +99,12 @@
     "deleteConfirmTitle": "Xác nhận hành động",
     "deleteConfirmMessage": "Bạn có chắc chắn muốn lưu trữ \"{name}\" không? Thao tác này sẽ đánh dấu nó là đã lưu trữ.",
     "deleteSuccess": "{name} đã được lưu trữ thành công",
-    "deleteError": "Lỗi khi lưu trữ {tên}: {error}"
+    "deleteError": "Lỗi khi lưu trữ {tên}: {error}",
+    "table": {
+      "actions": "Các hoạt động",
+      "archiveSelected": "Đã chọn bản lưu trữ",
+      "bulkActions": "Thao tác hàng loạt"
+    }
   },
   "VisualResources": {
     "title": "Tài liệu trực quan",
@@ -126,7 +131,7 @@
     "editSuccess": "Tài liệu trực quan đã được cập nhật thành công",
     "editError": "Lỗi khi cập nhật tài liệu trực quan",
     "deleteSuccess": "Tài liệu trực quan đã được xóa thành công",
-    "deleteError": "Lỗi khi xóa tài liệu trực quan",
+    "deleteError": "Lỗi khi xóa nội dung hiển thị",
     "backToTemplates": "Quay lại Biểu mẫu",
     "backToVisualResources": "Quay lại Tài liệu trực quan",
     "uploadConfiguration": "Cấu hình tài liệu",
@@ -210,7 +215,7 @@
     "view": "Xem",
     "delete": "Lưu trữ",
     "confirmDeleteBtn": "Lưu trữ",
-    "deleteConfirmTitle": "Mẫu lưu trữ",
+    "deleteConfirmTitle": "Biểu mẫu lưu trữ",
     "deleteConfirmMessage": "Bạn có chắc chắn muốn lưu trữ {name} không? Thao tác này sẽ chuyển trạng thái của {name} thành đã lưu trữ và sẽ không hiển thị trong danh sách chính.",
     "deleting": "Đang lưu trữ...",
     "deleteSuccess": "Biểu mẫu {name} đã được lưu trữ thành công",
@@ -218,7 +223,7 @@
     "duplicateConfirmTitle": "Sao chép biểu mẫu",
     "duplicateConfirmMessage": "Nhập tên và mô tả cho biểu mẫu sao chép mới:",
     "templateNameLabel": "Tên biểu mẫu",
-    "templateNamePlaceholder": "Tên biểu mẫu đã sao chép",
+    "templateNamePlaceholder": "Sao chép tên biểu mẫu",
     "descriptionLabel": "Miêu tả",
     "descriptionPlaceholder": "Mô tả biểu mẫu sao chép mới...",
     "originalTemplateLabel": "Biểu mẫu gốc:",
@@ -278,7 +283,7 @@
       "cuarto_pliego": "Một phần tư khổ",
       "octavo_pliego": "Một phần tám khổ",
       "sectionsPerPage": "Số phần trên mỗi trang",
-      "sectionsPerPageRange": "1 (một trang một)",
+      "sectionsPerPageRange": "một trên mỗi trang",
       "sectionsPerPageMax": "6 (lưới 2x3)",
       "sectionsOrder": "Thứ tự các phần khi xuất",
       "resetOrder": "Đặt lại thứ tự",
@@ -302,7 +307,7 @@
       "sectionPage": "Trang",
       "toPdf": "Đang chuyển đổi sang PDF...",
       "toZip": "Đang tạo tệp ZIP...",
-      "composingPrintLayout": "Đang bố cục các trang in..."
+      "composingPrintLayout": "Đang sắp xếp các trang in"
     },
     "bulletinPreview": {
       "backToTemplates": "Quay lại Biểu mẫu",
@@ -336,7 +341,8 @@
       "noDescription": "Không có mô tả",
       "selectCard": "Vui lòng chọn một card.",
       "version": "Phiên bản",
-      "access": "Truy cập"
+      "access": "Truy cập",
+      "errorNotFound": "Không tìm thấy bản tin nào"
     },
     "preview": {
       "title": "Xem trước",
@@ -399,7 +405,7 @@
         "name": {
           "label": "Tên bản tin",
           "placeholder": "VD: Bản tin thời tiết nông vụ - Tháng 1 năm 2025",
-          "helper": "Chọn một tên mô tả để dễ dàng nhận dạng bản tin này"
+          "helper": "Chọn một cái tên phản ánh nội dung để dễ dàng nhận diện bản tin này"
         },
         "nameMachine": {
           "label": "Tên máy",
@@ -443,7 +449,7 @@
       "items": "{count} mục",
       "maximum": "(tối đa: {max})",
       "addItem": "Thêm mục",
-      "importCsv": "Nhập CSV",
+      "importCsv": "Tải lên CSV",
       "csvRequirements": "Yêu cầu định dạng CSV",
       "dateFormat": "Định dạng ngày:",
       "requiredColumns": "Các cột bắt buộc:",
@@ -459,7 +465,7 @@
       "noParameters": "Không có tham số khí hậu nào được cấu hình"
     },
     "publishModal": {
-      "title": "Bản tin đã được xuất bản!",
+      "title": "Bản tin đã xuất",
       "message": "Bản tin của bạn đã được xuất bản thành công và hiện đã có sẵn.",
       "urlLabel": "Link truy cập bản tin:",
       "copyUrl": "Sao chép",
@@ -484,7 +490,7 @@
       "content": "Nội dung",
       "basicInfo": "Thông tin cơ bản",
       "basicInfoDesc": "Xác định dữ liệu thẻ chính",
-      "contentDesc": "Cấu hình các khối thẻ và trường thông tin"
+      "contentDesc": "Cấu hình các phần thẻ và trường thông tin"
     },
     "preview": {
       "content": "Nội dung",
@@ -496,7 +502,7 @@
       "accessType": "Truy cập",
       "fields": "Các trường thông tin",
       "cardType": "Kiểu",
-      "blocks": "Khối",
+      "blocks": "Phần",
       "background": "Nền",
       "untitled": "Chưa có tiêu đề",
       "cardName": "Tên",
@@ -511,7 +517,7 @@
       "tabs": {
         "header": "Đầu trang",
         "footer": "Chân trang",
-        "blocks": "Khối"
+        "blocks": "Phần"
       },
       "addField": "Thêm trường thông tin",
       "removeField": "Xóa trường thông tin",
@@ -521,26 +527,26 @@
       "backgroundImage": "Hình nền",
       "dragToReorder": "Kéo để sắp xếp lại",
       "newField": "Trường thông tin mới",
-      "addBlock": "Thêm khối",
-      "blocks": "Khối",
-      "removeBlock": "Xóa khối",
-      "blockConfiguration": "Cấu hình khối",
-      "blockNamePlaceholder": "Tên khối",
-      "blockName": "Tên khối",
-      "blockStyles": "Phong cách Khối Nội dung",
-      "noFieldsHelp": "Các trường xác định thông tin nào sẽ được thu thập trong khối này",
+      "addBlock": "Thêm phần",
+      "blocks": "Phần",
+      "removeBlock": "Xóa phần",
+      "blockConfiguration": "Cấu hình phần",
+      "blockNamePlaceholder": "Tên phần",
+      "blockName": "Tên phần",
+      "blockStyles": "Phong cách Phần Nội dung",
+      "noFieldsHelp": "Các trường xác định thông tin nào sẽ được thu thập trong phần này",
       "selectButton": "Lựa chọn",
       "title": "Nội dung thẻ",
-      "description": "Cấu hình các khối và trường thông tin sẽ tạo thành nội dung thẻ",
+      "description": "Cấu hình các phần và trường thông tin sẽ tạo thành nội dung thẻ",
       "backgroundUrl": "Đường dẫn đến ảnh nền",
       "backgroundUrlPlaceholder": "https://example.com/background.jpg",
       "backgroundUrlHelp": "Đường dẫn (link) của hình ảnh nền cho thẻ",
-      "noBlocks": "Chưa có khối nào. Thêm khối đầu tiên để bắt đầu.",
-      "noFields": "Khối này chưa có trường thông tin nào",
-      "blockNameInputPlaceholder": "Nhập tên khối",
-      "blockNameHelp": "Tên này giúp xác định khối trong cấu hình",
-      "blockStylesDescription": "Kiểu Khối (Block styles) sẽ được áp dụng cho vùng chứa nhóm các trường thông tin. Hãy sử dụng 'Padding' (Khoảng đệm trong) cho không gian bên trong và 'Gap' (Khoảng cách) cho không gian giữa các trường bên trong khối.",
-      "blockFieldsTitle": "Các Trường thông tin trong Khối ({count})",
+      "noBlocks": "Chưa có phần nào. Thêm phần đầu tiên để bắt đầu.",
+      "noFields": "Phần này chưa có trường thông tin nào",
+      "blockNameInputPlaceholder": "Nhập tên phần",
+      "blockNameHelp": "Tên này giúp xác định phần trong cấu hình",
+      "blockStylesDescription": "Kiểu Phần (Block styles) sẽ được áp dụng cho vùng chứa nhóm các trường thông tin. Hãy sử dụng 'Padding' (Khoảng đệm trong) cho không gian bên trong và 'Gap' (Khoảng cách) cho không gian giữa các trường bên trong phần.",
+      "blockFieldsTitle": "Các Trường thông tin trong Phần ({count})",
       "cardBackground": "Hình nền Thẻ",
       "noImageSelected": "Không có hình ảnh nào được chọn",
       "backgroundImageHelp": "Chọn một hình ảnh từ các nguồn dữ liệu trực quan để sử dụng làm hình nền",
@@ -550,7 +556,7 @@
       "padding": "Đệm (Khoảng trống bên trong)",
       "paddingPlaceholder": "Ví dụ: 16px, 1rem, 10px 20px",
       "paddingHelp": "Khoảng cách bên trong giữa đường viền thẻ và nội dung của thẻ",
-      "gap": "Khoảng trống (Khoảng cách giữa các khối)",
+      "gap": "Khoảng trống (Khoảng cách giữa các phần)",
       "gapPlaceholder": "Ví dụ: 16px, 1rem, 20px",
       "gapHelp": "Khoảng cách giữa các khối thẻ",
       "blockId": "ID: {id} • {count} trường",
@@ -558,7 +564,7 @@
       "collapseConfiguration": "Thu gọn cấu hình",
       "untitled": "Chưa có tiêu đề",
       "errors": {
-        "blocksRequired": "Bạn phải thêm ít nhất một khối"
+        "blocksRequired": "Bạn phải thêm ít nhất một Phần"
       }
     },
     "basicInfo": {
@@ -616,7 +622,7 @@
       "edit": "Chỉnh sửa",
       "description": "Miêu tả",
       "role": "Vai trò",
-      "actions": "Các hành động",
+      "actions": "Các hoạt động",
       "viewDetails": "Xem chi tiết",
       "hide": "Ẩn",
       "group": "Nhóm",
@@ -656,7 +662,7 @@
     "cta": "Bắt đầu xây dựng",
     "stats": {
       "countries": "Bản tin từ 2 quốc gia",
-      "templates": "Biểu mẫu có thể tùy chỉnh"
+      "templates": "Biểu mẫu có thể điều chỉnh"
     },
     "animatedWords": {
       "word1": "Thông tin khí hậu",
@@ -693,11 +699,11 @@
       "recommendation": "Khuyến cáo",
       "alert": "Cảnh báo"
     },
-    "blocks": "khối",
+    "blocks": "Phần",
     "fields": "Trường thông tin",
     "loading": "Đang tải thẻ...",
     "title": "Quản lý các thẻ có thể tái sử dụng cho bản tin của bạn",
-    "subtitle": "Các Thẻ là nội dung được định nghĩa trước mà bạn có thể chèn vào bản tin của mình: (bao gồm) sâu bệnh, dịch bệnh, thông tin cây trồng và khuyến nghị.",
+    "subtitle": "Thẻ là các nội dung khuyến cáo được tạo sẵn để bạn có thể gắn vào trong bản tin, ví dụ: khuyến cáo về sâu, bệnh, thông tin về giống cây trồng",
     "createNew": "Tạo thẻ",
     "searchPlaceholder": "Tìm thư mục hoặc thẻ theo tên, tag hoặc loại...",
     "deleteConfirmTitle": "Xóa thẻ",
@@ -707,7 +713,7 @@
     "duplicateConfirmTitle": "Sao chép thẻ",
     "duplicateConfirmMessage": "Nhập tên cho thẻ mới được sao chép:",
     "cardNameLabel": "Tên thẻ",
-    "cardNamePlaceholder": "Tên thẻ bị trùng lặp",
+    "cardNamePlaceholder": "sao chép tên thẻ",
     "originalCardLabel": "Thẻ gốc:",
     "duplicating": "Đang sao chép...",
     "duplicateSuccess": "Thẻ \"{name}\" đã được sao chép thành công",
@@ -770,7 +776,7 @@
     "duplicateConfirmTitle": "Sao chép bản tin",
     "duplicateConfirmMessage": "Nhập tên cho bản tin sao chép mới:",
     "bulletinNameLabel": "Tên bản tin",
-    "bulletinNamePlaceholder": "Tên bản tin đã sao chép",
+    "bulletinNamePlaceholder": "sao chép tên bản tin",
     "originalBulletinLabel": "Bản tin gốc:",
     "cancelDuplicate": "Hủy bỏ",
     "confirmDuplicateBtn": "Sao chép",
@@ -778,7 +784,7 @@
     "duplicateSuccess": "Đã sao chép bản tin \"{name}\" thành công",
     "duplicateError": "Lỗi khi sao chép bản tin \"{name}\": {error}",
     "copySuffix": "bản sao",
-    "deleteConfirmTitle": "Lưu trữ bản tin",
+    "deleteConfirmTitle": "Bản tin lưu trữ",
     "deleteConfirmMessage": "Bạn có chắc muốn lưu trữ bản tin \"{name}\" không? Hành động này sẽ chuyển sang trạng thái đã lưu trữ.",
     "cancelDelete": "Hủy",
     "confirmDeleteBtn": "Lưu trữ",
@@ -804,6 +810,15 @@
       "approve": "Phê duyệt",
       "reject": "Từ chối",
       "comment": "Bình luận"
+    },
+    "shareModal": {
+      "title": "Bản tin đã xuất bản",
+      "message": "Bản tin này đã được xuất bản. Bạn có thể sử dụng liên kết sau để chia sẻ:",
+      "urlLabel": "Liên kết công khai:",
+      "copied": "Đã sao chép",
+      "copyUrl": "Sao chép",
+      "close": "Đóng",
+      "viewLink": "Xem"
     }
   },
   "CreateRole": {
@@ -835,7 +850,7 @@
         "description": "Quản lý các mẫu bản tin"
       },
       "dashboardbulletins": {
-        "name": "Bảng điều khiển Bản tin",
+        "name": "Trang quản lý bản tin",
         "description": "Xem danh sách bản tin và trạng thái"
       },
       "accesscontrol": {
@@ -858,7 +873,7 @@
     "roleNameRequired": "Tên vai trò là bắt buộc",
     "roleNameMinLength": "Tên phải có ít nhất 3 ký tự",
     "descriptionPlaceholder": "Mô tả trách nhiệm và phạm vi của vai trò này...",
-    "descriptionRequired": "Mô tả là bắt buộc",
+    "descriptionRequired": "Bắt buộc phải mô tả",
     "descriptionMinLength": "Mô tả phải có ít nhất 10 ký tự",
     "permissions": "Quyền truy cập theo Vai trò",
     "permissionsEnabled": "Quyền hạn đang được kích hoạt",
@@ -887,11 +902,11 @@
       "section": {
         "duplicate": "Tạo bản sao",
         "editName": "Chỉnh sửa tên phần",
-        "addBlock": "Thêm khối",
+        "addBlock": "Thêm phần",
         "remove": "Di chuyển",
         "moveUp": "Di chuyển lên",
         "moveDown": "Di chuyển xuống",
-        "blocks": "Khối",
+        "blocks": "Phần",
         "noBlocks": "Không có khối nào trong phần này",
         "sectionId": "ID phần",
         "iconUrl": "Biểu tượng đường dẫn"
@@ -912,11 +927,11 @@
         "loadingIcons": "Đang tải biểu tượng...",
         "iconHelp": "Biểu tượng tùy chọn sẽ xuất hiện bên cạnh tên phần",
         "sectionStyles": "Phong cách Phần",
-        "sectionStylesDescription": "Cácphong cách này sẽ được áp dụng cho tất cả các khối và trường thông tin trong phần này, trừ khi bị ghi đè.",
+        "sectionStylesDescription": "Cácphong cách này sẽ được áp dụng cho tất cả các Phần và trường thông tin trong phần này, trừ khi bị ghi đè.",
         "noName": "Không có tên",
-        "blocks": "khối",
+        "blocks": "Phần",
         "id": "ID",
-        "duplicateSection": "Phần trùng lặp",
+        "duplicateSection": "Sao chép phần",
         "deleteSection": "Xóa phần"
       },
       "navigation": {
@@ -926,7 +941,7 @@
       "tabs": {
         "header": "Đầu trang",
         "footer": "Chân trang",
-        "blocks": "Khối",
+        "blocks": "Phần",
         "general": "Tổng quan"
       },
       "block": {
@@ -934,20 +949,20 @@
         "addFieldButton": "Thêm trường thông tin",
         "fields": "Các trường thông tin",
         "noFieldsConfigured": "Không có trường thông tin nào được cấu hình",
-        "editName": "Chỉnh sửa tên khối",
-        "remove": "Xóa khối",
-        "noFields": "Không có trường thông tin nào trong khối này",
-        "configuration": "Cấu hình khối",
-        "nameLabel": "Tên khối",
-        "namePlaceholder": "Nhập tên khối",
-        "nameHelp": "Tên này giúp xác định khối trong phần cấu hình",
-        "styles": "Phong cách Khối Nội dung",
-        "stylesDescription": "Kiểu dáng Khối sẽ được áp dụng cho vùng chứa (container) nhóm các trường thông tin.",
-        "fieldsTitle": "Các Trường thông tin của Khối",
-        "fieldsHelp": "Các trường xác định thông tin nào sẽ được thu thập trong khối này",
-        "configureBlock": "Cấu hình khối",
+        "editName": "Chỉnh sửa tên Phần",
+        "remove": "Xóa phần",
+        "noFields": "Không có trường thông tin nào trong phần này",
+        "configuration": "Cấu hình phần",
+        "nameLabel": "Tên phần",
+        "namePlaceholder": "Nhập tên phần",
+        "nameHelp": "Tên này giúp xác định phần trong phần cấu hình",
+        "styles": "Phong cách Phần Nội dung",
+        "stylesDescription": "Kiểu dáng Phần sẽ được áp dụng cho vùng chứa (container) nhóm các trường thông tin.",
+        "fieldsTitle": "Các Trường thông tin của Phần",
+        "fieldsHelp": "Các trường xác định thông tin nào sẽ được thu thập trong phần này",
+        "configureBlock": "Cấu hình phần",
         "closeConfiguration": "Đóng cấu hình",
-        "deleteBlock": "Xóa khối"
+        "deleteBlock": "Xóa phần"
       },
       "title": "Cấu hình thành phần",
       "description": "Thiết kế các mục chính trong nội dung biểu mẫu của bạn",
@@ -961,21 +976,21 @@
       "no": "Không",
       "noSections": {
         "title": "Chưa có phần nào",
-        "description": "Các mục là các khối xây dựng chính của mẫu của bạn. Mỗi mục có thể chứa nhiều khối nội dung.",
+        "description": "Các mục là các phần xây dựng chính của mẫu của bạn. Mỗi mục có thể chứa nhiều phần nội dung.",
         "cta": "Thêm phần đầu tiên của bạn"
       },
       "empty": {
-        "title": "Không có phần nào",
-        "description": "Thêm mục đầu tiên của bạn để bắt đầu tạo cấu trúc cho biểu mẫu.",
+        "title": "Không có mục nào",
+        "description": "Thêm phần đầu tiên của bạn để bắt đầu tạo cấu trúc cho biểu mẫu.",
         "addFirst": "Thêm phần đầu tiên"
       },
       "blocksTab": {
-        "addBlock": "Thêm khối",
-        "title": "Các khối nội dung",
-        "infoMessage": "Các Khối tổ chức nội dung trong mỗi trang. Mỗi Khối có thể chứa nhiều trường với các loại thông tin khác nhau.",
-        "noBlocks": "Không có khối",
-        "noBlocksDescription": "Các Khối tổ chức nội dung trong mỗi trang",
-        "addFirstBlock": "Thêm khối đầu tiên",
+        "addBlock": "Thêm phần",
+        "title": "Các phần nội dung",
+        "infoMessage": "Các Phần tổ chức nội dung trong mỗi trang. Mỗi Phần có thể chứa nhiều trường với các loại thông tin khác nhau.",
+        "noBlocks": "Không có phần",
+        "noBlocksDescription": "Các Phần tổ chức nội dung trong mỗi trang",
+        "addFirstBlock": "Thêm phần đầu tiên",
         "fields": "Trường thông tin"
       },
       "iconSelector": {
@@ -993,7 +1008,7 @@
         "customizeButton": "Tùy chỉnh cho phần này",
         "usingGlobalHelp": "Phần này sử dụng đầu trang toàn cục. Nhấp vào \"Tùy chỉnh\" để tạo phiên bản cụ thể mà bạn có thể tự chỉnh sửa.",
         "restoreGlobal": "Khôi phục lại kiểu toàn cục",
-        "confirmRestore": "Bạn có chắc chắn muốn xóa tùy chỉnh và quay lại đầu trang toàn cục không?"
+        "confirmRestore": "Bạn có chắc chắn muốn xoá phần tuỳ chỉnh này và khôi phục lại header mặc định toàn hệ thống không?"
       },
       "footerTab": {
         "priorityTitle": "Ưu tiên",
@@ -1004,7 +1019,7 @@
         "priorityMessage": "Nếu bạn cấu hình một chân trang tại đây, nó sẽ được ưu tiên hơn. Nếu bạn không tùy chỉnh gì, chân trang toàn cục sẽ được tự động sử dụng.",
         "usingGlobal": "Đang sử dụng Chân trang Toàn cục",
         "usingGlobalHelp": "Mục này đang sử dụng chân trang toàn cục. Nhấp vào \"Tùy chỉnh\" để tạo phiên bản cụ thể mà bạn có thể tự chỉnh sửa.",
-        "confirmRestore": "Bạn có chắc chắn muốn xóa tùy chỉnh và quay lại chân trang toàn cục không?"
+        "confirmRestore": "Bạn có chắc chắn muốn xoá phần tuỳ chỉnh này và khôi phục lại footer mặc định toàn hệ thống không?"
       },
       "newSection": "Phần mới",
       "newBlock": "Khối mới"
@@ -1070,7 +1085,7 @@
         "selectionTypes": {
           "template": "Mẫu",
           "section": "Phần",
-          "block": "Khối",
+          "block": "Phần",
           "header": "Đầu trang",
           "footer": "Chân trang",
           "field": "Trường",
@@ -1080,7 +1095,7 @@
         "untitled": "Không có tiêu đề",
         "displayName": "Tên hiển thị",
         "id": "ID",
-        "addBlock": "Thêm khối",
+        "addBlock": "Thêm phần",
         "addField": "Thêm trường",
         "addSection": "+ Thêm phần mới",
         "dragToReorder": "Kéo để sắp xếp lại",
@@ -1146,7 +1161,7 @@
         "headerFontWeight": "Độ đậm phông chữ",
         "colorPickerTitle": "Bộ chọn màu",
         "inherited": "Kế thừa",
-        "backgroundImagePreviewAlt": "Xem trước nền",
+        "backgroundImagePreviewAlt": "Xem trước hình nền",
         "removeImage": "Xóa hình ảnh",
         "noBackgroundImage": "Không có hình nền",
         "changeImage": "Thay đổi hình ảnh",
@@ -1274,6 +1289,17 @@
         "noOptionsMessage": "Không có tùy chọn nào được xác định. Nhấp vào \"Thêm tùy chọn\" để bắt đầu.",
         "iconSelected": "Biểu tượng đã chọn"
       },
+      "moonCalendarConfig": {
+        "titleLabel": "Tiêu đề của lịch",
+        "titlePlaceholder": "ví dụ, Lịch Mặt Trăng - {month}",
+        "titleHelp": "Sử dụng {month} như một placeholder cho tên tháng. Ví dụ: 'Lịch Mặt Trăng - {month}' sẽ trở thành 'Lịch Mặt Trăng - Tháng Tám'",
+        "titleIcon": "Biểu tượng Tiêu đề",
+        "titleIconHelp": "Chọn một biểu tượng để hiển thị bên cạnh tiêu đề lịch",
+        "iconSelected": "Biểu tượng đã chọn",
+        "changeIcon": "Thay đổi",
+        "selectIcon": "Chọn Biểu tượng",
+        "selectIconTitle": "Chọn Biểu tượng Tiêu đề Lịch"
+      },
       "value": {
         "iconLabel": "Biểu tượng",
         "selectedIcon": "Biểu tượng đã chọn",
@@ -1380,7 +1406,7 @@
         "noImage": "Không có hình ảnh",
         "deleteImage": "Xóa hình ảnh",
         "noImagesConfigured": "Không có hình ảnh nào được cấu hình",
-        "clickAddImage": "Nhấp vào \"Thêm hình ảnh\" để bắt đầu",
+        "clickAddImage": "Nhấn chuột vào \"Thêm hình ảnh\" để bắt đầu",
         "galleryPreviewLabel": "Xem trước thư viện",
         "previewNumber": "Xem trước {number}",
         "galleryPreviewHelp": "Người dùng sẽ có thể chọn một trong những hình ảnh này",
@@ -1407,7 +1433,7 @@
         "itemsPerPage": "Số mục trên mỗi trang (tùy chọn)",
         "itemsPerPagePlaceholder": "Để trống để hiển thị tất cả",
         "itemsPerPageHelp": "Nếu được chỉ định, danh sách sẽ được chia thành các trang với số lượng phần tử này.",
-        "allowCsvImport": "Cho phép nhập CSV",
+        "allowCsvImport": "Cho phép nhập file CSV",
         "schemaTitle": "Sơ đồ Cấu trúc các Phần tử Danh sách",
         "schemaDescription": "Xác định các trường thông tin mà mỗi mục danh sách sẽ có",
         "noFieldsMessage": "Chưa có trường thông tin nào được xác định. Nhấp vào \"Thêm trường\" để bắt đầu.",
@@ -1460,9 +1486,9 @@
         "remove": "Xóa thẻ",
         "removeTag": "Xóa tag",
         "noCardsSelected": "Không có thẻ nào được chọn",
-        "noCardsHelp": "Nhấp vào \"Thêm thẻ\" để bắt đầu",
+        "noCardsHelp": "Nhấn chuột vào \"Thêm thẻ\" để bắt đầu",
         "noTagsSelected": "Không có tag nào được chọn",
-        "noTagsHelp": "Nhấp vào \"Thêm tag\" để bắt đầu",
+        "noTagsHelp": "Nhấn chuột vào \"Thêm tag\" để bắt đầu",
         "modalTitle": "Chọn thẻ",
         "tagModalTitle": "Chọn tag",
         "searchPlaceholder": "Tìm kiếm thẻ theo tên hoặc tag...",
@@ -1564,6 +1590,10 @@
         "title": "Cấu hình cho kiểu \"{type}\"",
         "message": "Kiểu trường này chưa có cấu hình cụ thể được triển khai.",
         "helpText": "Các thuộc tính chung (tên, mô tả, kiểu) có sẵn trong các phần khác của trình soạn thảo."
+      },
+      "imageUploadConfig": {
+        "allowedFormatsLabel": "Định dạng ảnh được phép",
+        "summaryFormats": "Định dạng được phép"
       }
     },
     "generalConfig": {
@@ -1578,7 +1608,7 @@
         "title": "Phong cách chung cho toàn bộ bản tin",
         "colorPickerTitle": "Bộ chọn màu",
         "inherited": "Kế thừa",
-        "backgroundImagePreviewAlt": "Xem trước nền",
+        "backgroundImagePreviewAlt": "Xem trước hình nền",
         "removeImage": "Xóa hình ảnh",
         "noBackgroundImage": "Không có hình nền",
         "changeImage": "Thay đổi hình ảnh",
@@ -1704,7 +1734,7 @@
         "title": "Phong cách chung cho toàn bộ bản tin",
         "colorPickerTitle": "Bộ chọn màu",
         "inherited": "Kế thừa",
-        "backgroundImagePreviewAlt": "Xem trước nền",
+        "backgroundImagePreviewAlt": "Xem trước hình nền",
         "removeImage": "Xóa hình ảnh",
         "noBackgroundImage": "Không có hình nền",
         "changeImage": "Thay đổi hình ảnh",
@@ -1814,7 +1844,7 @@
             "horizontal": "Ngang (cạnh nhau)",
             "vertical": "Theo chiều dọc (cái này nằm dưới cái kia)"
           },
-          "label": "Tổ chức các ô nhập liệu",
+          "label": "Sắp xếp các ô nhập liệu",
           "help": "Xác định cách các trường sẽ được tổ chức trong thành phần."
         }
       },
@@ -1861,9 +1891,9 @@
       "untitled": "Biểu mẫu không có tiêu đề",
       "header": "ĐẦU TRANG",
       "footer": "CHÂN TRANG",
-      "noSections": "Không có phần nào được cấu hình",
-      "emptySection": "Phần trống",
-      "emptyBlock": "Khối trống",
+      "noSections": "Không có mục nào được cấu hình",
+      "emptySection": "Mục trống",
+      "emptyBlock": "Phần trống",
       "invalidDate": "Ngày không hợp lệ",
       "noCardsAvailable": "Không có thẻ nào có sẵn",
       "selectCard": "Chọn một thẻ",
@@ -1958,7 +1988,7 @@
     "errors": {
       "invalidData": "Lỗi: Dữ liệu nội dung không hợp lệ"
     },
-    "noSections": "Không có phần nào để xem trước"
+    "noSections": "Không có mục nào để xem trước"
   },
   "CreateGroup": {
     "cancel": "Hủy bỏ",
@@ -1969,7 +1999,7 @@
     "roleId": "Vai trò",
     "noRolesFound": "Không tìm thấy vai trò nào",
     "groupNameMinLength": "Tên phải có ít nhất 3 ký tự",
-    "descriptionRequired": "Mô tả là bắt buộc",
+    "descriptionRequired": "Bắt buộc phải mô tả",
     "descriptionMinLength": "Mô tả phải có ít nhất 10 ký tự",
     "updating": "Đang cập nhật...",
     "validationError": "Vui lòng khắc phục các lỗi trong biểu mẫu",
@@ -2015,7 +2045,7 @@
   "Features": {
     "title": "Mọi thứ bạn cần để tạo ra",
     "titleHighlight": "Bản tin đặc biệt",
-    "description": "Một công cụ cộng tác giúp đơn giản hóa quá trình tạo, hiệu đính và xuất bản bản tin thời tiết nông vụ.",
+    "description": "Công cụ hỗ trợ hợp tác, đơn giản hóa việc soạn, duyệt và xuất bản tin Thời tiết Nông vụ",
     "feature1": {
       "title": "Tạo bản tin",
       "description": "Tạo bản tin thời tiết nông vụ chuyên nghiệp bằng trình soạn thảo trực quan được thiết kế riêng cho từng quốc gia."
@@ -2029,7 +2059,7 @@
       "description": "Hệ thống đánh giá hoàn chỉnh với chức năng kiểm soát phiên bản, bình luận và phê duyệt để đảm bảo chất lượng nội dung."
     },
     "feature4": {
-      "title": "Mẫu tùy chỉnh",
+      "title": "Biểu mẫu tùy chỉnh",
       "description": "Tạo và lưu các biểu mẫu có thể tái sử dụng cho nhu cầu cụ thể của bạn."
     }
   },
@@ -2054,8 +2084,9 @@
     "back": "Trở lại",
     "pressEnterToSend": "Nhấn Enter để gửi",
     "inReview": "Đang xem xét",
+    "cancelSelection": "Hủy chọn",
     "successModal": {
-      "title": "Bản tin đã được xuất bản thành công",
+      "title": "Bản tin đã được xuất thành công",
       "message": "Bản tin đã được phê duyệt và xuất bản thành công. Hiện tại nó đã hiển thị cho tất cả người dùng có quyền truy cập.",
       "publicLinkRaw": "Liên kết công khai của bản tin:",
       "copyLinkTitle": "Sao chép liên kết",
@@ -2063,6 +2094,27 @@
       "goToBulletins": "Đi đến bản tin của tôi",
       "linkCopied": "Đã sao chép liên kết vào bộ nhớ tạm"
     }
+  },
+  "ReviewPage": {
+    "errorLoadingComments": "Lỗi khi tải bình luận:",
+    "errorLoadingBulletin": "Lỗi khi tải bản tin",
+    "connectionError": "Lỗi kết nối",
+    "errorSavingComment": "Lỗi khi lưu bình luận",
+    "pressEnterToSend": "Nhấn Enter để gửi",
+    "approvedAndPublished": "Bản tin đã được phê duyệt và xuất bản",
+    "rejectedAndDrafted": "bản tin đã bị từ chối và gửi lại dự thảo",
+    "back": "Trở lại",
+    "inReview": "Đang xem xét",
+    "newGeneralComment": "Bình luận mới",
+    "commentFor": "Bình luận cho:",
+    "noCommentsYet": "Chưa có bình luận nào",
+    "selectElementToComment": "Chọn một phần tử để bình luận",
+    "writeAboutElement": "Viết về phần tử này...",
+    "writeGeneralComment": "Viết một bình luận chung...",
+    "comments": "Bình luận",
+    "showComments": "Hiển thị Bình luận",
+    "pendingReview": "Đang chờ xem xét",
+    "review": "Đang xem xét"
   },
   "Authentication": {
     "verification": "Đang xác minh...",
