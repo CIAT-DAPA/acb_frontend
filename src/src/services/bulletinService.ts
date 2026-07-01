@@ -211,13 +211,20 @@ export class BulletinAPIService extends BaseAPIService {
   ): Promise<GetBulletinsResponse<BulletinMasterWithTemplate>> {
     try {
       const data = await this.get<any>(`/bulletins/status/${status}`);
-      const bulletins = data.bulletins || data.data || data || [];
+      const rawBulletins = data.bulletins || data.data || data || [];
 
-      const mappedBulletins: BulletinMasterWithTemplate[] = bulletins.map(
-        (bulletin: any) => ({
-          ...bulletin,
-          _id: bulletin.id || bulletin._id,
-        }),
+      const mappedBulletins: BulletinMasterWithTemplate[] = rawBulletins.map(
+        (item: any) => {
+          const master = item.master || item;
+
+          return {
+            ...master,
+            _id: master.id || master._id,
+            template_name: item.template_name || master.template_name,
+            template_machine_name:
+              item.template_machine_name || master.template_machine_name,
+          };
+        },
       );
 
       return {
@@ -227,6 +234,7 @@ export class BulletinAPIService extends BaseAPIService {
       };
     } catch (error) {
       console.error("Error fetching bulletins by status:", error);
+
       return {
         success: false,
         data: [],

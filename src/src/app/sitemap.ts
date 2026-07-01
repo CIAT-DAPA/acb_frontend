@@ -20,16 +20,24 @@ function parseDate(value?: string | Date | null): Date | undefined {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const entries: MetadataRoute.Sitemap = [
-    {
-      url: SITE_URL,
-      changeFrequency: "weekly",
-      priority: 1,
-    },
-  ];
+  const entries: MetadataRoute.Sitemap = [];
+  const addedUrls = new Set<string>();
+
+  function addEntry(entry: MetadataRoute.Sitemap[number]) {
+    if (addedUrls.has(entry.url)) return;
+
+    addedUrls.add(entry.url);
+    entries.push(entry);
+  }
+
+  addEntry({
+    url: SITE_URL,
+    changeFrequency: "weekly",
+    priority: 1,
+  });
 
   for (const locale of LOCALES) {
-    entries.push({
+    addEntry({
       url: toAbsoluteUrl(`/${locale}/bulletins`),
       changeFrequency: "daily",
       priority: 0.7,
@@ -61,12 +69,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         continue;
       }
 
+      if (!bulletin.current_version_id) {
+        console.warn("Published bulletin without current version skipped", {
+          bulletinName: bulletin.bulletin_name,
+          bulletinSlug,
+          templateSlug,
+        });
+
+        continue;
+      }
+
       const lastModified = parseDate(
         bulletin.log?.updated_at || bulletin.log?.created_at,
       );
 
       for (const locale of LOCALES) {
-        entries.push({
+        addEntry({
           url: toAbsoluteUrl(`/${locale}/${templateSlug}/${bulletinSlug}`),
           lastModified,
           changeFrequency: "monthly",
