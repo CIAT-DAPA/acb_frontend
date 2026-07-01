@@ -201,3 +201,8 @@ export interface BulletinWithCurrentVersion {
   current_version: BulletinVersion;
   cards_metadata?: Record<string, Card>; // Diccionario de cards indexado por cardId (solo en endpoint published)
 }
+
+export interface BulletinMasterWithTemplate extends BulletinMaster {
+  template_name?: string;
+  template_machine_name?: string;
+}

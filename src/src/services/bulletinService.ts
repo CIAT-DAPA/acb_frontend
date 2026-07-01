@@ -3,6 +3,7 @@ import {
   BulletinVersion,
   BulletinStatus,
   BulletinWithCurrentVersion,
+  BulletinMasterWithTemplate,
 } from "@/types/bulletin";
 import { BaseAPIService } from "./apiConfig";
 
@@ -17,9 +18,9 @@ interface APIResponse<T = any> {
 }
 
 // Interfaz para la respuesta de lista de bulletins
-interface GetBulletinsResponse {
+interface GetBulletinsResponse<T = BulletinMaster> {
   success: boolean;
-  data: BulletinMaster[];
+  data: T[];
   total: number;
   message?: string;
 }
@@ -207,14 +208,22 @@ export class BulletinAPIService extends BaseAPIService {
    */
   static async getBulletinsByStatus(
     status: BulletinStatus,
-  ): Promise<GetBulletinsResponse> {
+  ): Promise<GetBulletinsResponse<BulletinMasterWithTemplate>> {
     try {
       const data = await this.get<any>(`/bulletins/status/${status}`);
+      const bulletins = data.bulletins || data.data || data || [];
+
+      const mappedBulletins: BulletinMasterWithTemplate[] = bulletins.map(
+        (bulletin: any) => ({
+          ...bulletin,
+          _id: bulletin.id || bulletin._id,
+        }),
+      );
 
       return {
         success: true,
-        data: data.bulletins || data.data || data,
-        total: (data.bulletins || data.data || data).length,
+        data: mappedBulletins,
+        total: mappedBulletins.length,
       };
     } catch (error) {
       console.error("Error fetching bulletins by status:", error);
