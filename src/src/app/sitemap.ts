@@ -6,13 +6,13 @@ const SITE_URL =
 
 export const dynamic = "force-dynamic";
 
-const LOCALIZED_LOCALES = ["es", "en", "vi"] as const;
+const LOCALES = ["es", "en", "vi"] as const;
 
 function toAbsoluteUrl(pathname: string): string {
   return `${SITE_URL}${pathname.startsWith("/") ? pathname : `/${pathname}`}`;
 }
 
-function parseDate(value?: string | Date): Date | undefined {
+function parseDate(value?: string | Date | null): Date | undefined {
   if (!value) return undefined;
 
   const parsed = value instanceof Date ? value : new Date(value);
@@ -28,7 +28,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  for (const locale of LOCALIZED_LOCALES) {
+  for (const locale of LOCALES) {
     entries.push({
       url: toAbsoluteUrl(`/${locale}/bulletins`),
       changeFrequency: "daily",
@@ -40,12 +40,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const publishedResponse =
       await BulletinAPIService.getBulletinsByStatus("published");
 
+    console.log("SITEMAP publishedResponse", publishedResponse);
+
     if (!publishedResponse.success || !publishedResponse.data.length) {
       return entries;
     }
 
     for (const bulletin of publishedResponse.data) {
-      if (!bulletin.name_machine) {
+      const bulletinSlug = bulletin.name_machine;
+      const templateSlug = bulletin.template_machine_name;
+
+      if (!bulletinSlug || !templateSlug) {
+        console.warn("Bulletin missing slug/templateSlug for sitemap", {
+          bulletinName: bulletin.bulletin_name,
+          bulletinSlug,
+          templateSlug,
+          baseTemplateMasterId: bulletin.base_template_master_id,
+        });
+
         continue;
       }
 
@@ -53,9 +65,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         bulletin.log?.updated_at || bulletin.log?.created_at,
       );
 
-      for (const locale of LOCALIZED_LOCALES) {
+      for (const locale of LOCALES) {
         entries.push({
-          url: toAbsoluteUrl(`/${locale}/bulletins/${bulletin.name_machine}`),
+          url: toAbsoluteUrl(`/${locale}/${templateSlug}/${bulletinSlug}`),
           lastModified,
           changeFrequency: "monthly",
           priority: 0.8,
