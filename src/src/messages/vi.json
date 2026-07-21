@@ -258,7 +258,7 @@
     "comments": {
       "generalTitle": "Bình luận chung"
     },
-     "searchableInput": {
+    "searchableInput": {
       "placeholder": "Tìm kiếm hoặc tạo tùy chọn mới...",
       "createOption": "Tạo: \"{value}\"",
       "noResultsCreate": "Không tìm thấy tùy chọn nào. Nhấn Enter để tạo mới.",
@@ -450,7 +450,7 @@
       "fieldsToComplete": "{count} trường cần hoàn thành",
       "unsupportedFieldType": "Loại trường không được hỗ trợ trong thẻ: {type}",
       "noFieldsToComplete": "Thẻ này không có trường nào cần hoàn thành",
-      "noCardsSelected": "Chưa chọn thẻ nào. Vui lòng chọn thẻ để bắt đầu."
+      "noCardsSelected": "Chưa chọn cây trồng nào. Vui lòng chọn và nhấn + thêm"
     },
     "listField": {
       "items": "{count} mục",
