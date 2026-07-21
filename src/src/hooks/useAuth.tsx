@@ -19,6 +19,7 @@ interface AuthContextType {
   tokenParsed: KeycloakTokenParsed | null;
   authenticated: boolean;
   loading: boolean;
+  isLoggingOut: boolean;
   validatedPayload: TokenValidationResponse | null;
   login: () => void;
   logout: () => void;
@@ -34,14 +35,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [userInfo, setUserInfo] = useState<any | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [tokenParsed, setTokenParsed] = useState<KeycloakTokenParsed | null>(
-    null
+    null,
   );
   const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [validatedPayload, setValidatedPayload] =
     useState<TokenValidationResponse | null>(null);
   const isRun = useRef(false);
   const keycloak = useRef<Keycloak | null>(null);
+
+  const clearAuthStorage = () => {
+    if (typeof window === "undefined") return;
+
+    const storageKeys = ["auth_token", "keycloak_token"];
+
+    storageKeys.forEach((key) => {
+      localStorage.removeItem(key);
+      sessionStorage.removeItem(key);
+    });
+  };
 
   // Función para validar token con el backend
   const validateTokenWithBackend = async (token: string) => {
@@ -81,7 +94,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       .then(async (authenticatedResult) => {
         console.log(
           "Keycloak initialized. Authenticated:",
-          authenticatedResult
+          authenticatedResult,
         );
         setAuthenticated(authenticatedResult);
 
@@ -172,6 +185,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [authenticated]);
 
   const login = () => {
+    setIsLoggingOut(false);
+
     if (keycloak.current) {
       keycloak.current.login();
     }
@@ -179,18 +194,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = () => {
     if (keycloak.current) {
-      // Limpiar tokens del localStorage
+      const redirectUri = window.location.origin;
+
+      setIsLoggingOut(true);
+
+      // Limpiar almacenamiento local y de sesión antes del logout
       AuthAPIService.clearAllTokens();
+      clearAuthStorage();
 
-      // Logout de Keycloak
-      keycloak.current.logout({ redirectUri: window.location.origin });
-
-      // Limpiar estados locales
+      // Limpiar estados locales inmediatamente
       setUserInfo(null);
       setToken(null);
       setTokenParsed(null);
       setAuthenticated(false);
       setValidatedPayload(null);
+
+      try {
+        keycloak.current.clearToken();
+        keycloak.current.logout({ redirectUri });
+      } catch (error) {
+        console.error("Error during Keycloak logout:", error);
+        window.location.assign(redirectUri);
+      }
     }
   };
 
@@ -200,6 +225,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     tokenParsed,
     authenticated,
     loading,
+    isLoggingOut,
     validatedPayload,
     login,
     logout,

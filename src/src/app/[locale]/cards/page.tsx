@@ -466,7 +466,14 @@ export default function CardsPage() {
         <div className={`${container} py-8`}>
           {/* Search Bar, Filters and Folder Header */}
           <div className="flex flex-col gap-4 mb-8">
-            <div className="flex gap-4">
+            <div className="mb-0 space-y-4">
+              <Link
+                href="/cards/create"
+                className={`${btnPrimary} whitespace-nowrap flex items-center gap-2`}
+              >
+                <Plus className="h-4 w-4" />
+                {t("createNew")}
+              </Link>
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#283618]/50" />
                 <input
@@ -477,14 +484,6 @@ export default function CardsPage() {
                   className={`${searchField} pl-10`}
                 />
               </div>
-
-              <Link
-                href="/cards/create"
-                className={`${btnPrimary} whitespace-nowrap flex items-center gap-2`}
-              >
-                <Plus className="h-4 w-4" />
-                {t("createNew")}
-              </Link>
             </div>
 
             <div className="flex flex-wrap gap-3">

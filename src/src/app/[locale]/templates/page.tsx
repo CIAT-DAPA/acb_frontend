@@ -353,7 +353,17 @@ export default function Templates() {
         {/* Content Section */}
         <div className={`${container} py-8`}>
           {/* Search Bar y Botones */}
-          <div className="flex gap-4 mb-8">
+          <div className="mb-8 space-y-4">
+            {/* Botón Recursos Visuales */}
+            {can(PERMISSION_ACTIONS.Create, MODULES.TEMPLATE_MANAGEMENT) && (
+              <Link
+                href="/templates/create"
+                className={`${btnPrimary} whitespace-nowrap`}
+              >
+                <Plus className="h-5 w-5" />
+                <span>{t("createNew")}</span>
+              </Link>
+            )}
             {/* Search Bar */}
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#283618]/50" />
@@ -365,17 +375,6 @@ export default function Templates() {
                 className={searchField}
               />
             </div>
-
-            {/* Botón Recursos Visuales */}
-            {can(PERMISSION_ACTIONS.Create, MODULES.TEMPLATE_MANAGEMENT) && (
-              <Link
-                href="/templates/create"
-                className={`${btnPrimary} whitespace-nowrap`}
-              >
-                <Plus className="h-5 w-5" />
-                <span>{t("createNew")}</span>
-              </Link>
-            )}
           </div>
 
           {/* Loading State */}

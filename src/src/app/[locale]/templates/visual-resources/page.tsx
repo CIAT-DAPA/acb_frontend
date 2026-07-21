@@ -319,6 +319,17 @@ export default function VisualResources() {
 
         {/* Content Section */}
         <div className={`${container} py-8`}>
+          <div className="mb-4">
+            {/* Botón subir */}
+            <Link
+              href="/templates/visual-resources/upload"
+              className={btnPrimary}
+            >
+              <Upload className="h-5 w-5" />
+              <span>{t("uploadFile")}</span>
+            </Link>
+          </div>
+
           {/* Toolbar */}
           <div className="flex flex-col sm:flex-row gap-2 mb-8">
             {/* Search Bar */}
@@ -347,15 +358,6 @@ export default function VisualResources() {
                 <option value="image">{t("images")}</option>
                 <option value="icon">{t("icons")}</option>
               </select>
-
-              {/* Botón subir */}
-              <Link
-                href="/templates/visual-resources/upload"
-                className={btnPrimary}
-              >
-                <Upload className="h-5 w-5" />
-                <span>{t("uploadFile")}</span>
-              </Link>
             </div>
           </div>
 

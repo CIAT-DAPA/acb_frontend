@@ -418,22 +418,9 @@ export default function Bulletins() {
         {/* Content Section */}
         <div className={`${container} py-8`}>
           {/* Search Bar, Filtros y Botones */}
-          <div className="flex flex-col gap-4 mb-8">
-            <div className="flex gap-4">
-              {/* Search Bar */}
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#283618]/50" />
-                <input
-                  type="text"
-                  placeholder={t("searchPlaceholder")}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className={searchField}
-                />
-              </div>
-
-              {/* Botón Crear */}
-              {can(PERMISSION_ACTIONS.Create, MODULES.BULLETINS_COMPOSER) && (
+          <div className="mb-8 space-y-4">
+            {can(PERMISSION_ACTIONS.Create, MODULES.BULLETINS_COMPOSER) && (
+              <div className="flex justify-start">
                 <Link
                   href="/bulletins/create"
                   className={`${btnPrimary} whitespace-nowrap`}
@@ -441,7 +428,19 @@ export default function Bulletins() {
                   <Plus className="h-5 w-5" />
                   <span>{t("createNew")}</span>
                 </Link>
-              )}
+              </div>
+            )}
+
+            {/* Search Bar */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#283618]/50" />
+              <input
+                type="text"
+                placeholder={t("searchPlaceholder")}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className={searchField}
+              />
             </div>
 
             {/* Filtro por estado */}
