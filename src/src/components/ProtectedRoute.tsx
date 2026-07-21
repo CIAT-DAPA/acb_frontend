@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslations } from "next-intl";
 import usePermissions from "@/hooks/usePermissions";
@@ -25,16 +26,33 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requiredPermission,
   requireSuperadmin,
 }) => {
-  const { authenticated, loading, login } = useAuth();
+  const {
+    authenticated,
+    loading,
+    validatedPayload,
+    userInfo,
+    token,
+    tokenParsed,
+    login,
+    isLoggingOut,
+  } = useAuth();
+  const router = useRouter();
   const t = useTranslations("Authentication");
   const { can, isSuperadmin } = usePermissions();
 
+  const hasUserData = Boolean(
+    validatedPayload?.user || userInfo || tokenParsed,
+  );
+
   useEffect(() => {
-    // Si no está cargando y no está autenticado, redirigir a login
-    if (!loading && !authenticated) {
+    if (
+      !loading &&
+      !isLoggingOut &&
+      (!authenticated || (!hasUserData && !token))
+    ) {
       login();
     }
-  }, [loading, authenticated, login]);
+  }, [loading, authenticated, hasUserData, token, isLoggingOut, login]);
 
   // Mostrar loading mientras verifica autenticación
   if (loading) {
@@ -73,7 +91,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       ? !can(
           requiredPermission.action,
           requiredPermission.module,
-          requiredPermission.resourceGroupIds
+          requiredPermission.resourceGroupIds,
         )
       : false;
 
@@ -83,14 +101,15 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       return (
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center p-6">
-            <h2 className="text-xl font-semibold text-red-700">{t("accessDeniedTitle")}</h2>
+            <h2 className="text-xl font-semibold text-red-700">
+              {t("accessDeniedTitle")}
+            </h2>
             <p className="text-sm text-gray-600">{t("accessDeniedMessage")}</p>
           </div>
         </div>
       );
     }
   }
-  
 
   // Si está autenticado, mostrar el contenido
   return <>{children}</>;
