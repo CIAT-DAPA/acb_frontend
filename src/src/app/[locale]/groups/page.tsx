@@ -134,19 +134,7 @@ export default function GroupsPage() {
         {/* Content Section */}
         <div className={`${container} py-8`}>
           {/* Search Bar y Botones */}
-          <div className="flex gap-4 mb-8">
-            {/* Search Bar */}
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#283618]/50" />
-              <input
-                type="text"
-                placeholder={t("searchPlaceholder")}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className={searchField}
-              />
-            </div>
-
+          <div className="mb-8 space-y-4">
             {/* Botón Crear (condicionado) */}
             {isSuperadmin &&
               can(PERMISSION_ACTIONS.Create, MODULES.ACCESS_CONTROL) && (
@@ -158,6 +146,18 @@ export default function GroupsPage() {
                   <span>{t("createNew")}</span>
                 </Link>
               )}
+
+            {/* Search Bar */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#283618]/50" />
+              <input
+                type="text"
+                placeholder={t("searchPlaceholder")}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className={searchField}
+              />
+            </div>
           </div>
 
           {/* Loading State */}
