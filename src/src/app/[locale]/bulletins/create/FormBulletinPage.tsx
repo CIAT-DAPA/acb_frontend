@@ -1783,6 +1783,7 @@ export default function FormBulletinPage({
           Math.max(parsedPreviewSectionIndex, 0),
           Math.max(creationState.data.version.data.sections.length - 1, 0),
         );
+  const showGlobalActions = creationState.currentStep !== "select-template";
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -1925,47 +1926,51 @@ export default function FormBulletinPage({
           </div>
         )}
 
-        {/* Global Actions Footer */}
-        <div className="mt-8 pt-6 border-t border-gray-200 flex flex-wrap justify-end gap-4 bg-white p-4 rounded-lg shadow-sm">
-          <button
-            onClick={handleSave}
-            disabled={isLoading}
-            className={`${btnOutlineSecondary} disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2`}
-          >
-            <Save className="w-4 h-4" />
-            {isLoading ? t("navigation.saving") : t("navigation.save")}
-          </button>
-
-          <button
-            onClick={handleSubmitForReview}
-            disabled={isLoading}
-            className={`${
-              hasReviewCrudPermissions ? btnOutlineSecondary : btnPrimary
-            } disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2`}
-          >
-            <CheckCircle className="w-4 h-4" />
-            {t("navigation.sendToReview")}
-          </button>
-
-          <button
-            onClick={() => setIsExportModalOpen(true)}
-            className={`${btnPrimary} inline-flex items-center gap-2`}
-          >
-            <Download className="w-4 h-4" />
-            {t("navigation.export")}
-          </button>
-
-          {hasReviewCrudPermissions && (
+        {showGlobalActions && (
+          /* Global Actions Footer */
+          <div className="mt-8 pt-6 border-t border-gray-200 flex flex-wrap justify-end gap-4 bg-white p-4 rounded-lg shadow-sm">
             <button
-              onClick={handlePublish}
+              onClick={handleSave}
               disabled={isLoading}
-              className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2`}
+              className={`${btnOutlineSecondary} disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2`}
+            >
+              <Save className="w-4 h-4" />
+              {isLoading ? t("navigation.saving") : t("navigation.save")}
+            </button>
+
+            <button
+              onClick={handleSubmitForReview}
+              disabled={isLoading}
+              className={`${
+                hasReviewCrudPermissions ? btnOutlineSecondary : btnPrimary
+              } disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2`}
             >
               <CheckCircle className="w-4 h-4" />
-              {isLoading ? t("navigation.publishing") : t("navigation.publish")}
+              {t("navigation.sendToReview")}
             </button>
-          )}
-        </div>
+
+            <button
+              onClick={() => setIsExportModalOpen(true)}
+              className={`${btnPrimary} inline-flex items-center gap-2`}
+            >
+              <Download className="w-4 h-4" />
+              {t("navigation.export")}
+            </button>
+
+            {hasReviewCrudPermissions && (
+              <button
+                onClick={handlePublish}
+                disabled={isLoading}
+                className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2`}
+              >
+                <CheckCircle className="w-4 h-4" />
+                {isLoading
+                  ? t("navigation.publishing")
+                  : t("navigation.publish")}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Export Modal */}
