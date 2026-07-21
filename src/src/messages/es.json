@@ -346,6 +346,13 @@
       "footerTitle": "Pie de Página del Boletín",
       "footerDescription": "Configura la información que aparecerá en el pie de página de tu boletín"
     },
+    "searchableInput": {
+      "placeholder": "Buscar o crear una nueva opción...",
+      "createOption": "Crear: \"{value}\"",
+      "noResultsCreate": "No se encontraron opciones. Presiona Enter para crear una nueva.",
+      "noOptions": "No hay opciones disponibles",
+      "helper": "Escribe para buscar o crear una nueva opción"
+    },
     "section": {
       "title": "Sección",
       "description": "Llena la información de esta sección",

@@ -1,8 +1,15 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Field } from "../../../../../../types/template";
 import { Search, Plus, X } from "lucide-react";
+
+type DisplayOption = {
+  label: string;
+  value: string;
+  isCreateOption: boolean;
+};
 
 interface SearchableInputProps {
   field?: Field;
@@ -21,6 +28,8 @@ export function SearchableInput({
   placeholder,
   disabled = false,
 }: SearchableInputProps) {
+  const t = useTranslations("CreateBulletin");
+
   // Usar options de prop o extraer de field
   const predefinedOptions =
     optionsProp ||
@@ -35,24 +44,39 @@ export function SearchableInput({
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const finalPlaceholder = placeholder || "Buscar o crear nueva opción...";
+  const finalPlaceholder = placeholder || t("searchableInput.placeholder");
 
   // Filtrar opciones basado en el término de búsqueda
   const filteredOptions = predefinedOptions.filter((option) =>
-    option.toLowerCase().includes(searchTerm.toLowerCase())
+    option.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   // Determinar si el término de búsqueda es una nueva opción
   const isNewOption =
     searchTerm.trim() !== "" &&
     !predefinedOptions.some(
-      (opt) => opt.toLowerCase() === searchTerm.toLowerCase()
+      (opt) => opt.toLowerCase() === searchTerm.toLowerCase(),
     );
 
   // Opciones a mostrar en el dropdown
-  const displayOptions = isNewOption
-    ? [...filteredOptions, `Crear: "${searchTerm}"`]
-    : filteredOptions;
+  const displayOptions: DisplayOption[] = isNewOption
+    ? [
+        ...filteredOptions.map((option) => ({
+          label: option,
+          value: option,
+          isCreateOption: false,
+        })),
+        {
+          label: t("searchableInput.createOption", { value: searchTerm }),
+          value: searchTerm,
+          isCreateOption: true,
+        },
+      ]
+    : filteredOptions.map((option) => ({
+        label: option,
+        value: option,
+        isCreateOption: false,
+      }));
 
   // Cerrar dropdown al hacer click fuera
   useEffect(() => {
@@ -79,7 +103,7 @@ export function SearchableInput({
         case "ArrowDown":
           e.preventDefault();
           setHighlightedIndex((prev) =>
-            prev < displayOptions.length - 1 ? prev + 1 : prev
+            prev < displayOptions.length - 1 ? prev + 1 : prev,
           );
           break;
         case "ArrowUp":
@@ -121,15 +145,8 @@ export function SearchableInput({
     }
   }, [highlightedIndex, isOpen]);
 
-  const handleSelectOption = (option: string) => {
-    if (option.startsWith("Crear: ")) {
-      // Crear nueva opción
-      const newOption = option.replace('Crear: "', "").replace('"', "");
-      onChange(newOption);
-    } else {
-      // Seleccionar opción existente
-      onChange(option);
-    }
+  const handleSelectOption = (option: DisplayOption) => {
+    onChange(option.value);
     setIsOpen(false);
     setSearchTerm("");
     setHighlightedIndex(0);
@@ -190,7 +207,6 @@ export function SearchableInput({
         >
           {displayOptions.length > 0 ? (
             displayOptions.map((option, index) => {
-              const isCreateOption = option.startsWith("Crear: ");
               return (
                 <div
                   key={index}
@@ -202,7 +218,7 @@ export function SearchableInput({
                   }`}
                   onMouseEnter={() => setHighlightedIndex(index)}
                 >
-                  {isCreateOption && (
+                  {option.isCreateOption && (
                     <Plus
                       className={`w-4 h-4 ${
                         index === highlightedIndex
@@ -211,8 +227,8 @@ export function SearchableInput({
                       }`}
                     />
                   )}
-                  <span className={isCreateOption ? "font-medium" : ""}>
-                    {option}
+                  <span className={option.isCreateOption ? "font-medium" : ""}>
+                    {option.label}
                   </span>
                 </div>
               );
@@ -220,8 +236,8 @@ export function SearchableInput({
           ) : (
             <div className="px-3 py-2 text-sm text-gray-500 italic">
               {searchTerm
-                ? "No se encontraron opciones. Presiona Enter para crear una nueva."
-                : "No hay opciones disponibles"}
+                ? t("searchableInput.noResultsCreate")
+                : t("searchableInput.noOptions")}
             </div>
           )}
         </div>
@@ -230,7 +246,7 @@ export function SearchableInput({
       {/* Texto de ayuda */}
       {isOpen && !disabled && (
         <p className="text-xs text-gray-500 mt-1">
-          💡 Escribe para buscar o crear una nueva opción
+          {t("searchableInput.helper")}
         </p>
       )}
     </div>

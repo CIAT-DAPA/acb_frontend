@@ -258,6 +258,13 @@
     "comments": {
       "generalTitle": "Bình luận chung"
     },
+     "searchableInput": {
+      "placeholder": "Tìm kiếm hoặc tạo tùy chọn mới...",
+      "createOption": "Tạo: \"{value}\"",
+      "noResultsCreate": "Không tìm thấy tùy chọn nào. Nhấn Enter để tạo mới.",
+      "noOptions": "Không có tùy chọn nào",
+      "helper": "Nhập để tìm kiếm hoặc tạo một tùy chọn mới"
+    },
     "exportModal": {
       "contentLabel": "Nội dung",
       "loadError": "Lỗi",

@@ -346,6 +346,13 @@
       "footerTitle": "Bulletin Footer",
       "footerDescription": "Configure the information that will appear in your bulletin's footer"
     },
+    "searchableInput": {
+      "placeholder": "Search or create a new option...",
+      "createOption": "Create: \"{value}\"",
+      "noResultsCreate": "No options found. Press Enter to create a new one.",
+      "noOptions": "No options available",
+      "helper": "Type to search or create a new option"
+    },
     "section": {
       "title": "Section",
       "description": "Fill in the information for this section",
@@ -2246,7 +2253,7 @@
     "pressEnter": "Press Enter to send",
     "send": "Send",
     "resolve": "Resolve",
-    "newComment": "New Comment",    
+    "newComment": "New Comment",
     "reject": "Reject",
     "rejectSuccess": "Bulletin rejected successfully",
     "approveAndPublish": "Approve and Publish",
