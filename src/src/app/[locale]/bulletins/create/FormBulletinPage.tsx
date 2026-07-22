@@ -30,6 +30,7 @@ import { ExportStep } from "./steps/ExportStep";
 import { UnifiedBulletinPreview } from "../../components/UnifiedBulletinPreview";
 import { CreateTemplateData } from "../../../../types/template";
 import { ExportModal } from "../../components/ExportModal";
+import { ConfirmationModal } from "../../components/ConfirmationModal";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -350,6 +351,9 @@ export default function FormBulletinPage({
     can(PERMISSION_ACTIONS.Update, MODULES.REVIEW) ||
     can(PERMISSION_ACTIONS.Delete, MODULES.REVIEW);
   const [showPublishModal, setShowPublishModal] = useState(false);
+  const [confirmationAction, setConfirmationAction] = useState<
+    "review" | "publish" | null
+  >(null);
   const [publishedBulletinId, setPublishedBulletinId] = useState<string | null>(
     null,
   );
@@ -1610,6 +1614,22 @@ export default function FormBulletinPage({
     extractImageUrls,
   ]);
 
+  const handleConfirmAction = useCallback(() => {
+    const actionToExecute = confirmationAction;
+
+    // Cerrar el modal antes de iniciar la petición
+    setConfirmationAction(null);
+
+    if (actionToExecute === "review") {
+      void handleSubmitForReview();
+      return;
+    }
+
+    if (actionToExecute === "publish") {
+      void handlePublish();
+    }
+  }, [confirmationAction, handleSubmitForReview, handlePublish]);
+
   // Convertir bulletinData a CreateTemplateData para el preview
   const previewData = useMemo((): CreateTemplateData | null => {
     const headerFields = creationState.data.version.data.header_config?.fields;
@@ -1939,7 +1959,7 @@ export default function FormBulletinPage({
             </button>
 
             <button
-              onClick={handleSubmitForReview}
+              onClick={() => setConfirmationAction("review")}
               disabled={isLoading}
               className={`${
                 hasReviewCrudPermissions ? btnOutlineSecondary : btnPrimary
@@ -1959,7 +1979,7 @@ export default function FormBulletinPage({
 
             {hasReviewCrudPermissions && (
               <button
-                onClick={handlePublish}
+                onClick={() => setConfirmationAction("publish")}
                 disabled={isLoading}
                 className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2`}
               >
@@ -1982,6 +2002,29 @@ export default function FormBulletinPage({
         autoExport={true}
         exportConfig={EXPORT_CONFIG}
         sections={exportData?.version.content.sections || []}
+      />
+
+      <ConfirmationModal
+        isOpen={confirmationAction !== null}
+        onClose={() => setConfirmationAction(null)}
+        onConfirm={handleConfirmAction}
+        title={
+          confirmationAction === "publish"
+            ? t("confirmation.publish.title")
+            : t("confirmation.review.title")
+        }
+        message={
+          confirmationAction === "publish"
+            ? t("confirmation.publish.message")
+            : t("confirmation.review.message")
+        }
+        confirmLabel={
+          confirmationAction === "publish"
+            ? t("confirmation.publish.confirm")
+            : t("confirmation.review.confirm")
+        }
+        cancelLabel={t("confirmation.cancel")}
+        isDangerous={false}
       />
 
       {/* Modal de publicación exitosa */}
