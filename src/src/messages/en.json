@@ -1112,7 +1112,12 @@
         "bulletinConfig": {
           "defaultValue": "Default Value",
           "contentValue": "Content/Value",
-          "valuePlaceholder": "Enter value..."
+          "valuePlaceholder": "Enter value...",
+          "selectWithIcons": {
+            "noOptionsMessage": "First add options and icons in the field configuration.",
+            "selectedDefault": "Selected as default value",
+            "selectDefault": "Use as default value"
+          }
         },
         "saving": "Saving...",
         "saveTemplate": "Save Template"

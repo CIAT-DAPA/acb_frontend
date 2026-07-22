@@ -1111,7 +1111,12 @@
         "bulletinConfig": {
           "defaultValue": "Valor Predeterminado",
           "contentValue": "Contenido/Valor",
-          "valuePlaceholder": "Ingrese el valor..."
+          "valuePlaceholder": "Ingrese el valor...",
+          "selectWithIcons": {
+            "noOptionsMessage": "Primero agrega opciones e iconos en la configuración del campo.",
+            "selectedDefault": "Seleccionado como valor por defecto",
+            "selectDefault": "Usar como valor por defecto"
+          }
         }
       },
       "closeEditor": "Cerrar editor",

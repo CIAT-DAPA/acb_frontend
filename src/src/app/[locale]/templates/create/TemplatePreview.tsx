@@ -1590,13 +1590,21 @@ export function TemplatePreview({
         const selectIconsUrl = (field.field_config as any)?.icons_url || [];
 
         if (field.value) {
-          // Buscar el icono correspondiente al valor seleccionado
+          // Resolver el valor guardado como opción o como URL de icono
           const selectedIndex = selectOptions.findIndex(
             (opt: string) => opt === field.value,
           );
           if (selectedIndex !== -1) {
             iconToShow = selectIconsUrl[selectedIndex] || null;
             labelToShow = selectOptions[selectedIndex];
+          } else {
+            const selectedIconIndex = selectIconsUrl.findIndex(
+              (iconUrl: string) => iconUrl === field.value,
+            );
+            if (selectedIconIndex !== -1) {
+              iconToShow = selectIconsUrl[selectedIconIndex] || null;
+              labelToShow = selectOptions[selectedIconIndex] || null;
+            }
           }
         } else {
           // Si no hay valor seleccionado, mostrar placeholder (primer icono)
@@ -2004,6 +2012,12 @@ export function TemplatePreview({
                                 item as Record<string, any>
                               )[fieldKey];
                               const fieldSchema = itemFieldSchema as Field;
+                              const resolvedItemFieldValue =
+                                itemFieldValue !== undefined &&
+                                itemFieldValue !== null &&
+                                itemFieldValue !== ""
+                                  ? itemFieldValue
+                                  : fieldSchema.value;
                               const subfieldId = `${fieldId}-subfield-${fieldKey}`;
                               const isSubfieldSelected =
                                 selectedElementId === subfieldId;
@@ -2048,7 +2062,7 @@ export function TemplatePreview({
                                   {renderField(
                                     {
                                       ...fieldSchema,
-                                      value: itemFieldValue,
+                                      value: resolvedItemFieldValue,
                                     } as Field,
                                     `${itemIndex}-${fieldIndex}`,
                                     effectiveStyles,
@@ -2220,6 +2234,12 @@ export function TemplatePreview({
                                 item as Record<string, any>
                               )[fieldKey];
                               const fieldSchema = itemFieldSchema as Field;
+                              const resolvedItemFieldValue =
+                                itemFieldValue !== undefined &&
+                                itemFieldValue !== null &&
+                                itemFieldValue !== ""
+                                  ? itemFieldValue
+                                  : fieldSchema.value;
 
                               // Determinar si el campo debe expandirse (texto) o usar ancho natural (iconos, números, etc.)
                               const shouldExpand =
@@ -2286,7 +2306,7 @@ export function TemplatePreview({
                                   {renderField(
                                     {
                                       ...fieldSchema,
-                                      value: itemFieldValue,
+                                      value: resolvedItemFieldValue,
                                     } as Field,
                                     `${itemIndex}-${fieldIndex}`,
                                     containerStyle,

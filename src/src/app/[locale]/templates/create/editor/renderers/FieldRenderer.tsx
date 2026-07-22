@@ -187,6 +187,65 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
     );
   }
 
+  if (field.type === "select_with_icons") {
+    const selectOptions = (field.field_config as any)?.options || [];
+    const selectIconsUrl = (field.field_config as any)?.icons_url || [];
+    const showLabel = (field.field_config as any)?.show_label !== false;
+    const selectIconSize = (field.style_config as any)?.icon_size || 32;
+    const selectUseOriginalColor =
+      effectiveStyles.icon_use_original_color === true;
+
+    let iconToShow = null;
+    let labelToShow = null;
+
+    if (field.value) {
+      const selectedIndex = selectOptions.findIndex(
+        (opt: string) => opt === field.value,
+      );
+
+      if (selectedIndex !== -1) {
+        iconToShow = selectIconsUrl[selectedIndex] || null;
+        labelToShow = selectOptions[selectedIndex];
+      } else {
+        const selectedIconIndex = selectIconsUrl.findIndex(
+          (iconUrl: string) => iconUrl === field.value,
+        );
+        if (selectedIconIndex !== -1) {
+          iconToShow = selectIconsUrl[selectedIconIndex] || null;
+          labelToShow = selectOptions[selectedIconIndex] || null;
+        }
+      }
+    } else if (selectOptions.length > 0) {
+      iconToShow = selectIconsUrl[0] || null;
+      labelToShow = selectOptions[0];
+    }
+
+    return (
+      <div
+        style={{ ...fieldStyles, display: "flex", gap: "8px" }}
+        className="flex items-center gap-2"
+      >
+        {iconToShow && (
+          <SmartIcon
+            src={iconToShow}
+            style={{
+              width: `${selectIconSize}px`,
+              height: `${selectIconSize}px`,
+            }}
+            color={
+              selectUseOriginalColor
+                ? undefined
+                : effectiveStyles.primary_color || fieldStyles.color
+            }
+            preserveOriginalColors={selectUseOriginalColor}
+            alt="Selected icon"
+          />
+        )}
+        {showLabel && labelToShow && <span>{labelToShow}</span>}
+      </div>
+    );
+  }
+
   if (field.type === "image" || field.type === "image_upload") {
     return (
       <div
