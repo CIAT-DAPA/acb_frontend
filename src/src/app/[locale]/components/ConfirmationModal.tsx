@@ -25,7 +25,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div
         className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
@@ -34,15 +34,23 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div
-                className={`p-2 rounded-full ${isDangerous ? "bg-red-100 text-red-600" : "bg-blue-100 text-blue-600"}`}
+                className={`p-2 rounded-full ${
+                  isDangerous
+                    ? "bg-red-100 text-red-600"
+                    : "bg-[#bc6c25]/10 text-[#bc6c25]"
+                }`}
               >
                 <AlertTriangle size={24} />
               </div>
+
               <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
             </div>
+
             <button
+              type="button"
               onClick={onClose}
               className="text-gray-400 hover:text-gray-500 hover:bg-gray-100 p-1 rounded-full transition-colors"
+              aria-label="Cerrar"
             >
               <X size={20} />
             </button>
@@ -52,21 +60,24 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
           <div className="flex justify-end gap-3">
             <button
+              type="button"
               onClick={onClose}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200"
             >
               {cancelLabel || "Cancel"}
             </button>
+
             <button
+              type="button"
               onClick={() => {
                 onConfirm();
                 onClose();
               }}
-              className={`px-4 py-2 text-sm font-medium text-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+              className={`px-4 py-2 text-sm font-medium text-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${
                 isDangerous
                   ? "bg-red-600 hover:bg-red-700 focus:ring-red-500"
-                  : "bg-blue-600 hover:bg-blue-700 focus:ring-blue-500"
-              } transition-colors`}
+                  : "bg-[#bc6c25] hover:bg-[#a85f20] focus:ring-[#bc6c25]"
+              }`}
             >
               {confirmLabel || "Confirm"}
             </button>

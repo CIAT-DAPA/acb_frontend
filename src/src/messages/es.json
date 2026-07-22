@@ -353,6 +353,19 @@
       "noOptions": "No hay opciones disponibles",
       "helper": "Escribe para buscar o crear una nueva opción"
     },
+    "confirmation": {
+      "cancel": "Cancelar",
+      "review": {
+        "title": "Enviar boletín a revisión",
+        "message": "¿Confirmas que deseas guardar los cambios y enviar este boletín a revisión?",
+        "confirm": "Sí, enviar a revisión"
+      },
+      "publish": {
+        "title": "Publicar boletín",
+        "message": "¿Confirmas que deseas publicar este boletín? Una vez publicado, estará disponible para los usuarios que tengan acceso.",
+        "confirm": "Sí, publicar"
+      }
+    },
     "section": {
       "title": "Sección",
       "description": "Llena la información de esta sección",
