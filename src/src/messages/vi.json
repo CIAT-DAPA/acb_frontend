@@ -1137,7 +1137,12 @@
         "bulletinConfig": {
           "defaultValue": "Giá trị mặc định",
           "contentValue": "Nội dung/Giá trị",
-          "valuePlaceholder": "Nhập giá trị..."
+          "valuePlaceholder": "Nhập giá trị...",
+          "selectWithIcons": {
+            "noOptionsMessage": "Trước tiên hãy thêm các tùy chọn và biểu tượng trong cấu hình trường.",
+            "selectedDefault": "Đã chọn làm giá trị mặc định",
+            "selectDefault": "Dùng làm giá trị mặc định"
+          }
         },
         "saving": "Đang lưu...",
         "saveTemplate": "Lưu mẫu"

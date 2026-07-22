@@ -222,7 +222,8 @@ export const RightPanel: React.FC<RightPanelProps> = ({
   // Actions
   const updateField = (updates: Partial<Field>) => {
     onUpdate((prev) => {
-      const newData = { ...prev };
+      const newData = structuredClone(prev);
+
       const field =
         newData.version.content.sections[selection.sectionIndex!].blocks[
           selection.blockIndex!
@@ -233,20 +234,21 @@ export const RightPanel: React.FC<RightPanelProps> = ({
         field.type === "list" &&
         field.field_config?.item_schema?.[selection.schemaKey]
       ) {
-        Object.assign(
-          field.field_config.item_schema[selection.schemaKey],
-          updates,
-        );
+        field.field_config.item_schema[selection.schemaKey] = {
+          ...field.field_config.item_schema[selection.schemaKey],
+          ...updates,
+        };
       } else {
         Object.assign(field, updates);
       }
+
       return newData;
     });
   };
 
   const updateHeaderField = (updates: Partial<Field>) => {
     onUpdate((prev) => {
-      const newData = { ...prev };
+      const newData = structuredClone(prev);
       const sections = newData.version.content.sections;
       const section =
         selection.sectionIndex! >= 0 ? sections[selection.sectionIndex!] : null;
@@ -272,7 +274,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
 
   const updateFooterField = (updates: Partial<Field>) => {
     onUpdate((prev) => {
-      const newData = { ...prev };
+      const newData = structuredClone(prev);
       const sections = newData.version.content.sections;
       const section =
         selection.sectionIndex! >= 0 ? sections[selection.sectionIndex!] : null;
@@ -1833,17 +1835,91 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                         ? t("fieldEditor.editor.bulletinConfig.defaultValue")
                         : t("fieldEditor.editor.bulletinConfig.contentValue")}
                     </label>
-                    <input
-                      type="text"
-                      className={ui.inputClass}
-                      value={((currentObject as Field)?.value as string) || ""}
-                      onChange={(e) =>
-                        handleUpdateField({ value: e.target.value })
-                      }
-                      placeholder={t(
-                        "fieldEditor.editor.bulletinConfig.valuePlaceholder",
-                      )}
-                    />
+
+                    {(currentObject as Field)?.type === "select_with_icons" ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+                        {(
+                          ((currentObject as Field).field_config as any)
+                            ?.options || []
+                        ).map((option: string, index: number) => {
+                          const iconUrl =
+                            (((currentObject as Field).field_config as any)
+                              ?.icons_url || [])[index] || "";
+                          const isSelected =
+                            (currentObject as Field)?.value === option ||
+                            ((currentObject as Field)?.value === iconUrl &&
+                              Boolean(iconUrl));
+
+                          return (
+                            <button
+                              key={`${option}-${index}`}
+                              type="button"
+                              onClick={() =>
+                                handleUpdateField({ value: option })
+                              }
+                              className={`flex items-center gap-3 rounded-md border px-3 py-2 text-left transition-colors ${
+                                isSelected
+                                  ? "border-[#bc6c25] bg-[#bc6c25]/10"
+                                  : "border-gray-200 hover:border-[#bc6c25]/50 hover:bg-gray-50"
+                              }`}
+                            >
+                              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-white border border-gray-200 overflow-hidden shrink-0">
+                                {iconUrl ? (
+                                  <img
+                                    src={iconUrl}
+                                    alt={option}
+                                    className="h-8 w-8 object-contain"
+                                  />
+                                ) : (
+                                  <span className="text-xs text-gray-400">
+                                    ?
+                                  </span>
+                                )}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="text-sm font-medium text-gray-800 truncate">
+                                  {option}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {isSelected
+                                    ? t(
+                                        "fieldEditor.editor.bulletinConfig.selectWithIcons.selectedDefault",
+                                      )
+                                    : t(
+                                        "fieldEditor.editor.bulletinConfig.selectWithIcons.selectDefault",
+                                      )}
+                                </div>
+                              </div>
+                            </button>
+                          );
+                        })}
+
+                        {(
+                          ((currentObject as Field).field_config as any)
+                            ?.options || []
+                        ).length === 0 && (
+                          <p className="text-sm text-amber-600">
+                            {t(
+                              "fieldEditor.editor.bulletinConfig.selectWithIcons.noOptionsMessage",
+                            )}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <input
+                        type="text"
+                        className={ui.inputClass}
+                        value={
+                          ((currentObject as Field)?.value as string) || ""
+                        }
+                        onChange={(e) =>
+                          handleUpdateField({ value: e.target.value })
+                        }
+                        placeholder={t(
+                          "fieldEditor.editor.bulletinConfig.valuePlaceholder",
+                        )}
+                      />
+                    )}
                   </div>
                 </div>
               )}
