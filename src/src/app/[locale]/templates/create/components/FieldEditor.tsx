@@ -111,6 +111,16 @@ export function FieldEditor({
     [],
   );
 
+  const selectWithIconsConfig =
+    currentField.type === "select_with_icons"
+      ? (currentField.field_config as {
+          options?: string[];
+          icons_url?: string[];
+        })
+      : undefined;
+  const selectWithIconsOptions = selectWithIconsConfig?.options || [];
+  const selectWithIconsIcons = selectWithIconsConfig?.icons_url || [];
+
   const handleSave = useCallback(() => {
     // Si form es false, asignar automáticamente displayName a label y description
     let fieldToSave = { ...currentField };
@@ -283,7 +293,7 @@ export function FieldEditor({
                 value={currentField.label || ""}
                 onChange={(e) => updateField({ label: e.target.value })}
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Etiqueta para el usuario"
+                placeholder={t("formConfig.labelPlaceholder")}
               />
             </div>
 
@@ -296,7 +306,7 @@ export function FieldEditor({
                 value={currentField.description || ""}
                 onChange={(e) => updateField({ description: e.target.value })}
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Descripción o ayuda para el usuario"
+                placeholder={t("formConfig.descriptionPlaceholder")}
               />
             </div>
           </>
@@ -308,7 +318,8 @@ export function FieldEditor({
         currentField.type !== "page_number" &&
         currentField.type !== "text_with_icon" &&
         currentField.type !== "image" &&
-        currentField.type !== "list" && (
+        currentField.type !== "list" &&
+        currentField.type !== "select_with_icons" && (
           <div>
             <h3 className="text-lg font-medium text-[#283618] mb-4">
               {currentField.form
@@ -336,6 +347,75 @@ export function FieldEditor({
             </div>
           </div>
         )}
+
+      {currentField.bulletin && currentField.type === "select_with_icons" && (
+        <div>
+          <h3 className="text-lg font-medium text-[#283618] mb-4">
+            {currentField.form
+              ? t("value.defaultValueTitle")
+              : t("value.title")}
+          </h3>
+          <div>
+            <label className="block text-sm font-medium text-[#283618]/70 mb-2">
+              {t("value.label")}
+            </label>
+
+            {selectWithIconsOptions.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {selectWithIconsOptions.map((option, index) => {
+                  const iconUrl = selectWithIconsIcons[index] || "";
+                  const isSelected =
+                    currentField.value === option ||
+                    (!!iconUrl && currentField.value === iconUrl);
+
+                  return (
+                    <button
+                      key={`${option}-${index}`}
+                      type="button"
+                      onClick={() => updateField({ value: iconUrl || option })}
+                      className={`flex items-center gap-3 rounded-md border px-3 py-2 text-left transition-colors ${
+                        isSelected
+                          ? "border-[#bc6c25] bg-[#bc6c25]/10"
+                          : "border-gray-300 hover:border-[#bc6c25]/50 hover:bg-gray-50"
+                      }`}
+                    >
+                      <div className="flex h-10 w-10 items-center justify-center rounded-md bg-white border border-gray-200 overflow-hidden shrink-0">
+                        {iconUrl ? (
+                          <img
+                            src={iconUrl}
+                            alt={option}
+                            className="h-8 w-8 object-contain"
+                          />
+                        ) : (
+                          <span className="text-xs text-[#283618]/40">?</span>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-medium text-[#283618] truncate">
+                          {option}
+                        </div>
+                        <div className="text-xs text-[#283618]/50">
+                          {isSelected
+                            ? t("bulletinConfig.selectWithIcons.selectedDefault")
+                            : t("bulletinConfig.selectWithIcons.selectDefault")}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-sm text-amber-600">
+                {t("bulletinConfig.selectWithIcons.noOptionsMessage")}
+              </p>
+            )}
+
+            <p className="mt-1 text-xs text-[#283618]/50">
+              {t("value.help")}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Validación - Solo mostrar si form es true */}
       {currentField.form && (
