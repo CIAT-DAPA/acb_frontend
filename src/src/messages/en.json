@@ -353,6 +353,19 @@
       "noOptions": "No options available",
       "helper": "Type to search or create a new option"
     },
+    "confirmation": {
+      "cancel": "Cancel",
+      "review": {
+        "title": "Submit bulletin for review",
+        "message": "Are you sure you want to save your changes and submit this bulletin for review?",
+        "confirm": "Yes, submit for review"
+      },
+      "publish": {
+        "title": "Publish bulletin",
+        "message": "Are you sure you want to publish this bulletin? Once published, it will be available to users who have access.",
+        "confirm": "Yes, publish"
+      }
+    },
     "section": {
       "title": "Section",
       "description": "Fill in the information for this section",

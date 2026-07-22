@@ -386,6 +386,19 @@
       "addNewPage": "Trang mới",
       "deleteCurrentPage": "Xóa trang hiện tại"
     },
+    "confirmation": {
+      "cancel": "Hủy",
+      "review": {
+        "title": "Gửi bản tin để xét duyệt",
+        "message": "Bạn có chắc chắn muốn lưu các thay đổi và gửi bản tin này để xét duyệt không?",
+        "confirm": "Có, gửi để xét duyệt"
+      },
+      "publish": {
+        "title": "Xuất bản bản tin",
+        "message": "Bạn có chắc chắn muốn xuất bản bản tin này không? Sau khi xuất bản, bản tin sẽ khả dụng đối với những người dùng có quyền truy cập.",
+        "confirm": "Có, xuất bản"
+      }
+    },
     "title": "Tạo bản tin",
     "subtitle": "Tạo bản tin thời tiết nông vụ mới bằng cách sử dụng biểu mẫu",
     "titleEdit": "Chỉnh sửa bản tin",
