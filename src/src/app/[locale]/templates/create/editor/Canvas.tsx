@@ -411,16 +411,36 @@ export const Canvas: React.FC<CanvasProps> = ({
     };
 
     if (interactionMode === "edit") {
-      const listTargetMatch = id.match(
-        /^field-(\d+)-(\d+)-(\d+)-item-\d+(?:-subfield-.+)?$/,
+      const listSubfieldMatch = id.match(
+        /^field-(\d+)-(\d+)-(\d+)-item-(\d+)-subfield-(.+)$/,
       );
 
-      if (listTargetMatch) {
-        const sectionIndex = Number(listTargetMatch[1]);
+      if (listSubfieldMatch) {
+        const sectionIndex = Number(listSubfieldMatch[1]);
+        const blockIndex = Number(listSubfieldMatch[2]);
+        const fieldIndex = Number(listSubfieldMatch[3]);
+        const itemIndex = Number(listSubfieldMatch[4]);
+        const schemaKey = listSubfieldMatch[5];
 
-        const blockIndex = Number(listTargetMatch[2]);
+        select({
+          // El editor ya sabe editar fields usando schemaKey.
+          type: "field",
+          id,
+          sectionIndex,
+          blockIndex,
+          fieldIndex,
+          itemIndex,
+          schemaKey,
+        });
 
-        const fieldIndex = Number(listTargetMatch[3]);
+        return;
+      }
+      const listItemMatch = id.match(/^field-(\d+)-(\d+)-(\d+)-item-(\d+)$/);
+
+      if (listItemMatch) {
+        const sectionIndex = Number(listItemMatch[1]);
+        const blockIndex = Number(listItemMatch[2]);
+        const fieldIndex = Number(listItemMatch[3]);
 
         select({
           type: "field",
@@ -670,10 +690,11 @@ export const Canvas: React.FC<CanvasProps> = ({
                 variant="single"
                 reviewMode={true}
                 allowListItemSelection={isReviewInteraction}
+                allowListSubfieldEditing={interactionMode === "edit"}
                 onElementClick={handleElementClick}
                 selectedSectionIndex={0}
                 selectedElementId={selection.id}
-                commentCounts={commentCounts}
+                commentCounts={isReviewInteraction ? commentCounts : undefined}
               />
             </div>
           ) : (
@@ -712,10 +733,9 @@ export const Canvas: React.FC<CanvasProps> = ({
                         <UnifiedBulletinPreview
                           data={data}
                           variant="single"
-                          // editor como revisión necesitan seleccionar elementos.
                           reviewMode={true}
-                          // Solo revisión puede seleccionar targets internos de listas.
                           allowListItemSelection={isReviewInteraction}
+                          allowListSubfieldEditing={interactionMode === "edit"}
                           onElementClick={handleElementClick}
                           selectedSectionIndex={index}
                           currentResolvedPageIndex={
@@ -723,7 +743,9 @@ export const Canvas: React.FC<CanvasProps> = ({
                           }
                           hidePagination={shouldRenderAllPages}
                           selectedElementId={selection.id}
-                          commentCounts={commentCounts}
+                          commentCounts={
+                            isReviewInteraction ? commentCounts : undefined
+                          }
                           resolvedSectionPageCounts={
                             shouldRenderAllPages ? sectionPageCounts : undefined
                           }

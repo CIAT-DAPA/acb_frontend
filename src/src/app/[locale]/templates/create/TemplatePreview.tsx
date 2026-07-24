@@ -1123,6 +1123,7 @@ interface TemplatePreviewProps {
   renderForPrint?: boolean;
   cardEmptyStateMode?: "first-available" | "select-card";
   allowListItemSelection?: boolean;
+  allowListSubfieldEditing?: boolean;
 }
 
 // Constantes para estilos repetidos
@@ -1155,6 +1156,7 @@ export function TemplatePreview({
   commentCounts,
   renderForPrint = false,
   cardEmptyStateMode = "first-available",
+  allowListSubfieldEditing = false,
 }: TemplatePreviewProps) {
   const t = useTranslations("CreateTemplate.preview");
   const pathname = usePathname();
@@ -1219,8 +1221,13 @@ export function TemplatePreview({
   const previousBasePageIndexRef = useRef(0);
   const overflowCollapseTimeoutRef = useRef<number | null>(null);
 
-  const canSelectListTargets =
+  const canSelectListItems =
     reviewMode && allowListItemSelection && Boolean(onElementClick);
+
+  const canEditListSubfields =
+    reviewMode && allowListSubfieldEditing && Boolean(onElementClick);
+
+  const canActivateListSubfields = canSelectListItems || canEditListSubfields;
 
   // Función para cambiar de página
   const handlePageChange = (newPageIndex: number) => {
@@ -2031,7 +2038,7 @@ export function TemplatePreview({
                               : undefined
                           }
                           onClick={
-                            canSelectListTargets && listItemId
+                            canSelectListItems && listItemId
                               ? (event) => {
                                   onElementClick?.(
                                     "list_item",
@@ -2042,7 +2049,7 @@ export function TemplatePreview({
                               : undefined
                           }
                           className={
-                            canSelectListTargets
+                            canSelectListItems
                               ? isListItemSelected
                                 ? "outline-2 outline-emerald-500 cursor-pointer"
                                 : "hover:outline-2 hover:outline-emerald-300 cursor-pointer"
@@ -2088,7 +2095,7 @@ export function TemplatePreview({
                                         : ""
                                     }`}
                                     onDoubleClick={
-                                      canSelectListTargets && subfieldId
+                                      canActivateListSubfields && subfieldId
                                         ? (event) => {
                                             event.stopPropagation();
 
@@ -2273,7 +2280,7 @@ export function TemplatePreview({
                           : undefined
                       }
                       onClick={
-                        canSelectListTargets && listItemId
+                        canSelectListItems && listItemId
                           ? (event) => {
                               onElementClick?.("list_item", listItemId, event);
                             }
@@ -2283,10 +2290,10 @@ export function TemplatePreview({
                         listItemsLayout === "horizontal"
                           ? "flex items-start"
                           : "flex w-full"
-                      } ${canSelectListTargets ? "cursor-pointer transition-all" : ""} ${
+                      } ${canSelectListItems ? "cursor-pointer transition-all" : ""} ${
                         isListItemSelected
                           ? "ring-2 ring-emerald-500"
-                          : canSelectListTargets
+                          : canSelectListItems
                             ? "hover:ring-2 hover:ring-emerald-300"
                             : ""
                       }`}
@@ -2406,7 +2413,7 @@ export function TemplatePreview({
                                       : "")
                                   }
                                   onDoubleClick={
-                                    canSelectListTargets && subfieldId
+                                    canActivateListSubfields && subfieldId
                                       ? (event) => {
                                           event.stopPropagation();
 
