@@ -242,7 +242,7 @@ export default function ReviewsPage() {
           {!loading && !error && filteredBulletins.length === 0 && (
             <div className="text-center py-12">
               <p className="text-[#283618]/60 mb-4">
-                No hay boletines pendientes de revisión.
+                {t("reviewsNotFound")}
               </p>
             </div>
           )}
