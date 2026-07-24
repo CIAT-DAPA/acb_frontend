@@ -6,6 +6,8 @@ import * as ui from "../../../components/ui";
 import { useTranslations } from "next-intl";
 import { Layers, GripVertical } from "lucide-react";
 
+type CanvasInteractionMode = "edit" | "review";
+
 interface CanvasProps {
   data: CreateTemplateData;
   selection: EditorSelection;
@@ -19,7 +21,8 @@ interface CanvasProps {
   isCardMode?: boolean;
   onCanvasChange?: () => void;
   commentCounts?: Record<string, number>;
-  renderAllPagesInReview?: boolean;
+  interactionMode?: CanvasInteractionMode;
+  renderAllPages?: boolean;
 }
 
 const normalizeCardFieldValue = (value: unknown): any[] => {
@@ -140,13 +143,14 @@ export const Canvas: React.FC<CanvasProps> = ({
   isCardMode = false,
   onCanvasChange,
   commentCounts,
-  renderAllPagesInReview = false,
+  interactionMode = "edit",
+  renderAllPages = false,
 }) => {
+  const isReviewInteraction = interactionMode === "review";
+  const shouldRenderAllPages = renderAllPages;
   const t = useTranslations("CreateTemplate.fieldEditor");
   const containerRef = useRef<HTMLDivElement>(null);
   const [canvasState, setCanvasState] = useState<CanvasState>({
-    // ... existing code ...
-
     scale: 1,
     position: { x: 0, y: 0 },
   });
@@ -162,16 +166,37 @@ export const Canvas: React.FC<CanvasProps> = ({
     Record<number, number>
   >({});
   const spacePressed = useRef(false);
-  const reviewSectionsResetKey = data.version.content.sections
-    .map((section) => section.section_id || "")
-    .join("|");
+  const paginationResetKey = JSON.stringify({
+    bulletinHeight: data.version.content.style_config?.bulletin_height,
+
+    sections: data.version.content.sections.map((section) => ({
+      sectionId: section.section_id,
+      styleConfig: section.style_config,
+      headerConfig: section.header_config,
+      footerConfig: section.footer_config,
+
+      blocks: section.blocks?.map((block) => ({
+        blockId: block.block_id,
+        styleConfig: block.style_config,
+
+        fields: block.fields?.map((field) => ({
+          fieldId: field.field_id,
+          type: field.type,
+          bulletin: field.bulletin,
+          value: field.value,
+          styleConfig: field.style_config,
+
+          maxItemsPerPage: (field.field_config as any)?.max_items_per_page,
+        })),
+      })),
+    })),
+  });
 
   const sectionPageCounts = data.version.content.sections.map(
     (section, sectionIndex) => {
-      if (!renderAllPagesInReview) {
+      if (!shouldRenderAllPages) {
         return 1;
       }
-
       const estimatedCount = getSectionTotalPagesForReview(section);
       const resolvedCount = resolvedReviewPageCounts[sectionIndex] || 0;
 
@@ -180,12 +205,12 @@ export const Canvas: React.FC<CanvasProps> = ({
   );
 
   useEffect(() => {
-    if (!renderAllPagesInReview) {
+    if (!shouldRenderAllPages) {
       return;
     }
 
     setResolvedReviewPageCounts({});
-  }, [renderAllPagesInReview, reviewSectionsResetKey]);
+  }, [shouldRenderAllPages, paginationResetKey]);
 
   useEffect(() => {
     if (onCanvasChange) {
@@ -370,28 +395,44 @@ export const Canvas: React.FC<CanvasProps> = ({
       | "section"
       | "block"
       | "field"
+      | "list_item"
+      | "list_item_field"
       | "header"
       | "footer"
       | "header_field"
       | "footer_field",
     id: string,
-    e: React.MouseEvent,
+    event: React.MouseEvent,
   ) => {
-    e.stopPropagation();
+    event.stopPropagation();
 
-    // Helper to call onSelect with rect
     const select = (selection: EditorSelection) => {
-      onSelect(selection, e.currentTarget.getBoundingClientRect());
+      onSelect(selection, event.currentTarget.getBoundingClientRect());
     };
 
-    // Header Global Container
-    if (id === "header-global") {
-      select({
-        type: "header",
-        id: id,
-        sectionIndex: -1, // Global
-      });
-      return;
+    if (interactionMode === "edit") {
+      const listTargetMatch = id.match(
+        /^field-(\d+)-(\d+)-(\d+)-item-\d+(?:-subfield-.+)?$/,
+      );
+
+      if (listTargetMatch) {
+        const sectionIndex = Number(listTargetMatch[1]);
+
+        const blockIndex = Number(listTargetMatch[2]);
+
+        const fieldIndex = Number(listTargetMatch[3]);
+
+        select({
+          type: "field",
+          id: `field-${sectionIndex}` + `-${blockIndex}` + `-${fieldIndex}`,
+          sectionIndex,
+          blockIndex,
+          fieldIndex,
+          schemaKey: undefined,
+        });
+
+        return;
+      }
     }
 
     // Header Global Field
@@ -471,6 +512,39 @@ export const Canvas: React.FC<CanvasProps> = ({
         id: id,
         sectionIndex: parseInt(footerSectionMatch[1]),
       });
+      return;
+    }
+
+    const listItemFieldMatch = id.match(
+      /^field-(\d+)-(\d+)-(\d+)-item-(\d+)-subfield-(.+)$/,
+    );
+
+    if (listItemFieldMatch) {
+      select({
+        type: "list_item_field",
+        id,
+        sectionIndex: Number(listItemFieldMatch[1]),
+        blockIndex: Number(listItemFieldMatch[2]),
+        fieldIndex: Number(listItemFieldMatch[3]),
+        itemIndex: Number(listItemFieldMatch[4]),
+        schemaKey: listItemFieldMatch[5],
+      });
+
+      return;
+    }
+
+    const listItemMatch = id.match(/^field-(\d+)-(\d+)-(\d+)-item-(\d+)$/);
+
+    if (listItemMatch) {
+      select({
+        type: "list_item",
+        id,
+        sectionIndex: Number(listItemMatch[1]),
+        blockIndex: Number(listItemMatch[2]),
+        fieldIndex: Number(listItemMatch[3]),
+        itemIndex: Number(listItemMatch[4]),
+      });
+
       return;
     }
 
@@ -595,6 +669,7 @@ export const Canvas: React.FC<CanvasProps> = ({
                 data={data}
                 variant="single"
                 reviewMode={true}
+                allowListItemSelection={isReviewInteraction}
                 onElementClick={handleElementClick}
                 selectedSectionIndex={0}
                 selectedElementId={selection.id}
@@ -637,18 +712,23 @@ export const Canvas: React.FC<CanvasProps> = ({
                         <UnifiedBulletinPreview
                           data={data}
                           variant="single"
+                          // editor como revisión necesitan seleccionar elementos.
                           reviewMode={true}
+                          // Solo revisión puede seleccionar targets internos de listas.
+                          allowListItemSelection={isReviewInteraction}
                           onElementClick={handleElementClick}
                           selectedSectionIndex={index}
                           currentResolvedPageIndex={
-                            renderAllPagesInReview ? pageIndex : undefined
+                            shouldRenderAllPages ? pageIndex : undefined
                           }
-                          hidePagination={true}
+                          hidePagination={shouldRenderAllPages}
                           selectedElementId={selection.id}
                           commentCounts={commentCounts}
-                          resolvedSectionPageCounts={sectionPageCounts}
+                          resolvedSectionPageCounts={
+                            shouldRenderAllPages ? sectionPageCounts : undefined
+                          }
                           onResolvedPageCount={
-                            renderAllPagesInReview && pageIndex === 0
+                            shouldRenderAllPages && pageIndex === 0
                               ? (pageCount) => {
                                   const normalizedPageCount = Number.isFinite(
                                     pageCount,

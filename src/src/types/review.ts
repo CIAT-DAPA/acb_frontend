@@ -2,20 +2,27 @@ export interface CommentTargetElement {
   section_id?: string | null;
   block_id?: string | null;
   field_id?: string | null;
-  // Legacy or frontend-only properties effectively
+
+  // Nuevos campos para listas
+  item_index?: number | null;
+  item_field_id?: string | null;
+
   type?:
     | "section"
     | "block"
     | "field"
+    | "list_item"
+    | "list_item_field"
     | "header"
     | "footer"
     | "header_field"
     | "footer_field";
-  id?: string; // Frontend ID like section-0
+
+  id?: string;
   section_index?: number;
   block_index?: number;
   field_index?: number;
-  display_name?: string; // Name of the element (e.g., block, field, etc.)
+  display_name?: string;
 }
 
 export interface ReviewComment {
@@ -57,11 +64,13 @@ export interface ReviewCycle {
 
 export interface CommentPayload {
   text: string;
+
   target_element?: {
     section_id?: string;
     block_id?: string;
     field_id?: string;
   };
+
   parent_comment_id?: string;
 }
 

@@ -11,6 +11,8 @@ type ElementClickType =
   | "section"
   | "block"
   | "field"
+  | "list_item"
+  | "list_item_field"
   | "header"
   | "footer"
   | "header_field"
@@ -42,11 +44,13 @@ interface UnifiedBulletinPreviewProps {
   hidePagination?: boolean;
   resolvedSectionPageCounts?: number[];
   reviewMode?: boolean;
+  allowListItemSelection?: boolean;
   onElementClick?: (
     type: ElementClickType,
     id: string,
     e: React.MouseEvent,
   ) => void;
+
   selectedElementId?: string | null;
   commentCounts?: Record<string, number>;
   cardEmptyStateMode?: "first-available" | "select-card";
@@ -75,6 +79,7 @@ export function UnifiedBulletinPreview({
   hidePagination = false,
   resolvedSectionPageCounts,
   reviewMode = false,
+  allowListItemSelection = false,
   onElementClick,
   selectedElementId,
   commentCounts,
@@ -117,6 +122,7 @@ export function UnifiedBulletinPreview({
         cardsMetadataLoading={cardsMetadataLoading}
         resolvedSectionPageCounts={resolvedSectionPageCounts}
         reviewMode={reviewMode}
+        allowListItemSelection={allowListItemSelection}
         onElementClick={onElementClick}
         selectedElementId={selectedElementId}
         commentCounts={commentCounts}
