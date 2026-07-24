@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Plus,
   Trash2,
@@ -25,17 +25,25 @@ import {
 } from "./index";
 import { btnOutlineSecondary } from "@/app/[locale]/components/ui";
 import { VisualResourceSelector } from "../../../../templates/create/components/VisualResourceSelector";
+import { BulletinComment } from "@/types/bulletin";
+import { encodeReviewFieldId } from "@/utils/reviewTarget";
 
 interface ListFieldEditorProps {
   field: Field;
   value: any[];
   onChange: (value: any[]) => void;
+  commentsByTarget?: Record<string, BulletinComment[]>;
+  renderComments?: (comments: BulletinComment[] | undefined) => React.ReactNode;
+  readOnly?: boolean;
 }
 
 export function ListFieldEditor({
   field,
   value = [],
   onChange,
+  commentsByTarget = {},
+  renderComments,
+  readOnly = false,
 }: ListFieldEditorProps) {
   const t = useTranslations("CreateBulletin.listField");
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set([0]));
@@ -51,6 +59,71 @@ export function ListFieldEditor({
     field.field_config && "item_schema" in field.field_config
       ? field.field_config.item_schema
       : {};
+
+  const itemSchemaKeys = Object.keys(itemSchema);
+
+  useEffect(() => {
+    setExpandedItems((currentExpanded) => {
+      const nextExpanded = new Set(currentExpanded);
+
+      value.forEach((_item, itemIndex) => {
+        const itemTargetId = getItemTargetId(itemIndex);
+
+        const hasItemComments = Boolean(
+          itemTargetId && commentsByTarget[itemTargetId]?.length,
+        );
+
+        const hasSubfieldComments = itemSchemaKeys.some((itemFieldId) => {
+          const subfieldTargetId = getSubfieldTargetId(itemIndex, itemFieldId);
+
+          return Boolean(
+            subfieldTargetId && commentsByTarget[subfieldTargetId]?.length,
+          );
+        });
+
+        if (hasItemComments || hasSubfieldComments) {
+          nextExpanded.add(itemIndex);
+        }
+      });
+
+      if (nextExpanded.size === currentExpanded.size) {
+        return currentExpanded;
+      }
+
+      return nextExpanded;
+    });
+  }, [
+    commentsByTarget,
+    field.field_id,
+    value.length,
+    itemSchemaKeys.join("|"),
+  ]);
+
+  const getItemTargetId = (itemIndex: number): string | undefined => {
+    if (!field.field_id) {
+      return undefined;
+    }
+
+    return encodeReviewFieldId({
+      parentFieldId: field.field_id,
+      itemIndex,
+    });
+  };
+
+  const getSubfieldTargetId = (
+    itemIndex: number,
+    itemFieldId: string,
+  ): string | undefined => {
+    if (!field.field_id) {
+      return undefined;
+    }
+
+    return encodeReviewFieldId({
+      parentFieldId: field.field_id,
+      itemIndex,
+      itemFieldId,
+    });
+  };
 
   const maxItems =
     field.field_config && "max_items" in field.field_config
@@ -631,6 +704,34 @@ export function ListFieldEditor({
     }
   }, []);
 
+  const formatReadOnlyValue = (rawValue: unknown): string => {
+    if (rawValue === null || rawValue === undefined || rawValue === "") {
+      return "Sin valor";
+    }
+
+    if (typeof rawValue === "boolean") {
+      return rawValue ? "Sí" : "No";
+    }
+
+    if (typeof rawValue === "string" || typeof rawValue === "number") {
+      return String(rawValue);
+    }
+
+    if (
+      typeof rawValue === "object" &&
+      rawValue !== null &&
+      "text" in rawValue
+    ) {
+      return String((rawValue as { text?: unknown }).text || "Sin valor");
+    }
+
+    try {
+      return JSON.stringify(rawValue, null, 2);
+    } catch {
+      return String(rawValue);
+    }
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -638,147 +739,207 @@ export function ListFieldEditor({
           {t("items", { count: value.length })}
           {maxItems && ` ${t("maximum", { max: maxItems })}`}
         </span>
-        <div className="flex gap-2">
-          {showCsvUpload && (
-            <div className="flex items-stretch border-2 border-[#bc6c25] rounded bg-white">
-              {/* Upload Button Part */}
-              <div className="relative group hover:bg-[#bc6c25] transition-colors border-r border-[#bc6c25]/20">
-                <input
-                  type="file"
-                  accept=".csv"
-                  onChange={handleCsvUpload}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                />
-                <div className="flex items-center gap-2 px-4 py-3 text-[#283618] group-hover:text-[#fefae0] text-sm font-medium transition-colors">
-                  <Upload size={16} />
-                  {t("importCsv")}
+        {!readOnly && (
+          <div className="flex gap-2">
+            {showCsvUpload && (
+              <div className="flex items-stretch border-2 border-[#bc6c25] rounded bg-white">
+                {/* Upload Button Part */}
+                <div className="relative group hover:bg-[#bc6c25] transition-colors border-r border-[#bc6c25]/20">
+                  <input
+                    type="file"
+                    accept=".csv"
+                    onChange={handleCsvUpload}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  />
+                  <div className="flex items-center gap-2 px-4 py-3 text-[#283618] group-hover:text-[#fefae0] text-sm font-medium transition-colors">
+                    <Upload size={16} />
+                    {t("importCsv")}
+                  </div>
                 </div>
-              </div>
 
-              {/* Help Icon Part */}
-              <div
-                className="relative flex items-center px-3 hover:bg-[#bc6c25]/10 cursor-help transition-colors"
-                onMouseEnter={() => setShowHelp(true)}
-                onMouseLeave={() => setShowHelp(false)}
-              >
-                <HelpCircle size={18} className="text-[#bc6c25]" />
+                {/* Help Icon Part */}
+                <div
+                  className="relative flex items-center px-3 hover:bg-[#bc6c25]/10 cursor-help transition-colors"
+                  onMouseEnter={() => setShowHelp(true)}
+                  onMouseLeave={() => setShowHelp(false)}
+                >
+                  <HelpCircle size={18} className="text-[#bc6c25]" />
 
-                {showHelp && (
-                  <div className="absolute right-0 top-full mt-2 w-72 bg-white p-4 rounded-lg shadow-xl border border-gray-200 z-50 text-sm cursor-auto">
-                    <h4 className="font-semibold mb-3 text-[#283618] border-b pb-2">
-                      {t("csvRequirements")}
-                    </h4>
-                    <div className="space-y-3">
-                      <div>
-                        <p className="font-medium text-gray-700 mb-1">
-                          {t("dateFormat")}
-                        </p>
-                        <code className="bg-gray-100 px-2 py-1 rounded text-xs text-gray-600 block w-fit">
-                          MM/DD/YYYY
-                        </code>
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-700 mb-1">
-                          {t("requiredColumns")}
-                        </p>
-                        <div className="bg-gray-50 rounded p-2 max-h-40 overflow-y-auto">
-                          <ul className="list-disc pl-4 text-xs text-gray-600 space-y-1">
-                            {getExpectedColumns().map((col) => (
-                              <li key={col} className="font-mono">
-                                {col}
-                              </li>
-                            ))}
-                          </ul>
+                  {showHelp && (
+                    <div className="absolute right-0 top-full mt-2 w-72 bg-white p-4 rounded-lg shadow-xl border border-gray-200 z-50 text-sm cursor-auto">
+                      <h4 className="font-semibold mb-3 text-[#283618] border-b pb-2">
+                        {t("csvRequirements")}
+                      </h4>
+                      <div className="space-y-3">
+                        <div>
+                          <p className="font-medium text-gray-700 mb-1">
+                            {t("dateFormat")}
+                          </p>
+                          <code className="bg-gray-100 px-2 py-1 rounded text-xs text-gray-600 block w-fit">
+                            MM/DD/YYYY
+                          </code>
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-700 mb-1">
+                            {t("requiredColumns")}
+                          </p>
+                          <div className="bg-gray-50 rounded p-2 max-h-40 overflow-y-auto">
+                            <ul className="list-disc pl-4 text-xs text-gray-600 space-y-1">
+                              {getExpectedColumns().map((col) => (
+                                <li key={col} className="font-mono">
+                                  {col}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
-          )}
-          <button
-            type="button"
-            onClick={handleAddItem}
-            disabled={maxItems ? value.length >= maxItems : false}
-            className={`${btnOutlineSecondary} text-sm disabled:opacity-50 disabled:cursor-not-allowed`}
-          >
-            <Plus size={16} />
-            {t("addItem")}
-          </button>
-        </div>
+            )}
+            <button
+              type="button"
+              onClick={handleAddItem}
+              disabled={maxItems ? value.length >= maxItems : false}
+              className={`${btnOutlineSecondary} text-sm disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              <Plus size={16} />
+              {t("addItem")}
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="space-y-3">
-        {value.map((item, itemIndex) => (
-          <div
-            key={itemIndex}
-            className="border border-gray-300 rounded-lg overflow-hidden"
-          >
-            {/* Header del item */}
-            <div className="flex items-center justify-between bg-gray-50 px-4 py-2">
-              <button
-                type="button"
-                onClick={() => toggleExpand(itemIndex)}
-                className="flex items-center gap-2 text-sm font-medium text-[#283618] hover:text-[#606c38] transition-colors"
-              >
-                {expandedItems.has(itemIndex) ? (
-                  <ChevronUp size={16} />
-                ) : (
-                  <ChevronDown size={16} />
-                )}
-                {t("item", { index: itemIndex + 1 })}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleRemoveItem(itemIndex)}
-                disabled={value.length <= minItems}
-                className="text-red-600 hover:text-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                title={t("removeItem")}
-              >
-                <Trash2 size={16} />
-              </button>
-            </div>
+        {value.map((item, itemIndex) => {
+          const itemTargetId = getItemTargetId(itemIndex);
 
-            {/* Campos del item */}
-            {expandedItems.has(itemIndex) && (
-              <div className="p-4 space-y-3 bg-white">
-                {Object.entries(itemSchema).map(
-                  ([fieldId, fieldDef]: [string, any]) => {
-                    // Solo mostrar campos que son editables en el formulario
-                    if (fieldDef.form === false) {
-                      return null;
-                    }
+          const itemComments = itemTargetId
+            ? commentsByTarget[itemTargetId]
+            : undefined;
 
-                    return (
-                      <div key={fieldId}>
-                        <label className="block text-sm font-medium text-[#283618] mb-1">
-                          {fieldDef.label || fieldId}
-                          {fieldDef.validation?.required && (
-                            <span className="text-red-500 ml-1">*</span>
-                          )}
-                        </label>
-                        {renderItemField(itemIndex, fieldId, fieldDef)}
-                        {fieldDef.description && (
-                          <p className="text-xs text-[#606c38] mt-1">
-                            {fieldDef.description}
-                          </p>
-                        )}
-                        {fieldDef.validation?.max_length && (
-                          <p className="text-xs text-[#606c38] mt-1">
-                            {t("maxCharacters", {
-                              max: fieldDef.validation.max_length,
-                            })}
-                          </p>
-                        )}
-                      </div>
-                    );
-                  },
+          return (
+            <div
+              key={itemIndex}
+              className="border border-gray-300 rounded-lg overflow-hidden"
+            >
+              {/* Header del ítem */}
+              <div className="flex items-center justify-between bg-gray-50 px-4 py-2">
+                <button
+                  type="button"
+                  onClick={() => toggleExpand(itemIndex)}
+                  className="flex items-center gap-2 text-sm font-medium text-[#283618] hover:text-[#606c38] transition-colors"
+                >
+                  {expandedItems.has(itemIndex) ? (
+                    <ChevronUp size={16} />
+                  ) : (
+                    <ChevronDown size={16} />
+                  )}
+
+                  {t("item", {
+                    index: itemIndex + 1,
+                  })}
+                </button>
+
+                {!readOnly && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveItem(itemIndex)}
+                    disabled={value.length <= minItems}
+                    className="text-red-600 hover:text-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    title={t("removeItem")}
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 )}
               </div>
-            )}
-          </div>
-        ))}
+
+              {/* Comentarios hechos sobre todo el ítem */}
+              {itemComments && itemComments.length > 0 && (
+                <div className="px-4 pb-3 bg-gray-50">
+                  {renderComments?.(itemComments)}
+                </div>
+              )}
+
+              {/* Campos internos del ítem */}
+              {expandedItems.has(itemIndex) && (
+                <div className="p-4 space-y-3 bg-white">
+                  {Object.entries(itemSchema).map(
+                    ([itemFieldId, fieldDef]: [string, any]) => {
+                      const subfieldTargetId = getSubfieldTargetId(
+                        itemIndex,
+                        itemFieldId,
+                      );
+
+                      const subfieldComments = subfieldTargetId
+                        ? commentsByTarget[subfieldTargetId]
+                        : undefined;
+
+                      const hasSubfieldComments = Boolean(
+                        subfieldComments?.length,
+                      );
+
+                      /*
+                       * Un subfield form=false normalmente se oculta.
+                       * Si tiene comentarios, debe mostrarse.
+                       */
+                      if (
+                        fieldDef.form === false &&
+                        !hasSubfieldComments &&
+                        !readOnly
+                      ) {
+                        return null;
+                      }
+
+                      const currentValue =
+                        item?.[itemFieldId] ?? fieldDef.value;
+
+                      return (
+                        <div key={itemFieldId}>
+                          <label className="block text-sm font-medium text-[#283618] mb-1">
+                            {fieldDef.display_name ||
+                              fieldDef.label ||
+                              itemFieldId}
+
+                            {fieldDef.validation?.required && !readOnly && (
+                              <span className="text-red-500 ml-1">*</span>
+                            )}
+                          </label>
+
+                          {readOnly || fieldDef.form === false ? (
+                            <div className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 whitespace-pre-wrap">
+                              {formatReadOnlyValue(currentValue)}
+                            </div>
+                          ) : (
+                            renderItemField(itemIndex, itemFieldId, fieldDef)
+                          )}
+
+                          {renderComments?.(subfieldComments)}
+
+                          {fieldDef.description && (
+                            <p className="text-xs text-[#606c38] mt-1">
+                              {fieldDef.description}
+                            </p>
+                          )}
+
+                          {!readOnly && fieldDef.validation?.max_length && (
+                            <p className="text-xs text-[#606c38] mt-1">
+                              {t("maxCharacters", {
+                                max: fieldDef.validation.max_length,
+                              })}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    },
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {value.length === 0 && (
