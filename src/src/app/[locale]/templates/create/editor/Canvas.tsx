@@ -397,6 +397,9 @@ export const Canvas: React.FC<CanvasProps> = ({
       | "field"
       | "list_item"
       | "list_item_field"
+      | "card_item"
+      | "card_block"
+      | "card_field"
       | "header"
       | "footer"
       | "header_field"
@@ -405,6 +408,20 @@ export const Canvas: React.FC<CanvasProps> = ({
     event: React.MouseEvent,
   ) => {
     event.stopPropagation();
+
+    const clickedElement = event.currentTarget as HTMLElement;
+
+    const reviewLabel = clickedElement.dataset.reviewLabel;
+
+    const cardElement = clickedElement.closest<HTMLElement>("[data-card-id]");
+
+    const cardBlockElement = clickedElement.closest<HTMLElement>(
+      "[data-card-block-id]",
+    );
+
+    const cardFieldElement = clickedElement.closest<HTMLElement>(
+      "[data-card-field-id]",
+    );
 
     const select = (selection: EditorSelection) => {
       onSelect(selection, event.currentTarget.getBoundingClientRect());
@@ -453,6 +470,146 @@ export const Canvas: React.FC<CanvasProps> = ({
 
         return;
       }
+    }
+
+    const cardListItemFieldMatch = id.match(
+      /^field-(\d+)-(\d+)-(\d+)-card-(\d+)-block-(\d+)-field-(\d+)-item-(\d+)-subfield-(.+)$/,
+    );
+
+    if (cardListItemFieldMatch) {
+      select({
+        type: "list_item_field",
+        id,
+
+        // Field padre del boletín: el field tipo card
+        sectionIndex: Number(cardListItemFieldMatch[1]),
+        blockIndex: Number(cardListItemFieldMatch[2]),
+        fieldIndex: Number(cardListItemFieldMatch[3]),
+
+        // Ruta interna de la card
+        cardIndex: Number(cardListItemFieldMatch[4]),
+        cardId: cardElement?.dataset.cardId,
+
+        cardBlockIndex: Number(cardListItemFieldMatch[5]),
+        cardBlockId: cardBlockElement?.dataset.cardBlockId,
+
+        cardFieldIndex: Number(cardListItemFieldMatch[6]),
+        cardFieldId: cardFieldElement?.dataset.cardFieldId,
+
+        // Ruta de la lista
+        itemIndex: Number(cardListItemFieldMatch[7]),
+        schemaKey: cardListItemFieldMatch[8],
+
+        displayName: reviewLabel,
+      });
+
+      return;
+    }
+
+    const cardFieldMatch = id.match(
+      /^field-(\d+)-(\d+)-(\d+)-card-(\d+)-block-(\d+)-field-(\d+)$/,
+    );
+
+    if (cardFieldMatch) {
+      select({
+        type: "card_field",
+        id,
+
+        sectionIndex: Number(cardFieldMatch[1]),
+        blockIndex: Number(cardFieldMatch[2]),
+        fieldIndex: Number(cardFieldMatch[3]),
+
+        cardIndex: Number(cardFieldMatch[4]),
+        cardId: clickedElement.dataset.cardId,
+
+        cardBlockIndex: Number(cardFieldMatch[5]),
+        cardBlockId: clickedElement.dataset.cardBlockId,
+
+        cardFieldIndex: Number(cardFieldMatch[6]),
+        cardFieldId: clickedElement.dataset.cardFieldId,
+
+        displayName: reviewLabel,
+      });
+
+      return;
+    }
+
+    const cardBlockMatch = id.match(
+      /^field-(\d+)-(\d+)-(\d+)-card-(\d+)-block-(\d+)$/,
+    );
+
+    if (cardBlockMatch) {
+      select({
+        type: "card_block",
+        id,
+
+        sectionIndex: Number(cardBlockMatch[1]),
+        blockIndex: Number(cardBlockMatch[2]),
+        fieldIndex: Number(cardBlockMatch[3]),
+
+        cardIndex: Number(cardBlockMatch[4]),
+        cardId: clickedElement.dataset.cardId,
+
+        cardBlockIndex: Number(cardBlockMatch[5]),
+        cardBlockId: clickedElement.dataset.cardBlockId,
+
+        displayName: reviewLabel,
+      });
+
+      return;
+    }
+
+    const cardItemMatch = id.match(/^field-(\d+)-(\d+)-(\d+)-card-(\d+)$/);
+
+    if (cardItemMatch) {
+      select({
+        type: "card_item",
+        id,
+
+        sectionIndex: Number(cardItemMatch[1]),
+        blockIndex: Number(cardItemMatch[2]),
+        fieldIndex: Number(cardItemMatch[3]),
+
+        cardIndex: Number(cardItemMatch[4]),
+        cardId: clickedElement.dataset.cardId,
+
+        displayName: reviewLabel,
+      });
+
+      return;
+    }
+
+    const cardListItemMatch = id.match(
+      /^field-(\d+)-(\d+)-(\d+)-card-(\d+)-block-(\d+)-field-(\d+)-item-(\d+)$/,
+    );
+
+    if (cardListItemMatch) {
+      select({
+        /*
+         * También reutilizamos el tipo existente.
+         */
+        type: "list_item",
+        id,
+
+        sectionIndex: Number(cardListItemMatch[1]),
+        blockIndex: Number(cardListItemMatch[2]),
+        fieldIndex: Number(cardListItemMatch[3]),
+
+        cardIndex: Number(cardListItemMatch[4]),
+        cardId: cardElement?.dataset.cardId,
+
+        cardBlockIndex: Number(cardListItemMatch[5]),
+        cardBlockId: cardBlockElement?.dataset.cardBlockId,
+
+        cardFieldIndex: Number(cardListItemMatch[6]),
+        cardFieldId: cardFieldElement?.dataset.cardFieldId,
+
+        itemIndex: Number(cardListItemMatch[7]),
+
+        displayName: reviewLabel,
+      });
+
+      return;
     }
 
     // Header Global Field

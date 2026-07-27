@@ -203,6 +203,8 @@ export default function ReviewBulletinPage() {
 
   const tReview = useTranslations("Review");
 
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
   const mappedComments = useMemo(() => {
     if (!bulletin || !comments.length) {
       return comments;
@@ -243,13 +245,34 @@ export default function ReviewBulletinPage() {
       const decodedItemFieldId =
         decodedFieldTarget?.itemFieldId || target.item_field_id || undefined;
 
+      const decodedCardIndex =
+        typeof decodedFieldTarget?.cardIndex === "number"
+          ? decodedFieldTarget.cardIndex
+          : undefined;
+
+      const decodedCardId = decodedFieldTarget?.cardId;
+
+      const decodedCardBlockIndex =
+        typeof decodedFieldTarget?.cardBlockIndex === "number"
+          ? decodedFieldTarget.cardBlockIndex
+          : undefined;
+
+      const decodedCardBlockId = decodedFieldTarget?.cardBlockId;
+
+      const decodedCardFieldIndex =
+        typeof decodedFieldTarget?.cardFieldIndex === "number"
+          ? decodedFieldTarget.cardFieldIndex
+          : undefined;
+
+      const decodedCardFieldId = decodedFieldTarget?.cardFieldId;
+
       // Estos índices deben reiniciarse para cada comentario.
       let sectionIndex: number | undefined;
       let blockIndex: number | undefined;
       let fieldIndex: number | undefined;
 
       let frontendId = target.id;
-      let targetType = target.type;
+      let targetType: CommentTargetElement["type"] = target.type;
       let displayName = target.display_name;
       let didMapTarget = false;
 
@@ -292,6 +315,109 @@ export default function ReviewBulletinPage() {
             : undefined;
 
         const listDisplayName = field.label || field.display_name || "Lista";
+
+        const hasCardIndex =
+          typeof decodedCardIndex === "number" && decodedCardIndex >= 0;
+
+        if (hasCardIndex) {
+          const cardBaseId = `${baseFieldId}-card-${decodedCardIndex}`;
+
+          const cardNumber = decodedCardIndex + 1;
+
+          const hasCardBlock =
+            typeof decodedCardBlockIndex === "number" &&
+            decodedCardBlockIndex >= 0;
+
+          const hasCardField =
+            typeof decodedCardFieldIndex === "number" &&
+            decodedCardFieldIndex >= 0;
+
+          /*
+           * Card completa.
+           */
+          if (!hasCardBlock) {
+            frontendId = cardBaseId;
+            targetType = "card_item";
+
+            displayName = target.display_name || `Card ${cardNumber}`;
+
+            didMapTarget = true;
+            return;
+          }
+
+          const cardBlockBaseId = `${cardBaseId}-block-${decodedCardBlockIndex}`;
+
+          /*
+           * Bloque dentro de card.
+           */
+          if (!hasCardField) {
+            frontendId = cardBlockBaseId;
+            targetType = "card_block";
+
+            displayName =
+              target.display_name ||
+              `Bloque ${decodedCardBlockIndex + 1}` + ` · Card ${cardNumber}`;
+
+            didMapTarget = true;
+            return;
+          }
+
+          const cardFieldBaseId = `${cardBlockBaseId}-field-${decodedCardFieldIndex}`;
+
+          /*
+           * Subcampo de un ítem de una lista dentro de card.
+           */
+          if (hasItemIndex && itemFieldId) {
+            frontendId =
+              `${cardFieldBaseId}` +
+              `-item-${decodedItemIndex}` +
+              `-subfield-${itemFieldId}`;
+
+            /*
+             * Reutilizamos el mismo tipo de las listas externas.
+             */
+            targetType = "list_item_field";
+
+            displayName =
+              target.display_name ||
+              `Campo de lista · Item ${decodedItemIndex! + 1}` +
+                ` · Card ${cardNumber}`;
+
+            didMapTarget = true;
+            return;
+          }
+
+          /*
+           * Ítem de una lista dentro de card.
+           */
+          if (hasItemIndex) {
+            frontendId = `${cardFieldBaseId}` + `-item-${decodedItemIndex}`;
+
+            targetType = "list_item";
+
+            displayName =
+              target.display_name ||
+              `Lista · Item ${decodedItemIndex! + 1}` + ` · Card ${cardNumber}`;
+
+            didMapTarget = true;
+            return;
+          }
+
+          /*
+           * Field normal dentro de card.
+           */
+          frontendId = cardFieldBaseId;
+          targetType = "card_field";
+
+          displayName =
+            target.display_name ||
+            `Campo ${decodedCardFieldIndex + 1}` +
+              ` · Bloque ${decodedCardBlockIndex + 1}` +
+              ` · Card ${cardNumber}`;
+
+          didMapTarget = true;
+          return;
+        }
 
         if (hasItemIndex && itemFieldId) {
           frontendId =
@@ -587,9 +713,17 @@ export default function ReviewBulletinPage() {
         block_index: blockIndex,
         field_index: fieldIndex,
 
-        // Estos valores se reconstruyen desde el field_id codificado.
         item_index: decodedItemIndex,
         item_field_id: decodedItemFieldId,
+
+        card_index: decodedCardIndex,
+        card_id: decodedCardId,
+
+        card_block_index: decodedCardBlockIndex,
+        card_block_id: decodedCardBlockId,
+
+        card_field_index: decodedCardFieldIndex,
+        card_field_id: decodedCardFieldId,
 
         display_name: displayName,
       };
@@ -649,6 +783,10 @@ export default function ReviewBulletinPage() {
     loadBulletinData();
     loadComments();
   }, [bulletinId]);
+
+  useEffect(() => {
+    router.prefetch("/reviews");
+  }, [router]);
 
   // SEO: Actualizar metadatos cuando se carga el boletín
   useEffect(() => {
@@ -871,30 +1009,28 @@ export default function ReviewBulletinPage() {
   };
 
   const handleReject = async () => {
+    if (isRejecting) {
+      return;
+    }
+
+    setIsRejecting(true);
+
     try {
-      setLoading(true);
-      // Call the reject service
       await ReviewService.rejectBulletin(bulletinId);
 
+      setIsRedirecting(true);
       showToast(t("rejectSuccess"), "success");
-
-      // Redirect to the reviews page
-      router.push("/reviews");
+      router.replace("/reviews");
     } catch (error: any) {
       console.error("Error rejecting bulletin:", error);
-      // setModalTitle("Error al rechazar");
-      // setModalMessage(
-      //   error.message ||
-      //     "Ocurrió un error al intentar rechazr el boletín. Asegúrate de haber dejado al menos un comentario.",
-      // );
-      // setIsErrorModalOpen(true);
+
       showToast(
         error.message ||
           "Ocurrió un error al intentar rechazar el boletín. Asegúrate de haber dejado al menos un comentario.",
         "error",
       );
-    } finally {
-      setLoading(false);
+
+      setIsRejecting(false);
     }
   };
 
@@ -907,6 +1043,9 @@ export default function ReviewBulletinPage() {
       newSelection.type === "field" ||
       newSelection.type === "list_item" ||
       newSelection.type === "list_item_field" ||
+      newSelection.type === "card_item" ||
+      newSelection.type === "card_block" ||
+      newSelection.type === "card_field" ||
       newSelection.type === "header" ||
       newSelection.type === "footer" ||
       newSelection.type === "header_field" ||
@@ -948,10 +1087,20 @@ export default function ReviewBulletinPage() {
         // Block, field, list item o field interno de lista.
         const isBlockTarget = selection.type === "block";
 
+        const hasCardContext =
+          typeof selection.cardIndex === "number" && selection.cardIndex >= 0;
+
+        const isCardTarget =
+          selection.type === "card_item" ||
+          selection.type === "card_block" ||
+          selection.type === "card_field" ||
+          hasCardContext;
+
         const isFieldTarget =
           selection.type === "field" ||
           selection.type === "list_item" ||
-          selection.type === "list_item_field";
+          selection.type === "list_item_field" ||
+          isCardTarget;
 
         if (
           (isBlockTarget || isFieldTarget) &&
@@ -974,15 +1123,43 @@ export default function ReviewBulletinPage() {
               if (field) {
                 target.field_id = encodeReviewFieldId({
                   parentFieldId: field.field_id,
+
+                  /*
+                   * Lista.
+                   */
                   itemIndex:
                     selection.type === "list_item" ||
                     selection.type === "list_item_field"
                       ? selection.itemIndex
                       : undefined,
+
                   itemFieldId:
                     selection.type === "list_item_field"
                       ? selection.schemaKey
                       : undefined,
+
+                  /*
+                   * Card.
+                   */
+                  cardIndex: hasCardContext ? selection.cardIndex : undefined,
+
+                  cardId: hasCardContext ? selection.cardId : undefined,
+
+                  cardBlockIndex: hasCardContext
+                    ? selection.cardBlockIndex
+                    : undefined,
+
+                  cardBlockId: hasCardContext
+                    ? selection.cardBlockId
+                    : undefined,
+
+                  cardFieldIndex: hasCardContext
+                    ? selection.cardFieldIndex
+                    : undefined,
+
+                  cardFieldId: hasCardContext
+                    ? selection.cardFieldId
+                    : undefined,
                 });
               }
             }
@@ -1108,6 +1285,15 @@ export default function ReviewBulletinPage() {
                   ? selection.schemaKey
                   : undefined,
 
+              card_index: selection.cardIndex,
+              card_id: selection.cardId,
+
+              card_block_index: selection.cardBlockIndex,
+              card_block_id: selection.cardBlockId,
+
+              card_field_index: selection.cardFieldIndex,
+              card_field_id: selection.cardFieldId,
+
               display_name: getElementName(),
             },
           } as ReviewComment;
@@ -1129,6 +1315,13 @@ export default function ReviewBulletinPage() {
 
   const getElementName = () => {
     if (!bulletin || !selection.id) return "";
+
+    if (
+      typeof selection.displayName === "string" &&
+      selection.displayName.trim()
+    ) {
+      return selection.displayName;
+    }
     const data = bulletin.current_version.data;
 
     try {
@@ -1230,6 +1423,48 @@ export default function ReviewBulletinPage() {
           return (
             sff?.label || sff?.display_name || "Campo de Footer de Sección"
           );
+        case "card_item": {
+          const cardNumber =
+            typeof selection.cardIndex === "number"
+              ? selection.cardIndex + 1
+              : "?";
+
+          return selection.displayName || `Card ${cardNumber}`;
+        }
+
+        case "card_block": {
+          const cardNumber =
+            typeof selection.cardIndex === "number"
+              ? selection.cardIndex + 1
+              : "?";
+
+          const blockNumber =
+            typeof selection.cardBlockIndex === "number"
+              ? selection.cardBlockIndex + 1
+              : "?";
+
+          return (
+            selection.displayName ||
+            `Bloque ${blockNumber} · Card ${cardNumber}`
+          );
+        }
+
+        case "card_field": {
+          const cardNumber =
+            typeof selection.cardIndex === "number"
+              ? selection.cardIndex + 1
+              : "?";
+
+          const blockNumber =
+            typeof selection.cardBlockIndex === "number"
+              ? selection.cardBlockIndex + 1
+              : "?";
+
+          return (
+            selection.displayName ||
+            `Campo · Bloque ${blockNumber} · Card ${cardNumber}`
+          );
+        }
 
         default:
           return selection.type;
@@ -1274,6 +1509,20 @@ export default function ReviewBulletinPage() {
     );
   }
 
+  if (isRedirecting) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-100">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-[#bc6c25]" />
+
+          <p className="text-sm font-medium text-gray-600">
+            Regresando a revisiones...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-[calc(100vh-100px)] w-full bg-gray-100 overflow-hidden">
       {/* Top Bar - Estilo tipo Editor */}
@@ -1313,11 +1562,23 @@ export default function ReviewBulletinPage() {
 
         <div className="flex items-center gap-3">
           <button
+            type="button"
             onClick={handleReject}
-            className="px-4 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 flex items-center gap-2 font-medium transition-colors"
+            disabled={isRejecting}
+            className="
+              px-4 py-2 border border-red-200 text-red-600 rounded-lg
+              hover:bg-red-50 flex items-center gap-2 font-medium
+              transition-colors
+              disabled:cursor-not-allowed disabled:opacity-60
+            "
           >
-            <XCircle className="h-5 w-5" />
-            {t("reject")}
+            {isRejecting ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <XCircle className="h-5 w-5" />
+            )}
+
+            {isRejecting ? "Rechazando..." : t("reject")}
           </button>
           <button
             onClick={handleApprove}

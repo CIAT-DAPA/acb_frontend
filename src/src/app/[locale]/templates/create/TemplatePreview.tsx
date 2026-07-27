@@ -1111,6 +1111,9 @@ interface TemplatePreviewProps {
       | "field"
       | "list_item"
       | "list_item_field"
+      | "card_item"
+      | "card_block"
+      | "card_field"
       | "header"
       | "footer"
       | "header_field"
@@ -1223,6 +1226,8 @@ export function TemplatePreview({
 
   const canSelectListItems =
     reviewMode && allowListItemSelection && Boolean(onElementClick);
+
+  const canSelectCardElements = reviewMode && Boolean(onElementClick);
 
   const canEditListSubfields =
     reviewMode && allowListSubfieldEditing && Boolean(onElementClick);
@@ -2031,6 +2036,9 @@ export function TemplatePreview({
                         <tr
                           key={absoluteItemIndex}
                           data-review-id={listItemId}
+                          data-review-label={`${
+                            field.label || field.display_name || "Lista"
+                          } · Item ${absoluteItemIndex + 1}`}
                           data-measure-list-field-index={measurementFieldIndex}
                           data-measure-list-item-index={
                             measurementFieldIndex !== undefined
@@ -2085,6 +2093,11 @@ export function TemplatePreview({
                                   <td
                                     key={fieldIndex}
                                     data-review-id={subfieldId}
+                                    data-review-label={`${
+                                      fieldSchema.label ||
+                                      fieldSchema.display_name ||
+                                      fieldKey
+                                    } · Item ${absoluteItemIndex + 1}`}
                                     className={`p-2 align-top relative ${
                                       reviewMode
                                         ? "cursor-pointer hover:bg-black/5"
@@ -2273,6 +2286,9 @@ export function TemplatePreview({
                     <div
                       key={`list-item-${absoluteItemIndex}-${visualItemIndex}`}
                       data-review-id={listItemId}
+                      data-review-label={`${
+                        field.label || field.display_name || "Lista"
+                      } · Item ${absoluteItemIndex + 1}`}
                       data-measure-list-field-index={measurementFieldIndex}
                       data-measure-list-item-index={
                         measurementFieldIndex !== undefined
@@ -2389,6 +2405,11 @@ export function TemplatePreview({
                                 <div
                                   key={fieldIndex}
                                   data-review-id={subfieldId}
+                                  data-review-label={`${
+                                    fieldSchema.label ||
+                                    fieldSchema.display_name ||
+                                    fieldKey
+                                  } · Item ${absoluteItemIndex + 1}`}
                                   className={
                                     "relative " +
                                     (isGridLayout
@@ -3014,13 +3035,42 @@ export function TemplatePreview({
             ? cardBlockPage?.blockIndexes ||
               cardContent.blocks.map((_, blockIndex) => blockIndex)
             : cardContent.blocks.map((_, blockIndex) => blockIndex);
+          const cardReviewId = fieldId
+            ? `${fieldId}-card-${cardOrderIndex}`
+            : undefined;
 
+          const isCardSelected =
+            Boolean(cardReviewId) && selectedElementId === cardReviewId;
           return (
             <div
               key={`card-${cardData.cardId}-${cardOrderIndex}`}
+              data-review-id={cardReviewId}
+              data-card-index={cardOrderIndex}
+              data-card-id={cardData.cardId}
+              data-review-label={
+                cardToRender.card_name || `Card ${cardOrderIndex + 1}`
+              }
+              onClick={
+                canSelectCardElements && cardReviewId
+                  ? (event) => {
+                      event.stopPropagation();
+
+                      onElementClick?.("card_item", cardReviewId, event);
+                    }
+                  : undefined
+              }
               style={cardContainerStyles}
-              className="flex flex-col"
+              className={[
+                "flex flex-col relative rounded transition-all",
+                canSelectCardElements ? "cursor-pointer" : "",
+                isCardSelected
+                  ? "ring-2 ring-blue-500 z-20"
+                  : canSelectCardElements
+                    ? "hover:ring-2 hover:ring-yellow-400"
+                    : "",
+              ].join(" ")}
             >
+              {cardReviewId && renderCommentBadge(cardReviewId)}
               {(cardBackgroundColor || cardBackgroundUrl) && (
                 <div style={cardBackgroundLayerStyles} />
               )}
@@ -3063,12 +3113,50 @@ export function TemplatePreview({
                     }),
                   };
 
+                  const cardBlockReviewId = cardReviewId
+                    ? `${cardReviewId}-block-${cardBlockIndex}`
+                    : undefined;
+
+                  const isCardBlockSelected =
+                    Boolean(cardBlockReviewId) &&
+                    selectedElementId === cardBlockReviewId;
+
                   return (
                     <div
                       key={`card-block-${cardData.cardId}-${cardOrderIndex}-${cardBlockIndex}`}
+                      data-review-id={cardBlockReviewId}
+                      data-card-index={cardOrderIndex}
+                      data-card-id={cardData.cardId}
+                      data-card-block-index={cardBlockIndex}
+                      data-card-block-id={block.block_id}
+                      data-review-label={
+                        block.display_name || `Bloque ${cardBlockIndex + 1}`
+                      }
                       data-card-content-block-index={
                         !reviewMode ? cardBlockIndex : undefined
                       }
+                      onClick={
+                        canSelectCardElements && cardBlockReviewId
+                          ? (event) => {
+                              event.stopPropagation();
+
+                              onElementClick?.(
+                                "card_block",
+                                cardBlockReviewId,
+                                event,
+                              );
+                            }
+                          : undefined
+                      }
+                      className={[
+                        "relative rounded transition-all",
+                        canSelectCardElements ? "cursor-pointer" : "",
+                        isCardBlockSelected
+                          ? "ring-2 ring-blue-500 z-20"
+                          : canSelectCardElements
+                            ? "hover:ring-2 hover:ring-yellow-400"
+                            : "",
+                      ].join(" ")}
                       style={
                         cardBlockSlice
                           ? {
@@ -3078,6 +3166,8 @@ export function TemplatePreview({
                           : blockContainerStyles
                       }
                     >
+                      {cardBlockReviewId &&
+                        renderCommentBadge(cardBlockReviewId, "-top-2 -left-2")}
                       <div
                         style={
                           cardBlockSlice
@@ -3088,26 +3178,84 @@ export function TemplatePreview({
                             : undefined
                         }
                       >
-                        {block.fields.map((blockField, fieldIndex) => {
+                        {block.fields.map((blockField, cardFieldIndex) => {
                           const safeField: Field = {
                             ...blockField,
                             style_manually_edited:
                               blockField.style_manually_edited ?? false,
                           } as Field;
 
-                          if (
-                            blockField.form &&
-                            cardData.fieldValues[blockField.field_id]
-                          ) {
+                          /*
+                           * hasOwnProperty permite conservar valores válidos como:
+                           * 0, false o string vacío.
+                           */
+                          const hasCustomValue =
+                            Object.prototype.hasOwnProperty.call(
+                              cardData.fieldValues,
+                              blockField.field_id,
+                            );
+
+                          if (blockField.form && hasCustomValue) {
                             safeField.value =
                               cardData.fieldValues[blockField.field_id];
                           }
 
-                          return renderField(
+                          const cardFieldReviewId = cardBlockReviewId
+                            ? `${cardBlockReviewId}-field-${cardFieldIndex}`
+                            : undefined;
+
+                          const isCardFieldSelected =
+                            Boolean(cardFieldReviewId) &&
+                            selectedElementId === cardFieldReviewId;
+
+                          const renderedCardField = renderField(
                             safeField,
-                            `card-${cardData.cardId}-block-${cardOrderIndex}-${cardBlockIndex}-field-${fieldIndex}`,
+                            `card-${cardOrderIndex}-${cardBlockIndex}-${cardFieldIndex}`,
                             block.style_config,
                             (block as any).layout || "vertical",
+                            undefined,
+                            cardFieldReviewId,
+                          );
+
+                          if (!canSelectCardElements || !cardFieldReviewId) {
+                            return renderedCardField;
+                          }
+
+                          return (
+                            <div
+                              key={cardFieldReviewId}
+                              data-review-id={cardFieldReviewId}
+                              data-card-index={cardOrderIndex}
+                              data-card-id={cardData.cardId}
+                              data-card-block-index={cardBlockIndex}
+                              data-card-block-id={block.block_id}
+                              data-card-field-index={cardFieldIndex}
+                              data-card-field-id={blockField.field_id}
+                              data-review-label={
+                                blockField.label ||
+                                blockField.display_name ||
+                                `Campo ${cardFieldIndex + 1}`
+                              }
+                              onClick={(event) => {
+                                event.stopPropagation();
+
+                                onElementClick?.(
+                                  "card_field",
+                                  cardFieldReviewId,
+                                  event,
+                                );
+                              }}
+                              className={[
+                                "relative rounded transition-all cursor-pointer",
+                                isCardFieldSelected
+                                  ? "ring-2 ring-emerald-500 bg-emerald-50 z-30"
+                                  : "hover:ring-2 hover:ring-emerald-300",
+                              ].join(" ")}
+                            >
+                              {renderedCardField}
+
+                              {renderCommentBadge(cardFieldReviewId)}
+                            </div>
                           );
                         })}
                       </div>
