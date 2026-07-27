@@ -222,6 +222,8 @@
     "subtitle": "Crea, revisa y exporta boletines profesionales con un flujo de trabajo colaborativo.",
     "reviewsPageTitle": "Revisiones",
     "reviewsPageSubtitle": "Administra boletines pendientes de revisión",
+    "reviewsNotFound": "No hay boletines pendientes de revisión",
+     "rejectedOpenNotice": "Cuando abras un boletín rechazado, se moverá automáticamente a la sección de borradores.",
     "searchPlaceholder": "Buscar boletines...",
     "filterByStatus": "Filtrar por estado",
     "allStatuses": "Todos los estados",

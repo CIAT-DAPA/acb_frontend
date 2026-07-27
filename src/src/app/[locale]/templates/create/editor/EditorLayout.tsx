@@ -261,31 +261,31 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({
       duplicatedSection.section_id = crypto.randomUUID();
       duplicatedSection.display_name = `${sourceSection.display_name || "Sección"} (Copia)`;
 
-      duplicatedSection.blocks = (duplicatedSection.blocks || []).map((block) => ({
-        ...block,
-        block_id: crypto.randomUUID(),
-        fields: (block.fields || []).map((field) => ({
-          ...field,
-          field_id: crypto.randomUUID(),
-        })),
-      }));
-
-      if (duplicatedSection.header_config?.fields) {
-        duplicatedSection.header_config.fields = duplicatedSection.header_config.fields.map(
-          (field) => ({
+      duplicatedSection.blocks = (duplicatedSection.blocks || []).map(
+        (block) => ({
+          ...block,
+          block_id: crypto.randomUUID(),
+          fields: (block.fields || []).map((field) => ({
             ...field,
             field_id: crypto.randomUUID(),
-          }),
-        );
+          })),
+        }),
+      );
+
+      if (duplicatedSection.header_config?.fields) {
+        duplicatedSection.header_config.fields =
+          duplicatedSection.header_config.fields.map((field) => ({
+            ...field,
+            field_id: crypto.randomUUID(),
+          }));
       }
 
       if (duplicatedSection.footer_config?.fields) {
-        duplicatedSection.footer_config.fields = duplicatedSection.footer_config.fields.map(
-          (field) => ({
+        duplicatedSection.footer_config.fields =
+          duplicatedSection.footer_config.fields.map((field) => ({
             ...field,
             field_id: crypto.randomUUID(),
-          }),
-        );
+          }));
       }
 
       const nextSections = [...sections];
@@ -346,6 +346,8 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({
             onAddSection={handleAddSection}
             onMoveSection={handleMoveSection}
             isCardMode={isCardMode}
+            interactionMode="edit"
+            renderAllPages={false}
           />
         </div>
 

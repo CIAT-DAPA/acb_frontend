@@ -11,6 +11,11 @@ type ElementClickType =
   | "section"
   | "block"
   | "field"
+  | "list_item"
+  | "list_item_field"
+  | "card_item"
+  | "card_block"
+  | "card_field"
   | "header"
   | "footer"
   | "header_field"
@@ -42,14 +47,18 @@ interface UnifiedBulletinPreviewProps {
   hidePagination?: boolean;
   resolvedSectionPageCounts?: number[];
   reviewMode?: boolean;
+  allowListItemSelection?: boolean;
+  allowCardElementSelection?: boolean;
   onElementClick?: (
     type: ElementClickType,
     id: string,
     e: React.MouseEvent,
   ) => void;
+
   selectedElementId?: string | null;
   commentCounts?: Record<string, number>;
   cardEmptyStateMode?: "first-available" | "select-card";
+  allowListSubfieldEditing?: boolean;
 }
 
 export function UnifiedBulletinPreview({
@@ -75,10 +84,13 @@ export function UnifiedBulletinPreview({
   hidePagination = false,
   resolvedSectionPageCounts,
   reviewMode = false,
+  allowListItemSelection = false,
   onElementClick,
   selectedElementId,
   commentCounts,
   cardEmptyStateMode = "first-available",
+  allowListSubfieldEditing = false,
+  allowCardElementSelection = false,
 }: UnifiedBulletinPreviewProps) {
   if (variant === "full-scroll") {
     return (
@@ -117,6 +129,9 @@ export function UnifiedBulletinPreview({
         cardsMetadataLoading={cardsMetadataLoading}
         resolvedSectionPageCounts={resolvedSectionPageCounts}
         reviewMode={reviewMode}
+        allowListItemSelection={allowListItemSelection}
+        allowListSubfieldEditing={allowListSubfieldEditing}
+        allowCardElementSelection={allowCardElementSelection}
         onElementClick={onElementClick}
         selectedElementId={selectedElementId}
         commentCounts={commentCounts}

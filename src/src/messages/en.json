@@ -222,6 +222,8 @@
     "subtitle": "Create, review and export agroclimatic bulletins using customizable templates.",
     "reviewsPageTitle": "Reviews",
     "reviewsPageSubtitle": "Manage bulletins pending review",
+    "reviewsNotFound": "No bulletins pending review",
+    "rejectedOpenNotice": "When you open a rejected bulletin, it will automatically move to the Draft section.",
     "searchPlaceholder": "Search bulletins...",
     "filterByStatus": "Filter by status",
     "allStatuses": "All statuses",

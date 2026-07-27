@@ -785,6 +785,8 @@
     "subtitle": "Tạo, hiệu đính và xuất bản bản tin thời tiết nông vụ bằng các biểu mẫu có thể tùy chỉnh.",
     "reviewsPageTitle": "Rà soát",
     "reviewsPageSubtitle": "Quản lý bản tin đang chờ rà soát",
+    "reviewsNotFound": "Không tìm thấy bản tin nào đang chờ rà soát",
+    "rejectedOpenNotice": "Khi bạn mở một bản tin bị từ chối, bản tin đó sẽ tự động được chuyển sang mục Bản nháp.",
     "searchPlaceholder": "Tìm kiếm bản tin...",
     "filterByStatus": "Lọc theo trạng thái",
     "allStatuses": "Tất cả trạng thái",
