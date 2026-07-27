@@ -36,15 +36,28 @@ interface ListFieldEditorProps {
   commentsByTarget?: Record<string, BulletinComment[]>;
   renderComments?: (comments: BulletinComment[] | undefined) => React.ReactNode;
   readOnly?: boolean;
+  reviewTargetContext?: {
+    parentFieldId: string;
+
+    cardIndex?: number;
+    cardId?: string;
+
+    cardBlockIndex?: number;
+    cardBlockId?: string;
+
+    cardFieldIndex?: number;
+    cardFieldId?: string;
+  };
 }
 
 export function ListFieldEditor({
   field,
-  value = [],
+  value,
   onChange,
   commentsByTarget = {},
   renderComments,
   readOnly = false,
+  reviewTargetContext,
 }: ListFieldEditorProps) {
   const t = useTranslations("CreateBulletin.listField");
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set([0]));
@@ -101,12 +114,26 @@ export function ListFieldEditor({
   ]);
 
   const getItemTargetId = (itemIndex: number): string | undefined => {
-    if (!field.field_id) {
+    const parentFieldId = reviewTargetContext?.parentFieldId || field.field_id;
+
+    if (!parentFieldId) {
       return undefined;
     }
 
     return encodeReviewFieldId({
-      parentFieldId: field.field_id,
+      parentFieldId,
+
+      cardIndex: reviewTargetContext?.cardIndex,
+      cardId: reviewTargetContext?.cardId,
+
+      cardBlockIndex: reviewTargetContext?.cardBlockIndex,
+
+      cardBlockId: reviewTargetContext?.cardBlockId,
+
+      cardFieldIndex: reviewTargetContext?.cardFieldIndex,
+
+      cardFieldId: reviewTargetContext?.cardFieldId,
+
       itemIndex,
     });
   };
@@ -115,12 +142,26 @@ export function ListFieldEditor({
     itemIndex: number,
     itemFieldId: string,
   ): string | undefined => {
-    if (!field.field_id) {
+    const parentFieldId = reviewTargetContext?.parentFieldId || field.field_id;
+
+    if (!parentFieldId) {
       return undefined;
     }
 
     return encodeReviewFieldId({
-      parentFieldId: field.field_id,
+      parentFieldId,
+
+      cardIndex: reviewTargetContext?.cardIndex,
+      cardId: reviewTargetContext?.cardId,
+
+      cardBlockIndex: reviewTargetContext?.cardBlockIndex,
+
+      cardBlockId: reviewTargetContext?.cardBlockId,
+
+      cardFieldIndex: reviewTargetContext?.cardFieldIndex,
+
+      cardFieldId: reviewTargetContext?.cardFieldId,
+
       itemIndex,
       itemFieldId,
     });

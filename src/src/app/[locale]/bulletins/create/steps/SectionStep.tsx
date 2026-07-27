@@ -704,6 +704,8 @@ export function SectionStep({
             onPageChange={onPageChange}
             sectionIndex={sectionIndex}
             precedingCardIds={precedingCardIds}
+            commentsByTarget={fieldComments}
+            renderComments={renderComments}
           />
         );
 
