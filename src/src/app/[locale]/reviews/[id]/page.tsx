@@ -51,6 +51,7 @@ import {
   injectSchema,
   generateBreadcrumbSchema,
 } from "@/utils/seoUtils";
+import { encodeReviewFieldId, decodeReviewFieldId } from "@/utils/reviewTarget";
 
 // Helper functions for decoding fields
 const decodeTextFieldValue = (value: any): any => {
@@ -200,83 +201,353 @@ export default function ReviewBulletinPage() {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  let sIndex: number | undefined;
-  let bIndex: number | undefined;
-  let fIndex: number | undefined;
-
   const tReview = useTranslations("Review");
 
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
   const mappedComments = useMemo(() => {
-    if (!bulletin || !comments.length) return comments;
+    if (!bulletin || !comments.length) {
+      return comments;
+    }
+
     const data = bulletin.current_version.data as TemplateVersionContent;
 
     return comments.map((comment) => {
       const target = comment.target_element;
-      if (!target) return comment;
 
-      // Handle backend response where target_element has null values instead of being null/undefined
+      if (!target) {
+        return comment;
+      }
+
+      // Comentario general devuelto con target vacío.
       if (
         !target.section_id &&
         !target.block_id &&
         !target.field_id &&
         !target.id
       ) {
-        // Return a copy without target_element (or set to undefined) so UI fails gracefully to "General Comment"
         const { target_element, ...rest } = comment;
         return rest as ReviewComment;
       }
 
-      // If we already have a frontend ID that looks like 'section-0', 'block-0-1', etc. use it.
-      // However, new comments from backend will have section_id, block_id, field_id.
+      const decodedFieldTarget = decodeReviewFieldId(target.field_id);
 
-      let frontendId: string = target.id || "unknown-id";
-      let type: string = target.type || "unknown-type";
+      const parentFieldId =
+        decodedFieldTarget?.parentFieldId || target.field_id;
 
+      const decodedItemIndex =
+        typeof decodedFieldTarget?.itemIndex === "number"
+          ? decodedFieldTarget.itemIndex
+          : typeof target.item_index === "number"
+            ? target.item_index
+            : undefined;
+
+      const decodedItemFieldId =
+        decodedFieldTarget?.itemFieldId || target.item_field_id || undefined;
+
+      const decodedCardIndex =
+        typeof decodedFieldTarget?.cardIndex === "number"
+          ? decodedFieldTarget.cardIndex
+          : undefined;
+
+      const decodedCardId = decodedFieldTarget?.cardId;
+
+      const decodedCardBlockIndex =
+        typeof decodedFieldTarget?.cardBlockIndex === "number"
+          ? decodedFieldTarget.cardBlockIndex
+          : undefined;
+
+      const decodedCardBlockId = decodedFieldTarget?.cardBlockId;
+
+      const decodedCardFieldIndex =
+        typeof decodedFieldTarget?.cardFieldIndex === "number"
+          ? decodedFieldTarget.cardFieldIndex
+          : undefined;
+
+      const decodedCardFieldId = decodedFieldTarget?.cardFieldId;
+
+      // Estos índices deben reiniciarse para cada comentario.
+      let sectionIndex: number | undefined;
+      let blockIndex: number | undefined;
+      let fieldIndex: number | undefined;
+
+      let frontendId = target.id;
+      let targetType: CommentTargetElement["type"] = target.type;
+      let displayName = target.display_name;
+      let didMapTarget = false;
+
+      /**
+       * Construye el target de:
+       * - field normal
+       * - lista completa
+       * - ítem de lista
+       * - field dentro de un ítem
+       */
+      const mapBlockField = (
+        section: Section,
+        resolvedSectionIndex: number,
+        resolvedBlockIndex: number,
+        resolvedFieldIndex: number,
+      ) => {
+        const block = section.blocks[resolvedBlockIndex];
+        const field = block?.fields?.[resolvedFieldIndex];
+
+        if (!field) {
+          return;
+        }
+
+        sectionIndex = resolvedSectionIndex;
+        blockIndex = resolvedBlockIndex;
+        fieldIndex = resolvedFieldIndex;
+
+        const baseFieldId =
+          `field-${resolvedSectionIndex}` +
+          `-${resolvedBlockIndex}` +
+          `-${resolvedFieldIndex}`;
+
+        const hasItemIndex =
+          typeof decodedItemIndex === "number" && decodedItemIndex >= 0;
+
+        const itemFieldId =
+          typeof decodedItemFieldId === "string" &&
+          decodedItemFieldId.trim().length > 0
+            ? decodedItemFieldId
+            : undefined;
+
+        const listDisplayName = field.label || field.display_name || "Lista";
+
+        const hasCardIndex =
+          typeof decodedCardIndex === "number" && decodedCardIndex >= 0;
+
+        if (hasCardIndex) {
+          const cardBaseId = `${baseFieldId}-card-${decodedCardIndex}`;
+
+          const cardNumber = decodedCardIndex + 1;
+
+          const hasCardBlock =
+            typeof decodedCardBlockIndex === "number" &&
+            decodedCardBlockIndex >= 0;
+
+          const hasCardField =
+            typeof decodedCardFieldIndex === "number" &&
+            decodedCardFieldIndex >= 0;
+
+          /*
+           * Card completa.
+           */
+          if (!hasCardBlock) {
+            frontendId = cardBaseId;
+            targetType = "card_item";
+
+            displayName = target.display_name || `Card ${cardNumber}`;
+
+            didMapTarget = true;
+            return;
+          }
+
+          const cardBlockBaseId = `${cardBaseId}-block-${decodedCardBlockIndex}`;
+
+          /*
+           * Bloque dentro de card.
+           */
+          if (!hasCardField) {
+            frontendId = cardBlockBaseId;
+            targetType = "card_block";
+
+            displayName =
+              target.display_name ||
+              `Bloque ${decodedCardBlockIndex + 1}` + ` · Card ${cardNumber}`;
+
+            didMapTarget = true;
+            return;
+          }
+
+          const cardFieldBaseId = `${cardBlockBaseId}-field-${decodedCardFieldIndex}`;
+
+          /*
+           * Subcampo de un ítem de una lista dentro de card.
+           */
+          if (hasItemIndex && itemFieldId) {
+            frontendId =
+              `${cardFieldBaseId}` +
+              `-item-${decodedItemIndex}` +
+              `-subfield-${itemFieldId}`;
+
+            /*
+             * Reutilizamos el mismo tipo de las listas externas.
+             */
+            targetType = "list_item_field";
+
+            displayName =
+              target.display_name ||
+              `Campo de lista · Item ${decodedItemIndex! + 1}` +
+                ` · Card ${cardNumber}`;
+
+            didMapTarget = true;
+            return;
+          }
+
+          /*
+           * Ítem de una lista dentro de card.
+           */
+          if (hasItemIndex) {
+            frontendId = `${cardFieldBaseId}` + `-item-${decodedItemIndex}`;
+
+            targetType = "list_item";
+
+            displayName =
+              target.display_name ||
+              `Lista · Item ${decodedItemIndex! + 1}` + ` · Card ${cardNumber}`;
+
+            didMapTarget = true;
+            return;
+          }
+
+          /*
+           * Field normal dentro de card.
+           */
+          frontendId = cardFieldBaseId;
+          targetType = "card_field";
+
+          displayName =
+            target.display_name ||
+            `Campo ${decodedCardFieldIndex + 1}` +
+              ` · Bloque ${decodedCardBlockIndex + 1}` +
+              ` · Card ${cardNumber}`;
+
+          didMapTarget = true;
+          return;
+        }
+
+        if (hasItemIndex && itemFieldId) {
+          frontendId =
+            `${baseFieldId}-item-${decodedItemIndex}` +
+            `-subfield-${itemFieldId}`;
+
+          targetType = "list_item_field";
+
+          const itemSchema = (field.field_config as any)?.item_schema;
+
+          const itemFieldConfig = itemSchema?.[itemFieldId];
+
+          const itemFieldName =
+            itemFieldConfig?.label || itemFieldConfig?.display_name || "Campo";
+
+          displayName = `${itemFieldName} · Item ${decodedItemIndex! + 1}`;
+        } else if (hasItemIndex) {
+          frontendId = `${baseFieldId}-item-${decodedItemIndex}`;
+
+          targetType = "list_item";
+
+          displayName = `${listDisplayName} · Item ${decodedItemIndex! + 1}`;
+        } else {
+          frontendId = baseFieldId;
+          targetType = "field";
+
+          displayName = field.label || field.display_name || "Campo";
+        }
+
+        didMapTarget = true;
+      };
+
+      /**
+       * Mapea fields de header y footer.
+       */
       const mapHeaderOrFooterField = (
         section: Section | undefined,
-        sectionIdx: number,
+        resolvedSectionIndex: number,
         fieldId: string,
       ): boolean => {
         if (section?.header_config?.fields) {
-          const hIndex = section.header_config.fields.findIndex(
-            (f) => f.field_id === fieldId,
+          const headerFieldIndex = section.header_config.fields.findIndex(
+            (field) => field.field_id === fieldId,
           );
-          if (hIndex !== -1) {
-            frontendId = `header-${sectionIdx}-${hIndex}`;
-            type = "header_field";
+
+          if (headerFieldIndex >= 0) {
+            const field = section.header_config.fields[headerFieldIndex];
+
+            frontendId =
+              `header-${resolvedSectionIndex}` + `-${headerFieldIndex}`;
+
+            targetType = "header_field";
+            sectionIndex = resolvedSectionIndex;
+            fieldIndex = headerFieldIndex;
+
+            displayName =
+              field.label || field.display_name || "Campo de Header";
+
+            didMapTarget = true;
             return true;
           }
         }
 
+        // Header global mostrado dentro de una sección.
         if (data.header_config?.fields) {
-          const ghIndex = data.header_config.fields.findIndex(
-            (f) => f.field_id === fieldId,
+          const globalHeaderFieldIndex = data.header_config.fields.findIndex(
+            (field) => field.field_id === fieldId,
           );
-          if (ghIndex !== -1) {
-            frontendId = `header-${sectionIdx}-${ghIndex}`;
-            type = "header_field";
+
+          if (globalHeaderFieldIndex >= 0) {
+            const field = data.header_config.fields[globalHeaderFieldIndex];
+
+            frontendId =
+              `header-${resolvedSectionIndex}` + `-${globalHeaderFieldIndex}`;
+
+            targetType = "header_field";
+            sectionIndex = resolvedSectionIndex;
+            fieldIndex = globalHeaderFieldIndex;
+
+            displayName =
+              field.label || field.display_name || "Campo de Header";
+
+            didMapTarget = true;
             return true;
           }
         }
 
         if (section?.footer_config?.fields) {
-          const foIndex = section.footer_config.fields.findIndex(
-            (f) => f.field_id === fieldId,
+          const footerFieldIndex = section.footer_config.fields.findIndex(
+            (field) => field.field_id === fieldId,
           );
-          if (foIndex !== -1) {
-            frontendId = `footer-${sectionIdx}-${foIndex}`;
-            type = "footer_field";
+
+          if (footerFieldIndex >= 0) {
+            const field = section.footer_config.fields[footerFieldIndex];
+
+            frontendId =
+              `footer-${resolvedSectionIndex}` + `-${footerFieldIndex}`;
+
+            targetType = "footer_field";
+            sectionIndex = resolvedSectionIndex;
+            fieldIndex = footerFieldIndex;
+
+            displayName =
+              field.label || field.display_name || "Campo de Footer";
+
+            didMapTarget = true;
             return true;
           }
         }
 
+        // Footer global mostrado dentro de una sección.
         if (data.footer_config?.fields) {
-          const gfIndex = data.footer_config.fields.findIndex(
-            (f) => f.field_id === fieldId,
+          const globalFooterFieldIndex = data.footer_config.fields.findIndex(
+            (field) => field.field_id === fieldId,
           );
-          if (gfIndex !== -1) {
-            frontendId = `footer-${sectionIdx}-${gfIndex}`;
-            type = "footer_field";
+
+          if (globalFooterFieldIndex >= 0) {
+            const field = data.footer_config.fields[globalFooterFieldIndex];
+
+            frontendId =
+              `footer-${resolvedSectionIndex}` + `-${globalFooterFieldIndex}`;
+
+            targetType = "footer_field";
+            sectionIndex = resolvedSectionIndex;
+            fieldIndex = globalFooterFieldIndex;
+
+            displayName =
+              field.label || field.display_name || "Campo de Footer";
+
+            didMapTarget = true;
             return true;
           }
         }
@@ -285,136 +556,182 @@ export default function ReviewBulletinPage() {
       };
 
       if (target.section_id) {
-        sIndex = data.sections.findIndex(
-          (s) => s.section_id === target.section_id,
+        const resolvedSectionIndex = data.sections.findIndex(
+          (section) => section.section_id === target.section_id,
         );
-        if (sIndex !== -1) {
-          const section = data.sections[sIndex];
-          if (target.block_id) {
-            const hasBlocks = !!section?.blocks?.length;
-            const sectionBlocks: Block[] = section?.blocks || [];
-            if (section && section.blocks) {
-              bIndex = section.blocks.findIndex(
-                (b) => b.block_id === target.block_id,
-              );
-            }
 
-            const hasValidBlock = typeof bIndex === "number" && bIndex >= 0;
+        if (resolvedSectionIndex >= 0) {
+          const section = data.sections[resolvedSectionIndex];
+
+          sectionIndex = resolvedSectionIndex;
+
+          if (target.block_id) {
+            const resolvedBlockIndex =
+              section.blocks?.findIndex(
+                (block) => block.block_id === target.block_id,
+              ) ?? -1;
+
+            if (resolvedBlockIndex >= 0) {
+              blockIndex = resolvedBlockIndex;
+            }
 
             if (target.field_id) {
-              let mappedFieldInBlock = false;
+              let fieldWasMapped = false;
 
-              if (hasValidBlock) {
-                const resolvedBlockIndex = bIndex as number;
+              if (resolvedBlockIndex >= 0) {
                 const block = section.blocks[resolvedBlockIndex];
-                if (block?.fields) {
-                  fIndex = block.fields.findIndex(
-                    (f: Field) => f.field_id === target.field_id,
+
+                const resolvedFieldIndex =
+                  block.fields?.findIndex(
+                    (field: Field) => field.field_id === parentFieldId,
+                  ) ?? -1;
+
+                if (resolvedFieldIndex >= 0) {
+                  mapBlockField(
+                    section,
+                    resolvedSectionIndex,
+                    resolvedBlockIndex,
+                    resolvedFieldIndex,
                   );
-                  if (fIndex !== -1) {
-                    frontendId = `field-${sIndex}-${resolvedBlockIndex}-${fIndex}`;
-                    type = "field";
-                    mappedFieldInBlock = true;
-                  }
+
+                  fieldWasMapped = true;
                 }
               }
 
-              // Some backends now include block_id even for header/footer field comments.
-              // If field was not found in block, resolve it against section/global header/footer.
-              if (!mappedFieldInBlock) {
-                const mappedAsHeaderFooter = mapHeaderOrFooterField(
+              if (!fieldWasMapped && parentFieldId) {
+                fieldWasMapped = mapHeaderOrFooterField(
                   section,
-                  sIndex,
-                  target.field_id,
+                  resolvedSectionIndex,
+                  parentFieldId,
                 );
-
-                if (!mappedAsHeaderFooter && hasBlocks) {
-                  // Fallback: locate the field in any block in case block_id changed.
-                  sectionBlocks.some((block, blockIdx) => {
-                    const sectionFieldIndex = block.fields?.findIndex(
-                      (f: Field) => f.field_id === target.field_id,
-                    );
-                    if (
-                      typeof sectionFieldIndex === "number" &&
-                      sectionFieldIndex >= 0
-                    ) {
-                      bIndex = blockIdx;
-                      fIndex = sectionFieldIndex;
-                      frontendId = `field-${sIndex}-${blockIdx}-${sectionFieldIndex}`;
-                      type = "field";
-                      return true;
-                    }
-                    return false;
-                  });
-                }
               }
-            } else if (hasValidBlock) {
-              frontendId = `block-${sIndex}-${bIndex}`;
-              type = "block";
+
+              // Fallback: buscar el field en cualquier bloque.
+              if (!fieldWasMapped) {
+                section.blocks?.some((block, candidateBlockIndex) => {
+                  const candidateFieldIndex =
+                    block.fields?.findIndex(
+                      (field: Field) => field.field_id === parentFieldId,
+                    ) ?? -1;
+
+                  if (candidateFieldIndex < 0) {
+                    return false;
+                  }
+
+                  mapBlockField(
+                    section,
+                    resolvedSectionIndex,
+                    candidateBlockIndex,
+                    candidateFieldIndex,
+                  );
+
+                  return true;
+                });
+              }
+            } else if (resolvedBlockIndex >= 0) {
+              const block = section.blocks[resolvedBlockIndex];
+
+              frontendId =
+                `block-${resolvedSectionIndex}` + `-${resolvedBlockIndex}`;
+
+              targetType = "block";
+              displayName = block.display_name || "Bloque";
+
+              didMapTarget = true;
             }
-          } else if (target.field_id) {
-            mapHeaderOrFooterField(section, sIndex, target.field_id);
+          } else if (parentFieldId) {
+            mapHeaderOrFooterField(
+              section,
+              resolvedSectionIndex,
+              parentFieldId,
+            );
           } else {
-            frontendId = `section-${sIndex}`;
-            type = "section";
+            frontendId = `section-${resolvedSectionIndex}`;
+
+            targetType = "section";
+            displayName = section.display_name || "Sección";
+
+            didMapTarget = true;
           }
         }
       } else if (target.field_id) {
-        // Global header/footer without section_id
-        if (data.header_config?.fields) {
-          const ghIndex = data.header_config.fields.findIndex(
-            (f) => f.field_id === target.field_id,
-          );
-          if (ghIndex !== -1) {
-            frontendId = `header-global-${ghIndex}`;
-            type = "header_field";
-          }
+        // Header global sin section_id.
+        const globalHeaderFieldIndex =
+          data.header_config?.fields?.findIndex(
+            (field) => field.field_id === parentFieldId,
+          ) ?? -1;
+
+        if (globalHeaderFieldIndex >= 0) {
+          const field = data.header_config?.fields?.[globalHeaderFieldIndex];
+
+          frontendId = `header-global-${globalHeaderFieldIndex}`;
+
+          targetType = "header_field";
+          sectionIndex = -1;
+          fieldIndex = globalHeaderFieldIndex;
+
+          displayName =
+            field?.label || field?.display_name || "Campo de Header";
+
+          didMapTarget = true;
         }
-        // Check footer global
-        if (type !== "header_field" && data.footer_config?.fields) {
-          const gfIndex = data.footer_config.fields.findIndex(
-            (f) => f.field_id === target.field_id,
-          );
-          if (gfIndex !== -1) {
-            frontendId = `footer-global-${gfIndex}`;
-            type = "footer_field";
+
+        if (!didMapTarget) {
+          const globalFooterFieldIndex =
+            data.footer_config?.fields?.findIndex(
+              (field) => field.field_id === parentFieldId,
+            ) ?? -1;
+
+          if (globalFooterFieldIndex >= 0) {
+            const field = data.footer_config?.fields?.[globalFooterFieldIndex];
+
+            frontendId = `footer-global-${globalFooterFieldIndex}`;
+
+            targetType = "footer_field";
+            sectionIndex = -1;
+            fieldIndex = globalFooterFieldIndex;
+
+            displayName =
+              field?.label || field?.display_name || "Campo de Footer";
+
+            didMapTarget = true;
           }
         }
       }
 
-      // Compare if we calculated a new ID or type
-      if (frontendId !== target.id || type !== target.type) {
-        const updatedTarget = {
-          ...target,
-          id: frontendId,
-          type: type,
-        };
-
-        if (
-          type === "field" &&
-          typeof sIndex !== "undefined" &&
-          typeof bIndex !== "undefined" &&
-          typeof fIndex !== "undefined"
-        ) {
-          updatedTarget.display_name =
-            data.sections[sIndex]?.blocks[bIndex]?.fields[fIndex]?.display_name;
-        } else if (
-          type === "block" &&
-          typeof sIndex !== "undefined" &&
-          typeof bIndex !== "undefined"
-        ) {
-          updatedTarget.display_name =
-            data.sections[sIndex]?.blocks[bIndex]?.display_name;
-        } else if (type === "section" && typeof sIndex !== "undefined") {
-          updatedTarget.display_name = data.sections[sIndex]?.display_name;
-        }
-
-        return {
-          ...comment,
-          target_element: updatedTarget,
-        };
+      if (!didMapTarget || !frontendId || !targetType) {
+        return comment;
       }
-      return comment;
+
+      const updatedTarget: CommentTargetElement = {
+        ...target,
+
+        id: frontendId,
+        type: targetType,
+
+        section_index: sectionIndex,
+        block_index: blockIndex,
+        field_index: fieldIndex,
+
+        item_index: decodedItemIndex,
+        item_field_id: decodedItemFieldId,
+
+        card_index: decodedCardIndex,
+        card_id: decodedCardId,
+
+        card_block_index: decodedCardBlockIndex,
+        card_block_id: decodedCardBlockId,
+
+        card_field_index: decodedCardFieldIndex,
+        card_field_id: decodedCardFieldId,
+
+        display_name: displayName,
+      };
+
+      return {
+        ...comment,
+        target_element: updatedTarget,
+      };
     });
   }, [comments, bulletin]);
 
@@ -466,6 +783,10 @@ export default function ReviewBulletinPage() {
     loadBulletinData();
     loadComments();
   }, [bulletinId]);
+
+  useEffect(() => {
+    router.prefetch("/reviews");
+  }, [router]);
 
   // SEO: Actualizar metadatos cuando se carga el boletín
   useEffect(() => {
@@ -688,50 +1009,53 @@ export default function ReviewBulletinPage() {
   };
 
   const handleReject = async () => {
+    if (isRejecting) {
+      return;
+    }
+
+    setIsRejecting(true);
+
     try {
-      setLoading(true);
-      // Call the reject service
       await ReviewService.rejectBulletin(bulletinId);
 
+      setIsRedirecting(true);
       showToast(t("rejectSuccess"), "success");
-
-      // Redirect to the reviews page
-      router.push("/reviews");
+      router.replace("/reviews");
     } catch (error: any) {
       console.error("Error rejecting bulletin:", error);
-      // setModalTitle("Error al rechazar");
-      // setModalMessage(
-      //   error.message ||
-      //     "Ocurrió un error al intentar rechazr el boletín. Asegúrate de haber dejado al menos un comentario.",
-      // );
-      // setIsErrorModalOpen(true);
+
       showToast(
         error.message ||
           "Ocurrió un error al intentar rechazar el boletín. Asegúrate de haber dejado al menos un comentario.",
         "error",
       );
-    } finally {
-      setLoading(false);
+
+      setIsRejecting(false);
     }
   };
 
   const handleSelection = (newSelection: EditorSelection, rect?: DOMRect) => {
     setSelection(newSelection);
 
-    // Si se selecciona un elemento comentable, asegurar que el sidebar esté abierto
-    if (
-      newSelection.id &&
-      (newSelection.type === "section" ||
-        newSelection.type === "block" ||
-        newSelection.type === "field" ||
-        newSelection.type === "header" ||
-        newSelection.type === "footer" ||
-        newSelection.type === "header_field" ||
-        newSelection.type === "footer_field")
-    ) {
+    const isCommentableSelection =
+      newSelection.type === "section" ||
+      newSelection.type === "block" ||
+      newSelection.type === "field" ||
+      newSelection.type === "list_item" ||
+      newSelection.type === "list_item_field" ||
+      newSelection.type === "card_item" ||
+      newSelection.type === "card_block" ||
+      newSelection.type === "card_field" ||
+      newSelection.type === "header" ||
+      newSelection.type === "footer" ||
+      newSelection.type === "header_field" ||
+      newSelection.type === "footer_field";
+
+    if (newSelection.id && isCommentableSelection) {
       if (!isSidebarOpen) {
         setIsSidebarOpen(true);
       }
+
       setCommentText("");
     }
   };
@@ -760,25 +1084,83 @@ export default function ReviewBulletinPage() {
           target.section_id = section.section_id;
         }
 
-        // block/field inside section blocks
+        // Block, field, list item o field interno de lista.
+        const isBlockTarget = selection.type === "block";
+
+        const hasCardContext =
+          typeof selection.cardIndex === "number" && selection.cardIndex >= 0;
+
+        const isCardTarget =
+          selection.type === "card_item" ||
+          selection.type === "card_block" ||
+          selection.type === "card_field" ||
+          hasCardContext;
+
+        const isFieldTarget =
+          selection.type === "field" ||
+          selection.type === "list_item" ||
+          selection.type === "list_item_field" ||
+          isCardTarget;
+
         if (
-          (selection.type === "block" || selection.type === "field") &&
+          (isBlockTarget || isFieldTarget) &&
           section &&
           typeof selection.blockIndex === "number" &&
           selection.blockIndex >= 0
         ) {
           const block = section.blocks[selection.blockIndex];
+
           if (block) {
             target.block_id = block.block_id;
 
             if (
-              selection.type === "field" &&
+              isFieldTarget &&
               typeof selection.fieldIndex === "number" &&
               selection.fieldIndex >= 0
             ) {
               const field = block.fields[selection.fieldIndex];
+
               if (field) {
-                target.field_id = field.field_id;
+                target.field_id = encodeReviewFieldId({
+                  parentFieldId: field.field_id,
+
+                  /*
+                   * Lista.
+                   */
+                  itemIndex:
+                    selection.type === "list_item" ||
+                    selection.type === "list_item_field"
+                      ? selection.itemIndex
+                      : undefined,
+
+                  itemFieldId:
+                    selection.type === "list_item_field"
+                      ? selection.schemaKey
+                      : undefined,
+
+                  /*
+                   * Card.
+                   */
+                  cardIndex: hasCardContext ? selection.cardIndex : undefined,
+
+                  cardId: hasCardContext ? selection.cardId : undefined,
+
+                  cardBlockIndex: hasCardContext
+                    ? selection.cardBlockIndex
+                    : undefined,
+
+                  cardBlockId: hasCardContext
+                    ? selection.cardBlockId
+                    : undefined,
+
+                  cardFieldIndex: hasCardContext
+                    ? selection.cardFieldIndex
+                    : undefined,
+
+                  cardFieldId: hasCardContext
+                    ? selection.cardFieldId
+                    : undefined,
+                });
               }
             }
           }
@@ -883,8 +1265,36 @@ export default function ReviewBulletinPage() {
             ...commentData,
             target_element: {
               ...(commentData?.target_element || {}),
+              ...target,
+
               id: selection.id,
               type: selection.type,
+
+              section_index: selection.sectionIndex,
+              block_index: selection.blockIndex,
+              field_index: selection.fieldIndex,
+
+              item_index:
+                selection.type === "list_item" ||
+                selection.type === "list_item_field"
+                  ? selection.itemIndex
+                  : undefined,
+
+              item_field_id:
+                selection.type === "list_item_field"
+                  ? selection.schemaKey
+                  : undefined,
+
+              card_index: selection.cardIndex,
+              card_id: selection.cardId,
+
+              card_block_index: selection.cardBlockIndex,
+              card_block_id: selection.cardBlockId,
+
+              card_field_index: selection.cardFieldIndex,
+              card_field_id: selection.cardFieldId,
+
+              display_name: getElementName(),
             },
           } as ReviewComment;
 
@@ -905,6 +1315,13 @@ export default function ReviewBulletinPage() {
 
   const getElementName = () => {
     if (!bulletin || !selection.id) return "";
+
+    if (
+      typeof selection.displayName === "string" &&
+      selection.displayName.trim()
+    ) {
+      return selection.displayName;
+    }
     const data = bulletin.current_version.data;
 
     try {
@@ -922,12 +1339,54 @@ export default function ReviewBulletinPage() {
             ];
           return block?.display_name || "Bloque";
 
-        case "field":
-          const f =
+        case "field": {
+          const field =
             data.sections?.[selection.sectionIndex!]?.blocks?.[
               selection.blockIndex!
             ]?.fields?.[selection.fieldIndex!];
-          return f?.label || f?.display_name || "Campo";
+
+          return field?.label || field?.display_name || "Campo";
+        }
+
+        case "list_item": {
+          const listField =
+            data.sections?.[selection.sectionIndex!]?.blocks?.[
+              selection.blockIndex!
+            ]?.fields?.[selection.fieldIndex!];
+
+          const listName =
+            listField?.label || listField?.display_name || "Lista";
+
+          const itemNumber =
+            typeof selection.itemIndex === "number"
+              ? selection.itemIndex + 1
+              : "?";
+
+          return `${listName} · Item ${itemNumber}`;
+        }
+
+        case "list_item_field": {
+          const listField =
+            data.sections?.[selection.sectionIndex!]?.blocks?.[
+              selection.blockIndex!
+            ]?.fields?.[selection.fieldIndex!];
+
+          const itemSchema = (listField?.field_config as any)?.item_schema;
+
+          const itemField = selection.schemaKey
+            ? itemSchema?.[selection.schemaKey]
+            : undefined;
+
+          const itemFieldName =
+            itemField?.label || itemField?.display_name || "Campo";
+
+          const itemNumber =
+            typeof selection.itemIndex === "number"
+              ? selection.itemIndex + 1
+              : "?";
+
+          return `${itemFieldName} · Item ${itemNumber}`;
+        }
 
         case "header":
           return selection.sectionIndex === -1
@@ -964,6 +1423,48 @@ export default function ReviewBulletinPage() {
           return (
             sff?.label || sff?.display_name || "Campo de Footer de Sección"
           );
+        case "card_item": {
+          const cardNumber =
+            typeof selection.cardIndex === "number"
+              ? selection.cardIndex + 1
+              : "?";
+
+          return selection.displayName || `Card ${cardNumber}`;
+        }
+
+        case "card_block": {
+          const cardNumber =
+            typeof selection.cardIndex === "number"
+              ? selection.cardIndex + 1
+              : "?";
+
+          const blockNumber =
+            typeof selection.cardBlockIndex === "number"
+              ? selection.cardBlockIndex + 1
+              : "?";
+
+          return (
+            selection.displayName ||
+            `Bloque ${blockNumber} · Card ${cardNumber}`
+          );
+        }
+
+        case "card_field": {
+          const cardNumber =
+            typeof selection.cardIndex === "number"
+              ? selection.cardIndex + 1
+              : "?";
+
+          const blockNumber =
+            typeof selection.cardBlockIndex === "number"
+              ? selection.cardBlockIndex + 1
+              : "?";
+
+          return (
+            selection.displayName ||
+            `Campo · Bloque ${blockNumber} · Card ${cardNumber}`
+          );
+        }
 
         default:
           return selection.type;
@@ -1008,6 +1509,20 @@ export default function ReviewBulletinPage() {
     );
   }
 
+  if (isRedirecting) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-100">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-[#bc6c25]" />
+
+          <p className="text-sm font-medium text-gray-600">
+            Regresando a revisiones...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-[calc(100vh-100px)] w-full bg-gray-100 overflow-hidden">
       {/* Top Bar - Estilo tipo Editor */}
@@ -1047,11 +1562,23 @@ export default function ReviewBulletinPage() {
 
         <div className="flex items-center gap-3">
           <button
+            type="button"
             onClick={handleReject}
-            className="px-4 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 flex items-center gap-2 font-medium transition-colors"
+            disabled={isRejecting}
+            className="
+              px-4 py-2 border border-red-200 text-red-600 rounded-lg
+              hover:bg-red-50 flex items-center gap-2 font-medium
+              transition-colors
+              disabled:cursor-not-allowed disabled:opacity-60
+            "
           >
-            <XCircle className="h-5 w-5" />
-            {t("reject")}
+            {isRejecting ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <XCircle className="h-5 w-5" />
+            )}
+
+            {isRejecting ? "Rechazando..." : t("reject")}
           </button>
           <button
             onClick={handleApprove}
@@ -1085,7 +1612,8 @@ export default function ReviewBulletinPage() {
             onSelect={handleSelection}
             isCardMode={false}
             commentCounts={commentCounts}
-            renderAllPagesInReview={true}
+            interactionMode="review"
+            renderAllPages={true}
           />
         </div>
 
@@ -1134,30 +1662,40 @@ export default function ReviewBulletinPage() {
                       <div
                         key={comment.comment_id || idx}
                         onClick={() => {
-                          if (comment.target_element?.id) {
-                            // Find element in canvas if possible - this requires the Canvas to expose refs or IDs
-                            // Since we don't have direct access to internal refs, we rely on selection to highlight it
-                            // But scrolling might need document.getElementById if IDs are applied to DOM elements
+                          const target = comment.target_element;
 
-                            // Try to select it
-                            setSelection({
-                              type: comment.target_element.type as any,
-                              id: comment.target_element.id,
-                            });
-
-                            // Try to scroll
-                            // Assuming Canvas renders elements with data-review-id matching our frontendIds
-                            setTimeout(() => {
-                              const selector = `[data-review-id="${comment.target_element!.id!}"]`;
-                              const el = document.querySelector(selector);
-                              if (el) {
-                                el.scrollIntoView({
-                                  behavior: "smooth",
-                                  block: "center",
-                                });
-                              }
-                            }, 100);
+                          if (!target?.id || !target.type) {
+                            return;
                           }
+
+                          setSelection({
+                            type: target.type as EditorSelection["type"],
+                            id: target.id,
+
+                            sectionIndex: target.section_index,
+                            blockIndex: target.block_index,
+                            fieldIndex: target.field_index,
+
+                            itemIndex:
+                              typeof target.item_index === "number"
+                                ? target.item_index
+                                : undefined,
+
+                            schemaKey: target.item_field_id || undefined,
+                          });
+
+                          setTimeout(() => {
+                            const selector = `[data-review-id="${target.id}"]`;
+
+                            const element = document.querySelector(selector);
+
+                            if (element) {
+                              element.scrollIntoView({
+                                behavior: "smooth",
+                                block: "center",
+                              });
+                            }
+                          }, 100);
                         }}
                         className={`group relative border rounded-xl p-3 text-sm transition-all duration-200 cursor-pointer ${
                           isSelected
@@ -1176,18 +1714,25 @@ export default function ReviewBulletinPage() {
                                     ? tReview("block")
                                     : comment.target_element.type === "field"
                                       ? tReview("field")
-                                      : comment.target_element.type === "header"
-                                        ? tCommon("header")
+                                      : comment.target_element.type ===
+                                          "list_item"
+                                        ? "List item"
                                         : comment.target_element.type ===
-                                            "footer"
-                                          ? tCommon("footer")
+                                            "list_item_field"
+                                          ? "Item field"
                                           : comment.target_element.type ===
-                                              "header_field"
+                                              "header"
                                             ? tCommon("header")
                                             : comment.target_element.type ===
-                                                "footer_field"
+                                                "footer"
                                               ? tCommon("footer")
-                                              : "Element")}
+                                              : comment.target_element.type ===
+                                                  "header_field"
+                                                ? tCommon("header")
+                                                : comment.target_element
+                                                      .type === "footer_field"
+                                                  ? tCommon("footer")
+                                                  : "Element")}
                             </span>
                           </div>
                         ) : (

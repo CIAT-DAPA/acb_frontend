@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Plus,
   Trash2,
@@ -8,6 +8,7 @@ import {
   ChevronUp,
   Upload,
   HelpCircle,
+  MessageCircle,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
@@ -25,17 +26,38 @@ import {
 } from "./index";
 import { btnOutlineSecondary } from "@/app/[locale]/components/ui";
 import { VisualResourceSelector } from "../../../../templates/create/components/VisualResourceSelector";
+import { BulletinComment } from "@/types/bulletin";
+import { encodeReviewFieldId } from "@/utils/reviewTarget";
 
 interface ListFieldEditorProps {
   field: Field;
   value: any[];
   onChange: (value: any[]) => void;
+  commentsByTarget?: Record<string, BulletinComment[]>;
+  renderComments?: (comments: BulletinComment[] | undefined) => React.ReactNode;
+  readOnly?: boolean;
+  reviewTargetContext?: {
+    parentFieldId: string;
+
+    cardIndex?: number;
+    cardId?: string;
+
+    cardBlockIndex?: number;
+    cardBlockId?: string;
+
+    cardFieldIndex?: number;
+    cardFieldId?: string;
+  };
 }
 
 export function ListFieldEditor({
   field,
-  value = [],
+  value,
   onChange,
+  commentsByTarget = {},
+  renderComments,
+  readOnly = false,
+  reviewTargetContext,
 }: ListFieldEditorProps) {
   const t = useTranslations("CreateBulletin.listField");
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set([0]));
@@ -51,6 +73,99 @@ export function ListFieldEditor({
     field.field_config && "item_schema" in field.field_config
       ? field.field_config.item_schema
       : {};
+
+  const itemSchemaKeys = Object.keys(itemSchema);
+
+  useEffect(() => {
+    setExpandedItems((currentExpanded) => {
+      const nextExpanded = new Set(currentExpanded);
+
+      value.forEach((_item, itemIndex) => {
+        const itemTargetId = getItemTargetId(itemIndex);
+
+        const hasItemComments = Boolean(
+          itemTargetId && commentsByTarget[itemTargetId]?.length,
+        );
+
+        const hasSubfieldComments = itemSchemaKeys.some((itemFieldId) => {
+          const subfieldTargetId = getSubfieldTargetId(itemIndex, itemFieldId);
+
+          return Boolean(
+            subfieldTargetId && commentsByTarget[subfieldTargetId]?.length,
+          );
+        });
+
+        if (hasItemComments || hasSubfieldComments) {
+          nextExpanded.add(itemIndex);
+        }
+      });
+
+      if (nextExpanded.size === currentExpanded.size) {
+        return currentExpanded;
+      }
+
+      return nextExpanded;
+    });
+  }, [
+    commentsByTarget,
+    field.field_id,
+    value.length,
+    itemSchemaKeys.join("|"),
+  ]);
+
+  const getItemTargetId = (itemIndex: number): string | undefined => {
+    const parentFieldId = reviewTargetContext?.parentFieldId || field.field_id;
+
+    if (!parentFieldId) {
+      return undefined;
+    }
+
+    return encodeReviewFieldId({
+      parentFieldId,
+
+      cardIndex: reviewTargetContext?.cardIndex,
+      cardId: reviewTargetContext?.cardId,
+
+      cardBlockIndex: reviewTargetContext?.cardBlockIndex,
+
+      cardBlockId: reviewTargetContext?.cardBlockId,
+
+      cardFieldIndex: reviewTargetContext?.cardFieldIndex,
+
+      cardFieldId: reviewTargetContext?.cardFieldId,
+
+      itemIndex,
+    });
+  };
+
+  const getSubfieldTargetId = (
+    itemIndex: number,
+    itemFieldId: string,
+  ): string | undefined => {
+    const parentFieldId = reviewTargetContext?.parentFieldId || field.field_id;
+
+    if (!parentFieldId) {
+      return undefined;
+    }
+
+    return encodeReviewFieldId({
+      parentFieldId,
+
+      cardIndex: reviewTargetContext?.cardIndex,
+      cardId: reviewTargetContext?.cardId,
+
+      cardBlockIndex: reviewTargetContext?.cardBlockIndex,
+
+      cardBlockId: reviewTargetContext?.cardBlockId,
+
+      cardFieldIndex: reviewTargetContext?.cardFieldIndex,
+
+      cardFieldId: reviewTargetContext?.cardFieldId,
+
+      itemIndex,
+      itemFieldId,
+    });
+  };
 
   const maxItems =
     field.field_config && "max_items" in field.field_config
@@ -631,6 +746,34 @@ export function ListFieldEditor({
     }
   }, []);
 
+  const formatReadOnlyValue = (rawValue: unknown): string => {
+    if (rawValue === null || rawValue === undefined || rawValue === "") {
+      return "Sin valor";
+    }
+
+    if (typeof rawValue === "boolean") {
+      return rawValue ? "Sí" : "No";
+    }
+
+    if (typeof rawValue === "string" || typeof rawValue === "number") {
+      return String(rawValue);
+    }
+
+    if (
+      typeof rawValue === "object" &&
+      rawValue !== null &&
+      "text" in rawValue
+    ) {
+      return String((rawValue as { text?: unknown }).text || "Sin valor");
+    }
+
+    try {
+      return JSON.stringify(rawValue, null, 2);
+    } catch {
+      return String(rawValue);
+    }
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -638,147 +781,289 @@ export function ListFieldEditor({
           {t("items", { count: value.length })}
           {maxItems && ` ${t("maximum", { max: maxItems })}`}
         </span>
-        <div className="flex gap-2">
-          {showCsvUpload && (
-            <div className="flex items-stretch border-2 border-[#bc6c25] rounded bg-white">
-              {/* Upload Button Part */}
-              <div className="relative group hover:bg-[#bc6c25] transition-colors border-r border-[#bc6c25]/20">
-                <input
-                  type="file"
-                  accept=".csv"
-                  onChange={handleCsvUpload}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                />
-                <div className="flex items-center gap-2 px-4 py-3 text-[#283618] group-hover:text-[#fefae0] text-sm font-medium transition-colors">
-                  <Upload size={16} />
-                  {t("importCsv")}
+        {!readOnly && (
+          <div className="flex gap-2">
+            {showCsvUpload && (
+              <div className="flex items-stretch border-2 border-[#bc6c25] rounded bg-white">
+                {/* Upload Button Part */}
+                <div className="relative group hover:bg-[#bc6c25] transition-colors border-r border-[#bc6c25]/20">
+                  <input
+                    type="file"
+                    accept=".csv"
+                    onChange={handleCsvUpload}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  />
+                  <div className="flex items-center gap-2 px-4 py-3 text-[#283618] group-hover:text-[#fefae0] text-sm font-medium transition-colors">
+                    <Upload size={16} />
+                    {t("importCsv")}
+                  </div>
                 </div>
-              </div>
 
-              {/* Help Icon Part */}
-              <div
-                className="relative flex items-center px-3 hover:bg-[#bc6c25]/10 cursor-help transition-colors"
-                onMouseEnter={() => setShowHelp(true)}
-                onMouseLeave={() => setShowHelp(false)}
-              >
-                <HelpCircle size={18} className="text-[#bc6c25]" />
+                {/* Help Icon Part */}
+                <div
+                  className="relative flex items-center px-3 hover:bg-[#bc6c25]/10 cursor-help transition-colors"
+                  onMouseEnter={() => setShowHelp(true)}
+                  onMouseLeave={() => setShowHelp(false)}
+                >
+                  <HelpCircle size={18} className="text-[#bc6c25]" />
 
-                {showHelp && (
-                  <div className="absolute right-0 top-full mt-2 w-72 bg-white p-4 rounded-lg shadow-xl border border-gray-200 z-50 text-sm cursor-auto">
-                    <h4 className="font-semibold mb-3 text-[#283618] border-b pb-2">
-                      {t("csvRequirements")}
-                    </h4>
-                    <div className="space-y-3">
-                      <div>
-                        <p className="font-medium text-gray-700 mb-1">
-                          {t("dateFormat")}
-                        </p>
-                        <code className="bg-gray-100 px-2 py-1 rounded text-xs text-gray-600 block w-fit">
-                          MM/DD/YYYY
-                        </code>
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-700 mb-1">
-                          {t("requiredColumns")}
-                        </p>
-                        <div className="bg-gray-50 rounded p-2 max-h-40 overflow-y-auto">
-                          <ul className="list-disc pl-4 text-xs text-gray-600 space-y-1">
-                            {getExpectedColumns().map((col) => (
-                              <li key={col} className="font-mono">
-                                {col}
-                              </li>
-                            ))}
-                          </ul>
+                  {showHelp && (
+                    <div className="absolute right-0 top-full mt-2 w-72 bg-white p-4 rounded-lg shadow-xl border border-gray-200 z-50 text-sm cursor-auto">
+                      <h4 className="font-semibold mb-3 text-[#283618] border-b pb-2">
+                        {t("csvRequirements")}
+                      </h4>
+                      <div className="space-y-3">
+                        <div>
+                          <p className="font-medium text-gray-700 mb-1">
+                            {t("dateFormat")}
+                          </p>
+                          <code className="bg-gray-100 px-2 py-1 rounded text-xs text-gray-600 block w-fit">
+                            MM/DD/YYYY
+                          </code>
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-700 mb-1">
+                            {t("requiredColumns")}
+                          </p>
+                          <div className="bg-gray-50 rounded p-2 max-h-40 overflow-y-auto">
+                            <ul className="list-disc pl-4 text-xs text-gray-600 space-y-1">
+                              {getExpectedColumns().map((col) => (
+                                <li key={col} className="font-mono">
+                                  {col}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
-          )}
-          <button
-            type="button"
-            onClick={handleAddItem}
-            disabled={maxItems ? value.length >= maxItems : false}
-            className={`${btnOutlineSecondary} text-sm disabled:opacity-50 disabled:cursor-not-allowed`}
-          >
-            <Plus size={16} />
-            {t("addItem")}
-          </button>
-        </div>
+            )}
+            <button
+              type="button"
+              onClick={handleAddItem}
+              disabled={maxItems ? value.length >= maxItems : false}
+              className={`${btnOutlineSecondary} text-sm disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              <Plus size={16} />
+              {t("addItem")}
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="space-y-3">
-        {value.map((item, itemIndex) => (
-          <div
-            key={itemIndex}
-            className="border border-gray-300 rounded-lg overflow-hidden"
-          >
-            {/* Header del item */}
-            <div className="flex items-center justify-between bg-gray-50 px-4 py-2">
-              <button
-                type="button"
-                onClick={() => toggleExpand(itemIndex)}
-                className="flex items-center gap-2 text-sm font-medium text-[#283618] hover:text-[#606c38] transition-colors"
-              >
-                {expandedItems.has(itemIndex) ? (
-                  <ChevronUp size={16} />
-                ) : (
-                  <ChevronDown size={16} />
-                )}
-                {t("item", { index: itemIndex + 1 })}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleRemoveItem(itemIndex)}
-                disabled={value.length <= minItems}
-                className="text-red-600 hover:text-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                title={t("removeItem")}
-              >
-                <Trash2 size={16} />
-              </button>
-            </div>
+        {value.map((item, itemIndex) => {
+          /*
+           * Este ID representa el ítem completo.
+           * Solo se utiliza para comentarios hechos directamente al ítem.
+           */
+          const itemTargetId = getItemTargetId(itemIndex);
 
-            {/* Campos del item */}
-            {expandedItems.has(itemIndex) && (
-              <div className="p-4 space-y-3 bg-white">
-                {Object.entries(itemSchema).map(
-                  ([fieldId, fieldDef]: [string, any]) => {
-                    // Solo mostrar campos que son editables en el formulario
-                    if (fieldDef.form === false) {
-                      return null;
-                    }
+          const itemComments = itemTargetId
+            ? commentsByTarget[itemTargetId]
+            : undefined;
 
-                    return (
-                      <div key={fieldId}>
-                        <label className="block text-sm font-medium text-[#283618] mb-1">
-                          {fieldDef.label || fieldId}
-                          {fieldDef.validation?.required && (
-                            <span className="text-red-500 ml-1">*</span>
-                          )}
-                        </label>
-                        {renderItemField(itemIndex, fieldId, fieldDef)}
-                        {fieldDef.description && (
-                          <p className="text-xs text-[#606c38] mt-1">
-                            {fieldDef.description}
-                          </p>
-                        )}
-                        {fieldDef.validation?.max_length && (
-                          <p className="text-xs text-[#606c38] mt-1">
-                            {t("maxCharacters", {
-                              max: fieldDef.validation.max_length,
-                            })}
-                          </p>
-                        )}
-                      </div>
-                    );
-                  },
-                )}
+          const hasItemComments = Boolean(itemComments?.length);
+
+          const nestedItemCommentCount = Object.keys(itemSchema).reduce(
+            (total, itemFieldId) => {
+              const subfieldTargetId = getSubfieldTargetId(
+                itemIndex,
+                itemFieldId,
+              );
+
+              if (!subfieldTargetId) {
+                return total;
+              }
+
+              return total + (commentsByTarget[subfieldTargetId]?.length || 0);
+            },
+            0,
+          );
+
+          const directItemCommentCount = itemComments?.length || 0;
+
+          const totalItemCommentCount =
+            directItemCommentCount + nestedItemCommentCount;
+
+          const hasAnyItemComments = totalItemCommentCount > 0;
+
+          return (
+            <div
+              key={itemTargetId || itemIndex}
+              id={itemTargetId ? `review-target-${itemTargetId}` : undefined}
+              className={[
+                "overflow-hidden rounded-lg transition-all duration-200",
+                hasItemComments
+                  ? "border-2 border-amber-400 bg-amber-50/60 shadow-sm"
+                  : "border border-gray-300",
+              ].join(" ")}
+            >
+              {/* Header del ítem */}
+              <div
+                className={[
+                  "flex items-center justify-between px-4 py-2 transition-colors",
+                  hasAnyItemComments ? "bg-amber-50" : "bg-gray-50",
+                ].join(" ")}
+              >
+                <button
+                  type="button"
+                  onClick={() => toggleExpand(itemIndex)}
+                  className="flex items-center gap-2 text-sm font-medium text-[#283618] transition-colors hover:text-[#606c38]"
+                >
+                  {expandedItems.has(itemIndex) ? (
+                    <ChevronUp size={16} />
+                  ) : (
+                    <ChevronDown size={16} />
+                  )}
+
+                  {t("item", {
+                    index: itemIndex + 1,
+                  })}
+                </button>
+
+                <div className="flex items-center gap-2">
+                  {hasAnyItemComments && (
+                    <span
+                      className="inline-flex items-center gap-1 rounded-full bg-amber-500 px-2 py-0.5 text-xs font-semibold text-white shadow-sm"
+                      title={`${totalItemCommentCount} comentario${
+                        totalItemCommentCount === 1 ? "" : "s"
+                      } dentro de este ítem`}
+                    >
+                      <MessageCircle className="h-3.5 w-3.5" />
+                      {totalItemCommentCount}
+                    </span>
+                  )}
+
+                  {!readOnly && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveItem(itemIndex)}
+                      disabled={value.length <= minItems}
+                      className="text-red-600 transition-colors hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      title={t("removeItem")}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
+                </div>
               </div>
-            )}
-          </div>
-        ))}
+
+              {hasItemComments && (
+                <div className="bg-amber-50 px-4 pb-3">
+                  {renderComments?.(itemComments)}
+                </div>
+              )}
+
+              {/* Campos internos del ítem */}
+              {expandedItems.has(itemIndex) && (
+                <div className="space-y-3 bg-white p-4">
+                  {Object.entries(itemSchema).map(
+                    ([itemFieldId, fieldDef]: [string, any]) => {
+                      const subfieldTargetId = getSubfieldTargetId(
+                        itemIndex,
+                        itemFieldId,
+                      );
+
+                      const subfieldComments = subfieldTargetId
+                        ? commentsByTarget[subfieldTargetId]
+                        : undefined;
+
+                      const hasSubfieldComments = Boolean(
+                        subfieldComments?.length,
+                      );
+
+                      /*
+                       * Un subfield form=false normalmente se oculta.
+                       * Si tiene comentarios, debe mostrarse.
+                       */
+                      if (
+                        fieldDef.form === false &&
+                        !hasSubfieldComments &&
+                        !readOnly
+                      ) {
+                        return null;
+                      }
+
+                      const currentValue =
+                        item?.[itemFieldId] ?? fieldDef.value;
+
+                      return (
+                        <div
+                          key={itemFieldId}
+                          id={
+                            subfieldTargetId
+                              ? `review-target-${subfieldTargetId}`
+                              : undefined
+                          }
+                          className={[
+                            "relative rounded-lg p-3 transition-all duration-200",
+                            hasSubfieldComments
+                              ? "border-2 border-amber-400 bg-amber-50/60 shadow-sm"
+                              : "border-2 border-transparent",
+                          ].join(" ")}
+                        >
+                          <div className="mb-2 flex items-center justify-between gap-3">
+                            <label className="text-sm font-medium text-[#283618]">
+                              {fieldDef.display_name ||
+                                fieldDef.label ||
+                                itemFieldId}
+
+                              {fieldDef.validation?.required && !readOnly && (
+                                <span className="ml-1 text-red-500">*</span>
+                              )}
+                            </label>
+
+                            {hasSubfieldComments && (
+                              <span
+                                className="inline-flex items-center gap-1 rounded-full bg-amber-500 px-2 py-0.5 text-xs font-semibold text-white shadow-sm"
+                                title={`${
+                                  subfieldComments?.length || 0
+                                } comentario${
+                                  subfieldComments?.length === 1 ? "" : "s"
+                                } en este campo`}
+                              >
+                                <MessageCircle className="h-3.5 w-3.5" />
+                                {subfieldComments?.length}
+                              </span>
+                            )}
+                          </div>
+
+                          {readOnly || fieldDef.form === false ? (
+                            <div className="whitespace-pre-wrap rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
+                              {formatReadOnlyValue(currentValue)}
+                            </div>
+                          ) : (
+                            renderItemField(itemIndex, itemFieldId, fieldDef)
+                          )}
+
+                          {renderComments?.(subfieldComments)}
+
+                          {fieldDef.description && (
+                            <p className="mt-1 text-xs text-[#606c38]">
+                              {fieldDef.description}
+                            </p>
+                          )}
+
+                          {!readOnly && fieldDef.validation?.max_length && (
+                            <p className="mt-1 text-xs text-[#606c38]">
+                              {t("maxCharacters", {
+                                max: fieldDef.validation.max_length,
+                              })}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    },
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {value.length === 0 && (

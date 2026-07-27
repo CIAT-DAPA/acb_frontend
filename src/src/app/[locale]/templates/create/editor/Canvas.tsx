@@ -6,6 +6,8 @@ import * as ui from "../../../components/ui";
 import { useTranslations } from "next-intl";
 import { Layers, GripVertical } from "lucide-react";
 
+type CanvasInteractionMode = "edit" | "review";
+
 interface CanvasProps {
   data: CreateTemplateData;
   selection: EditorSelection;
@@ -19,7 +21,8 @@ interface CanvasProps {
   isCardMode?: boolean;
   onCanvasChange?: () => void;
   commentCounts?: Record<string, number>;
-  renderAllPagesInReview?: boolean;
+  interactionMode?: CanvasInteractionMode;
+  renderAllPages?: boolean;
 }
 
 const normalizeCardFieldValue = (value: unknown): any[] => {
@@ -140,13 +143,14 @@ export const Canvas: React.FC<CanvasProps> = ({
   isCardMode = false,
   onCanvasChange,
   commentCounts,
-  renderAllPagesInReview = false,
+  interactionMode = "edit",
+  renderAllPages = false,
 }) => {
+  const isReviewInteraction = interactionMode === "review";
+  const shouldRenderAllPages = renderAllPages;
   const t = useTranslations("CreateTemplate.fieldEditor");
   const containerRef = useRef<HTMLDivElement>(null);
   const [canvasState, setCanvasState] = useState<CanvasState>({
-    // ... existing code ...
-
     scale: 1,
     position: { x: 0, y: 0 },
   });
@@ -162,16 +166,37 @@ export const Canvas: React.FC<CanvasProps> = ({
     Record<number, number>
   >({});
   const spacePressed = useRef(false);
-  const reviewSectionsResetKey = data.version.content.sections
-    .map((section) => section.section_id || "")
-    .join("|");
+  const paginationResetKey = JSON.stringify({
+    bulletinHeight: data.version.content.style_config?.bulletin_height,
+
+    sections: data.version.content.sections.map((section) => ({
+      sectionId: section.section_id,
+      styleConfig: section.style_config,
+      headerConfig: section.header_config,
+      footerConfig: section.footer_config,
+
+      blocks: section.blocks?.map((block) => ({
+        blockId: block.block_id,
+        styleConfig: block.style_config,
+
+        fields: block.fields?.map((field) => ({
+          fieldId: field.field_id,
+          type: field.type,
+          bulletin: field.bulletin,
+          value: field.value,
+          styleConfig: field.style_config,
+
+          maxItemsPerPage: (field.field_config as any)?.max_items_per_page,
+        })),
+      })),
+    })),
+  });
 
   const sectionPageCounts = data.version.content.sections.map(
     (section, sectionIndex) => {
-      if (!renderAllPagesInReview) {
+      if (!shouldRenderAllPages) {
         return 1;
       }
-
       const estimatedCount = getSectionTotalPagesForReview(section);
       const resolvedCount = resolvedReviewPageCounts[sectionIndex] || 0;
 
@@ -180,12 +205,12 @@ export const Canvas: React.FC<CanvasProps> = ({
   );
 
   useEffect(() => {
-    if (!renderAllPagesInReview) {
+    if (!shouldRenderAllPages) {
       return;
     }
 
     setResolvedReviewPageCounts({});
-  }, [renderAllPagesInReview, reviewSectionsResetKey]);
+  }, [shouldRenderAllPages, paginationResetKey]);
 
   useEffect(() => {
     if (onCanvasChange) {
@@ -370,27 +395,238 @@ export const Canvas: React.FC<CanvasProps> = ({
       | "section"
       | "block"
       | "field"
+      | "list_item"
+      | "list_item_field"
+      | "card_item"
+      | "card_block"
+      | "card_field"
       | "header"
       | "footer"
       | "header_field"
       | "footer_field",
     id: string,
-    e: React.MouseEvent,
+    event: React.MouseEvent,
   ) => {
-    e.stopPropagation();
+    event.stopPropagation();
 
-    // Helper to call onSelect with rect
+    const clickedElement = event.currentTarget as HTMLElement;
+
+    const reviewLabel = clickedElement.dataset.reviewLabel;
+
+    const cardElement = clickedElement.closest<HTMLElement>("[data-card-id]");
+
+    const cardBlockElement = clickedElement.closest<HTMLElement>(
+      "[data-card-block-id]",
+    );
+
+    const cardFieldElement = clickedElement.closest<HTMLElement>(
+      "[data-card-field-id]",
+    );
+
     const select = (selection: EditorSelection) => {
-      onSelect(selection, e.currentTarget.getBoundingClientRect());
+      onSelect(selection, event.currentTarget.getBoundingClientRect());
     };
 
-    // Header Global Container
-    if (id === "header-global") {
+    if (interactionMode === "edit") {
+      const nestedCardMatch = id.match(/^field-(\d+)-(\d+)-(\d+)-card-/);
+
+      if (nestedCardMatch) {
+        const sectionIndex = Number(nestedCardMatch[1]);
+        const blockIndex = Number(nestedCardMatch[2]);
+        const fieldIndex = Number(nestedCardMatch[3]);
+
+        select({
+          type: "field",
+          id: `field-${sectionIndex}` + `-${blockIndex}` + `-${fieldIndex}`,
+          sectionIndex,
+          blockIndex,
+          fieldIndex,
+          schemaKey: undefined,
+        });
+
+        return;
+      }
+      const listSubfieldMatch = id.match(
+        /^field-(\d+)-(\d+)-(\d+)-item-(\d+)-subfield-(.+)$/,
+      );
+
+      if (listSubfieldMatch) {
+        const sectionIndex = Number(listSubfieldMatch[1]);
+        const blockIndex = Number(listSubfieldMatch[2]);
+        const fieldIndex = Number(listSubfieldMatch[3]);
+        const itemIndex = Number(listSubfieldMatch[4]);
+        const schemaKey = listSubfieldMatch[5];
+
+        select({
+          // El editor ya sabe editar fields usando schemaKey.
+          type: "field",
+          id,
+          sectionIndex,
+          blockIndex,
+          fieldIndex,
+          itemIndex,
+          schemaKey,
+        });
+
+        return;
+      }
+      const listItemMatch = id.match(/^field-(\d+)-(\d+)-(\d+)-item-(\d+)$/);
+
+      if (listItemMatch) {
+        const sectionIndex = Number(listItemMatch[1]);
+        const blockIndex = Number(listItemMatch[2]);
+        const fieldIndex = Number(listItemMatch[3]);
+
+        select({
+          type: "field",
+          id: `field-${sectionIndex}` + `-${blockIndex}` + `-${fieldIndex}`,
+          sectionIndex,
+          blockIndex,
+          fieldIndex,
+          schemaKey: undefined,
+        });
+
+        return;
+      }
+    }
+
+    const cardListItemFieldMatch = id.match(
+      /^field-(\d+)-(\d+)-(\d+)-card-(\d+)-block-(\d+)-field-(\d+)-item-(\d+)-subfield-(.+)$/,
+    );
+
+    if (cardListItemFieldMatch) {
       select({
-        type: "header",
-        id: id,
-        sectionIndex: -1, // Global
+        type: "list_item_field",
+        id,
+
+        // Field padre del boletín: el field tipo card
+        sectionIndex: Number(cardListItemFieldMatch[1]),
+        blockIndex: Number(cardListItemFieldMatch[2]),
+        fieldIndex: Number(cardListItemFieldMatch[3]),
+
+        // Ruta interna de la card
+        cardIndex: Number(cardListItemFieldMatch[4]),
+        cardId: cardElement?.dataset.cardId,
+
+        cardBlockIndex: Number(cardListItemFieldMatch[5]),
+        cardBlockId: cardBlockElement?.dataset.cardBlockId,
+
+        cardFieldIndex: Number(cardListItemFieldMatch[6]),
+        cardFieldId: cardFieldElement?.dataset.cardFieldId,
+
+        // Ruta de la lista
+        itemIndex: Number(cardListItemFieldMatch[7]),
+        schemaKey: cardListItemFieldMatch[8],
+
+        displayName: reviewLabel,
       });
+
+      return;
+    }
+
+    const cardFieldMatch = id.match(
+      /^field-(\d+)-(\d+)-(\d+)-card-(\d+)-block-(\d+)-field-(\d+)$/,
+    );
+
+    if (cardFieldMatch) {
+      select({
+        type: "card_field",
+        id,
+
+        sectionIndex: Number(cardFieldMatch[1]),
+        blockIndex: Number(cardFieldMatch[2]),
+        fieldIndex: Number(cardFieldMatch[3]),
+
+        cardIndex: Number(cardFieldMatch[4]),
+        cardId: clickedElement.dataset.cardId,
+
+        cardBlockIndex: Number(cardFieldMatch[5]),
+        cardBlockId: clickedElement.dataset.cardBlockId,
+
+        cardFieldIndex: Number(cardFieldMatch[6]),
+        cardFieldId: clickedElement.dataset.cardFieldId,
+
+        displayName: reviewLabel,
+      });
+
+      return;
+    }
+
+    const cardBlockMatch = id.match(
+      /^field-(\d+)-(\d+)-(\d+)-card-(\d+)-block-(\d+)$/,
+    );
+
+    if (cardBlockMatch) {
+      select({
+        type: "card_block",
+        id,
+
+        sectionIndex: Number(cardBlockMatch[1]),
+        blockIndex: Number(cardBlockMatch[2]),
+        fieldIndex: Number(cardBlockMatch[3]),
+
+        cardIndex: Number(cardBlockMatch[4]),
+        cardId: clickedElement.dataset.cardId,
+
+        cardBlockIndex: Number(cardBlockMatch[5]),
+        cardBlockId: clickedElement.dataset.cardBlockId,
+
+        displayName: reviewLabel,
+      });
+
+      return;
+    }
+
+    const cardItemMatch = id.match(/^field-(\d+)-(\d+)-(\d+)-card-(\d+)$/);
+
+    if (cardItemMatch) {
+      select({
+        type: "card_item",
+        id,
+
+        sectionIndex: Number(cardItemMatch[1]),
+        blockIndex: Number(cardItemMatch[2]),
+        fieldIndex: Number(cardItemMatch[3]),
+
+        cardIndex: Number(cardItemMatch[4]),
+        cardId: clickedElement.dataset.cardId,
+
+        displayName: reviewLabel,
+      });
+
+      return;
+    }
+
+    const cardListItemMatch = id.match(
+      /^field-(\d+)-(\d+)-(\d+)-card-(\d+)-block-(\d+)-field-(\d+)-item-(\d+)$/,
+    );
+
+    if (cardListItemMatch) {
+      select({
+        /*
+         * También reutilizamos el tipo existente.
+         */
+        type: "list_item",
+        id,
+
+        sectionIndex: Number(cardListItemMatch[1]),
+        blockIndex: Number(cardListItemMatch[2]),
+        fieldIndex: Number(cardListItemMatch[3]),
+
+        cardIndex: Number(cardListItemMatch[4]),
+        cardId: cardElement?.dataset.cardId,
+
+        cardBlockIndex: Number(cardListItemMatch[5]),
+        cardBlockId: cardBlockElement?.dataset.cardBlockId,
+
+        cardFieldIndex: Number(cardListItemMatch[6]),
+        cardFieldId: cardFieldElement?.dataset.cardFieldId,
+
+        itemIndex: Number(cardListItemMatch[7]),
+
+        displayName: reviewLabel,
+      });
+
       return;
     }
 
@@ -471,6 +707,39 @@ export const Canvas: React.FC<CanvasProps> = ({
         id: id,
         sectionIndex: parseInt(footerSectionMatch[1]),
       });
+      return;
+    }
+
+    const listItemFieldMatch = id.match(
+      /^field-(\d+)-(\d+)-(\d+)-item-(\d+)-subfield-(.+)$/,
+    );
+
+    if (listItemFieldMatch) {
+      select({
+        type: "list_item_field",
+        id,
+        sectionIndex: Number(listItemFieldMatch[1]),
+        blockIndex: Number(listItemFieldMatch[2]),
+        fieldIndex: Number(listItemFieldMatch[3]),
+        itemIndex: Number(listItemFieldMatch[4]),
+        schemaKey: listItemFieldMatch[5],
+      });
+
+      return;
+    }
+
+    const listItemMatch = id.match(/^field-(\d+)-(\d+)-(\d+)-item-(\d+)$/);
+
+    if (listItemMatch) {
+      select({
+        type: "list_item",
+        id,
+        sectionIndex: Number(listItemMatch[1]),
+        blockIndex: Number(listItemMatch[2]),
+        fieldIndex: Number(listItemMatch[3]),
+        itemIndex: Number(listItemMatch[4]),
+      });
+
       return;
     }
 
@@ -595,10 +864,13 @@ export const Canvas: React.FC<CanvasProps> = ({
                 data={data}
                 variant="single"
                 reviewMode={true}
+                allowListItemSelection={isReviewInteraction}
+                allowListSubfieldEditing={interactionMode === "edit"}
+                allowCardElementSelection={isReviewInteraction}
                 onElementClick={handleElementClick}
                 selectedSectionIndex={0}
                 selectedElementId={selection.id}
-                commentCounts={commentCounts}
+                commentCounts={isReviewInteraction ? commentCounts : undefined}
               />
             </div>
           ) : (
@@ -638,17 +910,24 @@ export const Canvas: React.FC<CanvasProps> = ({
                           data={data}
                           variant="single"
                           reviewMode={true}
+                          allowListItemSelection={isReviewInteraction}
+                          allowListSubfieldEditing={interactionMode === "edit"}
+                          allowCardElementSelection={isReviewInteraction}
                           onElementClick={handleElementClick}
                           selectedSectionIndex={index}
                           currentResolvedPageIndex={
-                            renderAllPagesInReview ? pageIndex : undefined
+                            shouldRenderAllPages ? pageIndex : undefined
                           }
-                          hidePagination={true}
+                          hidePagination={shouldRenderAllPages}
                           selectedElementId={selection.id}
-                          commentCounts={commentCounts}
-                          resolvedSectionPageCounts={sectionPageCounts}
+                          commentCounts={
+                            isReviewInteraction ? commentCounts : undefined
+                          }
+                          resolvedSectionPageCounts={
+                            shouldRenderAllPages ? sectionPageCounts : undefined
+                          }
                           onResolvedPageCount={
-                            renderAllPagesInReview && pageIndex === 0
+                            shouldRenderAllPages && pageIndex === 0
                               ? (pageCount) => {
                                   const normalizedPageCount = Number.isFinite(
                                     pageCount,

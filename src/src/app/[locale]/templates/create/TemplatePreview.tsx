@@ -281,6 +281,9 @@ type FieldOverflowContext = {
   cardBlockPage?: PaginatedBlockPage;
   listFieldPage?: ListFieldItemPage;
   measurementFieldIndex?: number;
+
+  // Offset del ítem dentro de la lista original
+  listItemIndexOffset?: number;
 };
 
 type CompositePageDescriptor = {
@@ -1106,6 +1109,11 @@ interface TemplatePreviewProps {
       | "section"
       | "block"
       | "field"
+      | "list_item"
+      | "list_item_field"
+      | "card_item"
+      | "card_block"
+      | "card_field"
       | "header"
       | "footer"
       | "header_field"
@@ -1117,6 +1125,9 @@ interface TemplatePreviewProps {
   commentCounts?: Record<string, number>;
   renderForPrint?: boolean;
   cardEmptyStateMode?: "first-available" | "select-card";
+  allowListItemSelection?: boolean;
+  allowListSubfieldEditing?: boolean;
+  allowCardElementSelection?: boolean;
 }
 
 // Constantes para estilos repetidos
@@ -1143,22 +1154,33 @@ export function TemplatePreview({
   cardsMetadataLoading = false,
   resolvedSectionPageCounts,
   reviewMode = false,
+  allowListItemSelection = false,
   onElementClick,
   selectedElementId,
   commentCounts,
   renderForPrint = false,
   cardEmptyStateMode = "first-available",
+  allowListSubfieldEditing = false,
+  allowCardElementSelection = false,
 }: TemplatePreviewProps) {
   const t = useTranslations("CreateTemplate.preview");
   const pathname = usePathname();
 
   // Helper para renderizar el badge de comentarios
-  const renderCommentBadge = (elementId: string) => {
+  const renderCommentBadge = (
+    elementId: string,
+    positionClass = "-top-2 -right-2",
+  ) => {
     const count = commentCounts?.[elementId];
-    if (!count || count <= 0) return null;
+
+    if (!count || count <= 0) {
+      return null;
+    }
 
     return (
-      <div className="absolute -top-2 -right-2 bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow-md z-30 ring-1 ring-white">
+      <div
+        className={`absolute ${positionClass} bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow-md z-30 ring-1 ring-white`}
+      >
         {count > 9 ? "9+" : count}
       </div>
     );
@@ -1203,6 +1225,17 @@ export function TemplatePreview({
   const previousMeasuredSectionIdRef = useRef<string | null>(null);
   const previousBasePageIndexRef = useRef(0);
   const overflowCollapseTimeoutRef = useRef<number | null>(null);
+
+  const canSelectListItems =
+    reviewMode && allowListItemSelection && Boolean(onElementClick);
+
+  const canSelectCardElements =
+    reviewMode && allowCardElementSelection && Boolean(onElementClick);
+
+  const canEditListSubfields =
+    reviewMode && allowListSubfieldEditing && Boolean(onElementClick);
+
+  const canActivateListSubfields = canSelectListItems || canEditListSubfields;
 
   // Función para cambiar de página
   const handlePageChange = (newPageIndex: number) => {
@@ -1885,11 +1918,22 @@ export function TemplatePreview({
         const listItems = Array.isArray(field.value) ? field.value : [];
         const listFieldPage = overflowContext?.listFieldPage;
         const measurementFieldIndex = overflowContext?.measurementFieldIndex;
+        const listItemIndexOffset = overflowContext?.listItemIndexOffset ?? 0;
 
         const defaultItemsToRenderWithIndex =
           listItems.length > 0
-            ? listItems.map((item, itemIndex) => ({ item, itemIndex }))
-            : [{ item: {}, itemIndex: 0 }];
+            ? listItems.map((item, itemIndex) => ({
+                item,
+                itemIndex,
+                absoluteItemIndex: listItemIndexOffset + itemIndex,
+              }))
+            : [
+                {
+                  item: {},
+                  itemIndex: 0,
+                  absoluteItemIndex: listItemIndexOffset,
+                },
+              ];
 
         const paginatedItemsToRenderWithIndex =
           listFieldPage && listItems.length > 0
@@ -1897,6 +1941,7 @@ export function TemplatePreview({
                 .map((itemIndex) => ({
                   item: listItems[itemIndex],
                   itemIndex,
+                  absoluteItemIndex: listItemIndexOffset + itemIndex,
                 }))
                 .filter((entry) => entry.item !== undefined)
             : defaultItemsToRenderWithIndex;
@@ -1932,22 +1977,10 @@ export function TemplatePreview({
                           index,
                           array,
                         ) => {
-                          const subfieldId = `${fieldId}-subfield-${schemaKey}`;
-                          const isSubfieldSelected =
-                            selectedElementId === subfieldId;
-
                           return (
                             <th
                               key={index}
-                              className={`p-2 text-left ${reviewMode ? "cursor-pointer hover:bg-black/5" : ""} ${isSubfieldSelected ? "ring-2 ring-emerald-500 bg-emerald-50 relative z-30" : ""}`}
-                              onDoubleClick={(e) => {
-                                if (reviewMode && fieldId && onElementClick) {
-                                  e.stopPropagation();
-                                  // Usamos un formato especial para indicar que es un sub-field del schema
-                                  // ID format: field-{s}-{b}-{f}-subfield-{schemaKey}
-                                  onElementClick("field", subfieldId, e);
-                                }
-                              }}
+                              className="p-2 text-left"
                               style={{
                                 color:
                                   effectiveStyles.header_text_color ||
@@ -1991,89 +2024,157 @@ export function TemplatePreview({
                 )}
                 <tbody>
                   {itemsToRenderWithIndex.map(
-                    ({ item, itemIndex }, renderItemIndex) => (
-                      <tr
-                        key={itemIndex}
-                        data-measure-list-field-index={measurementFieldIndex}
-                        data-measure-list-item-index={
-                          measurementFieldIndex !== undefined
-                            ? itemIndex
-                            : undefined
-                        }
-                      >
-                        {field.field_config?.item_schema &&
-                          Object.entries(field.field_config.item_schema).map(
-                            (
-                              [fieldKey, itemFieldSchema],
-                              fieldIndex,
-                              array,
-                            ) => {
-                              const itemFieldValue = (
-                                item as Record<string, any>
-                              )[fieldKey];
-                              const fieldSchema = itemFieldSchema as Field;
-                              const resolvedItemFieldValue =
-                                itemFieldValue !== undefined &&
-                                itemFieldValue !== null &&
-                                itemFieldValue !== ""
-                                  ? itemFieldValue
-                                  : fieldSchema.value;
-                              const subfieldId = `${fieldId}-subfield-${fieldKey}`;
-                              const isSubfieldSelected =
-                                selectedElementId === subfieldId;
+                    (
+                      { item, itemIndex, absoluteItemIndex },
+                      renderItemIndex,
+                    ) => {
+                      const listItemId = fieldId
+                        ? `${fieldId}-item-${absoluteItemIndex}`
+                        : undefined;
 
-                              return (
-                                <td
-                                  key={fieldIndex}
-                                  className={`p-2 align-top ${reviewMode ? "cursor-pointer hover:bg-black/5" : ""} ${isSubfieldSelected ? "ring-2 ring-emerald-500 bg-emerald-50 relative z-30" : ""}`}
-                                  onDoubleClick={(e) => {
-                                    if (
-                                      reviewMode &&
-                                      fieldId &&
-                                      onElementClick
-                                    ) {
-                                      e.stopPropagation();
-                                      onElementClick("field", subfieldId, e);
+                      const isListItemSelected =
+                        Boolean(listItemId) && selectedElementId === listItemId;
+
+                      return (
+                        <tr
+                          key={absoluteItemIndex}
+                          data-review-id={listItemId}
+                          data-review-label={`${
+                            field.label || field.display_name || "Lista"
+                          } · Item ${absoluteItemIndex + 1}`}
+                          data-measure-list-field-index={measurementFieldIndex}
+                          data-measure-list-item-index={
+                            measurementFieldIndex !== undefined
+                              ? itemIndex
+                              : undefined
+                          }
+                          onClick={
+                            canSelectListItems && listItemId
+                              ? (event) => {
+                                  onElementClick?.(
+                                    "list_item",
+                                    listItemId,
+                                    event,
+                                  );
+                                }
+                              : undefined
+                          }
+                          className={
+                            canSelectListItems
+                              ? isListItemSelected
+                                ? "outline-2 outline-emerald-500 cursor-pointer"
+                                : "hover:outline-2 hover:outline-emerald-300 cursor-pointer"
+                              : undefined
+                          }
+                        >
+                          {field.field_config?.item_schema &&
+                            Object.entries(field.field_config.item_schema).map(
+                              (
+                                [fieldKey, itemFieldSchema],
+                                fieldIndex,
+                                array,
+                              ) => {
+                                const itemFieldValue = (
+                                  item as Record<string, any>
+                                )[fieldKey];
+                                const fieldSchema = itemFieldSchema as Field;
+                                const resolvedItemFieldValue =
+                                  itemFieldValue !== undefined &&
+                                  itemFieldValue !== null &&
+                                  itemFieldValue !== ""
+                                    ? itemFieldValue
+                                    : fieldSchema.value;
+                                const subfieldId = listItemId
+                                  ? `${listItemId}-subfield-${fieldKey}`
+                                  : undefined;
+
+                                const isSubfieldSelected =
+                                  Boolean(subfieldId) &&
+                                  selectedElementId === subfieldId;
+
+                                return (
+                                  <td
+                                    key={fieldIndex}
+                                    data-review-id={subfieldId}
+                                    data-review-label={`${
+                                      fieldSchema.label ||
+                                      fieldSchema.display_name ||
+                                      fieldKey
+                                    } · Item ${absoluteItemIndex + 1}`}
+                                    className={`p-2 align-top relative ${
+                                      reviewMode
+                                        ? "cursor-pointer hover:bg-black/5"
+                                        : ""
+                                    } ${
+                                      isSubfieldSelected
+                                        ? "ring-2 ring-emerald-500 bg-emerald-50 z-30"
+                                        : ""
+                                    }`}
+                                    onDoubleClick={
+                                      canActivateListSubfields && subfieldId
+                                        ? (event) => {
+                                            event.stopPropagation();
+
+                                            onElementClick?.(
+                                              "list_item_field",
+                                              subfieldId,
+                                              event,
+                                            );
+                                          }
+                                        : undefined
                                     }
-                                  }}
-                                  style={{
-                                    padding: effectiveStyles.padding || "8px",
-                                    borderBottomWidth:
-                                      renderItemIndex ===
-                                      itemsToRenderWithIndex.length - 1
-                                        ? "0px"
-                                        : effectiveStyles.border_width || "1px",
-                                    borderBottomStyle:
-                                      (effectiveStyles.border_style as any) ||
-                                      "solid",
-                                    borderBottomColor:
-                                      effectiveStyles.border_color || "#e5e7eb",
-                                    borderRightWidth:
-                                      fieldIndex === array.length - 1
-                                        ? "0px"
-                                        : effectiveStyles.border_width || "1px",
-                                    borderRightStyle:
-                                      (effectiveStyles.border_style as any) ||
-                                      "solid",
-                                    borderRightColor:
-                                      effectiveStyles.border_color || "#e5e7eb",
-                                  }}
-                                >
-                                  {renderField(
-                                    {
-                                      ...fieldSchema,
-                                      value: resolvedItemFieldValue,
-                                    } as Field,
-                                    `${itemIndex}-${fieldIndex}`,
-                                    effectiveStyles,
-                                    "horizontal",
-                                  )}
-                                </td>
-                              );
-                            },
-                          )}
-                      </tr>
-                    ),
+                                    style={{
+                                      padding: effectiveStyles.padding || "8px",
+                                      borderBottomWidth:
+                                        renderItemIndex ===
+                                        itemsToRenderWithIndex.length - 1
+                                          ? "0px"
+                                          : effectiveStyles.border_width ||
+                                            "1px",
+                                      borderBottomStyle:
+                                        (effectiveStyles.border_style as any) ||
+                                        "solid",
+                                      borderBottomColor:
+                                        effectiveStyles.border_color ||
+                                        "#e5e7eb",
+                                      borderRightWidth:
+                                        fieldIndex === array.length - 1
+                                          ? "0px"
+                                          : effectiveStyles.border_width ||
+                                            "1px",
+                                      borderRightStyle:
+                                        (effectiveStyles.border_style as any) ||
+                                        "solid",
+                                      borderRightColor:
+                                        effectiveStyles.border_color ||
+                                        "#e5e7eb",
+                                    }}
+                                  >
+                                    {fieldIndex === 0 &&
+                                      listItemId &&
+                                      renderCommentBadge(
+                                        listItemId,
+                                        "-top-2 -left-2",
+                                      )}
+
+                                    {subfieldId &&
+                                      renderCommentBadge(subfieldId)}
+                                    {renderField(
+                                      {
+                                        ...fieldSchema,
+                                        value: resolvedItemFieldValue,
+                                      } as Field,
+                                      `${itemIndex}-${fieldIndex}`,
+                                      effectiveStyles,
+                                      "horizontal",
+                                    )}
+                                  </td>
+                                );
+                              },
+                            )}
+                        </tr>
+                      );
+                    },
                   )}
                 </tbody>
               </table>
@@ -2175,30 +2276,54 @@ export function TemplatePreview({
             >
               {/* Renderizar elementos basados en el valor del campo */}
               {itemsToRenderWithIndex.flatMap(
-                ({ item, itemIndex }, visualItemIndex) => {
+                ({ item, itemIndex, absoluteItemIndex }, visualItemIndex) => {
+                  const listItemId = fieldId
+                    ? `${fieldId}-item-${absoluteItemIndex}`
+                    : undefined;
+
+                  const isListItemSelected =
+                    Boolean(listItemId) && selectedElementId === listItemId;
                   const itemSlice = listFieldPage?.itemSlices?.[itemIndex];
 
                   const listItemNode = (
                     <div
-                      key={`list-item-${itemIndex}-${visualItemIndex}`}
+                      key={`list-item-${absoluteItemIndex}-${visualItemIndex}`}
+                      data-review-id={listItemId}
+                      data-review-label={`${
+                        field.label || field.display_name || "Lista"
+                      } · Item ${absoluteItemIndex + 1}`}
                       data-measure-list-field-index={measurementFieldIndex}
                       data-measure-list-item-index={
                         measurementFieldIndex !== undefined
                           ? itemIndex
                           : undefined
                       }
-                      className={
+                      onClick={
+                        canSelectListItems && listItemId
+                          ? (event) => {
+                              onElementClick?.("list_item", listItemId, event);
+                            }
+                          : undefined
+                      }
+                      className={`relative ${
                         listItemsLayout === "horizontal"
                           ? "flex items-start"
                           : "flex w-full"
-                      }
+                      } ${canSelectListItems ? "cursor-pointer transition-all" : ""} ${
+                        isListItemSelected
+                          ? "ring-2 ring-emerald-500"
+                          : canSelectListItems
+                            ? "hover:ring-2 hover:ring-emerald-300"
+                            : ""
+                      }`}
                       style={{
                         ...listItemStyles,
-                        // Apply alignItems to the list item wrapper (which contains the bullet/number)
                         alignItems: effectiveStyles.align_items || "start",
-                        gap: "8px", // Gap fijo entre bullet y contenido
+                        gap: "8px",
                       }}
                     >
+                      {listItemId &&
+                        renderCommentBadge(listItemId, "-top-2 -left-2")}
                       {showBullets && (
                         <span
                           className="shrink-0"
@@ -2212,7 +2337,7 @@ export function TemplatePreview({
                           }}
                         >
                           {isNumbered
-                            ? `${itemIndex + 1}.`
+                            ? `${absoluteItemIndex + 1}.`
                             : bulletStyles[listStyleType]}
                         </span>
                       )}
@@ -2272,43 +2397,67 @@ export function TemplatePreview({
                                 }
                               }
 
-                              const subfieldId = `${fieldId}-subfield-${fieldKey}`;
+                              const subfieldId = listItemId
+                                ? `${listItemId}-subfield-${fieldKey}`
+                                : undefined;
                               const isSubfieldSelected =
+                                Boolean(subfieldId) &&
                                 selectedElementId === subfieldId;
 
                               return (
                                 <div
                                   key={fieldIndex}
+                                  data-review-id={subfieldId}
+                                  data-review-label={`${
+                                    fieldSchema.label ||
+                                    fieldSchema.display_name ||
+                                    fieldKey
+                                  } · Item ${absoluteItemIndex + 1}`}
                                   className={
+                                    "relative " +
                                     (isGridLayout
-                                      ? `flex gap-1 items-center ${justifyClass} min-w-0 ${reviewMode ? "cursor-pointer hover:bg-black/5 rounded transition-colors" : ""}`
+                                      ? `flex gap-1 items-center ${justifyClass} min-w-0 ${
+                                          reviewMode
+                                            ? "cursor-pointer hover:bg-black/5 rounded transition-colors"
+                                            : ""
+                                        }`
                                       : shouldExpand
-                                        ? `flex-1 min-w-[120px] ${reviewMode ? "cursor-pointer hover:bg-black/5 rounded transition-colors" : ""}`
-                                        : `shrink-0 ${reviewMode ? "cursor-pointer hover:bg-black/5 rounded transition-colors" : ""}`) +
+                                        ? `flex-1 min-w-[120px] ${
+                                            reviewMode
+                                              ? "cursor-pointer hover:bg-black/5 rounded transition-colors"
+                                              : ""
+                                          }`
+                                        : `shrink-0 ${
+                                            reviewMode
+                                              ? "cursor-pointer hover:bg-black/5 rounded transition-colors"
+                                              : ""
+                                          }`) +
                                     (isSubfieldSelected
-                                      ? " ring-2 ring-emerald-500 bg-emerald-50 relative z-30"
+                                      ? " ring-2 ring-emerald-500 bg-emerald-50 z-30"
                                       : "")
                                   }
-                                  onClick={(e) => {
-                                    // Dejar que el click se propague para seleccionar el padre (Lista)
-                                  }}
-                                  onDoubleClick={(e) => {
-                                    if (
-                                      reviewMode &&
-                                      fieldId &&
-                                      onElementClick
-                                    ) {
-                                      e.stopPropagation();
-                                      onElementClick("field", subfieldId, e);
-                                    }
-                                  }}
+                                  onDoubleClick={
+                                    canActivateListSubfields && subfieldId
+                                      ? (event) => {
+                                          event.stopPropagation();
+
+                                          onElementClick?.(
+                                            "list_item_field",
+                                            subfieldId,
+                                            event,
+                                          );
+                                        }
+                                      : undefined
+                                  }
                                 >
+                                  {subfieldId && renderCommentBadge(subfieldId)}
+
                                   {renderField(
                                     {
                                       ...fieldSchema,
                                       value: resolvedItemFieldValue,
                                     } as Field,
-                                    `${itemIndex}-${fieldIndex}`,
+                                    `${absoluteItemIndex}-${fieldIndex}`,
                                     containerStyle,
                                     "horizontal",
                                   )}
@@ -2889,13 +3038,42 @@ export function TemplatePreview({
             ? cardBlockPage?.blockIndexes ||
               cardContent.blocks.map((_, blockIndex) => blockIndex)
             : cardContent.blocks.map((_, blockIndex) => blockIndex);
+          const cardReviewId = fieldId
+            ? `${fieldId}-card-${cardOrderIndex}`
+            : undefined;
 
+          const isCardSelected =
+            Boolean(cardReviewId) && selectedElementId === cardReviewId;
           return (
             <div
               key={`card-${cardData.cardId}-${cardOrderIndex}`}
+              data-review-id={cardReviewId}
+              data-card-index={cardOrderIndex}
+              data-card-id={cardData.cardId}
+              data-review-label={
+                cardToRender.card_name || `Card ${cardOrderIndex + 1}`
+              }
+              onClick={
+                canSelectCardElements && cardReviewId
+                  ? (event) => {
+                      event.stopPropagation();
+
+                      onElementClick?.("card_item", cardReviewId, event);
+                    }
+                  : undefined
+              }
               style={cardContainerStyles}
-              className="flex flex-col"
+              className={[
+                "flex flex-col relative rounded transition-all",
+                canSelectCardElements ? "cursor-pointer" : "",
+                isCardSelected
+                  ? "ring-2 ring-blue-500 z-20"
+                  : canSelectCardElements
+                    ? "hover:ring-2 hover:ring-yellow-400"
+                    : "",
+              ].join(" ")}
             >
+              {cardReviewId && renderCommentBadge(cardReviewId)}
               {(cardBackgroundColor || cardBackgroundUrl) && (
                 <div style={cardBackgroundLayerStyles} />
               )}
@@ -2938,12 +3116,50 @@ export function TemplatePreview({
                     }),
                   };
 
+                  const cardBlockReviewId = cardReviewId
+                    ? `${cardReviewId}-block-${cardBlockIndex}`
+                    : undefined;
+
+                  const isCardBlockSelected =
+                    Boolean(cardBlockReviewId) &&
+                    selectedElementId === cardBlockReviewId;
+
                   return (
                     <div
                       key={`card-block-${cardData.cardId}-${cardOrderIndex}-${cardBlockIndex}`}
+                      data-review-id={cardBlockReviewId}
+                      data-card-index={cardOrderIndex}
+                      data-card-id={cardData.cardId}
+                      data-card-block-index={cardBlockIndex}
+                      data-card-block-id={block.block_id}
+                      data-review-label={
+                        block.display_name || `Bloque ${cardBlockIndex + 1}`
+                      }
                       data-card-content-block-index={
                         !reviewMode ? cardBlockIndex : undefined
                       }
+                      onClick={
+                        canSelectCardElements && cardBlockReviewId
+                          ? (event) => {
+                              event.stopPropagation();
+
+                              onElementClick?.(
+                                "card_block",
+                                cardBlockReviewId,
+                                event,
+                              );
+                            }
+                          : undefined
+                      }
+                      className={[
+                        "relative rounded transition-all",
+                        canSelectCardElements ? "cursor-pointer" : "",
+                        isCardBlockSelected
+                          ? "ring-2 ring-blue-500 z-20"
+                          : canSelectCardElements
+                            ? "hover:ring-2 hover:ring-yellow-400"
+                            : "",
+                      ].join(" ")}
                       style={
                         cardBlockSlice
                           ? {
@@ -2953,6 +3169,8 @@ export function TemplatePreview({
                           : blockContainerStyles
                       }
                     >
+                      {cardBlockReviewId &&
+                        renderCommentBadge(cardBlockReviewId, "-top-2 -left-2")}
                       <div
                         style={
                           cardBlockSlice
@@ -2963,26 +3181,86 @@ export function TemplatePreview({
                             : undefined
                         }
                       >
-                        {block.fields.map((blockField, fieldIndex) => {
+                        {block.fields.map((blockField, cardFieldIndex) => {
                           const safeField: Field = {
                             ...blockField,
                             style_manually_edited:
                               blockField.style_manually_edited ?? false,
                           } as Field;
 
-                          if (
-                            blockField.form &&
-                            cardData.fieldValues[blockField.field_id]
-                          ) {
+                          /*
+                           * hasOwnProperty permite conservar valores válidos como:
+                           * 0, false o string vacío.
+                           */
+                          const hasCustomValue =
+                            Object.prototype.hasOwnProperty.call(
+                              cardData.fieldValues,
+                              blockField.field_id,
+                            );
+
+                          if (blockField.form && hasCustomValue) {
                             safeField.value =
                               cardData.fieldValues[blockField.field_id];
                           }
 
-                          return renderField(
+                          const cardFieldReviewId = cardBlockReviewId
+                            ? `${cardBlockReviewId}-field-${cardFieldIndex}`
+                            : undefined;
+
+                          const isCardFieldSelected =
+                            Boolean(cardFieldReviewId) &&
+                            selectedElementId === cardFieldReviewId;
+
+                          const renderedCardField = renderField(
                             safeField,
-                            `card-${cardData.cardId}-block-${cardOrderIndex}-${cardBlockIndex}-field-${fieldIndex}`,
+                            `card-${cardOrderIndex}-${cardBlockIndex}-${cardFieldIndex}`,
                             block.style_config,
                             (block as any).layout || "vertical",
+                            undefined,
+                            canSelectCardElements
+                              ? cardFieldReviewId
+                              : undefined,
+                          );
+
+                          if (!canSelectCardElements || !cardFieldReviewId) {
+                            return renderedCardField;
+                          }
+
+                          return (
+                            <div
+                              key={cardFieldReviewId}
+                              data-review-id={cardFieldReviewId}
+                              data-card-index={cardOrderIndex}
+                              data-card-id={cardData.cardId}
+                              data-card-block-index={cardBlockIndex}
+                              data-card-block-id={block.block_id}
+                              data-card-field-index={cardFieldIndex}
+                              data-card-field-id={blockField.field_id}
+                              data-review-label={
+                                blockField.label ||
+                                blockField.display_name ||
+                                `Campo ${cardFieldIndex + 1}`
+                              }
+                              onClick={(event) => {
+                                event.stopPropagation();
+
+                                onElementClick?.(
+                                  "card_field",
+                                  cardFieldReviewId,
+                                  event,
+                                );
+                              }}
+                              className={[
+                                "relative rounded transition-all cursor-pointer",
+                                isCardFieldSelected
+                                  ? "ring-2 ring-emerald-500 bg-emerald-50 z-30"
+                                  : "hover:ring-2 hover:ring-emerald-300",
+                              ].join(" ")}
+                            >
+                              {renderedCardField}
+
+                              {renderCommentBadge(cardFieldReviewId)}
+                            </div>
                           );
                         })}
                       </div>
@@ -3547,13 +3825,16 @@ export function TemplatePreview({
     type: "list" | "card"; // Tipo de campo paginado
   };
 
+  type SectionPaginationResult = {
+    totalPages: number;
+    paginatedSections: Section[];
+    paginationField?: PaginationInfo;
+  };
+
   // Función para obtener info de paginación de una sección específica
   const getSectionPagination = (
     section?: Section | null,
-  ): {
-    totalPages: number;
-    paginatedSections: Section[];
-  } => {
+  ): SectionPaginationResult => {
     if (!section) {
       return { totalPages: 1, paginatedSections: [] };
     }
@@ -3677,6 +3958,7 @@ export function TemplatePreview({
     return {
       totalPages: maxPagesFound,
       paginatedSections,
+      paginationField: bestPaginationInfo,
     };
   };
 
@@ -5091,6 +5373,20 @@ export function TemplatePreview({
                                             }
 
                                             const fieldId = `field-${sectionIndex}-${blockIndex}-${fieldIndex}`;
+                                            const paginationField =
+                                              paginationInfo.paginationField;
+
+                                            const listItemIndexOffset =
+                                              field.type === "list" &&
+                                              paginationField?.type ===
+                                                "list" &&
+                                              paginationField.blockIndex ===
+                                                blockIndex &&
+                                              paginationField.fieldIndex ===
+                                                fieldIndex
+                                                ? activeBasePageIndex *
+                                                  paginationField.maxItemsPerPage
+                                                : 0;
                                             const renderedField = renderField(
                                               field,
                                               `preview-${fieldId}`,
@@ -5108,6 +5404,7 @@ export function TemplatePreview({
                                                           ?.listFieldItemPages?.[
                                                           fieldIndex
                                                         ],
+                                                      listItemIndexOffset,
                                                     }
                                                   : undefined,
                                             );

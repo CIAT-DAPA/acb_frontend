@@ -49,6 +49,7 @@ import { btnOutlineSecondary, btnPrimary } from "../../components/ui";
 import { slugify, isValidSlug } from "../../../../utils/slugify";
 import { BulletinComment } from "@/types/bulletin"; // Updated to use renamed BulletinComment type
 import { MODULES, PERMISSION_ACTIONS } from "../../../../types/core";
+import { decodeReviewFieldId } from "@/utils/reviewTarget";
 
 // Funciones para codificar/decodificar valores de texto
 const encodeTextFieldValue = (value: any): any => {
@@ -423,22 +424,72 @@ export default function FormBulletinPage({
   // Group comments by target_element
   const groupedComments = useMemo(() => {
     const generalComments: BulletinComment[] = [];
+
+    const sectionComments: Record<string, BulletinComment[]> = {};
+
+    const blockComments: Record<string, BulletinComment[]> = {};
+
     const fieldComments: Record<string, BulletinComment[]> = {};
 
-    comments?.forEach((comment) => {
-      // If no valid target or generic target, treat as general
-      if (!comment.target_element?.field_id) {
-        generalComments.push(comment);
-      } else {
-        const fieldId = comment.target_element.field_id;
-        if (!fieldComments[fieldId]) {
-          fieldComments[fieldId] = [];
-        }
-        fieldComments[fieldId].push(comment);
+    const fieldAllComments: Record<string, BulletinComment[]> = {};
+
+    const addComment = (
+      collection: Record<string, BulletinComment[]>,
+      key: string,
+      comment: BulletinComment,
+    ) => {
+      if (!collection[key]) {
+        collection[key] = [];
       }
+
+      collection[key].push(comment);
+    };
+
+    comments?.forEach((comment) => {
+      const target = comment.target_element;
+
+      if (!target) {
+        generalComments.push(comment);
+        return;
+      }
+
+      if (target.field_id) {
+        const exactFieldTargetId = target.field_id;
+
+        addComment(fieldComments, exactFieldTargetId, comment);
+
+        const decodedTarget = decodeReviewFieldId(exactFieldTargetId);
+
+        const parentFieldId =
+          decodedTarget?.parentFieldId || exactFieldTargetId;
+
+        addComment(fieldAllComments, parentFieldId, comment);
+
+        return;
+      }
+
+      if (target.block_id) {
+        addComment(blockComments, target.block_id, comment);
+
+        return;
+      }
+
+      if (target.section_id) {
+        addComment(sectionComments, target.section_id, comment);
+
+        return;
+      }
+
+      generalComments.push(comment);
     });
 
-    return { generalComments, fieldComments };
+    return {
+      generalComments,
+      sectionComments,
+      blockComments,
+      fieldComments,
+      fieldAllComments,
+    };
   }, [comments]);
 
   // Render general comments
@@ -873,6 +924,7 @@ export default function FormBulletinPage({
 
   const sectionCommentCounts = useMemo(() => {
     const counts: Record<number, number> = {};
+
     const sections = creationState.data.version.data.sections;
 
     if (!comments || comments.length === 0 || sections.length === 0) {
@@ -880,52 +932,90 @@ export default function FormBulletinPage({
     }
 
     const sectionIdToIndex = new Map<string, number>();
+
+    const blockIdToSectionIndex = new Map<string, number>();
+
     const fieldIdToSectionIndex = new Map<string, number>();
 
-    const registerSectionFields = (
+    const registerFields = (
       fields: Field[] | undefined,
-      index: number,
+      sectionIndex: number,
     ) => {
-      if (!fields) return;
-      fields.forEach((field) => {
-        fieldIdToSectionIndex.set(field.field_id, index);
+      fields?.forEach((field) => {
+        if (field.field_id) {
+          fieldIdToSectionIndex.set(field.field_id, sectionIndex);
+        }
       });
     };
 
-    sections.forEach((section, index) => {
+    const registerBlocks = (
+      blocks: Block[] | undefined,
+      sectionIndex: number,
+    ) => {
+      blocks?.forEach((block) => {
+        if (block.block_id) {
+          blockIdToSectionIndex.set(block.block_id, sectionIndex);
+        }
+
+        registerFields(block.fields, sectionIndex);
+      });
+    };
+
+    sections.forEach((section, sectionIndex) => {
       if (section.section_id) {
-        sectionIdToIndex.set(section.section_id, index);
+        sectionIdToIndex.set(section.section_id, sectionIndex);
       }
 
-      registerSectionFields(section.header_config?.fields, index);
-      registerSectionFields(section.footer_config?.fields, index);
-      section.blocks.forEach((block) =>
-        registerSectionFields(block.fields, index),
-      );
+      registerFields(section.header_config?.fields, sectionIndex);
+
+      registerFields(section.footer_config?.fields, sectionIndex);
+
+      registerBlocks(section.blocks, sectionIndex);
+
+      section.repeatable_pages?.forEach((page) => {
+        if (page.page_id) {
+          sectionIdToIndex.set(page.page_id, sectionIndex);
+        }
+
+        registerFields(page.header_config?.fields, sectionIndex);
+
+        registerFields(page.footer_config?.fields, sectionIndex);
+
+        registerBlocks(page.blocks, sectionIndex);
+      });
     });
 
     comments.forEach((comment) => {
       const target = comment.target_element;
-      let sectionIndex: number | undefined;
+
+      let resolvedSectionIndex: number | undefined;
 
       if (
         typeof target?.section_index === "number" &&
         target.section_index >= 0 &&
         target.section_index < sections.length
       ) {
-        sectionIndex = target.section_index;
+        resolvedSectionIndex = target.section_index;
       }
 
-      if (sectionIndex === undefined && target?.section_id) {
-        sectionIndex = sectionIdToIndex.get(target.section_id);
+      if (resolvedSectionIndex === undefined && target?.field_id) {
+        const decodedTarget = decodeReviewFieldId(target.field_id);
+
+        const parentFieldId = decodedTarget?.parentFieldId || target.field_id;
+
+        resolvedSectionIndex = fieldIdToSectionIndex.get(parentFieldId);
       }
 
-      if (sectionIndex === undefined && target?.field_id) {
-        sectionIndex = fieldIdToSectionIndex.get(target.field_id);
+      if (resolvedSectionIndex === undefined && target?.block_id) {
+        resolvedSectionIndex = blockIdToSectionIndex.get(target.block_id);
       }
 
-      if (sectionIndex !== undefined) {
-        counts[sectionIndex] = (counts[sectionIndex] || 0) + 1;
+      if (resolvedSectionIndex === undefined && target?.section_id) {
+        resolvedSectionIndex = sectionIdToIndex.get(target.section_id);
+      }
+
+      if (resolvedSectionIndex !== undefined) {
+        counts[resolvedSectionIndex] = (counts[resolvedSectionIndex] || 0) + 1;
       }
     });
 
@@ -1779,7 +1869,10 @@ export default function FormBulletinPage({
               onUpdate={updateBulletinData}
               currentPageIndex={previewPageIndex}
               onPageChange={setPreviewPageIndex}
+              sectionComments={groupedComments.sectionComments}
+              blockComments={groupedComments.blockComments}
               fieldComments={groupedComments.fieldComments}
+              fieldAllComments={groupedComments.fieldAllComments}
             />
           );
         }

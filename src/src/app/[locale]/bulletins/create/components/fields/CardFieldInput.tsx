@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Field } from "../../../../../../types/template";
 import { Card } from "../../../../../../types/card";
 import {
@@ -14,6 +14,7 @@ import {
   ChevronUp,
   Loader2,
   AlertCircle,
+  MessageCircle,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
@@ -29,9 +30,17 @@ import {
   ClimateDataField,
   ListFieldEditor,
 } from "./index";
+import { BulletinComment } from "../../../../../../types/bulletin";
+
+import {
+  encodeReviewFieldId,
+  decodeReviewFieldId,
+  DecodedReviewFieldId,
+} from "@/utils/reviewTarget";
 
 interface CardFieldInputProps {
   field?: Field;
+
   value: Array<
     | string
     | {
@@ -41,12 +50,17 @@ interface CardFieldInputProps {
         id?: string;
       }
   >;
-  onChange: (value: string[]) => void;
+
+  onChange: (value: any[]) => void;
   disabled?: boolean;
-  currentPageIndex?: number; // Índice de la página actual del preview
-  onPageChange?: (pageIndex: number) => void; // Callback para cambiar de página
-  sectionIndex?: number; // Índice de la sección actual
-  precedingCardIds?: string[]; // IDs de cards seleccionadas en la primera sección con cards
+  currentPageIndex?: number;
+  onPageChange?: (pageIndex: number) => void;
+  sectionIndex?: number;
+  precedingCardIds?: string[];
+
+  commentsByTarget?: Record<string, BulletinComment[]>;
+
+  renderComments?: (comments: BulletinComment[] | undefined) => React.ReactNode;
 }
 
 interface SelectedCardData {
@@ -122,6 +136,8 @@ export function CardFieldInput({
   onPageChange,
   sectionIndex,
   precedingCardIds,
+  commentsByTarget = {},
+  renderComments,
 }: CardFieldInputProps) {
   const t = useTranslations("CreateBulletin.cardField");
   const [availableCards, setAvailableCards] = useState<Card[]>([]);
@@ -136,6 +152,101 @@ export function CardFieldInput({
   const availableCardIds = fieldConfig?.available_cards || [];
   const availableCardTags = fieldConfig?.available_tags || [];
   const cardType = fieldConfig?.card_type;
+
+  type CardReviewPath = Pick<
+    DecodedReviewFieldId,
+    | "cardIndex"
+    | "cardId"
+    | "cardBlockIndex"
+    | "cardBlockId"
+    | "cardFieldIndex"
+    | "cardFieldId"
+  >;
+
+  type CardListReviewContext = CardReviewPath & {
+    parentFieldId: string;
+  };
+
+  const getCardReviewTargetId = (path: CardReviewPath): string | undefined => {
+    if (!field?.field_id) {
+      return undefined;
+    }
+
+    return encodeReviewFieldId({
+      parentFieldId: field.field_id,
+      ...path,
+    });
+  };
+
+  const getExactComments = (
+    targetId?: string,
+  ): BulletinComment[] | undefined => {
+    if (!targetId) {
+      return undefined;
+    }
+
+    return commentsByTarget[targetId];
+  };
+
+  const getExactCommentCount = (targetId?: string): number =>
+    getExactComments(targetId)?.length || 0;
+
+  const renderTargetCommentBadge = (
+    targetId?: string,
+    title = "Comentarios",
+  ) => {
+    const count = getExactCommentCount(targetId);
+
+    if (count === 0) {
+      return null;
+    }
+
+    return (
+      <span
+        className="
+        inline-flex items-center gap-1 rounded-full
+        bg-amber-500 px-2 py-0.5
+        text-xs font-semibold text-white shadow-sm
+      "
+        title={`${count} comentario${count === 1 ? "" : "s"} en ${title}`}
+      >
+        <MessageCircle className="h-3.5 w-3.5" />
+        {count}
+      </span>
+    );
+  };
+  const cardCommentCounts = useMemo(() => {
+    if (!field?.field_id) {
+      return selectedCards.map(() => 0);
+    }
+
+    return selectedCards.map((selectedCard, cardIndex) => {
+      return Object.entries(commentsByTarget).reduce(
+        (total, [encodedTargetId, targetComments]) => {
+          const decoded = decodeReviewFieldId(encodedTargetId);
+
+          if (
+            !decoded ||
+            decoded.parentFieldId !== field.field_id ||
+            decoded.cardIndex !== cardIndex
+          ) {
+            return total;
+          }
+
+          /*
+           * cardId es complementario. El índice es la referencia
+           * principal porque comentarios antiguos pueden no tener cardId.
+           */
+          if (decoded.cardId && decoded.cardId !== selectedCard.cardId) {
+            return total;
+          }
+
+          return total + targetComments.length;
+        },
+        0,
+      );
+    });
+  }, [commentsByTarget, field?.field_id, selectedCards]);
 
   // Cargar las cards disponibles
   useEffect(() => {
@@ -430,7 +541,9 @@ export function CardFieldInput({
     cardIndex: number,
     value: any,
     onChange: (value: any) => void,
+    reviewTargetContext: CardListReviewContext,
   ) => {
+    const fieldDisabled = disabled || !cardField.form;
     switch (cardField.type) {
       case "text":
         return (
@@ -438,7 +551,7 @@ export function CardFieldInput({
             field={cardField}
             value={value || ""}
             onChange={onChange}
-            disabled={disabled}
+            disabled={fieldDisabled}
           />
         );
 
@@ -448,7 +561,7 @@ export function CardFieldInput({
             field={cardField}
             value={value || ""}
             onChange={onChange}
-            disabled={disabled}
+            disabled={fieldDisabled}
           />
         );
 
@@ -458,7 +571,7 @@ export function CardFieldInput({
             field={cardField}
             value={value ?? ""}
             onChange={onChange}
-            disabled={disabled}
+            disabled={fieldDisabled}
           />
         );
 
@@ -468,7 +581,7 @@ export function CardFieldInput({
             field={cardField}
             value={value || ""}
             onChange={onChange}
-            disabled={disabled}
+            disabled={fieldDisabled}
           />
         );
 
@@ -482,7 +595,7 @@ export function CardFieldInput({
             field={cardField}
             value={dateRangeValue}
             onChange={onChange}
-            disabled={disabled}
+            disabled={fieldDisabled}
           />
         );
 
@@ -492,7 +605,7 @@ export function CardFieldInput({
             field={cardField}
             value={value || ""}
             onChange={onChange}
-            disabled={disabled}
+            disabled={fieldDisabled}
           />
         );
 
@@ -502,7 +615,7 @@ export function CardFieldInput({
             field={cardField}
             value={value || ""}
             onChange={onChange}
-            disabled={disabled}
+            disabled={fieldDisabled}
           />
         );
 
@@ -512,7 +625,7 @@ export function CardFieldInput({
             field={cardField}
             value={value || ""}
             onChange={onChange}
-            disabled={disabled}
+            disabled={fieldDisabled}
           />
         );
 
@@ -526,7 +639,7 @@ export function CardFieldInput({
                 ? cardField.field_config.options || []
                 : []
             }
-            disabled={disabled}
+            disabled={fieldDisabled}
           />
         );
 
@@ -536,19 +649,25 @@ export function CardFieldInput({
             value={value || {}}
             onChange={onChange}
             fieldConfig={cardField.field_config}
-            disabled={disabled}
+            disabled={fieldDisabled}
           />
         );
 
-      case "list":
+      case "list": {
         const listValue = Array.isArray(value) ? value : [];
+
         return (
           <ListFieldEditor
             field={cardField}
             value={listValue}
             onChange={onChange}
+            readOnly={fieldDisabled}
+            commentsByTarget={commentsByTarget}
+            renderComments={renderComments}
+            reviewTargetContext={reviewTargetContext}
           />
         );
+      }
 
       default:
         return (
@@ -637,21 +756,110 @@ export function CardFieldInput({
 
           {selectedCards.map((selectedCard, index) => {
             const isExpanded = expandedCards.has(index);
-            const formFields = selectedCard.card.content.blocks
-              .flatMap((block) => block.fields)
-              .filter((f) => f.form);
+            const cardTargetId = getCardReviewTargetId({
+              cardIndex: index,
+              cardId: selectedCard.cardId,
+            });
+
+            const directCardComments = getExactComments(cardTargetId);
+
+            const hasDirectCardComments = Boolean(directCardComments?.length);
+
+            const totalCardComments = cardCommentCounts[index] || 0;
+            const cardBlocksToRender = selectedCard.card.content.blocks
+              .map((block, cardBlockIndex) => {
+                const fields = (block.fields || [])
+                  .map((cardField, cardFieldIndex) => {
+                    const fieldTargetId = getCardReviewTargetId({
+                      cardIndex: index,
+                      cardId: selectedCard.cardId,
+
+                      cardBlockIndex,
+                      cardBlockId: block.block_id,
+
+                      cardFieldIndex,
+                      cardFieldId: cardField.field_id,
+                    });
+
+                    /*
+                     * Incluye comentarios directos y comentarios internos
+                     * de una posible lista.
+                     */
+                    const nestedCommentCount = Object.entries(
+                      commentsByTarget,
+                    ).reduce((total, [targetId, comments]) => {
+                      const decoded = decodeReviewFieldId(targetId);
+
+                      if (
+                        !decoded ||
+                        decoded.parentFieldId !== field?.field_id ||
+                        decoded.cardIndex !== index ||
+                        decoded.cardBlockIndex !== cardBlockIndex ||
+                        decoded.cardFieldIndex !== cardFieldIndex
+                      ) {
+                        return total;
+                      }
+
+                      return total + comments.length;
+                    }, 0);
+
+                    return {
+                      cardField,
+                      cardFieldIndex,
+                      fieldTargetId,
+                      nestedCommentCount,
+                    };
+                  })
+                  .filter(
+                    ({ cardField, nestedCommentCount }) =>
+                      cardField.form || nestedCommentCount > 0,
+                  );
+
+                const blockTargetId = getCardReviewTargetId({
+                  cardIndex: index,
+                  cardId: selectedCard.cardId,
+
+                  cardBlockIndex,
+                  cardBlockId: block.block_id,
+                });
+
+                const hasDirectBlockComments =
+                  getExactCommentCount(blockTargetId) > 0;
+
+                return {
+                  block,
+                  cardBlockIndex,
+                  blockTargetId,
+                  hasDirectBlockComments,
+                  fields,
+                };
+              })
+              .filter(
+                ({ fields, hasDirectBlockComments }) =>
+                  fields.length > 0 || hasDirectBlockComments,
+              );
+
+            const totalVisibleFields = cardBlocksToRender.reduce(
+              (total, blockEntry) => total + blockEntry.fields.length,
+              0,
+            );
 
             return (
               <div
                 key={`${selectedCard.cardId}-${index}`}
-                className="border border-gray-200 rounded-lg overflow-hidden bg-white"
+                className={[
+                  "overflow-hidden rounded-lg bg-white transition-all",
+                  hasDirectCardComments
+                    ? "border-2 border-amber-400 shadow-sm"
+                    : "border border-gray-200",
+                ].join(" ")}
               >
                 {/* Header de la card */}
                 <div className="flex items-center justify-between p-4 bg-gray-50 border-b">
                   <button
                     type="button"
                     onClick={() => toggleCardExpanded(index)}
-                    disabled={disabled || formFields.length === 0}
+                    disabled={disabled || totalVisibleFields === 0}
                     className="flex items-center gap-3 flex-1 text-left disabled:cursor-default"
                   >
                     <div className="flex items-center justify-center w-8 h-8 bg-[#606c38]/20 rounded-full text-[#606c38] font-semibold text-sm">
@@ -661,16 +869,31 @@ export function CardFieldInput({
                       <p className="font-medium text-[#283618]">
                         {selectedCard.card.card_name}
                       </p>
-                      {formFields.length > 0 && (
+                      {totalVisibleFields > 0 && (
                         <p className="text-xs text-[#283618]/60">
-                          {t("fieldsToComplete", { count: formFields.length })}
+                          {t("fieldsToComplete", { count: totalVisibleFields })}
                         </p>
                       )}
                     </div>
                   </button>
+                  {totalCardComments > 0 && (
+                    <span
+                      className="
+                        inline-flex items-center gap-1 rounded-full
+                        bg-amber-500 px-2 py-0.5
+                        text-xs font-semibold text-white shadow-sm
+                      "
+                      title={`${totalCardComments} comentario${
+                        totalCardComments === 1 ? "" : "s"
+                      } dentro de esta card`}
+                    >
+                      <MessageCircle className="h-3.5 w-3.5" />
+                      {totalCardComments}
+                    </span>
+                  )}
 
                   <div className="flex items-center gap-2">
-                    {formFields.length > 0 && (
+                    {totalVisibleFields > 0 && (
                       <button
                         type="button"
                         onClick={() => toggleCardExpanded(index)}
@@ -696,36 +919,131 @@ export function CardFieldInput({
                 </div>
 
                 {/* Campos del form de la card */}
-                {isExpanded && formFields.length > 0 && (
-                  <div className="p-4 space-y-4">
-                    {formFields.map((cardField) => (
-                      <div key={cardField.field_id}>
-                        <label className="block text-sm font-medium text-[#283618] mb-1">
-                          {cardField.label || cardField.display_name}
-                        </label>
-                        {renderCardField(
-                          cardField,
-                          index,
-                          selectedCard.fieldValues[cardField.field_id],
-                          (newValue) =>
-                            handleFieldChange(
-                              index,
-                              cardField.field_id,
-                              newValue,
-                            ),
-                        )}
-                        {cardField.description && (
-                          <p className="text-xs text-[#283618]/60 mt-1">
-                            {cardField.description}
-                          </p>
-                        )}
-                      </div>
-                    ))}
+                {isExpanded && cardBlocksToRender.length > 0 && (
+                  <div className="space-y-4 p-4">
+                    {cardBlocksToRender.map(
+                      ({ block, cardBlockIndex, blockTargetId, fields }) => {
+                        const directBlockComments =
+                          getExactComments(blockTargetId);
+
+                        const hasDirectBlockComments = Boolean(
+                          directBlockComments?.length,
+                        );
+
+                        return (
+                          <div
+                            key={`${selectedCard.cardId}-block-${cardBlockIndex}`}
+                            className={[
+                              "relative rounded-lg p-3 transition-all",
+                              hasDirectBlockComments
+                                ? "border-2 border-amber-400 bg-amber-50/40"
+                                : "border border-gray-100",
+                            ].join(" ")}
+                          >
+                            {(block.display_name || hasDirectBlockComments) && (
+                              <div className="mb-3 flex items-center justify-between gap-3">
+                                <p className="text-sm font-semibold text-[#283618]">
+                                  {block.display_name ||
+                                    `Bloque ${cardBlockIndex + 1}`}
+                                </p>
+
+                                {renderTargetCommentBadge(
+                                  blockTargetId,
+                                  "este bloque",
+                                )}
+                              </div>
+                            )}
+
+                            <div className="space-y-4">
+                              {fields.map(
+                                ({
+                                  cardField,
+                                  cardFieldIndex,
+                                  fieldTargetId,
+                                }) => {
+                                  const directFieldComments =
+                                    getExactComments(fieldTargetId);
+
+                                  const hasDirectFieldComments = Boolean(
+                                    directFieldComments?.length,
+                                  );
+
+                                  const reviewTargetContext: CardListReviewContext =
+                                    {
+                                      parentFieldId: field?.field_id || "",
+
+                                      cardIndex: index,
+                                      cardId: selectedCard.cardId,
+
+                                      cardBlockIndex,
+                                      cardBlockId: block.block_id,
+
+                                      cardFieldIndex,
+                                      cardFieldId: cardField.field_id,
+                                    };
+
+                                  return (
+                                    <div
+                                      key={`${selectedCard.cardId}-${cardBlockIndex}-${cardFieldIndex}`}
+                                      className={[
+                                        "relative rounded-lg p-3 transition-all",
+                                        hasDirectFieldComments
+                                          ? "border-2 border-amber-400 bg-amber-50/60 shadow-sm"
+                                          : "border-2 border-transparent",
+                                      ].join(" ")}
+                                    >
+                                      <div className="mb-1 flex items-center justify-between gap-3">
+                                        <label className="block text-sm font-medium text-[#283618]">
+                                          {cardField.label ||
+                                            cardField.display_name ||
+                                            `Campo ${cardFieldIndex + 1}`}
+                                        </label>
+
+                                        {renderTargetCommentBadge(
+                                          fieldTargetId,
+                                          "este campo",
+                                        )}
+                                      </div>
+
+                                      {renderCardField(
+                                        cardField,
+                                        index,
+                                        selectedCard.fieldValues[
+                                          cardField.field_id
+                                        ] ?? cardField.value,
+                                        (newValue) =>
+                                          handleFieldChange(
+                                            index,
+                                            cardField.field_id,
+                                            newValue,
+                                          ),
+                                        reviewTargetContext,
+                                      )}
+
+                                      {renderComments?.(directFieldComments)}
+
+                                      {cardField.description && (
+                                        <p className="mt-1 text-xs text-[#283618]/60">
+                                          {cardField.description}
+                                        </p>
+                                      )}
+                                    </div>
+                                  );
+                                },
+                              )}
+                            </div>
+
+                            {/* Comentarios dirigidos directamente al bloque */}
+                            {renderComments?.(directBlockComments)}
+                          </div>
+                        );
+                      },
+                    )}
                   </div>
                 )}
 
                 {/* Mensaje cuando no hay campos de formulario */}
-                {formFields.length === 0 && (
+                {totalVisibleFields === 0 && (
                   <div className="p-4 text-sm text-[#283618]/60 italic">
                     {t("noFieldsToComplete")}
                   </div>
