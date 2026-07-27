@@ -203,8 +203,6 @@ export default function ReviewBulletinPage() {
 
   const tReview = useTranslations("Review");
 
-  const [isRedirecting, setIsRedirecting] = useState(false);
-
   const mappedComments = useMemo(() => {
     if (!bulletin || !comments.length) {
       return comments;
@@ -784,10 +782,6 @@ export default function ReviewBulletinPage() {
     loadComments();
   }, [bulletinId]);
 
-  useEffect(() => {
-    router.prefetch("/reviews");
-  }, [router]);
-
   // SEO: Actualizar metadatos cuando se carga el boletín
   useEffect(() => {
     if (!bulletin?.master?.bulletin_name) {
@@ -1018,9 +1012,9 @@ export default function ReviewBulletinPage() {
     try {
       await ReviewService.rejectBulletin(bulletinId);
 
-      setIsRedirecting(true);
       showToast(t("rejectSuccess"), "success");
-      router.replace("/reviews");
+
+      router.push("/reviews");
     } catch (error: any) {
       console.error("Error rejecting bulletin:", error);
 
@@ -1029,7 +1023,7 @@ export default function ReviewBulletinPage() {
           "Ocurrió un error al intentar rechazar el boletín. Asegúrate de haber dejado al menos un comentario.",
         "error",
       );
-
+    } finally {
       setIsRejecting(false);
     }
   };
@@ -1505,20 +1499,6 @@ export default function ReviewBulletinPage() {
         <Link href="/reviews" className={btnPrimary}>
           {t("back")}
         </Link>
-      </div>
-    );
-  }
-
-  if (isRedirecting) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-100">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-8 w-8 animate-spin text-[#bc6c25]" />
-
-          <p className="text-sm font-medium text-gray-600">
-            Regresando a revisiones...
-          </p>
-        </div>
       </div>
     );
   }
