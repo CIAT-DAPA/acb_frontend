@@ -174,6 +174,7 @@ export default function ReviewBulletinPage() {
   const tCommon = useTranslations("Common");
   const locale = useLocale();
   const bulletinId = params.id as string;
+  const reviewsPath = `/${locale}/reviews`;
 
   const [bulletin, setBulletin] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -1014,7 +1015,9 @@ export default function ReviewBulletinPage() {
 
       showToast(t("rejectSuccess"), "success");
 
-      router.push("/reviews");
+      // Use the locale-aware route and replace the invalid detail URL.
+      router.replace(reviewsPath);
+      router.refresh();
     } catch (error: any) {
       console.error("Error rejecting bulletin:", error);
 
@@ -1496,7 +1499,7 @@ export default function ReviewBulletinPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <p className="text-red-500 mb-4">{error || "No data found"}</p>
-        <Link href="/reviews" className={btnPrimary}>
+        <Link href={reviewsPath} className={btnPrimary}>
           {t("back")}
         </Link>
       </div>
@@ -1509,7 +1512,7 @@ export default function ReviewBulletinPage() {
       <div className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 z-10 shadow-sm shrink-0">
         <div className="flex items-center gap-4 flex-1">
           <Link
-            href="/reviews"
+            href={reviewsPath}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600 flex items-center gap-2"
           >
             <ArrowLeft className="h-5 w-5" />
