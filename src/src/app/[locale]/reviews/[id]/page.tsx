@@ -1016,8 +1016,7 @@ export default function ReviewBulletinPage() {
       showToast(t("rejectSuccess"), "success");
 
       // Use the locale-aware route and replace the invalid detail URL.
-      router.replace(reviewsPath);
-      router.refresh();
+      window.location.replace(reviewsPath);
     } catch (error: any) {
       console.error("Error rejecting bulletin:", error);
 
