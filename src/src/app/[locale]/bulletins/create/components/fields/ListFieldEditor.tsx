@@ -8,6 +8,7 @@ import {
   ChevronUp,
   Upload,
   HelpCircle,
+  MessageCircle,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
@@ -814,23 +815,63 @@ export function ListFieldEditor({
 
       <div className="space-y-3">
         {value.map((item, itemIndex) => {
+          /*
+           * Este ID representa el ítem completo.
+           * Solo se utiliza para comentarios hechos directamente al ítem.
+           */
           const itemTargetId = getItemTargetId(itemIndex);
 
           const itemComments = itemTargetId
             ? commentsByTarget[itemTargetId]
             : undefined;
 
+          const hasItemComments = Boolean(itemComments?.length);
+
+          const nestedItemCommentCount = Object.keys(itemSchema).reduce(
+            (total, itemFieldId) => {
+              const subfieldTargetId = getSubfieldTargetId(
+                itemIndex,
+                itemFieldId,
+              );
+
+              if (!subfieldTargetId) {
+                return total;
+              }
+
+              return total + (commentsByTarget[subfieldTargetId]?.length || 0);
+            },
+            0,
+          );
+
+          const directItemCommentCount = itemComments?.length || 0;
+
+          const totalItemCommentCount =
+            directItemCommentCount + nestedItemCommentCount;
+
+          const hasAnyItemComments = totalItemCommentCount > 0;
+
           return (
             <div
-              key={itemIndex}
-              className="border border-gray-300 rounded-lg overflow-hidden"
+              key={itemTargetId || itemIndex}
+              id={itemTargetId ? `review-target-${itemTargetId}` : undefined}
+              className={[
+                "overflow-hidden rounded-lg transition-all duration-200",
+                hasItemComments
+                  ? "border-2 border-amber-400 bg-amber-50/60 shadow-sm"
+                  : "border border-gray-300",
+              ].join(" ")}
             >
               {/* Header del ítem */}
-              <div className="flex items-center justify-between bg-gray-50 px-4 py-2">
+              <div
+                className={[
+                  "flex items-center justify-between px-4 py-2 transition-colors",
+                  hasAnyItemComments ? "bg-amber-50" : "bg-gray-50",
+                ].join(" ")}
+              >
                 <button
                   type="button"
                   onClick={() => toggleExpand(itemIndex)}
-                  className="flex items-center gap-2 text-sm font-medium text-[#283618] hover:text-[#606c38] transition-colors"
+                  className="flex items-center gap-2 text-sm font-medium text-[#283618] transition-colors hover:text-[#606c38]"
                 >
                   {expandedItems.has(itemIndex) ? (
                     <ChevronUp size={16} />
@@ -843,29 +884,42 @@ export function ListFieldEditor({
                   })}
                 </button>
 
-                {!readOnly && (
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveItem(itemIndex)}
-                    disabled={value.length <= minItems}
-                    className="text-red-600 hover:text-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    title={t("removeItem")}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                )}
+                <div className="flex items-center gap-2">
+                  {hasAnyItemComments && (
+                    <span
+                      className="inline-flex items-center gap-1 rounded-full bg-amber-500 px-2 py-0.5 text-xs font-semibold text-white shadow-sm"
+                      title={`${totalItemCommentCount} comentario${
+                        totalItemCommentCount === 1 ? "" : "s"
+                      } dentro de este ítem`}
+                    >
+                      <MessageCircle className="h-3.5 w-3.5" />
+                      {totalItemCommentCount}
+                    </span>
+                  )}
+
+                  {!readOnly && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveItem(itemIndex)}
+                      disabled={value.length <= minItems}
+                      className="text-red-600 transition-colors hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      title={t("removeItem")}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
+                </div>
               </div>
 
-              {/* Comentarios hechos sobre todo el ítem */}
-              {itemComments && itemComments.length > 0 && (
-                <div className="px-4 pb-3 bg-gray-50">
+              {hasItemComments && (
+                <div className="bg-amber-50 px-4 pb-3">
                   {renderComments?.(itemComments)}
                 </div>
               )}
 
               {/* Campos internos del ítem */}
               {expandedItems.has(itemIndex) && (
-                <div className="p-4 space-y-3 bg-white">
+                <div className="space-y-3 bg-white p-4">
                   {Object.entries(itemSchema).map(
                     ([itemFieldId, fieldDef]: [string, any]) => {
                       const subfieldTargetId = getSubfieldTargetId(
@@ -897,19 +951,48 @@ export function ListFieldEditor({
                         item?.[itemFieldId] ?? fieldDef.value;
 
                       return (
-                        <div key={itemFieldId}>
-                          <label className="block text-sm font-medium text-[#283618] mb-1">
-                            {fieldDef.display_name ||
-                              fieldDef.label ||
-                              itemFieldId}
+                        <div
+                          key={itemFieldId}
+                          id={
+                            subfieldTargetId
+                              ? `review-target-${subfieldTargetId}`
+                              : undefined
+                          }
+                          className={[
+                            "relative rounded-lg p-3 transition-all duration-200",
+                            hasSubfieldComments
+                              ? "border-2 border-amber-400 bg-amber-50/60 shadow-sm"
+                              : "border-2 border-transparent",
+                          ].join(" ")}
+                        >
+                          <div className="mb-2 flex items-center justify-between gap-3">
+                            <label className="text-sm font-medium text-[#283618]">
+                              {fieldDef.display_name ||
+                                fieldDef.label ||
+                                itemFieldId}
 
-                            {fieldDef.validation?.required && !readOnly && (
-                              <span className="text-red-500 ml-1">*</span>
+                              {fieldDef.validation?.required && !readOnly && (
+                                <span className="ml-1 text-red-500">*</span>
+                              )}
+                            </label>
+
+                            {hasSubfieldComments && (
+                              <span
+                                className="inline-flex items-center gap-1 rounded-full bg-amber-500 px-2 py-0.5 text-xs font-semibold text-white shadow-sm"
+                                title={`${
+                                  subfieldComments?.length || 0
+                                } comentario${
+                                  subfieldComments?.length === 1 ? "" : "s"
+                                } en este campo`}
+                              >
+                                <MessageCircle className="h-3.5 w-3.5" />
+                                {subfieldComments?.length}
+                              </span>
                             )}
-                          </label>
+                          </div>
 
                           {readOnly || fieldDef.form === false ? (
-                            <div className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 whitespace-pre-wrap">
+                            <div className="whitespace-pre-wrap rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
                               {formatReadOnlyValue(currentValue)}
                             </div>
                           ) : (
@@ -919,13 +1002,13 @@ export function ListFieldEditor({
                           {renderComments?.(subfieldComments)}
 
                           {fieldDef.description && (
-                            <p className="text-xs text-[#606c38] mt-1">
+                            <p className="mt-1 text-xs text-[#606c38]">
                               {fieldDef.description}
                             </p>
                           )}
 
                           {!readOnly && fieldDef.validation?.max_length && (
-                            <p className="text-xs text-[#606c38] mt-1">
+                            <p className="mt-1 text-xs text-[#606c38]">
                               {t("maxCharacters", {
                                 max: fieldDef.validation.max_length,
                               })}

@@ -23,6 +23,7 @@ import {
   ImageUploadInput,
   MoonCalendarInput,
 } from "../components/fields";
+import { MessageCircle } from "lucide-react";
 
 interface SectionStepProps {
   bulletinData: CreateBulletinData;
@@ -521,6 +522,82 @@ export function SectionStep({
     );
   };
 
+  const getDirectFieldCommentCount = (fieldId?: string): number => {
+    if (!fieldId) return 0;
+
+    // Solo comentarios dirigidos exactamente al campo.
+    // No incluye comentarios de ítems internos.
+    return fieldComments[fieldId]?.length || 0;
+  };
+
+  const getFieldContainerClassName = (fieldId?: string): string => {
+    const hasDirectComments = getDirectFieldCommentCount(fieldId) > 0;
+
+    return [
+      "relative rounded-lg p-3 transition-all duration-200",
+      hasDirectComments
+        ? "border-2 border-amber-400 bg-amber-50/60 shadow-sm"
+        : "border-2 border-transparent",
+    ].join(" ");
+  };
+
+  const renderFieldCommentBadge = (fieldId?: string) => {
+    const count = getDirectFieldCommentCount(fieldId);
+
+    if (count === 0) return null;
+
+    return (
+      <span
+        className="
+        inline-flex items-center gap-1 rounded-full
+        bg-amber-500 px-2 py-0.5
+        text-xs font-semibold text-white shadow-sm
+      "
+        title={`${count} comentario${count === 1 ? "" : "s"} en este campo`}
+      >
+        <MessageCircle className="h-3.5 w-3.5" />
+        {count}
+      </span>
+    );
+  };
+
+  const getBlockCommentCount = (blockId?: string): number => {
+    if (!blockId) return 0;
+
+    return blockComments[blockId]?.length || 0;
+  };
+
+  const getBlockContainerClassName = (blockId?: string): string => {
+    const hasComments = getBlockCommentCount(blockId) > 0;
+
+    return [
+      "border-t pt-4 rounded-lg transition-all duration-200",
+      hasComments
+        ? "border-2 border-amber-400 bg-amber-50/60 p-4 shadow-sm"
+        : "",
+    ].join(" ");
+  };
+
+  const renderBlockCommentBadge = (blockId?: string) => {
+    const count = getBlockCommentCount(blockId);
+
+    if (count === 0) return null;
+
+    return (
+      <span
+        className="
+        inline-flex items-center gap-1 rounded-full
+        bg-amber-500 px-2 py-0.5
+        text-xs font-semibold text-white shadow-sm
+      "
+        title={`${count} comentario${count === 1 ? "" : "s"} en este bloque`}
+      >
+        <MessageCircle className="h-3.5 w-3.5" />
+        {count}
+      </span>
+    );
+  };
+
   const renderFieldByType = (field: Field, onChange: (value: any) => void) => {
     if (!field.form) return null;
 
@@ -776,19 +853,31 @@ export function SectionStep({
             </h4>
             <div className="space-y-4">
               {sectionToRender.header_config.fields.map((field, fieldIndex) => {
-                const hasFieldComments = Boolean(
+                const hasAnyFieldComments = Boolean(
                   fieldAllComments[field.field_id]?.length,
                 );
 
-                if (!field.form && !hasFieldComments) {
+                const hasDirectFieldComments = Boolean(
+                  fieldComments[field.field_id]?.length,
+                );
+
+                if (!field.form && !hasAnyFieldComments) {
                   return null;
                 }
 
                 return (
-                  <div key={field.field_id}>
-                    <label className="block text-sm font-medium text-[#283618] mb-1">
-                      {field.display_name || field.label || "Campo"}
-                    </label>
+                  <div
+                    key={field.field_id}
+                    id={`field-${field.field_id}`}
+                    className={getFieldContainerClassName(field.field_id)}
+                  >
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <label className="text-sm font-medium text-[#283618]">
+                        {field.display_name || field.label || "Campo"}
+                      </label>
+
+                      {renderFieldCommentBadge(field.field_id)}
+                    </div>
 
                     {field.form
                       ? renderHeaderField(field, fieldIndex)
@@ -797,7 +886,7 @@ export function SectionStep({
                     {renderComments(fieldComments[field.field_id])}
 
                     {field.description && (
-                      <p className="text-xs text-[#606c38] mt-1">
+                      <p className="mt-1 text-xs text-[#606c38]">
                         {field.description}
                       </p>
                     )}
@@ -823,34 +912,57 @@ export function SectionStep({
         }
 
         return (
-          <div key={block.block_id} className="border-t pt-4">
-            <h4 className="text-md font-semibold text-[#283618] mb-4">
-              {block.display_name}
-            </h4>
+          <div
+            key={block.block_id}
+            id={`block-${block.block_id}`}
+            className={getBlockContainerClassName(block.block_id)}
+          >
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h4 className="text-md font-semibold text-[#283618]">
+                {block.display_name}
+              </h4>
+
+              {renderBlockCommentBadge(block.block_id)}
+            </div>
 
             {renderComments(blockComments[block.block_id])}
             <div className="space-y-4">
               {block.fields.map((field, fieldIndex) => {
-                const hasFieldComments = Boolean(
+                const hasAnyFieldComments = Boolean(
                   fieldAllComments[field.field_id]?.length,
                 );
 
-                if (!field.form && !hasFieldComments) {
+                const hasDirectFieldComments = Boolean(
+                  fieldComments[field.field_id]?.length,
+                );
+
+                if (!field.form && !hasAnyFieldComments) {
                   return null;
                 }
 
                 return (
-                  <div key={field.field_id}>
-                    <label className="block text-sm font-medium text-[#283618] mb-1">
-                      {field.display_name}
-                    </label>
+                  <div
+                    key={field.field_id}
+                    id={`field-${field.field_id}`}
+                    className={getFieldContainerClassName(field.field_id)}
+                  >
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <label className="text-sm font-medium text-[#283618]">
+                        {field.display_name || field.label || "Campo"}
+                      </label>
+
+                      {renderFieldCommentBadge(field.field_id)}
+                    </div>
+
                     {field.form
                       ? renderField(field, blockIndex, fieldIndex)
                       : renderReadOnlyField(field)}
+
+                    {/* Comentarios hechos directamente al campo padre */}
                     {renderComments(fieldComments[field.field_id])}
 
                     {field.description && (
-                      <p className="text-xs text-[#606c38] mt-1">
+                      <p className="mt-1 text-xs text-[#606c38]">
                         {field.description}
                       </p>
                     )}
@@ -874,19 +986,31 @@ export function SectionStep({
             </h4>
             <div className="space-y-4">
               {sectionToRender.footer_config.fields.map((field, fieldIndex) => {
-                const hasFieldComments = Boolean(
+                const hasAnyFieldComments = Boolean(
                   fieldAllComments[field.field_id]?.length,
                 );
 
-                if (!field.form && !hasFieldComments) {
+                const hasDirectFieldComments = Boolean(
+                  fieldComments[field.field_id]?.length,
+                );
+
+                if (!field.form && !hasAnyFieldComments) {
                   return null;
                 }
 
                 return (
-                  <div key={field.field_id}>
-                    <label className="block text-sm font-medium text-[#283618] mb-1">
-                      {field.display_name || field.label || "Campo"}
-                    </label>
+                  <div
+                    key={field.field_id}
+                    id={`field-${field.field_id}`}
+                    className={getFieldContainerClassName(field.field_id)}
+                  >
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <label className="text-sm font-medium text-[#283618]">
+                        {field.display_name || field.label || "Campo"}
+                      </label>
+
+                      {renderFieldCommentBadge(field.field_id)}
+                    </div>
 
                     {field.form
                       ? renderFooterField(field, fieldIndex)
@@ -895,7 +1019,7 @@ export function SectionStep({
                     {renderComments(fieldComments[field.field_id])}
 
                     {field.description && (
-                      <p className="text-xs text-[#606c38] mt-1">
+                      <p className="mt-1 text-xs text-[#606c38]">
                         {field.description}
                       </p>
                     )}
