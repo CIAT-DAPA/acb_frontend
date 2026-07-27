@@ -70,9 +70,22 @@ export default function ReviewsPage() {
       if (response.success) {
         console.log("Fetched bulletins for review:", response);
         // Filter only bulletins in review or pending_review
-        const reviewBulletins = response.data.filter((b) =>
-          ["pending_review", "review"].includes(b.status),
-        );
+        const reviewBulletins = response.data
+          .filter((bulletin) =>
+            ["pending_review", "review"].includes(bulletin.status),
+          )
+          .sort((bulletinA, bulletinB) => {
+            const dateA = new Date(
+              bulletinA.log.updated_at || bulletinA.log.created_at || 0,
+            ).getTime();
+
+            const dateB = new Date(
+              bulletinB.log.updated_at || bulletinB.log.created_at || 0,
+            ).getTime();
+
+            // Más reciente primero
+            return dateB - dateA;
+          });
 
         setBulletins(reviewBulletins);
         setFilteredBulletins(reviewBulletins);
@@ -241,9 +254,7 @@ export default function ReviewsPage() {
           {/* Empty State */}
           {!loading && !error && filteredBulletins.length === 0 && (
             <div className="text-center py-12">
-              <p className="text-[#283618]/60 mb-4">
-                {t("reviewsNotFound")}
-              </p>
+              <p className="text-[#283618]/60 mb-4">{t("reviewsNotFound")}</p>
             </div>
           )}
         </div>

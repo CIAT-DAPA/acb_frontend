@@ -48,6 +48,7 @@ interface UnifiedBulletinPreviewProps {
   resolvedSectionPageCounts?: number[];
   reviewMode?: boolean;
   allowListItemSelection?: boolean;
+  allowCardElementSelection?: boolean;
   onElementClick?: (
     type: ElementClickType,
     id: string,
@@ -89,6 +90,7 @@ export function UnifiedBulletinPreview({
   commentCounts,
   cardEmptyStateMode = "first-available",
   allowListSubfieldEditing = false,
+  allowCardElementSelection = false,
 }: UnifiedBulletinPreviewProps) {
   if (variant === "full-scroll") {
     return (
@@ -129,6 +131,7 @@ export function UnifiedBulletinPreview({
         reviewMode={reviewMode}
         allowListItemSelection={allowListItemSelection}
         allowListSubfieldEditing={allowListSubfieldEditing}
+        allowCardElementSelection={allowCardElementSelection}
         onElementClick={onElementClick}
         selectedElementId={selectedElementId}
         commentCounts={commentCounts}

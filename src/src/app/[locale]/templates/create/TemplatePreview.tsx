@@ -1127,6 +1127,7 @@ interface TemplatePreviewProps {
   cardEmptyStateMode?: "first-available" | "select-card";
   allowListItemSelection?: boolean;
   allowListSubfieldEditing?: boolean;
+  allowCardElementSelection?: boolean;
 }
 
 // Constantes para estilos repetidos
@@ -1160,6 +1161,7 @@ export function TemplatePreview({
   renderForPrint = false,
   cardEmptyStateMode = "first-available",
   allowListSubfieldEditing = false,
+  allowCardElementSelection = false,
 }: TemplatePreviewProps) {
   const t = useTranslations("CreateTemplate.preview");
   const pathname = usePathname();
@@ -1227,7 +1229,8 @@ export function TemplatePreview({
   const canSelectListItems =
     reviewMode && allowListItemSelection && Boolean(onElementClick);
 
-  const canSelectCardElements = reviewMode && Boolean(onElementClick);
+  const canSelectCardElements =
+    reviewMode && allowCardElementSelection && Boolean(onElementClick);
 
   const canEditListSubfields =
     reviewMode && allowListSubfieldEditing && Boolean(onElementClick);
@@ -3214,7 +3217,9 @@ export function TemplatePreview({
                             block.style_config,
                             (block as any).layout || "vertical",
                             undefined,
-                            cardFieldReviewId,
+                            canSelectCardElements
+                              ? cardFieldReviewId
+                              : undefined,
                           );
 
                           if (!canSelectCardElements || !cardFieldReviewId) {

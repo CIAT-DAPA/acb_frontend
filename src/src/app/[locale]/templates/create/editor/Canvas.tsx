@@ -428,6 +428,24 @@ export const Canvas: React.FC<CanvasProps> = ({
     };
 
     if (interactionMode === "edit") {
+      const nestedCardMatch = id.match(/^field-(\d+)-(\d+)-(\d+)-card-/);
+
+      if (nestedCardMatch) {
+        const sectionIndex = Number(nestedCardMatch[1]);
+        const blockIndex = Number(nestedCardMatch[2]);
+        const fieldIndex = Number(nestedCardMatch[3]);
+
+        select({
+          type: "field",
+          id: `field-${sectionIndex}` + `-${blockIndex}` + `-${fieldIndex}`,
+          sectionIndex,
+          blockIndex,
+          fieldIndex,
+          schemaKey: undefined,
+        });
+
+        return;
+      }
       const listSubfieldMatch = id.match(
         /^field-(\d+)-(\d+)-(\d+)-item-(\d+)-subfield-(.+)$/,
       );
@@ -848,6 +866,7 @@ export const Canvas: React.FC<CanvasProps> = ({
                 reviewMode={true}
                 allowListItemSelection={isReviewInteraction}
                 allowListSubfieldEditing={interactionMode === "edit"}
+                allowCardElementSelection={isReviewInteraction}
                 onElementClick={handleElementClick}
                 selectedSectionIndex={0}
                 selectedElementId={selection.id}
@@ -893,6 +912,7 @@ export const Canvas: React.FC<CanvasProps> = ({
                           reviewMode={true}
                           allowListItemSelection={isReviewInteraction}
                           allowListSubfieldEditing={interactionMode === "edit"}
+                          allowCardElementSelection={isReviewInteraction}
                           onElementClick={handleElementClick}
                           selectedSectionIndex={index}
                           currentResolvedPageIndex={
