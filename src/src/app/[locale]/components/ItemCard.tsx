@@ -111,6 +111,15 @@ export default function ItemCard(props: ItemCardProps) {
   const ICON_CLASS = "h-4 w-4 text-white";
   const IMAGE_FALLBACK = "/assets/img/imageNotFound.png";
 
+  const hasActions = Boolean(
+    (props.previewBtn && props.onPreview) ||
+    (props.editBtn && props.onEdit) ||
+    (props.downloadBtn && props.onDownload) ||
+    (props.duplicateBtn && props.onDuplicate) ||
+    (props.shareBtn && props.onShare) ||
+    (props.deleteBtn && props.onDelete),
+  );
+
   const getSafeImageUrl = (url?: string) => {
     if (!url) return undefined;
     return normalizeAssetUrl(url);
@@ -311,9 +320,11 @@ export default function ItemCard(props: ItemCardProps) {
           )}
 
           {/* Overlay con acciones */}
-          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-            {renderActionButtons()}
-          </div>
+          {hasActions && (
+            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+              {renderActionButtons()}
+            </div>
+          )}
         </div>
 
         {/* Info para templates más compacta */}
@@ -375,9 +386,11 @@ export default function ItemCard(props: ItemCardProps) {
           onError={handleImageError}
         />
         {/* Overlay con acciones */}
-        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-          {renderActionButtons()}
-        </div>
+        {hasActions && (
+          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+            {renderActionButtons()}
+          </div>
+        )}
       </div>
 
       {/* Info para visual resources */}
