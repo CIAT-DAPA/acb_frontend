@@ -7,7 +7,6 @@ import Image from "next/image";
 import {
   Loader2,
   Plus,
-  Search,
   Check,
   Copy,
   FileStack,
@@ -34,17 +33,11 @@ import {
   container,
   pageSubtitle,
   pageTitle,
-  searchField,
 } from "../components/ui";
-
-const BULLETIN_STATUS_FILTERS: BulletinStatus[] = [
-  "draft",
-  "pending_review",
-  "review",
-  "rejected",
-  "published",
-  "archived",
-];
+import {
+  BulletinFilters,
+  BULLETIN_STATUS_FILTERS,
+} from "../components/BulletinFilters";
 
 export default function Bulletins() {
   const t = useTranslations("Bulletins");
@@ -432,47 +425,13 @@ export default function Bulletins() {
               </div>
             )}
 
-            {/* Search Bar */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#283618]/50" />
-              <input
-                type="text"
-                placeholder={t("searchPlaceholder")}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className={searchField}
-              />
-            </div>
-
-            {/* Filtro por estado */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-2">
-              <span className="text-sm font-medium text-[#283618] whitespace-nowrap">
-                {t("filterByStatus")}:
-              </span>
-              <button
-                onClick={() => setSelectedStatus("all")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap cursor-pointer ${
-                  selectedStatus === "all"
-                    ? "bg-[#606c38] text-white"
-                    : "bg-white text-[#283618] border border-gray-200 hover:bg-gray-50"
-                }`}
-              >
-                {t("allStatuses")}
-              </button>
-              {BULLETIN_STATUS_FILTERS.map((status) => (
-                <button
-                  key={status}
-                  onClick={() => setSelectedStatus(status)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap cursor-pointer ${
-                    selectedStatus === status
-                      ? "bg-[#606c38] text-white"
-                      : "bg-white text-[#283618] border border-gray-200 hover:bg-gray-50"
-                  }`}
-                >
-                  {t(`status.${status}`)}
-                </button>
-              ))}
-            </div>
+            <BulletinFilters
+              searchTerm={searchTerm}
+              onSearchTermChange={setSearchTerm}
+              selectedStatus={selectedStatus}
+              onStatusChange={setSelectedStatus}
+              statusOptions={BULLETIN_STATUS_FILTERS}
+            />
 
             {filteredBulletins.some(
               (bulletin) => bulletin.status === "rejected",

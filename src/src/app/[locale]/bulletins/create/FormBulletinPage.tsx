@@ -355,10 +355,20 @@ export default function FormBulletinPage({
   const [confirmationAction, setConfirmationAction] = useState<
     "review" | "publish" | null
   >(null);
+  const [persistedBulletinId, setPersistedBulletinId] = useState<string | null>(
+    bulletinId ?? null,
+  );
+  const [showDraftSavedModal, setShowDraftSavedModal] = useState(false);
   const [publishedBulletinId, setPublishedBulletinId] = useState<string | null>(
     null,
   );
   const [urlCopied, setUrlCopied] = useState(false);
+
+  useEffect(() => {
+    if (bulletinId) {
+      setPersistedBulletinId(bulletinId);
+    }
+  }, [bulletinId]);
 
   // Estado para guardar el name_machine del template (para generar URLs amigables)
   const [templateNameMachine, setTemplateNameMachine] = useState<string>("");
@@ -1143,7 +1153,7 @@ export default function FormBulletinPage({
       // Codificar los campos de texto antes de guardar
       const encodedData = encodeTextFields(creationState.data);
 
-      if (isEditMode && bulletinId) {
+      if (persistedBulletinId) {
         // MODO EDICIÓN: Actualizar bulletin existente
         const { log: masterLog, ...masterDataWithoutLog } = encodedData.master;
 
@@ -1159,7 +1169,7 @@ export default function FormBulletinPage({
 
         // 1. Actualizar bulletin master
         const masterResponse = await BulletinAPIService.updateBulletin(
-          bulletinId,
+          persistedBulletinId,
           updateDataPayload,
         );
 
@@ -1179,7 +1189,7 @@ export default function FormBulletinPage({
 
         // 2. Crear nueva versión del boletín
         const versionResponse = await BulletinAPIService.createBulletinVersion(
-          bulletinId,
+          persistedBulletinId,
           versionDataClean as any,
         );
 
@@ -1206,6 +1216,7 @@ export default function FormBulletinPage({
 
         const newBulletinId =
           (masterResponse.data as any).id || masterResponse.data._id;
+        setPersistedBulletinId(newBulletinId);
 
         const { log: versionLog, ...versionDataWithoutLog } =
           encodedData.version;
@@ -1238,8 +1249,7 @@ export default function FormBulletinPage({
     showToast,
     t,
     router,
-    isEditMode,
-    bulletinId,
+    persistedBulletinId,
   ]);
 
   // Función para guardar como borrador
@@ -1260,7 +1270,7 @@ export default function FormBulletinPage({
       // Codificar los campos de texto antes de guardar
       const encodedData = encodeTextFields(draftData);
 
-      if (isEditMode && bulletinId) {
+      if (persistedBulletinId) {
         // MODO EDICIÓN: Actualizar el boletín existente
         const { log: masterLog, ...masterDataWithoutLog } = encodedData.master;
 
@@ -1277,7 +1287,7 @@ export default function FormBulletinPage({
 
         // 1. Actualizar bulletin master (sin status ni campos de sistema)
         const masterResponse = await BulletinAPIService.updateBulletin(
-          bulletinId,
+          persistedBulletinId,
           updateDataPayload,
         );
 
@@ -1297,7 +1307,7 @@ export default function FormBulletinPage({
 
         // 2. Crear nueva versión con los cambios
         const versionResponse = await BulletinAPIService.createBulletinVersion(
-          bulletinId,
+          persistedBulletinId,
           versionDataClean as any,
         );
 
@@ -1323,6 +1333,7 @@ export default function FormBulletinPage({
 
         const newBulletinId =
           (masterResponse.data as any).id || masterResponse.data._id;
+        setPersistedBulletinId(newBulletinId);
 
         const { log: versionLog, ...versionDataWithoutLog } =
           encodedData.version;
@@ -1341,22 +1352,23 @@ export default function FormBulletinPage({
         showToast(t("savedAsDraft") || t("success"), "success");
       }
 
-      router.push("/bulletins");
+      setShowDraftSavedModal(true);
     } catch (error) {
       console.error("Error saving draft:", error);
       showToast(error instanceof Error ? error.message : t("error"), "error");
     } finally {
       setIsLoading(false);
     }
-  }, [
-    isLoading,
-    creationState.data,
-    isEditMode,
-    bulletinId,
-    showToast,
-    t,
-    router,
-  ]);
+  }, [isLoading, creationState.data, persistedBulletinId, showToast, t]);
+
+  const handleContinueEditingDraft = useCallback(() => {
+    setShowDraftSavedModal(false);
+  }, []);
+
+  const handleReturnToBulletins = useCallback(() => {
+    setShowDraftSavedModal(false);
+    router.push("/bulletins");
+  }, [router]);
 
   // Función para enviar a revisión
   const handleSubmitForReview = useCallback(async () => {
@@ -1377,9 +1389,9 @@ export default function FormBulletinPage({
       // Codificar los campos de texto antes de guardar
       const encodedData = encodeTextFields(draftData);
 
-      let currentBulletinId = bulletinId;
+      let currentBulletinId = persistedBulletinId;
 
-      if (isEditMode && bulletinId) {
+      if (persistedBulletinId) {
         // MODO EDICIÓN: Actualizar el boletín existente
         const { log: masterLog, ...masterDataWithoutLog } = encodedData.master;
 
@@ -1396,7 +1408,7 @@ export default function FormBulletinPage({
 
         // Actualizar bulletin master
         const masterResponse = await BulletinAPIService.updateBulletin(
-          bulletinId,
+          persistedBulletinId,
           updateDataPayload,
         );
 
@@ -1416,7 +1428,7 @@ export default function FormBulletinPage({
 
         // Crear nueva versión con los cambios
         const versionResponse = await BulletinAPIService.createBulletinVersion(
-          bulletinId,
+          persistedBulletinId,
           versionDataClean as any,
         );
 
@@ -1450,6 +1462,7 @@ export default function FormBulletinPage({
         } = encodedData.version as any;
 
         if (currentBulletinId) {
+          setPersistedBulletinId(currentBulletinId);
           const versionResponse =
             await BulletinAPIService.createBulletinVersion(
               currentBulletinId,
@@ -1484,8 +1497,7 @@ export default function FormBulletinPage({
   }, [
     isLoading,
     creationState.data,
-    isEditMode,
-    bulletinId,
+    persistedBulletinId,
     showToast,
     t,
     router,
@@ -1595,9 +1607,9 @@ export default function FormBulletinPage({
       // Codificar los campos de texto antes de guardar
       const encodedData = encodeTextFields(finalizedData);
 
-      let currentBulletinId = bulletinId;
+      let currentBulletinId = persistedBulletinId;
 
-      if (isEditMode && bulletinId) {
+      if (persistedBulletinId) {
         // MODO EDICIÓN: Actualizar el boletín existente
         const { log: masterLog, ...masterDataWithoutLog } = encodedData.master;
 
@@ -1613,7 +1625,7 @@ export default function FormBulletinPage({
         } = masterDataWithoutLog as any;
 
         const masterResponse = await BulletinAPIService.updateBulletin(
-          bulletinId,
+          persistedBulletinId,
           updateDataPayload,
         );
 
@@ -1633,7 +1645,7 @@ export default function FormBulletinPage({
 
         // Crear nueva versión con los cambios
         const versionResponse = await BulletinAPIService.createBulletinVersion(
-          bulletinId,
+          persistedBulletinId,
           versionDataWithoutLog as any,
         );
 
@@ -1657,6 +1669,7 @@ export default function FormBulletinPage({
 
         const newBulletinId =
           (masterResponse.data as any).id || masterResponse.data._id;
+        setPersistedBulletinId(newBulletinId);
         currentBulletinId = newBulletinId;
 
         const {
@@ -1697,8 +1710,7 @@ export default function FormBulletinPage({
   }, [
     isLoading,
     creationState.data,
-    isEditMode,
-    bulletinId,
+    persistedBulletinId,
     showToast,
     t,
     extractImageUrls,
@@ -2095,6 +2107,17 @@ export default function FormBulletinPage({
         autoExport={true}
         exportConfig={EXPORT_CONFIG}
         sections={exportData?.version.content.sections || []}
+      />
+
+      <ConfirmationModal
+        isOpen={showDraftSavedModal}
+        onClose={handleContinueEditingDraft}
+        onConfirm={handleReturnToBulletins}
+        title={t("draftSavedModal.title")}
+        message={t("draftSavedModal.message")}
+        confirmLabel={t("draftSavedModal.backToBulletins")}
+        cancelLabel={t("draftSavedModal.continueEditing")}
+        isDangerous={false}
       />
 
       <ConfirmationModal
