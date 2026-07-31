@@ -399,6 +399,12 @@
         "confirm": "Có, xuất bản"
       }
     },
+    "draftSavedModal": {
+      "title": "Đã lưu bản nháp",
+      "message": "Bản tin đã được lưu thành công. Bạn muốn làm gì tiếp theo?",
+      "continueEditing": "Tiếp tục chỉnh sửa",
+      "backToBulletins": "Quay lại danh sách bản tin"
+    },
     "title": "Tạo bản tin",
     "subtitle": "Tạo bản tin thời tiết nông vụ mới bằng cách sử dụng biểu mẫu",
     "titleEdit": "Chỉnh sửa bản tin",

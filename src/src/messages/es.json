@@ -223,7 +223,7 @@
     "reviewsPageTitle": "Revisiones",
     "reviewsPageSubtitle": "Administra boletines pendientes de revisión",
     "reviewsNotFound": "No hay boletines pendientes de revisión",
-     "rejectedOpenNotice": "Cuando abras un boletín rechazado, se moverá automáticamente a la sección de borradores.",
+    "rejectedOpenNotice": "Cuando abras un boletín rechazado, se moverá automáticamente a la sección de borradores.",
     "searchPlaceholder": "Buscar boletines...",
     "filterByStatus": "Filtrar por estado",
     "allStatuses": "Todos los estados",
@@ -335,6 +335,12 @@
           }
         }
       }
+    },
+    "draftSavedModal": {
+      "title": "Borrador guardado",
+      "message": "El boletín se guardó correctamente. ¿Qué deseas hacer ahora?",
+      "continueEditing": "Continuar editando",
+      "backToBulletins": "Volver a boletines"
     },
     "headerFooter": {
       "title": "Encabezado y Pie de Página",

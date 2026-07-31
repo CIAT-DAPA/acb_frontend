@@ -368,6 +368,12 @@
         "confirm": "Yes, publish"
       }
     },
+    "draftSavedModal": {
+      "title": "Draft saved",
+      "message": "The bulletin was saved successfully. What would you like to do next?",
+      "continueEditing": "Continue editing",
+      "backToBulletins": "Back to bulletins"
+    },
     "section": {
       "title": "Section",
       "description": "Fill in the information for this section",
