@@ -99,12 +99,23 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
     if (lacksPermission || lacksSuperadmin) {
       return (
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="min-h-screen flex items-center justify-center px-4">
           <div className="text-center p-6">
             <h2 className="text-xl font-semibold text-red-700">
               {t("accessDeniedTitle")}
             </h2>
-            <p className="text-sm text-gray-600">{t("accessDeniedMessage")}</p>
+
+            <p className="mt-2 text-sm text-gray-600">
+              {t("accessDeniedMessage")}
+            </p>
+
+            <button
+              type="button"
+              onClick={() => router.push("/")}
+              className="mt-6 inline-flex items-center justify-center rounded-lg bg-[#283618] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#606c38] focus:outline-none focus:ring-2 focus:ring-[#ffaf68] focus:ring-offset-2"
+            >
+              {t("backToHome")}
+            </button>
           </div>
         </div>
       );

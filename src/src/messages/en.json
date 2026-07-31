@@ -368,6 +368,12 @@
         "confirm": "Yes, publish"
       }
     },
+    "draftSavedModal": {
+      "title": "Draft saved",
+      "message": "The bulletin was saved successfully. What would you like to do next?",
+      "continueEditing": "Continue editing",
+      "backToBulletins": "Back to bulletins"
+    },
     "section": {
       "title": "Section",
       "description": "Fill in the information for this section",
@@ -556,7 +562,8 @@
     "accessRestrictedMessage": "You must be logged in to access this page.",
     "redirecting": "Redirecting to login...",
     "accessDeniedTitle": "Access Denied",
-    "accessDeniedMessage": "You do not have permission to access this section."
+    "accessDeniedMessage": "You do not have permission to access this section.",
+    "backToHome": "Back to home"
   },
   "CreateTemplate": {
     "title": "Create New Template",
