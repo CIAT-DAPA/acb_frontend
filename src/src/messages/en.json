@@ -562,7 +562,8 @@
     "accessRestrictedMessage": "You must be logged in to access this page.",
     "redirecting": "Redirecting to login...",
     "accessDeniedTitle": "Access Denied",
-    "accessDeniedMessage": "You do not have permission to access this section."
+    "accessDeniedMessage": "You do not have permission to access this section.",
+    "backToHome": "Back to home"
   },
   "CreateTemplate": {
     "title": "Create New Template",

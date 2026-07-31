@@ -2155,7 +2155,8 @@
     "accessRestrictedMessage": "Bạn phải đăng nhập để truy cập trang này.",
     "redirecting": "Đang chuyển hướng đến trang đăng nhập...",
     "accessDeniedTitle": "Truy cập bị từ chối",
-    "accessDeniedMessage": "Bạn không có quyền truy cập vào phần này."
+    "accessDeniedMessage": "Bạn không có quyền truy cập vào phần này.",
+    "backToHome": "Quay về trang chủ"
   },
   "Common": {
     "header": "Đầu trang",
