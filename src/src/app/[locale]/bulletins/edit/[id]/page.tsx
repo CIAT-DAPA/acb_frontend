@@ -6,7 +6,11 @@ import { useTranslations } from "next-intl";
 import { Loader2 } from "lucide-react";
 import FormBulletinPage from "@/app/[locale]/bulletins/create/FormBulletinPage";
 import { BulletinAPIService } from "@/services/bulletinService";
-import { CreateBulletinData, BulletinStatus, BulletinComment } from "@/types/bulletin";
+import {
+  CreateBulletinData,
+  BulletinStatus,
+  BulletinComment,
+} from "@/types/bulletin";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,11 +22,15 @@ export default function EditBulletinPage() {
   const router = useRouter();
   const t = useTranslations("CreateBulletin");
   const bulletinId = params.id as string;
+  const locale = params.locale as string;
+  const bulletinsPath = `/${locale}/bulletins`;
   const { userInfo } = useAuth();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [initialData, setInitialData] = useState<CreateBulletinData | null>(null);
+  const [initialData, setInitialData] = useState<CreateBulletinData | null>(
+    null,
+  );
   const [comments, setComments] = useState<BulletinComment[]>([]);
 
   useEffect(() => {
@@ -65,7 +73,9 @@ export default function EditBulletinPage() {
       const { master, current_version: currentVersion } = response.data;
 
       if (!currentVersion || !currentVersion.data) {
-        console.warn("La versión actual no tiene data, usando valores por defecto");
+        console.warn(
+          "La versión actual no tiene data, usando valores por defecto",
+        );
         setError(t("editBulletin.errorNoVersion"));
         return;
       }
@@ -82,7 +92,7 @@ export default function EditBulletinPage() {
         },
         version: {
           version_num: currentVersion.version_num + 1,
-          commit_message: "Versión actualizada",
+          commit_message: t("editBulletin.updatedCommitMessage"),
           log: {
             created_at: new Date().toISOString(),
             creator_user_id: userInfo?.id || "",
@@ -100,7 +110,9 @@ export default function EditBulletinPage() {
       setInitialData(bulletinData);
     } catch (err) {
       console.error("Error loading bulletin:", err);
-      setError(err instanceof Error ? err.message : t("editBulletin.errorGeneric"));
+      setError(
+        err instanceof Error ? err.message : t("editBulletin.errorGeneric"),
+      );
     } finally {
       setLoading(false);
     }
@@ -112,7 +124,9 @@ export default function EditBulletinPage() {
       const historyData = (response as any).data || response;
 
       if (historyData && (historyData.comments || historyData.active_cycle)) {
-        const transformReviewCommentToComment = (reviewComment: any): BulletinComment => ({
+        const transformReviewCommentToComment = (
+          reviewComment: any,
+        ): BulletinComment => ({
           comment_id: reviewComment.comment_id,
           target_element: {
             section_id: reviewComment.target_element?.section_id || undefined,
@@ -121,10 +135,14 @@ export default function EditBulletinPage() {
           },
           text: reviewComment.text,
           author_id: reviewComment.author_id,
-          author_first_name: reviewComment.author_first_name || reviewComment.reviewer_first_name,
-          author_last_name: reviewComment.author_last_name || reviewComment.reviewer_last_name,
+          author_first_name:
+            reviewComment.author_first_name ||
+            reviewComment.reviewer_first_name,
+          author_last_name:
+            reviewComment.author_last_name || reviewComment.reviewer_last_name,
           created_at: new Date(reviewComment.created_at),
-          replies: reviewComment.replies?.map(transformReviewCommentToComment) || [],
+          replies:
+            reviewComment.replies?.map(transformReviewCommentToComment) || [],
           bulletin_version_id: reviewComment.bulletin_version_id || "",
         });
 
@@ -133,7 +151,10 @@ export default function EditBulletinPage() {
         const addCommentsToMap = (commentsToAdd: any[]) => {
           commentsToAdd.forEach((comment) => {
             if (comment && comment.comment_id) {
-              processedCommentsMap.set(comment.comment_id, transformReviewCommentToComment(comment));
+              processedCommentsMap.set(
+                comment.comment_id,
+                transformReviewCommentToComment(comment),
+              );
             }
           });
         };
@@ -142,11 +163,17 @@ export default function EditBulletinPage() {
           addCommentsToMap(historyData.comments);
         }
 
-        if (historyData.active_cycle?.comments && Array.isArray(historyData.active_cycle.comments)) {
+        if (
+          historyData.active_cycle?.comments &&
+          Array.isArray(historyData.active_cycle.comments)
+        ) {
           addCommentsToMap(historyData.active_cycle.comments);
         }
 
-        if (historyData.review_cycles && Array.isArray(historyData.review_cycles)) {
+        if (
+          historyData.review_cycles &&
+          Array.isArray(historyData.review_cycles)
+        ) {
           historyData.review_cycles.forEach((cycle: any) => {
             if (cycle.comments && Array.isArray(cycle.comments)) {
               addCommentsToMap(cycle.comments);
@@ -172,7 +199,9 @@ export default function EditBulletinPage() {
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="text-center">
             <Loader2 className="h-12 w-12 animate-spin text-[#283618] mx-auto mb-4" />
-            <p className="text-[#283618] text-lg">Cargando boletín...</p>
+            <p className="text-[#283618] text-lg">
+              {t("editBulletin.loading")}
+            </p>
           </div>
         </div>
       </ProtectedRoute>
@@ -185,10 +214,14 @@ export default function EditBulletinPage() {
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="text-center max-w-md mx-auto px-4">
             <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-red-800 mb-2">{t("editBulletin.errorTitle")}</h2>
-              <p className="text-red-600 mb-4">{error || t("editBulletin.errorNoData")}</p>
+              <h2 className="text-xl font-semibold text-red-800 mb-2">
+                {t("editBulletin.errorTitle")}
+              </h2>
+              <p className="text-red-600 mb-4">
+                {error || t("editBulletin.errorNoData")}
+              </p>
               <button
-                onClick={() => router.push("/bulletins")}
+                onClick={() => router.push(bulletinsPath)}
                 className="bg-[#283618] hover:bg-[#606c38] text-white px-6 py-2 rounded-lg font-medium transition-colors"
               >
                 {t("backToBulletins")}

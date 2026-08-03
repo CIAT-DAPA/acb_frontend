@@ -107,7 +107,11 @@ export default async function RootLayout({ children, params }: Props) {
         className={`${sintony.variable} ${poppins.variable} ${montserrat.variable} ${roboto.variable} ${openSans.variable} ${lato.variable} ${archivoLight.variable} ${archivoNarrow.variable} antialiased`}
       >
         <AuthProviderWrapper>
-          <NextIntlClientProvider messages={messages}>
+          <NextIntlClientProvider
+            key={locale}
+            locale={locale}
+            messages={messages}
+          >
             <ToastProvider>
               <Navbar />
               {children}

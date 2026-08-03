@@ -244,11 +244,10 @@ const createRepeatablePageFromSection = (
     Section,
     "display_name" | "blocks" | "header_config" | "footer_config"
   >,
-  pageTitle?: string,
-  pageIndex = 1,
+  pageTitle: string,
 ): BulletinSectionPage => ({
   page_id: crypto.randomUUID(),
-  page_title: pageTitle || `Página ${pageIndex}`,
+  page_title: pageTitle,
   header_config: cloneHeaderFooterForRepeatablePage(section.header_config),
   footer_config: cloneHeaderFooterForRepeatablePage(section.footer_config),
   blocks: (section.blocks || []).map((block) => ({
@@ -344,6 +343,7 @@ export default function FormBulletinPage({
   const router = useRouter();
   const params = useParams();
   const locale = (params.locale as string) || "es";
+  const bulletinsPath = `/${locale}/bulletins`;
   const { showToast } = useToast();
   const isEditMode = mode === "edit";
   const hasReviewCrudPermissions =
@@ -509,13 +509,13 @@ export default function FormBulletinPage({
     return (
       <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
         <h3 className="text-sm font-semibold text-yellow-800 mb-2">
-          {t("comments.generalTitle") || "Comentarios Generales"}
+          {t("comments.generalTitle")}
         </h3>
         <ul className="list-disc pl-5 space-y-1">
           {groupedComments.generalComments.map((comment) => (
             <li key={comment.comment_id} className="text-sm text-yellow-900">
               <span className="font-medium text-xs text-yellow-700 block mb-0.5">
-                {comment.author_first_name || "Reviewer"}:
+                {comment.author_first_name || t("comments.reviewerFallback")}:
               </span>
               {comment.text}
               {comment.replies && comment.replies.length > 0 && (
@@ -526,7 +526,9 @@ export default function FormBulletinPage({
                       className="text-xs text-gray-600 mt-1"
                     >
                       <span className="font-medium">
-                        {reply.author_first_name}:{" "}
+                        {reply.author_first_name ||
+                          t("comments.reviewerFallback")}
+                        :{" "}
                       </span>
                       {reply.text}
                     </li>
@@ -661,9 +663,7 @@ export default function FormBulletinPage({
               "Response does not have content property:",
               current_version,
             );
-            throw new Error(
-              "La respuesta del template no tiene la estructura esperada",
-            );
+            throw new Error(t("errors.templateUnexpectedStructure"));
           }
 
           // Extraer información de la versión actual
@@ -673,9 +673,7 @@ export default function FormBulletinPage({
           // Validar que versionId existe (es obligatorio)
           if (!versionId) {
             console.error("Template version ID is missing");
-            throw new Error(
-              "No se pudo obtener el ID de la versión del template",
-            );
+            throw new Error(t("errors.missingTemplateVersionId"));
           }
 
           // Generar nombre por defecto: [Nombre Template] - [Mes Actual] [Año Actual]
@@ -685,7 +683,11 @@ export default function FormBulletinPage({
           const capitalizedMonth =
             monthName.charAt(0).toUpperCase() + monthName.slice(1);
           const currentYear = new Date().getFullYear();
-          const defaultBulletinName = `${master.template_name} - ${capitalizedMonth} ${currentYear}`;
+          const defaultBulletinName = t("defaultBulletinName", {
+            template: master.template_name,
+            month: capitalizedMonth,
+            year: currentYear,
+          });
           const defaultNameMachineBase = slugify(defaultBulletinName);
 
           let slugNamesForValidation = existingSlugNames;
@@ -822,8 +824,10 @@ export default function FormBulletinPage({
                     header_config: initializedHeaderConfig as any,
                     footer_config: initializedFooterConfig as any,
                   },
-                  section.display_name || "Página 1",
-                  1,
+                  section.display_name ||
+                    t("section.repeatablePageTitle", {
+                      number: 1,
+                    }),
                 ),
               ];
             }
@@ -1055,7 +1059,11 @@ export default function FormBulletinPage({
     const sectionSteps: StepConfig[] =
       creationState.data.version.data.sections.map((section, index) => ({
         id: `section-${index}`,
-        title: section.display_name || `${t("section.title")} ${index + 1}`,
+        title:
+          section.display_name ||
+          t("section.numberedTitle", {
+            number: index + 1,
+          }),
         description: t("section.description"),
         notificationCount: sectionCommentCounts[index] || undefined,
       }));
@@ -1174,9 +1182,7 @@ export default function FormBulletinPage({
         );
 
         if (!masterResponse.success) {
-          throw new Error(
-            masterResponse.message || "Error al actualizar el boletín",
-          );
+          throw new Error(masterResponse.message || t("errors.updateBulletin"));
         }
 
         const {
@@ -1195,8 +1201,7 @@ export default function FormBulletinPage({
 
         if (!versionResponse.success) {
           throw new Error(
-            versionResponse.message ||
-              "Error al crear la versión del boletín actualizado",
+            versionResponse.message || t("errors.createBulletinVersion"),
           );
         }
 
@@ -1209,9 +1214,7 @@ export default function FormBulletinPage({
           await BulletinAPIService.createBulletin(masterDataWithoutLog);
 
         if (!masterResponse.success || !masterResponse.data) {
-          throw new Error(
-            masterResponse.message || "Error al crear el boletín",
-          );
+          throw new Error(masterResponse.message || t("errors.createBulletin"));
         }
 
         const newBulletinId =
@@ -1228,7 +1231,7 @@ export default function FormBulletinPage({
 
         if (!versionResponse.success) {
           throw new Error(
-            versionResponse.message || "Error al crear la versión del boletín",
+            versionResponse.message || t("errors.createBulletinVersion"),
           );
         }
 
@@ -1236,7 +1239,7 @@ export default function FormBulletinPage({
       }
 
       // Redirigir a la lista de boletines
-      router.push("/bulletins");
+      router.push(bulletinsPath);
     } catch (error) {
       console.error("Error saving bulletin:", error);
       showToast(error instanceof Error ? error.message : t("error"), "error");
@@ -1250,6 +1253,7 @@ export default function FormBulletinPage({
     t,
     router,
     persistedBulletinId,
+    bulletinsPath,
   ]);
 
   // Función para guardar como borrador
@@ -1292,9 +1296,7 @@ export default function FormBulletinPage({
         );
 
         if (!masterResponse.success) {
-          throw new Error(
-            masterResponse.message || "Error al actualizar el boletín",
-          );
+          throw new Error(masterResponse.message || t("errors.updateBulletin"));
         }
 
         const {
@@ -1313,11 +1315,11 @@ export default function FormBulletinPage({
 
         if (!versionResponse.success) {
           throw new Error(
-            versionResponse.message || "Error al crear la versión del boletín",
+            versionResponse.message || t("errors.createBulletinVersion"),
           );
         }
 
-        showToast(t("savedAsDraft") || t("success"), "success");
+        showToast(t("savedAsDraft"), "success");
       } else {
         // MODO CREACIÓN: Crear nuevo bulletin
         const { log: masterLog, ...masterDataWithoutLog } = encodedData.master;
@@ -1326,9 +1328,7 @@ export default function FormBulletinPage({
           await BulletinAPIService.createBulletin(masterDataWithoutLog);
 
         if (!masterResponse.success || !masterResponse.data) {
-          throw new Error(
-            masterResponse.message || "Error al crear el boletín",
-          );
+          throw new Error(masterResponse.message || t("errors.createBulletin"));
         }
 
         const newBulletinId =
@@ -1345,11 +1345,11 @@ export default function FormBulletinPage({
 
         if (!versionResponse.success) {
           throw new Error(
-            versionResponse.message || "Error al crear la versión del boletín",
+            versionResponse.message || t("errors.createBulletinVersion"),
           );
         }
 
-        showToast(t("savedAsDraft") || t("success"), "success");
+        showToast(t("savedAsDraft"), "success");
       }
 
       setShowDraftSavedModal(true);
@@ -1367,8 +1367,8 @@ export default function FormBulletinPage({
 
   const handleReturnToBulletins = useCallback(() => {
     setShowDraftSavedModal(false);
-    router.push("/bulletins");
-  }, [router]);
+    router.push(bulletinsPath);
+  }, [router, bulletinsPath]);
 
   // Función para enviar a revisión
   const handleSubmitForReview = useCallback(async () => {
@@ -1413,9 +1413,7 @@ export default function FormBulletinPage({
         );
 
         if (!masterResponse.success) {
-          throw new Error(
-            masterResponse.message || "Error al actualizar el boletín",
-          );
+          throw new Error(masterResponse.message || t("errors.updateBulletin"));
         }
 
         const {
@@ -1434,7 +1432,7 @@ export default function FormBulletinPage({
 
         if (!versionResponse.success) {
           throw new Error(
-            versionResponse.message || "Error al crear la versión del boletín",
+            versionResponse.message || t("errors.createBulletinVersion"),
           );
         }
       } else {
@@ -1445,9 +1443,7 @@ export default function FormBulletinPage({
           await BulletinAPIService.createBulletin(masterDataWithoutLog);
 
         if (!masterResponse.success || !masterResponse.data) {
-          throw new Error(
-            masterResponse.message || "Error al crear el boletín",
-          );
+          throw new Error(masterResponse.message || t("errors.createBulletin"));
         }
 
         currentBulletinId =
@@ -1471,22 +1467,21 @@ export default function FormBulletinPage({
 
           if (!versionResponse.success) {
             throw new Error(
-              versionResponse.message ||
-                "Error al crear la versión del boletín",
+              versionResponse.message || t("errors.createBulletinVersion"),
             );
           }
         } else {
-          throw new Error("No se pudo obtener el ID del boletín creado");
+          throw new Error(t("errors.missingCreatedBulletinId"));
         }
       }
 
       // 2. Enviar a revisión usando el servicio de review
       if (currentBulletinId) {
         await ReviewService.submitForReview(currentBulletinId);
-        showToast(t("sentToReview") || t("success"), "success");
-        router.push("/bulletins");
+        showToast(t("sentToReview"), "success");
+        router.push(bulletinsPath);
       } else {
-        throw new Error("ID de boletín no válido para enviar a revisión");
+        throw new Error(t("errors.invalidBulletinIdForReview"));
       }
     } catch (error) {
       console.error("Error submitting for review:", error);
@@ -1501,6 +1496,7 @@ export default function FormBulletinPage({
     showToast,
     t,
     router,
+    bulletinsPath,
   ]);
 
   // Función para publicar
@@ -1631,7 +1627,7 @@ export default function FormBulletinPage({
 
         if (!masterResponse.success) {
           throw new Error(
-            masterResponse.message || "Error al publicar el boletín",
+            masterResponse.message || t("errors.publishBulletin"),
           );
         }
 
@@ -1651,7 +1647,7 @@ export default function FormBulletinPage({
 
         if (!versionResponse.success) {
           throw new Error(
-            versionResponse.message || "Error al crear la versión del boletín",
+            versionResponse.message || t("errors.createBulletinVersion"),
           );
         }
       } else {
@@ -1662,9 +1658,7 @@ export default function FormBulletinPage({
           await BulletinAPIService.createBulletin(masterDataWithoutLog);
 
         if (!masterResponse.success || !masterResponse.data) {
-          throw new Error(
-            masterResponse.message || "Error al crear el boletín",
-          );
+          throw new Error(masterResponse.message || t("errors.createBulletin"));
         }
 
         const newBulletinId =
@@ -1687,13 +1681,13 @@ export default function FormBulletinPage({
 
         if (!versionResponse.success) {
           throw new Error(
-            versionResponse.message || "Error al crear la versión del boletín",
+            versionResponse.message || t("errors.createBulletinVersion"),
           );
         }
       }
 
       if (!currentBulletinId) {
-        throw new Error("ID de boletín no válido para publicar");
+        throw new Error(t("errors.invalidBulletinIdForPublish"));
       }
 
       // Publicar usando el endpoint de workflow para respetar transiciones válidas
@@ -1757,8 +1751,8 @@ export default function FormBulletinPage({
     return {
       master: {
         template_name:
-          creationState.data.master.bulletin_name || "Vista previa",
-        name_machine: creationState.data.master.name_machine || "vista-previa",
+          creationState.data.master.bulletin_name || t("preview.fallbackTitle"),
+        name_machine: creationState.data.master.name_machine || "preview",
         description: "",
         status: "active",
         log: creationState.data.master.log,
@@ -1779,7 +1773,7 @@ export default function FormBulletinPage({
         },
       },
     };
-  }, [creationState]);
+  }, [creationState, t]);
 
   const exportSections = useMemo(() => {
     return creationState.data.version.data.sections.flatMap((section) => {
@@ -1809,8 +1803,8 @@ export default function FormBulletinPage({
     return {
       master: {
         template_name:
-          creationState.data.master.bulletin_name || "Vista previa",
-        name_machine: creationState.data.master.name_machine || "vista-previa",
+          creationState.data.master.bulletin_name || t("preview.fallbackTitle"),
+        name_machine: creationState.data.master.name_machine || "preview",
         description: "",
         status: "active",
         log: creationState.data.master.log,
@@ -1831,7 +1825,7 @@ export default function FormBulletinPage({
         },
       },
     };
-  }, [creationState.data, creationState.selectedTemplateId, exportSections]);
+  }, [creationState.data, creationState.selectedTemplateId, exportSections, t]);
 
   // Renderizar contenido del paso actual
   const renderStepContent = () => {
@@ -1915,7 +1909,7 @@ export default function FormBulletinPage({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center gap-4 mb-2">
           <Link
-            href="/bulletins"
+            href={bulletinsPath}
             className="inline-flex items-center gap-2 text-[#283618] hover:text-[#606c38] transition-colors mb-4"
           >
             <ArrowLeft size={20} />
@@ -2196,7 +2190,7 @@ export default function FormBulletinPage({
                 onClick={() => {
                   setShowPublishModal(false);
                   setUrlCopied(false);
-                  router.push("/bulletins");
+                  router.push(bulletinsPath);
                 }}
                 className={`${btnOutlineSecondary} `}
               >

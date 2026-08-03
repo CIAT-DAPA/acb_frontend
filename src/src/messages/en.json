@@ -287,8 +287,24 @@
     }
   },
   "CreateBulletin": {
+    "defaultBulletinName": "{template} - {month} {year}",
+    "errors": {
+      "templateUnexpectedStructure": "The template response does not have the expected structure.",
+      "missingTemplateVersionId": "The template version ID could not be retrieved.",
+      "updateBulletin": "The bulletin could not be updated.",
+      "createBulletin": "The bulletin could not be created.",
+      "createBulletinVersion": "The bulletin version could not be created.",
+      "missingCreatedBulletinId": "The ID of the created bulletin could not be retrieved.",
+      "invalidBulletinIdForReview": "The bulletin ID is not valid for submission to review.",
+      "publishBulletin": "The bulletin could not be published.",
+      "invalidBulletinIdForPublish": "The bulletin ID is not valid for publishing."
+    },
     "comments": {
-      "generalTitle": "General Comments"
+      "generalTitle": "General Comments",
+      "title": "Comments",
+      "reviewerFallback": "Reviewer",
+      "fieldCount": "{count, plural, one {# comment on this field} other {# comments on this field}}",
+      "blockCount": "{count, plural, one {# comment on this block} other {# comments on this block}}"
     },
     "title": "Create Bulletin",
     "subtitle": "Create a new agroclimatic bulletin using a template",
@@ -307,14 +323,27 @@
       "errorInvalidId": "Invalid bulletin ID",
       "errorNoData": "Could not load bulletin information",
       "errorNoVersion": "Bulletin version has no valid data",
-      "errorGeneric": "Error loading bulletin data"
+      "errorGeneric": "Error loading bulletin data",
+      "updatedCommitMessage": "Updated version"
     },
     "selectTemplate": {
       "title": "Select Template",
       "description": "Choose the template you want to use for your bulletin",
       "searchPlaceholder": "Search templates...",
       "noTemplates": "No templates available",
-      "preview": "Preview"
+      "preview": "Preview",
+      "statuses": {
+        "active": "Active",
+        "inactive": "Inactive",
+        "archived": "Archived",
+        "unknown": "Unknown status"
+      },
+      "accessTypes": {
+        "public": "Public",
+        "private": "Private",
+        "restricted": "Restricted",
+        "unknown": "Unknown access"
+      }
     },
     "basicInfo": {
       "title": "Basic Information",
@@ -383,7 +412,16 @@
       "footerFields": "Footer Fields",
       "notFound": "Section not found",
       "addNewPage": "New page",
-      "deleteCurrentPage": "Delete current page"
+      "deleteCurrentPage": "Delete current page",
+      "repeatablePageTitle": "Page {number}",
+      "numberedTitle": "Section {number}",
+      "blockFallback": "Block {number}",
+      "fieldFallback": "Field",
+      "readOnly": {
+        "empty": "No value",
+        "yes": "Yes",
+        "no": "No"
+      }
     },
     "fillData": {
       "sectionProgress": "Section {current} of {total}",
@@ -451,7 +489,8 @@
     "preview": {
       "title": "Preview",
       "subtitle": "Visualize how your bulletin will look",
-      "selectTemplate": "Select a template to see the preview"
+      "selectTemplate": "Select a template to see the preview",
+      "fallbackTitle": "Preview"
     },
     "bulletinPreview": {
       "loading": "Loading bulletin...",
@@ -1684,6 +1723,86 @@
           "Humidity: 65%",
           "Precipitation: 15mm"
         ]
+      },
+      "dateRange": {
+        "and": "and"
+      },
+      "climateFallback": {
+        "maxTemperature": "Max. temp.: {value}°C",
+        "minTemperature": "Min. temp.: {value}°C"
+      },
+      "statuses": {
+        "draft": "Draft",
+        "pending_review": "Pending review",
+        "review": "In review",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "unknown": "Unknown status"
+      },
+      "accessTypes": {
+        "public": "Public",
+        "private": "Private",
+        "restricted": "Restricted",
+        "unknown": "Unknown access"
+      },
+      "fallbacks": {
+        "textField": "Text field",
+        "textWithIcon": "Text with icon",
+        "option": "Option",
+        "image": "Image",
+        "uploadImage": "Image to upload",
+        "uploadedImage": "Uploaded image",
+        "list": "List",
+        "card": "Card {number}",
+        "block": "Block {number}",
+        "field": "Field {number}",
+        "unknownField": "Unsupported field: {name}"
+      },
+      "dimensions": {
+        "height": "Height: {value}px",
+        "width": "Width: {value}px"
+      },
+      "reviewLabels": {
+        "header": "Header",
+        "footer": "Footer",
+        "background": "BG",
+        "listItem": "{list} · Item {number}",
+        "itemField": "{field} · Item {number}",
+        "section": "Section",
+        "block": "Block",
+        "listItemField": "{field} · Item {number}"
+      },
+      "fieldTypes": {
+        "field": "Field",
+        "text": "Text",
+        "text_with_icon": "Text with icon",
+        "select_with_icons": "Select with icons",
+        "searchable": "Searchable",
+        "select_background": "Background selector",
+        "date": "Date",
+        "date_range": "Date range",
+        "page_number": "Page number",
+        "list": "List",
+        "climate_data_puntual": "Climate data",
+        "image": "Image",
+        "image_upload": "Image upload",
+        "card": "Card",
+        "moon_calendar": "Lunar calendar"
+      },
+      "moonCalendar": {
+        "title": "Lunar calendar - {month}",
+        "fullShort": "Full",
+        "newShort": "New",
+        "waxingShort": "Wax.",
+        "waningShort": "Wan."
+      },
+      "accessibility": {
+        "selectedIcon": "Selected icon",
+        "moonPhase": "Moon phase",
+        "calendarIcon": "Calendar icon",
+        "image": "Image",
+        "uploadedImage": "Uploaded image",
+        "icon": "Icon"
       }
     },
     "scrollView": {
@@ -2295,6 +2414,65 @@
       "openLinkTitle": "Open link",
       "goToBulletins": "Go to my bulletins",
       "linkCopied": "Link copied to clipboard"
+    },
+    "rejecting": "Rejecting...",
+    "showComments": "Show comments",
+    "noData": "No data found",
+    "userFallback": "User",
+    "elementFallback": "Element",
+    "seo": {
+      "pageTitle": "{title} - Bulletin Builder",
+      "description": "Review of bulletin {title}"
+    },
+    "breadcrumbs": {
+      "home": "Home",
+      "reviews": "Reviews"
+    },
+    "errors": {
+      "loadBulletin": "Unable to load the bulletin.",
+      "connection": "Connection error.",
+      "approveTitle": "Approval error",
+      "approve": "An error occurred while approving the bulletin. Please try again.",
+      "reject": "An error occurred while rejecting the bulletin. Make sure you have added at least one comment.",
+      "saveComment": "Unable to save the comment.",
+      "unexpected": "An unexpected error occurred."
+    },
+    "statuses": {
+      "draft": "Draft",
+      "pending_review": "Pending review",
+      "review": "In review",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "elementTypes": {
+      "listItem": "List item",
+      "itemField": "Item field",
+      "element": "Element"
+    },
+    "elementNames": {
+      "section": "Section {number}",
+      "sectionFallback": "Section",
+      "block": "Block",
+      "blockNumber": "Block {number}",
+      "field": "Field",
+      "fieldNumber": "Field {number}",
+      "list": "List",
+      "listItem": "{list} · Item {item}",
+      "listItemField": "{field} · Item {item}",
+      "globalHeader": "Global header",
+      "sectionHeader": "Section header",
+      "globalFooter": "Global footer",
+      "sectionFooter": "Section footer",
+      "headerField": "Header field",
+      "sectionHeaderField": "Section header field",
+      "footerField": "Footer field",
+      "sectionFooterField": "Section footer field",
+      "card": "Card {number}",
+      "cardBlock": "Block {block} · Card {card}",
+      "cardField": "Field {field} · Block {block} · Card {card}",
+      "cardFieldSimple": "Field · Block {block} · Card {card}",
+      "cardListItem": "List · Item {item} · Card {card}",
+      "cardListItemField": "List field · Item {item} · Card {card}"
     }
   },
   "ReviewPage": {
