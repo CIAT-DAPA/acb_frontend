@@ -1080,20 +1080,25 @@ export default function ReviewBulletinPage() {
           );
           if (tempRes.success && tempRes.data) {
             const templateSlug = tempRes.data.name_machine;
-            const bulletinSlug = bulletin.master.name_machine;
-            // Construct absolute URL if possible or relative
-            const origin = window.location.origin;
-            url = `${origin}/${locale}/${templateSlug}/${bulletinSlug}`;
+
+            const bulletinSlug = bulletin?.master?.name_machine;
+
+            if (templateSlug && bulletinSlug) {
+              const origin = window.location.origin;
+
+              url = `${origin}/${locale}` + `/${templateSlug}/${bulletinSlug}`;
+            }
           }
         }
       } catch (e) {
         console.error("Error constructing public URL", e);
       }
 
-      setPublishedUrl(
-        url ||
-          `${window.location.origin}/${locale}/bulletins/${bulletin.master._id}`,
-      );
+      if (!url) {
+        throw new Error(t("errors.publicUrlUnavailable"));
+      }
+
+      setPublishedUrl(url);
       setModalTitle(t("successModal.title"));
       setModalMessage(t("successModal.message"));
       setIsSuccessModalOpen(true);
@@ -1107,6 +1112,15 @@ export default function ReviewBulletinPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const goToPublishedBulletin = () => {
+    if (!publishedUrl) {
+      showToast(t("successModal.publicLinkUnavailable"), "error");
+      return;
+    }
+
+    window.location.assign(publishedUrl);
   };
 
   const STATUS_TRANSLATION_KEYS = {
@@ -1976,16 +1990,21 @@ export default function ReviewBulletinPage() {
         isOpen={isSuccessModalOpen}
         onClose={() => {
           setIsSuccessModalOpen(false);
-          router.push(`/${locale}/bulletins`);
         }}
         title={t("successModal.title")}
         type="success"
         footer={
           <button
-            onClick={() => router.push(`/${locale}/bulletins`)}
-            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors shadow-sm"
+            type="button"
+            onClick={goToPublishedBulletin}
+            disabled={!publishedUrl}
+            className="
+              px-4 py-2 bg-green-600 hover:bg-green-700
+              text-white rounded-lg font-medium transition-colors shadow-sm
+              disabled:cursor-not-allowed disabled:opacity-50
+            "
           >
-            {t("successModal.goToBulletins")}
+            {t("successModal.goToPublishedBulletin")}
           </button>
         }
       >

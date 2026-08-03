@@ -2413,7 +2413,9 @@
       "copyLinkTitle": "Copy link",
       "openLinkTitle": "Open link",
       "goToBulletins": "Go to my bulletins",
-      "linkCopied": "Link copied to clipboard"
+      "linkCopied": "Link copied to clipboard",
+      "goToPublishedBulletin": "Go to published bulletin",
+      "publicLinkUnavailable": "The public bulletin link could not be retrieved."
     },
     "rejecting": "Rejecting...",
     "showComments": "Show comments",
@@ -2435,7 +2437,8 @@
       "approve": "An error occurred while approving the bulletin. Please try again.",
       "reject": "An error occurred while rejecting the bulletin. Make sure you have added at least one comment.",
       "saveComment": "Unable to save the comment.",
-      "unexpected": "An unexpected error occurred."
+      "unexpected": "An unexpected error occurred.",
+      "publicUrlUnavailable": "The bulletin was approved, but its public link could not be generated."
     },
     "statuses": {
       "draft": "Draft",

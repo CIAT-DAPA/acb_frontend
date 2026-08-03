@@ -2253,7 +2253,9 @@
       "copyLinkTitle": "Sao chép liên kết",
       "openLinkTitle": "Mở liên kết",
       "goToBulletins": "Đi đến bản tin của tôi",
-      "linkCopied": "Đã sao chép liên kết vào bộ nhớ tạm"
+      "linkCopied": "Đã sao chép liên kết vào bộ nhớ tạm",
+      "goToPublishedBulletin": "Đi đến bản tin đã xuất bản",
+      "publicLinkUnavailable": "Không thể lấy liên kết công khai của bản tin."
     },
     "rejecting": "Đang từ chối...",
     "showComments": "Hiển thị nhận xét",
@@ -2275,7 +2277,8 @@
       "approve": "Đã xảy ra lỗi khi phê duyệt bản tin. Vui lòng thử lại.",
       "reject": "Đã xảy ra lỗi khi từ chối bản tin. Hãy đảm bảo bạn đã thêm ít nhất một nhận xét.",
       "saveComment": "Không thể lưu nhận xét.",
-      "unexpected": "Đã xảy ra lỗi không mong muốn."
+      "unexpected": "Đã xảy ra lỗi không mong muốn.",
+      "publicUrlUnavailable": "Bản tin đã được phê duyệt nhưng không thể tạo liên kết công khai."
     },
     "statuses": {
       "draft": "Bản nháp",
