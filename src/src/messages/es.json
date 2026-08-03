@@ -2411,7 +2411,9 @@
       "copyLinkTitle": "Copiar enlace",
       "openLinkTitle": "Abrir enlace",
       "goToBulletins": "Ir a mis boletines",
-      "linkCopied": "Enlace copiado al portapapeles"
+      "linkCopied": "Enlace copiado al portapapeles",
+      "goToPublishedBulletin": "Ir al boletín publicado",
+      "publicLinkUnavailable": "No se pudo obtener el enlace público del boletín."
     },
     "rejecting": "Rechazando...",
     "showComments": "Mostrar comentarios",
@@ -2433,7 +2435,8 @@
       "approve": "Ocurrió un error al intentar aprobar el boletín. Inténtalo nuevamente.",
       "reject": "Ocurrió un error al intentar rechazar el boletín. Asegúrate de haber dejado al menos un comentario.",
       "saveComment": "No se pudo guardar el comentario.",
-      "unexpected": "Ha ocurrido un error inesperado."
+      "unexpected": "Ha ocurrido un error inesperado.",
+      "publicUrlUnavailable": "El boletín fue aprobado, pero no se pudo construir su enlace público."
     },
     "statuses": {
       "draft": "Borrador",
