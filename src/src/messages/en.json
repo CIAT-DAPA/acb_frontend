@@ -287,8 +287,24 @@
     }
   },
   "CreateBulletin": {
+    "defaultBulletinName": "{template} - {month} {year}",
+    "errors": {
+      "templateUnexpectedStructure": "The template response does not have the expected structure.",
+      "missingTemplateVersionId": "The template version ID could not be retrieved.",
+      "updateBulletin": "The bulletin could not be updated.",
+      "createBulletin": "The bulletin could not be created.",
+      "createBulletinVersion": "The bulletin version could not be created.",
+      "missingCreatedBulletinId": "The ID of the created bulletin could not be retrieved.",
+      "invalidBulletinIdForReview": "The bulletin ID is not valid for submission to review.",
+      "publishBulletin": "The bulletin could not be published.",
+      "invalidBulletinIdForPublish": "The bulletin ID is not valid for publishing."
+    },
     "comments": {
-      "generalTitle": "General Comments"
+      "generalTitle": "General Comments",
+      "title": "Comments",
+      "reviewerFallback": "Reviewer",
+      "fieldCount": "{count, plural, one {# comment on this field} other {# comments on this field}}",
+      "blockCount": "{count, plural, one {# comment on this block} other {# comments on this block}}"
     },
     "title": "Create Bulletin",
     "subtitle": "Create a new agroclimatic bulletin using a template",
@@ -307,14 +323,27 @@
       "errorInvalidId": "Invalid bulletin ID",
       "errorNoData": "Could not load bulletin information",
       "errorNoVersion": "Bulletin version has no valid data",
-      "errorGeneric": "Error loading bulletin data"
+      "errorGeneric": "Error loading bulletin data",
+      "updatedCommitMessage": "Updated version"
     },
     "selectTemplate": {
       "title": "Select Template",
       "description": "Choose the template you want to use for your bulletin",
       "searchPlaceholder": "Search templates...",
       "noTemplates": "No templates available",
-      "preview": "Preview"
+      "preview": "Preview",
+      "statuses": {
+        "active": "Active",
+        "inactive": "Inactive",
+        "archived": "Archived",
+        "unknown": "Unknown status"
+      },
+      "accessTypes": {
+        "public": "Public",
+        "private": "Private",
+        "restricted": "Restricted",
+        "unknown": "Unknown access"
+      }
     },
     "basicInfo": {
       "title": "Basic Information",
@@ -383,7 +412,16 @@
       "footerFields": "Footer Fields",
       "notFound": "Section not found",
       "addNewPage": "New page",
-      "deleteCurrentPage": "Delete current page"
+      "deleteCurrentPage": "Delete current page",
+      "repeatablePageTitle": "Page {number}",
+      "numberedTitle": "Section {number}",
+      "blockFallback": "Block {number}",
+      "fieldFallback": "Field",
+      "readOnly": {
+        "empty": "No value",
+        "yes": "Yes",
+        "no": "No"
+      }
     },
     "fillData": {
       "sectionProgress": "Section {current} of {total}",
@@ -451,7 +489,8 @@
     "preview": {
       "title": "Preview",
       "subtitle": "Visualize how your bulletin will look",
-      "selectTemplate": "Select a template to see the preview"
+      "selectTemplate": "Select a template to see the preview",
+      "fallbackTitle": "Preview"
     },
     "bulletinPreview": {
       "loading": "Loading bulletin...",

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   CreateBulletinData,
   BulletinComment,
@@ -118,6 +118,9 @@ export function SectionStep({
   fieldAllComments = {},
 }: SectionStepProps) {
   const t = useTranslations("CreateBulletin.section");
+  const tComments = useTranslations("CreateBulletin.comments");
+
+  const locale = useLocale();
 
   const section = bulletinData.version.data.sections[sectionIndex];
 
@@ -275,7 +278,9 @@ export function SectionStep({
 
     const newPage = buildRepeatablePageFromSource(
       sourcePage,
-      `Página ${nextPageIndex + 1}`,
+      t("repeatablePageTitle", {
+        number: nextPageIndex + 1,
+      }),
     );
 
     onUpdate((prev) => {
@@ -479,7 +484,7 @@ export function SectionStep({
     return (
       <div className="mt-2 bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded-r-md text-sm shadow-sm">
         <div className="text-xs font-bold text-yellow-800 mb-2 uppercase tracking-wide">
-          Comentarios
+          {tComments("title")}
         </div>
 
         {targetComments.map((comment) => (
@@ -489,12 +494,12 @@ export function SectionStep({
           >
             <div className="flex justify-between items-start mb-1">
               <span className="font-semibold text-yellow-900 text-xs">
-                {comment.author_first_name || "Reviewer"}
+                {comment.author_first_name || tComments("reviewerFallback")}
               </span>
 
               <span className="text-[10px] text-yellow-700 opacity-70">
                 {comment.created_at
-                  ? new Date(comment.created_at).toLocaleDateString()
+                  ? new Date(comment.created_at).toLocaleDateString(locale)
                   : ""}
               </span>
             </div>
@@ -508,7 +513,8 @@ export function SectionStep({
                 {comment.replies.map((reply) => (
                   <div key={reply.comment_id}>
                     <span className="text-xs font-semibold text-yellow-800">
-                      {reply.author_first_name || "Reviewer"}:
+                      {reply.author_first_name || tComments("reviewerFallback")}
+                      :
                     </span>
 
                     <p className="text-xs text-gray-600">{reply.text}</p>
@@ -553,7 +559,9 @@ export function SectionStep({
         bg-amber-500 px-2 py-0.5
         text-xs font-semibold text-white shadow-sm
       "
-        title={`${count} comentario${count === 1 ? "" : "s"} en este campo`}
+        title={tComments("fieldCount", {
+          count,
+        })}
       >
         <MessageCircle className="h-3.5 w-3.5" />
         {count}
@@ -590,7 +598,9 @@ export function SectionStep({
         bg-amber-500 px-2 py-0.5
         text-xs font-semibold text-white shadow-sm
       "
-        title={`${count} comentario${count === 1 ? "" : "s"} en este bloque`}
+        title={tComments("blockCount", {
+          count,
+        })}
       >
         <MessageCircle className="h-3.5 w-3.5" />
         {count}
@@ -747,11 +757,11 @@ export function SectionStep({
 
   const formatReadOnlyValue = (value: unknown): string => {
     if (value === undefined || value === null || value === "") {
-      return "Sin valor";
+      return t("readOnly.empty");
     }
 
     if (typeof value === "boolean") {
-      return value ? "Sí" : "No";
+      return value ? t("readOnly.yes") : t("readOnly.no");
     }
 
     if (typeof value === "string" || typeof value === "number") {
@@ -816,7 +826,10 @@ export function SectionStep({
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-semibold text-[#283618] mb-2">
-          {section.display_name}
+          {section.display_name ||
+            t("numberedTitle", {
+              number: sectionIndex + 1,
+            })}
         </h3>
         <p className="text-sm text-[#606c38] mb-4">{t("description")}</p>
         {section.section_id &&
@@ -851,7 +864,7 @@ export function SectionStep({
         ) && (
           <div className="border-t pt-4">
             <h4 className="text-md font-semibold text-[#283618] mb-4">
-              {t("headerFields", { defaultValue: "Header Fields" })}
+              {t("headerFields")}
             </h4>
             <div className="space-y-4">
               {sectionToRender.header_config.fields.map((field, fieldIndex) => {
@@ -875,7 +888,9 @@ export function SectionStep({
                   >
                     <div className="mb-2 flex items-center justify-between gap-3">
                       <label className="text-sm font-medium text-[#283618]">
-                        {field.display_name || field.label || "Campo"}
+                        {field.display_name ||
+                          field.label ||
+                          t("fieldFallback")}
                       </label>
 
                       {renderFieldCommentBadge(field.field_id)}
@@ -921,7 +936,10 @@ export function SectionStep({
           >
             <div className="mb-4 flex items-center justify-between gap-3">
               <h4 className="text-md font-semibold text-[#283618]">
-                {block.display_name}
+                {block.display_name ||
+                  t("blockFallback", {
+                    number: blockIndex + 1,
+                  })}
               </h4>
 
               {renderBlockCommentBadge(block.block_id)}
@@ -950,7 +968,9 @@ export function SectionStep({
                   >
                     <div className="mb-2 flex items-center justify-between gap-3">
                       <label className="text-sm font-medium text-[#283618]">
-                        {field.display_name || field.label || "Campo"}
+                        {field.display_name ||
+                          field.label ||
+                          t("fieldFallback")}
                       </label>
 
                       {renderFieldCommentBadge(field.field_id)}
@@ -1008,7 +1028,9 @@ export function SectionStep({
                   >
                     <div className="mb-2 flex items-center justify-between gap-3">
                       <label className="text-sm font-medium text-[#283618]">
-                        {field.display_name || field.label || "Campo"}
+                        {field.display_name ||
+                          field.label ||
+                          t("fieldFallback")}
                       </label>
 
                       {renderFieldCommentBadge(field.field_id)}

@@ -26,6 +26,38 @@ export function TemplateSelectionStep({
     null,
   );
 
+  const getTemplateStatusLabel = (status?: string) => {
+    switch (status) {
+      case "active":
+        return t("selectTemplate.statuses.active");
+
+      case "inactive":
+        return t("selectTemplate.statuses.inactive");
+
+      case "archived":
+        return t("selectTemplate.statuses.archived");
+
+      default:
+        return t("selectTemplate.statuses.unknown");
+    }
+  };
+
+  const getAccessTypeLabel = (accessType?: string) => {
+    switch (accessType) {
+      case "public":
+        return t("selectTemplate.accessTypes.public");
+
+      case "private":
+        return t("selectTemplate.accessTypes.private");
+
+      case "restricted":
+        return t("selectTemplate.accessTypes.restricted");
+
+      default:
+        return t("selectTemplate.accessTypes.unknown");
+    }
+  };
+
   useEffect(() => {
     loadTemplates();
   }, []);
@@ -147,10 +179,10 @@ export function TemplateSelectionStep({
                   </p>
                   <div className="flex items-center gap-2 text-xs text-[#283618]/60">
                     <span className="px-2 py-1 bg-[#283618]/10 rounded">
-                      {template.status}
+                      {getTemplateStatusLabel(template.status)}
                     </span>
                     <span className="px-2 py-1 bg-[#283618]/10 rounded">
-                      {template.access_config.access_type}
+                      {getAccessTypeLabel(template.access_config?.access_type)}
                     </span>
                   </div>
                 </div>

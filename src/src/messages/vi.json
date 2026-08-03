@@ -257,8 +257,24 @@
     "share": "Chia sẻ"
   },
   "CreateBulletin": {
+    "defaultBulletinName": "{template} - {month} {year}",
+    "errors": {
+      "templateUnexpectedStructure": "Phản hồi của mẫu không có cấu trúc như mong đợi.",
+      "missingTemplateVersionId": "Không thể lấy ID phiên bản của mẫu.",
+      "updateBulletin": "Không thể cập nhật bản tin.",
+      "createBulletin": "Không thể tạo bản tin.",
+      "createBulletinVersion": "Không thể tạo phiên bản bản tin.",
+      "missingCreatedBulletinId": "Không thể lấy ID của bản tin đã tạo.",
+      "invalidBulletinIdForReview": "ID bản tin không hợp lệ để gửi duyệt.",
+      "publishBulletin": "Không thể xuất bản bản tin.",
+      "invalidBulletinIdForPublish": "ID bản tin không hợp lệ để xuất bản."
+    },
     "comments": {
-      "generalTitle": "Bình luận chung"
+      "generalTitle": "Bình luận chung",
+      "title": "Bình luận",
+      "reviewerFallback": "Người đánh giá",
+      "fieldCount": "{count} bình luận về trường này",
+      "blockCount": "{count} bình luận về khối này"
     },
     "searchableInput": {
       "placeholder": "Tìm kiếm hoặc tạo tùy chọn mới...",
@@ -356,7 +372,8 @@
     "preview": {
       "title": "Xem trước",
       "subtitle": "Trực quan hóa bản tin của bạn sẽ trông như thế nào",
-      "selectTemplate": "Chọn một biểu mẫu để xem bản xem trước"
+      "selectTemplate": "Chọn một biểu mẫu để xem bản xem trước",
+      "fallbackTitle": "Xem trước"
     },
     "navigation": {
       "saving": "Đang lưu...",
@@ -375,7 +392,19 @@
       "title": "Chọn biểu mẫu",
       "description": "Chọn biểu mẫu bạn muốn sử dụng cho bản tin của mình",
       "noTemplates": "Không có biểu mẫu nào có sẵn",
-      "preview": "Xem trước"
+      "preview": "Xem trước",
+      "statuses": {
+        "active": "Đang hoạt động",
+        "inactive": "Không hoạt động",
+        "archived": "Đã lưu trữ",
+        "unknown": "Trạng thái không xác định"
+      },
+      "accessTypes": {
+        "public": "Công khai",
+        "private": "Riêng tư",
+        "restricted": "Hạn chế",
+        "unknown": "Quyền truy cập không xác định"
+      }
     },
     "section": {
       "title": "Phần",
@@ -386,7 +415,16 @@
       "footerFields": "Các ô nhập liệu ở Chân trang",
       "notFound": "Không tìm thấy phần này",
       "addNewPage": "Trang mới",
-      "deleteCurrentPage": "Xóa trang hiện tại"
+      "deleteCurrentPage": "Xóa trang hiện tại",
+      "repeatablePageTitle": "Trang {number}",
+      "numberedTitle": "Phần {number}",
+      "blockFallback": "Khối {number}",
+      "fieldFallback": "Trường",
+      "readOnly": {
+        "empty": "Không có giá trị",
+        "yes": "Có",
+        "no": "Không"
+      }
     },
     "confirmation": {
       "cancel": "Hủy",
@@ -424,7 +462,8 @@
       "errorInvalidId": "ID bản tin không hợp lệ",
       "errorNoData": "Không thể tải thông tin bản tin",
       "errorNoVersion": "Phiên bản bản tin không có dữ liệu hợp lệ",
-      "errorGeneric": "Lỗi khi tải dữ liệu bản tin"
+      "errorGeneric": "Lỗi khi tải dữ liệu bản tin",
+      "updatedCommitMessage": "Phiên bản đã cập nhật"
     },
     "basicInfo": {
       "title": "Thông tin cơ bản",

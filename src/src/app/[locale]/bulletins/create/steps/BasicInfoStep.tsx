@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { slugify, isValidSlug } from "../../../../../utils/slugify";
 import {
   CreateBulletinData,
@@ -36,6 +36,9 @@ export function BasicInfoStep({
   fieldComments = {},
 }: BasicInfoStepProps) {
   const t = useTranslations("CreateBulletin");
+  const tComments = useTranslations("CreateBulletin.comments");
+
+  const locale = useLocale();
   const tHeader = useTranslations("CreateBulletin.headerFooter");
 
   // Helper para normalizar valores de date_range
@@ -158,7 +161,7 @@ export function BasicInfoStep({
     return (
       <div className="mt-2 bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded-r-md text-sm shadow-sm">
         <div className="text-xs font-bold text-yellow-800 mb-1 uppercase tracking-wide">
-          Comentarios
+          {tComments("title")}
         </div>
         {comments.map((comment, idx) => (
           <div
@@ -167,10 +170,10 @@ export function BasicInfoStep({
           >
             <div className="flex justify-between items-start mb-0.5">
               <span className="font-semibold text-yellow-900 text-xs">
-                {comment.author_first_name || "Reviewer"}
+                {comment.author_first_name || tComments("reviewerFallback")}
               </span>
               <span className="text-[10px] text-yellow-700 opacity-70">
-                {new Date(comment.created_at).toLocaleDateString()}
+                {new Date(comment.created_at).toLocaleDateString(locale)}
               </span>
             </div>
             <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-wrap">
@@ -182,7 +185,9 @@ export function BasicInfoStep({
                   <div key={rIdx} className="mb-1 last:mb-0">
                     <div className="flex gap-1 items-baseline">
                       <span className="font-semibold text-xs text-yellow-800">
-                        {reply.author_first_name}:{" "}
+                        {reply.author_first_name ||
+                          tComments("reviewerFallback")}
+                        :{" "}
                       </span>
                       <p className="text-xs text-gray-600">{reply.text}</p>
                     </div>
@@ -362,27 +367,20 @@ export function BasicInfoStep({
         {/* Machine Name */}
         <div>
           <label className="block text-sm font-medium text-[#283618] mb-2">
-            {t("basicInfo.fields.nameMachine.label", {
-              default: "Nombre Máquina",
-            })}
+            {t("basicInfo.fields.nameMachine.label")}
             <span className="text-red-500 ml-1">*</span>
           </label>
           <input
             type="text"
             value={bulletinData.master.name_machine || ""}
             onChange={(e) => handleNameMachineChange(e.target.value)}
-            placeholder={t("basicInfo.fields.nameMachine.placeholder", {
-              default: "ej: boletin-cafe-enero-2025",
-            })}
+            placeholder={t("basicInfo.fields.nameMachine.placeholder")}
             className={`w-full px-4 py-2 border rounded-lg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[#283618] ${
               nameMachineError ? "border-red-500" : "border-[#283618]/20"
             }`}
           />
           <p className="mt-1 text-xs text-[#283618]/60">
-            {t("basicInfo.fields.nameMachine.help", {
-              default:
-                "Identificador único para URLs y APIs. Se genera automáticamente pero puedes editarlo.",
-            })}
+            {t("basicInfo.fields.nameMachine.help")}
           </p>
           {nameMachineError && (
             <p className="mt-1 text-sm text-red-600">{nameMachineError}</p>
