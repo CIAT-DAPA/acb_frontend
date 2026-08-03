@@ -1682,6 +1682,86 @@
           "Humedad: 65%",
           "Precipitación: 15mm"
         ]
+      },
+      "dateRange": {
+        "and": "y"
+      },
+      "climateFallback": {
+        "maxTemperature": "Temp. máx.: {value}°C",
+        "minTemperature": "Temp. mín.: {value}°C"
+      },
+      "statuses": {
+        "draft": "Borrador",
+        "pending_review": "Pendiente de revisión",
+        "review": "En revisión",
+        "approved": "Aprobado",
+        "rejected": "Rechazado",
+        "unknown": "Estado desconocido"
+      },
+      "accessTypes": {
+        "public": "Público",
+        "private": "Privado",
+        "restricted": "Restringido",
+        "unknown": "Acceso desconocido"
+      },
+      "fallbacks": {
+        "textField": "Campo de texto",
+        "textWithIcon": "Texto con icono",
+        "option": "Opción",
+        "image": "Imagen",
+        "uploadImage": "Imagen por subir",
+        "uploadedImage": "Imagen subida",
+        "list": "Lista",
+        "card": "Tarjeta {number}",
+        "block": "Bloque {number}",
+        "field": "Campo {number}",
+        "unknownField": "Campo no compatible: {name}"
+      },
+      "dimensions": {
+        "height": "Altura: {value}px",
+        "width": "Ancho: {value}px"
+      },
+      "reviewLabels": {
+        "header": "Encabezado",
+        "footer": "Pie de página",
+        "background": "Fondo",
+        "listItem": "{list} · Elemento {number}",
+        "itemField": "{field} · Elemento {number}",
+        "section": "Sección",
+        "block": "Bloque",
+        "listItemField": "{field} · Ítem {number}"
+      },
+      "fieldTypes": {
+        "field": "Campo",
+        "text": "Texto",
+        "text_with_icon": "Texto con icono",
+        "select_with_icons": "Selección con iconos",
+        "searchable": "Buscador",
+        "select_background": "Selector de fondo",
+        "date": "Fecha",
+        "date_range": "Rango de fechas",
+        "page_number": "Número de página",
+        "list": "Lista",
+        "climate_data_puntual": "Datos climáticos",
+        "image": "Imagen",
+        "image_upload": "Carga de imagen",
+        "card": "Tarjeta",
+        "moon_calendar": "Calendario lunar"
+      },
+      "moonCalendar": {
+        "title": "Calendario lunar - {month}",
+        "fullShort": "Llena",
+        "newShort": "Nueva",
+        "waxingShort": "Crec.",
+        "waningShort": "Meng."
+      },
+      "accessibility": {
+        "selectedIcon": "Icono seleccionado",
+        "moonPhase": "Fase lunar",
+        "calendarIcon": "Icono de calendario",
+        "image": "Imagen",
+        "uploadedImage": "Imagen subida",
+        "icon": "Icono"
       }
     },
     "scrollView": {
@@ -2293,6 +2373,65 @@
       "openLinkTitle": "Abrir enlace",
       "goToBulletins": "Ir a mis boletines",
       "linkCopied": "Enlace copiado al portapapeles"
+    },
+    "rejecting": "Rechazando...",
+    "showComments": "Mostrar comentarios",
+    "noData": "No se encontraron datos",
+    "userFallback": "Usuario",
+    "elementFallback": "Elemento",
+    "seo": {
+      "pageTitle": "{title} - Creador de boletines",
+      "description": "Revisión del boletín {title}"
+    },
+    "breadcrumbs": {
+      "home": "Inicio",
+      "reviews": "Revisiones"
+    },
+    "errors": {
+      "loadBulletin": "No se pudo cargar el boletín.",
+      "connection": "Error de conexión.",
+      "approveTitle": "Error al aprobar",
+      "approve": "Ocurrió un error al intentar aprobar el boletín. Inténtalo nuevamente.",
+      "reject": "Ocurrió un error al intentar rechazar el boletín. Asegúrate de haber dejado al menos un comentario.",
+      "saveComment": "No se pudo guardar el comentario.",
+      "unexpected": "Ha ocurrido un error inesperado."
+    },
+    "statuses": {
+      "draft": "Borrador",
+      "pending_review": "Pendiente de revisión",
+      "review": "En revisión",
+      "approved": "Aprobado",
+      "rejected": "Rechazado"
+    },
+    "elementTypes": {
+      "listItem": "Elemento de lista",
+      "itemField": "Campo del elemento",
+      "element": "Elemento"
+    },
+    "elementNames": {
+      "section": "Sección {number}",
+      "sectionFallback": "Sección",
+      "block": "Bloque",
+      "blockNumber": "Bloque {number}",
+      "field": "Campo",
+      "fieldNumber": "Campo {number}",
+      "list": "Lista",
+      "listItem": "{list} · Elemento {item}",
+      "listItemField": "{field} · Elemento {item}",
+      "globalHeader": "Encabezado general",
+      "sectionHeader": "Encabezado de sección",
+      "globalFooter": "Pie de página general",
+      "sectionFooter": "Pie de página de sección",
+      "headerField": "Campo de encabezado",
+      "sectionHeaderField": "Campo del encabezado de sección",
+      "footerField": "Campo del pie de página",
+      "sectionFooterField": "Campo del pie de página de sección",
+      "card": "Tarjeta {number}",
+      "cardBlock": "Bloque {block} · Tarjeta {card}",
+      "cardField": "Campo {field} · Bloque {block} · Tarjeta {card}",
+      "cardFieldSimple": "Campo · Bloque {block} · Tarjeta {card}",
+      "cardListItem": "Lista · Elemento {item} · Tarjeta {card}",
+      "cardListItemField": "Campo de lista · Elemento {item} · Tarjeta {card}"
     }
   },
   "ReviewPage": {

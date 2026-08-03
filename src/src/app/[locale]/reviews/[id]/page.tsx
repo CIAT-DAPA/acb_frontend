@@ -176,6 +176,36 @@ export default function ReviewBulletinPage() {
   const bulletinId = params.id as string;
   const reviewsPath = `/${locale}/reviews`;
 
+  const getCommentTargetTypeLabel = (type?: CommentTargetElement["type"]) => {
+    switch (type) {
+      case "section":
+        return t("section");
+
+      case "block":
+        return t("block");
+
+      case "field":
+        return t("field");
+
+      case "list_item":
+        return t("elementTypes.listItem");
+
+      case "list_item_field":
+        return t("elementTypes.listItemField");
+
+      case "header":
+      case "header_field":
+        return tCommon("header");
+
+      case "footer":
+      case "footer_field":
+        return tCommon("footer");
+
+      default:
+        return t("elementTypes.element");
+    }
+  };
+
   const [bulletin, setBulletin] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -201,8 +231,6 @@ export default function ReviewBulletinPage() {
   const [isRejecting, setIsRejecting] = useState(false);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-
-  const tReview = useTranslations("Review");
 
   const mappedComments = useMemo(() => {
     if (!bulletin || !comments.length) {
@@ -313,7 +341,8 @@ export default function ReviewBulletinPage() {
             ? decodedItemFieldId
             : undefined;
 
-        const listDisplayName = field.label || field.display_name || "Lista";
+        const listDisplayName =
+          field.label || field.display_name || t("elementNames.list");
 
         const hasCardIndex =
           typeof decodedCardIndex === "number" && decodedCardIndex >= 0;
@@ -338,7 +367,11 @@ export default function ReviewBulletinPage() {
             frontendId = cardBaseId;
             targetType = "card_item";
 
-            displayName = target.display_name || `Card ${cardNumber}`;
+            displayName =
+              target.display_name ||
+              t("elementNames.card", {
+                number: cardNumber,
+              });
 
             didMapTarget = true;
             return;
@@ -355,7 +388,10 @@ export default function ReviewBulletinPage() {
 
             displayName =
               target.display_name ||
-              `Bloque ${decodedCardBlockIndex + 1}` + ` · Card ${cardNumber}`;
+              t("elementNames.cardBlock", {
+                block: decodedCardBlockIndex + 1,
+                card: cardNumber,
+              });
 
             didMapTarget = true;
             return;
@@ -377,10 +413,10 @@ export default function ReviewBulletinPage() {
              */
             targetType = "list_item_field";
 
-            displayName =
-              target.display_name ||
-              `Campo de lista · Item ${decodedItemIndex! + 1}` +
-                ` · Card ${cardNumber}`;
+            displayName = t("elementNames.listItem", {
+              list: listDisplayName,
+              item: decodedItemIndex + 1,
+            });
 
             didMapTarget = true;
             return;
@@ -396,7 +432,11 @@ export default function ReviewBulletinPage() {
 
             displayName =
               target.display_name ||
-              `Lista · Item ${decodedItemIndex! + 1}` + ` · Card ${cardNumber}`;
+              t("elementNames.cardListItem", {
+                list: listDisplayName,
+                item: decodedItemIndex! + 1,
+                card: cardNumber,
+              });
 
             didMapTarget = true;
             return;
@@ -410,9 +450,11 @@ export default function ReviewBulletinPage() {
 
           displayName =
             target.display_name ||
-            `Campo ${decodedCardFieldIndex + 1}` +
-              ` · Bloque ${decodedCardBlockIndex + 1}` +
-              ` · Card ${cardNumber}`;
+            t("elementNames.cardField", {
+              field: decodedCardFieldIndex + 1,
+              block: decodedCardBlockIndex + 1,
+              card: cardNumber,
+            });
 
           didMapTarget = true;
           return;
@@ -430,20 +472,29 @@ export default function ReviewBulletinPage() {
           const itemFieldConfig = itemSchema?.[itemFieldId];
 
           const itemFieldName =
-            itemFieldConfig?.label || itemFieldConfig?.display_name || "Campo";
+            itemFieldConfig?.label ||
+            itemFieldConfig?.display_name ||
+            t("elementNames.field");
 
-          displayName = `${itemFieldName} · Item ${decodedItemIndex! + 1}`;
+          displayName = t("elementNames.listItemField", {
+            field: itemFieldName,
+            item: decodedItemIndex! + 1,
+          });
         } else if (hasItemIndex) {
           frontendId = `${baseFieldId}-item-${decodedItemIndex}`;
 
           targetType = "list_item";
 
-          displayName = `${listDisplayName} · Item ${decodedItemIndex! + 1}`;
+          displayName = t("elementNames.listItem", {
+            list: listDisplayName,
+            item: decodedItemIndex! + 1,
+          });
         } else {
           frontendId = baseFieldId;
           targetType = "field";
 
-          displayName = field.label || field.display_name || "Campo";
+          displayName =
+            field.label || field.display_name || t("elementNames.field");
         }
 
         didMapTarget = true;
@@ -473,7 +524,9 @@ export default function ReviewBulletinPage() {
             fieldIndex = headerFieldIndex;
 
             displayName =
-              field.label || field.display_name || "Campo de Header";
+              field.label ||
+              field.display_name ||
+              t("elementNames.headerField");
 
             didMapTarget = true;
             return true;
@@ -497,7 +550,9 @@ export default function ReviewBulletinPage() {
             fieldIndex = globalHeaderFieldIndex;
 
             displayName =
-              field.label || field.display_name || "Campo de Header";
+              field.label ||
+              field.display_name ||
+              t("elementNames.headerField");
 
             didMapTarget = true;
             return true;
@@ -520,7 +575,9 @@ export default function ReviewBulletinPage() {
             fieldIndex = footerFieldIndex;
 
             displayName =
-              field.label || field.display_name || "Campo de Footer";
+              field.label ||
+              field.display_name ||
+              t("elementNames.footerField");
 
             didMapTarget = true;
             return true;
@@ -544,7 +601,9 @@ export default function ReviewBulletinPage() {
             fieldIndex = globalFooterFieldIndex;
 
             displayName =
-              field.label || field.display_name || "Campo de Footer";
+              field.label ||
+              field.display_name ||
+              t("elementNames.footerField");
 
             didMapTarget = true;
             return true;
@@ -634,7 +693,7 @@ export default function ReviewBulletinPage() {
                 `block-${resolvedSectionIndex}` + `-${resolvedBlockIndex}`;
 
               targetType = "block";
-              displayName = block.display_name || "Bloque";
+              displayName = block.display_name || t("elementNames.block");
 
               didMapTarget = true;
             }
@@ -648,7 +707,7 @@ export default function ReviewBulletinPage() {
             frontendId = `section-${resolvedSectionIndex}`;
 
             targetType = "section";
-            displayName = section.display_name || "Sección";
+            displayName = section.display_name || t("elementNames.section");
 
             didMapTarget = true;
           }
@@ -670,7 +729,9 @@ export default function ReviewBulletinPage() {
           fieldIndex = globalHeaderFieldIndex;
 
           displayName =
-            field?.label || field?.display_name || "Campo de Header";
+            field?.label ||
+            field?.display_name ||
+            t("elementNames.headerField");
 
           didMapTarget = true;
         }
@@ -691,7 +752,9 @@ export default function ReviewBulletinPage() {
             fieldIndex = globalFooterFieldIndex;
 
             displayName =
-              field?.label || field?.display_name || "Campo de Footer";
+              field?.label ||
+              field?.display_name ||
+              t("elementNames.footerField");
 
             didMapTarget = true;
           }
@@ -732,7 +795,7 @@ export default function ReviewBulletinPage() {
         target_element: updatedTarget,
       };
     });
-  }, [comments, bulletin]);
+  }, [comments, bulletin, t]);
 
   // Sort comments for sidebar display
   const sortedComments = useMemo(() => {
@@ -778,11 +841,6 @@ export default function ReviewBulletinPage() {
     return counts;
   }, [mappedComments]);
 
-  useEffect(() => {
-    loadBulletinData();
-    loadComments();
-  }, [bulletinId]);
-
   // SEO: Actualizar metadatos cuando se carga el boletín
   useEffect(() => {
     if (!bulletin?.master?.bulletin_name) {
@@ -790,20 +848,22 @@ export default function ReviewBulletinPage() {
     }
 
     const bulletinTitle = bulletin.master.bulletin_name;
-    const description = bulletin.master.description
+    const description = bulletin.master.description?.trim()
       ? bulletin.master.description.substring(0, 160)
-      : `Revisión de boletín ${bulletinTitle}`;
+      : t("seo.description", { title: bulletinTitle });
     const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
     const canonicalUrl = bulletinId
       ? `${baseUrl}/${locale}/reviews/${bulletinId}`
       : "";
 
-    document.title = `${bulletinTitle} - Bulletin builder`;
+    document.title = t("seo.pageTitle", {
+      title: bulletinTitle,
+    });
     setMetaTag("description", description);
     setMetaTag("og:title", bulletinTitle, true);
     setMetaTag(
       "og:description",
-      bulletin.master.description || `Revisión de boletín: ${bulletinTitle}`,
+      bulletin.master.description || description,
       true,
     );
     setMetaTag("og:type", "article", true);
@@ -829,15 +889,24 @@ export default function ReviewBulletinPage() {
       );
       injectSchema(
         generateBreadcrumbSchema([
-          { name: "Home", url: baseUrl },
-          { name: "Revisiones", url: `${baseUrl}/${locale}/reviews` },
-          { name: bulletinTitle, url: canonicalUrl },
+          {
+            name: t("breadcrumbs.home"),
+            url: baseUrl,
+          },
+          {
+            name: t("breadcrumbs.reviews"),
+            url: `${baseUrl}/${locale}/reviews`,
+          },
+          {
+            name: bulletinTitle,
+            url: canonicalUrl,
+          },
         ]),
       );
     }
-  }, [bulletin, locale, bulletinId]);
+  }, [bulletin, locale, bulletinId, t]);
 
-  const loadComments = async () => {
+  const loadComments = useCallback(async () => {
     try {
       const response = await ReviewService.getReviewHistory(bulletinId);
       let historyData: ReviewHistory | undefined;
@@ -876,82 +945,125 @@ export default function ReviewBulletinPage() {
       console.error("Error loading comments:", error);
       // Construct a minimal valid history object if possible or just show error
     }
-  };
+  }, [bulletinId]);
 
-  const loadBulletinData = async () => {
-    try {
-      setLoading(true);
+  const loadBulletinData = useCallback(async () => {
+    /**
+     * Obtiene y transforma siempre la versión más reciente del boletín.
+     */
+    const fetchCurrentBulletin = async () => {
       const response = await BulletinAPIService.getCurrentVersion(bulletinId);
 
-      if (response.success && response.data) {
-        // Decode data before setting state
-        const decodedBulletin = {
-          ...response.data,
-          master: response.data.master,
-          // We need to apply decodeTextFields to the whole structure or just data
-          // Construct a temp structure that matches what decodeTextFields expects
-          // Actually decodeTextFields expects CreateBulletinData structure
-          // Let's adapt it inside the function or here.
-          // Simplified: just decode response.data
-        };
+      if (!response.success || !response.data) {
+        return null;
+      }
 
-        // Apply decoding to the deep structure
-        // We create a temporary object that matches the structure expected by decodeTextFields
-        const tempForDecoding = {
-          master: response.data.master,
-          version: response.data.current_version,
-        };
-        const decoded = decodeTextFields(tempForDecoding);
+      const decoded = decodeTextFields({
+        master: response.data.master,
+        version: response.data.current_version,
+      });
 
-        const finalBulletin = {
-          master: decoded.master,
-          current_version: decoded.version,
-        };
+      return {
+        master: decoded.master,
+        current_version: decoded.version,
+      };
+    };
 
-        setBulletin(finalBulletin);
+    try {
+      setLoading(true);
+      setError(null);
 
-        // Si el estado es pending_review, abrir automáticamente la revisión
-        if (finalBulletin.master.status === "pending_review") {
-          try {
-            await ReviewService.openReview(bulletinId);
-            // Actualizar estado local
-            setBulletin((prev: any) => {
-              if (!prev) return finalBulletin;
-              return {
-                ...prev,
-                master: { ...prev.master, status: "review" },
-              };
-            });
-          } catch (e: any) {
-            if (e.message && e.message.includes("Current: review")) {
-              console.log("Bulletin already in review, updating local state");
-              setBulletin((prev: any) => ({
-                ...prev,
-                master: { ...prev.master, status: "review" },
-              }));
-            } else if (
-              e.message &&
-              e.message.includes(
-                "Only assigned reviewer or admin can open review",
-              )
-            ) {
-              console.warn(
-                "User is not the assigned reviewer. Review mode remains closed.",
-              );
-            } else {
-              console.error("Error opening review:", e);
-            }
+      /**
+       * Primera consulta: permite saber si el boletín necesita
+       * pasar de pending_review a review.
+       */
+      let finalBulletin = await fetchCurrentBulletin();
+
+      if (!finalBulletin) {
+        setBulletin(null);
+        setError(t("errors.loadBulletin"));
+        return;
+      }
+
+      if (finalBulletin.master.status === "pending_review") {
+        let shouldRefetchBulletin = false;
+
+        try {
+          await ReviewService.openReview(bulletinId);
+
+          /**
+           * Abrir la revisión puede modificar lo que el backend
+           * devuelve para la versión actual. Es necesario volver
+           * a consultar el boletín.
+           */
+          shouldRefetchBulletin = true;
+        } catch (error: any) {
+          const message =
+            typeof error?.message === "string" ? error.message : "";
+
+          if (message.includes("Current: review")) {
+            /**
+             * Otro request pudo haber abierto la revisión.
+             * También debemos obtener nuevamente el boletín.
+             */
+            shouldRefetchBulletin = true;
+          } else if (
+            message.includes("Only assigned reviewer or admin can open review")
+          ) {
+            console.warn(
+              "User is not the assigned reviewer. Review mode remains closed.",
+            );
+          } else {
+            console.error("Error opening review:", error);
           }
         }
-      } else {
-        setError("Error al cargar el boletín");
+
+        if (shouldRefetchBulletin) {
+          const refreshedBulletin = await fetchCurrentBulletin();
+
+          if (!refreshedBulletin) {
+            throw new Error("Could not reload bulletin after opening review");
+          }
+
+          finalBulletin = refreshedBulletin;
+        }
       }
-    } catch (err) {
-      setError("Error de conexión");
+
+      /**
+       * Solo montamos Canvas cuando ya tenemos la versión definitiva.
+       */
+      setBulletin(finalBulletin);
+    } catch (error) {
+      console.error("Error loading bulletin:", error);
+
+      setBulletin(null);
+      setError(t("errors.connection"));
     } finally {
       setLoading(false);
     }
-  };
+  }, [bulletinId, t]);
+
+  useEffect(() => {
+    if (!bulletinId) {
+      return;
+    }
+
+    /**
+     * Elimina cualquier información conservada durante una
+     * navegación cliente entre boletines o idiomas.
+     */
+    setBulletin(null);
+    setComments([]);
+    setReviewHistory(null);
+    setError(null);
+    setSelection({
+      type: "template",
+      id: null,
+    });
+
+    void loadBulletinData();
+    void loadComments();
+  }, [bulletinId, locale, loadBulletinData, loadComments]);
 
   const handleApprove = async () => {
     try {
@@ -979,7 +1091,8 @@ export default function ReviewBulletinPage() {
       }
 
       setPublishedUrl(
-        url || `${window.location.origin}/bulletins/${bulletin.master._id}`,
+        url ||
+          `${window.location.origin}/${locale}/bulletins/${bulletin.master._id}`,
       );
       setModalTitle(t("successModal.title"));
       setModalMessage(t("successModal.message"));
@@ -987,20 +1100,28 @@ export default function ReviewBulletinPage() {
       showToast(t("successModal.title"), "success");
     } catch (error: any) {
       console.error("Error approving bulletin:", error);
-      showToast(
-        error.message ||
-          "Ocurrió un error al intentar aprobar el boletín. Por favor intenta nuevamente.",
-        "error",
-      );
-      setModalTitle("Error al aprobar");
-      setModalMessage(
-        error.message ||
-          "Ocurrió un error al intentar aprobar el boletín. Por favor intenta nuevamente.",
-      );
+      showToast(t("errors.approve"), "error");
+      setModalTitle(t("errors.approveTitle"));
+      setModalMessage(t("errors.approve"));
       // setIsErrorModalOpen(true); // Disable modal since we use Toast now
     } finally {
       setLoading(false);
     }
+  };
+
+  const STATUS_TRANSLATION_KEYS = {
+    draft: "statuses.draft",
+    pending_review: "statuses.pending_review",
+    review: "statuses.review",
+    approved: "statuses.approved",
+    rejected: "statuses.rejected",
+  } as const;
+
+  const getStatusLabel = (status: string) => {
+    const key =
+      STATUS_TRANSLATION_KEYS[status as keyof typeof STATUS_TRANSLATION_KEYS];
+
+    return key ? t(key) : status.replaceAll("_", " ");
   };
 
   const handleReject = async () => {
@@ -1014,17 +1135,11 @@ export default function ReviewBulletinPage() {
       await ReviewService.rejectBulletin(bulletinId);
 
       showToast(t("rejectSuccess"), "success");
-
-      // Use the locale-aware route and replace the invalid detail URL.
-      window.location.replace(reviewsPath);
+      router.replace(reviewsPath);
     } catch (error: any) {
       console.error("Error rejecting bulletin:", error);
 
-      showToast(
-        error.message ||
-          "Ocurrió un error al intentar rechazar el boletín. Asegúrate de haber dejado al menos un comentario.",
-        "error",
-      );
+      showToast(t("errors.reject"), "error");
     } finally {
       setIsRejecting(false);
     }
@@ -1298,11 +1413,11 @@ export default function ReviewBulletinPage() {
           setCommentText("");
         } else {
           console.error("Save comment failed:", response);
-          alert("Error al guardar comentario");
+          showToast(t("errors.saveComment"), "error");
         }
       } catch (error) {
         console.error("Error saving comment:", error);
-        alert("Error al guardar comentario");
+        showToast(t("errors.saveComment"), "error");
       } finally {
         setIsSubmittingComment(false);
       }
@@ -1310,7 +1425,9 @@ export default function ReviewBulletinPage() {
   };
 
   const getElementName = () => {
-    if (!bulletin || !selection.id) return "";
+    if (!bulletin || !selection.id) {
+      return "";
+    }
 
     if (
       typeof selection.displayName === "string" &&
@@ -1318,22 +1435,35 @@ export default function ReviewBulletinPage() {
     ) {
       return selection.displayName;
     }
+
     const data = bulletin.current_version.data;
 
     try {
       switch (selection.type) {
-        case "section":
+        case "section": {
           const section = data.sections?.[selection.sectionIndex!];
-          return (
-            section?.display_name || `Sección ${selection.sectionIndex! + 1}`
-          );
 
-        case "block":
+          const sectionNumber =
+            typeof selection.sectionIndex === "number"
+              ? selection.sectionIndex + 1
+              : "?";
+
+          return (
+            section?.display_name ||
+            t("elementNames.sectionNumber", {
+              number: sectionNumber,
+            })
+          );
+        }
+
+        case "block": {
           const block =
             data.sections?.[selection.sectionIndex!]?.blocks?.[
               selection.blockIndex!
             ];
-          return block?.display_name || "Bloque";
+
+          return block?.display_name || t("elementNames.block");
+        }
 
         case "field": {
           const field =
@@ -1341,7 +1471,7 @@ export default function ReviewBulletinPage() {
               selection.blockIndex!
             ]?.fields?.[selection.fieldIndex!];
 
-          return field?.label || field?.display_name || "Campo";
+          return field?.label || field?.display_name || t("elementNames.field");
         }
 
         case "list_item": {
@@ -1351,14 +1481,19 @@ export default function ReviewBulletinPage() {
             ]?.fields?.[selection.fieldIndex!];
 
           const listName =
-            listField?.label || listField?.display_name || "Lista";
+            listField?.label ||
+            listField?.display_name ||
+            t("elementNames.list");
 
           const itemNumber =
             typeof selection.itemIndex === "number"
               ? selection.itemIndex + 1
               : "?";
 
-          return `${listName} · Item ${itemNumber}`;
+          return t("elementNames.listItem", {
+            list: listName,
+            item: itemNumber,
+          });
         }
 
         case "list_item_field": {
@@ -1374,58 +1509,89 @@ export default function ReviewBulletinPage() {
             : undefined;
 
           const itemFieldName =
-            itemField?.label || itemField?.display_name || "Campo";
+            itemField?.label ||
+            itemField?.display_name ||
+            t("elementNames.field");
 
           const itemNumber =
             typeof selection.itemIndex === "number"
               ? selection.itemIndex + 1
               : "?";
 
-          return `${itemFieldName} · Item ${itemNumber}`;
+          return t("elementNames.listItemField", {
+            field: itemFieldName,
+            item: itemNumber,
+          });
         }
 
         case "header":
           return selection.sectionIndex === -1
-            ? "Header General"
-            : "Header de Sección";
+            ? t("elementNames.globalHeader")
+            : t("elementNames.sectionHeader");
 
         case "footer":
           return selection.sectionIndex === -1
-            ? "Footer General"
-            : "Footer de Sección";
+            ? t("elementNames.globalFooter")
+            : t("elementNames.sectionFooter");
 
-        case "header_field":
+        case "header_field": {
           if (selection.sectionIndex === -1) {
-            const hf = data.header_config?.fields?.[selection.fieldIndex!];
-            return hf?.label || hf?.display_name || "Campo de Header";
+            const field = data.header_config?.fields?.[selection.fieldIndex!];
+
+            return (
+              field?.label ||
+              field?.display_name ||
+              t("elementNames.headerField")
+            );
           }
-          const shf =
+
+          const field =
             data.sections?.[selection.sectionIndex!]?.header_config?.fields?.[
               selection.fieldIndex!
             ];
-          return (
-            shf?.label || shf?.display_name || "Campo de Header de Sección"
-          );
 
-        case "footer_field":
+          return (
+            field?.label ||
+            field?.display_name ||
+            t("elementNames.sectionHeaderField")
+          );
+        }
+
+        case "footer_field": {
           if (selection.sectionIndex === -1) {
-            const ff = data.footer_config?.fields?.[selection.fieldIndex!];
-            return ff?.label || ff?.display_name || "Campo de Footer";
+            const field = data.footer_config?.fields?.[selection.fieldIndex!];
+
+            return (
+              field?.label ||
+              field?.display_name ||
+              t("elementNames.footerField")
+            );
           }
-          const sff =
+
+          const field =
             data.sections?.[selection.sectionIndex!]?.footer_config?.fields?.[
               selection.fieldIndex!
             ];
+
           return (
-            sff?.label || sff?.display_name || "Campo de Footer de Sección"
+            field?.label ||
+            field?.display_name ||
+            t("elementNames.sectionFooterField")
           );
+        }
+
         case "card_item": {
           const cardNumber =
             typeof selection.cardIndex === "number"
               ? selection.cardIndex + 1
               : "?";
 
-          return selection.displayName || `Card ${cardNumber}`;
+          return (
+            selection.displayName ||
+            t("elementNames.card", {
+              number: cardNumber,
+            })
+          );
         }
 
         case "card_block": {
@@ -1441,7 +1607,10 @@ export default function ReviewBulletinPage() {
 
           return (
             selection.displayName ||
-            `Bloque ${blockNumber} · Card ${cardNumber}`
+            t("elementNames.cardBlock", {
+              block: blockNumber,
+              card: cardNumber,
+            })
           );
         }
 
@@ -1456,17 +1625,26 @@ export default function ReviewBulletinPage() {
               ? selection.cardBlockIndex + 1
               : "?";
 
+          const fieldNumber =
+            typeof selection.cardFieldIndex === "number"
+              ? selection.cardFieldIndex + 1
+              : "?";
+
           return (
             selection.displayName ||
-            `Campo · Bloque ${blockNumber} · Card ${cardNumber}`
+            t("elementNames.cardField", {
+              field: fieldNumber,
+              block: blockNumber,
+              card: cardNumber,
+            })
           );
         }
 
         default:
-          return selection.type;
+          return t("elementTypes.element");
       }
-    } catch (e) {
-      return selection.type;
+    } catch {
+      return t("elementTypes.element");
     }
   };
 
@@ -1497,7 +1675,7 @@ export default function ReviewBulletinPage() {
   if (error || !previewData) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
-        <p className="text-red-500 mb-4">{error || "No data found"}</p>
+        <p className="text-red-500 mb-4">{error || t("noData")}</p>
         <Link href={reviewsPath} className={btnPrimary}>
           {t("back")}
         </Link>
@@ -1534,9 +1712,7 @@ export default function ReviewBulletinPage() {
                       : "bg-gray-100 text-gray-800"
                 }`}
               >
-                {bulletin.master.status === "review"
-                  ? t("inReview")
-                  : bulletin.master.status}
+                {getStatusLabel(bulletin.master.status)}
               </span>
             </div>
           </div>
@@ -1560,7 +1736,7 @@ export default function ReviewBulletinPage() {
               <XCircle className="h-5 w-5" />
             )}
 
-            {isRejecting ? "Rechazando..." : t("reject")}
+            {isRejecting ? t("rejecting") : t("reject")}
           </button>
           <button
             onClick={handleApprove}
@@ -1581,7 +1757,8 @@ export default function ReviewBulletinPage() {
               <button
                 onClick={() => setIsSidebarOpen(true)}
                 className="bg-white p-2 rounded-lg shadow-md border hover:bg-gray-50 text-gray-600 transition-colors"
-                title="Show Comments"
+                title={t("showComments")}
+                aria-label={t("showComments")}
               >
                 <ChevronsLeft className="h-5 w-5" />
               </button>
@@ -1589,6 +1766,9 @@ export default function ReviewBulletinPage() {
           </div>
 
           <Canvas
+            key={`${locale}-${bulletinId}-${previewData.version.content.sections
+              .map((section) => section.section_id)
+              .join("-")}`}
             data={previewData}
             selection={selection}
             onSelect={handleSelection}
@@ -1690,31 +1870,9 @@ export default function ReviewBulletinPage() {
                           <div className="flex items-center gap-1.5 mb-2">
                             <span className="text-[10px] font-medium px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded-md truncate max-w-[200px]">
                               {comment.target_element.display_name ||
-                                (comment.target_element.type === "section"
-                                  ? tReview("section")
-                                  : comment.target_element.type === "block"
-                                    ? tReview("block")
-                                    : comment.target_element.type === "field"
-                                      ? tReview("field")
-                                      : comment.target_element.type ===
-                                          "list_item"
-                                        ? "List item"
-                                        : comment.target_element.type ===
-                                            "list_item_field"
-                                          ? "Item field"
-                                          : comment.target_element.type ===
-                                              "header"
-                                            ? tCommon("header")
-                                            : comment.target_element.type ===
-                                                "footer"
-                                              ? tCommon("footer")
-                                              : comment.target_element.type ===
-                                                  "header_field"
-                                                ? tCommon("header")
-                                                : comment.target_element
-                                                      .type === "footer_field"
-                                                  ? tCommon("footer")
-                                                  : "Element")}
+                                getCommentTargetTypeLabel(
+                                  comment.target_element.type,
+                                )}
                             </span>
                           </div>
                         ) : (
@@ -1735,7 +1893,7 @@ export default function ReviewBulletinPage() {
                               ).toUpperCase()}
                             </div>
                             <span className="font-medium text-gray-900 text-xs">
-                              {comment.author_first_name || "Usuario"}
+                              {comment.author_first_name || t("userFallback")}
                             </span>
                           </div>
                           <span className="text-[10px] text-gray-400">
@@ -1749,11 +1907,6 @@ export default function ReviewBulletinPage() {
                         <p className="text-gray-600 leading-relaxed whitespace-pre-wrap wrap-break-word pl-8">
                           {comment.text}
                         </p>
-
-                        {/* Actions line (optional, purely visual for now) */}
-                        {/* <div className="mt-3 pl-8 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                             <button className="text-[10px] text-gray-400 hover:text-blue-500 font-medium">Responder</button>
-                        </div> */}
                       </div>
                     );
                   })
@@ -1823,13 +1976,13 @@ export default function ReviewBulletinPage() {
         isOpen={isSuccessModalOpen}
         onClose={() => {
           setIsSuccessModalOpen(false);
-          router.push("/bulletins"); // Redirect after closing
+          router.push(`/${locale}/bulletins`);
         }}
         title={t("successModal.title")}
         type="success"
         footer={
           <button
-            onClick={() => router.push("/bulletins")}
+            onClick={() => router.push(`/${locale}/bulletins`)}
             className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors shadow-sm"
           >
             {t("successModal.goToBulletins")}
@@ -1874,33 +2027,6 @@ export default function ReviewBulletinPage() {
           )}
         </div>
       </Modal>
-
-      {/* Error Modal */}
-      {/* 
-      <Modal
-        isOpen={isErrorModalOpen}
-        onClose={() => setIsErrorModalOpen(false)}
-        title={modalTitle || "Error"}
-        type="error"
-        footer={
-          <button
-            onClick={() => setIsErrorModalOpen(false)}
-            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors"
-          >
-            Cerrar
-          </button>
-        }
-      >
-        <div className="flex flex-col gap-4 items-center text-center">
-          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-red-600 mb-2">
-            <AlertTriangle className="w-6 h-6" />
-          </div>
-          <p className="text-gray-600 whitespace-pre-line">
-            {modalMessage || "Ha ocurrido un error inesperado."}
-          </p>
-        </div>
-      </Modal> 
-      */}
     </div>
   );
 }
