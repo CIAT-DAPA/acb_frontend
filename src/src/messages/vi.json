@@ -252,11 +252,29 @@
     "statusReview": "Đang xem xét",
     "statusRejected": "Từ chối",
     "statusActive": "Hoạt động",
-    "statusUnknown": "Không xác định"
+    "statusUnknown": "Không xác định",
+    "duplicate": "Nhân bản",
+    "share": "Chia sẻ"
   },
   "CreateBulletin": {
+    "defaultBulletinName": "{template} - {month} {year}",
+    "errors": {
+      "templateUnexpectedStructure": "Phản hồi của mẫu không có cấu trúc như mong đợi.",
+      "missingTemplateVersionId": "Không thể lấy ID phiên bản của mẫu.",
+      "updateBulletin": "Không thể cập nhật bản tin.",
+      "createBulletin": "Không thể tạo bản tin.",
+      "createBulletinVersion": "Không thể tạo phiên bản bản tin.",
+      "missingCreatedBulletinId": "Không thể lấy ID của bản tin đã tạo.",
+      "invalidBulletinIdForReview": "ID bản tin không hợp lệ để gửi duyệt.",
+      "publishBulletin": "Không thể xuất bản bản tin.",
+      "invalidBulletinIdForPublish": "ID bản tin không hợp lệ để xuất bản."
+    },
     "comments": {
-      "generalTitle": "Bình luận chung"
+      "generalTitle": "Bình luận chung",
+      "title": "Bình luận",
+      "reviewerFallback": "Người đánh giá",
+      "fieldCount": "{count} bình luận về trường này",
+      "blockCount": "{count} bình luận về khối này"
     },
     "searchableInput": {
       "placeholder": "Tìm kiếm hoặc tạo tùy chọn mới...",
@@ -354,7 +372,8 @@
     "preview": {
       "title": "Xem trước",
       "subtitle": "Trực quan hóa bản tin của bạn sẽ trông như thế nào",
-      "selectTemplate": "Chọn một biểu mẫu để xem bản xem trước"
+      "selectTemplate": "Chọn một biểu mẫu để xem bản xem trước",
+      "fallbackTitle": "Xem trước"
     },
     "navigation": {
       "saving": "Đang lưu...",
@@ -373,7 +392,19 @@
       "title": "Chọn biểu mẫu",
       "description": "Chọn biểu mẫu bạn muốn sử dụng cho bản tin của mình",
       "noTemplates": "Không có biểu mẫu nào có sẵn",
-      "preview": "Xem trước"
+      "preview": "Xem trước",
+      "statuses": {
+        "active": "Đang hoạt động",
+        "inactive": "Không hoạt động",
+        "archived": "Đã lưu trữ",
+        "unknown": "Trạng thái không xác định"
+      },
+      "accessTypes": {
+        "public": "Công khai",
+        "private": "Riêng tư",
+        "restricted": "Hạn chế",
+        "unknown": "Quyền truy cập không xác định"
+      }
     },
     "section": {
       "title": "Phần",
@@ -384,7 +415,16 @@
       "footerFields": "Các ô nhập liệu ở Chân trang",
       "notFound": "Không tìm thấy phần này",
       "addNewPage": "Trang mới",
-      "deleteCurrentPage": "Xóa trang hiện tại"
+      "deleteCurrentPage": "Xóa trang hiện tại",
+      "repeatablePageTitle": "Trang {number}",
+      "numberedTitle": "Phần {number}",
+      "blockFallback": "Khối {number}",
+      "fieldFallback": "Trường",
+      "readOnly": {
+        "empty": "Không có giá trị",
+        "yes": "Có",
+        "no": "Không"
+      }
     },
     "confirmation": {
       "cancel": "Hủy",
@@ -422,7 +462,8 @@
       "errorInvalidId": "ID bản tin không hợp lệ",
       "errorNoData": "Không thể tải thông tin bản tin",
       "errorNoVersion": "Phiên bản bản tin không có dữ liệu hợp lệ",
-      "errorGeneric": "Lỗi khi tải dữ liệu bản tin"
+      "errorGeneric": "Lỗi khi tải dữ liệu bản tin",
+      "updatedCommitMessage": "Phiên bản đã cập nhật"
     },
     "basicInfo": {
       "title": "Thông tin cơ bản",
@@ -1951,6 +1992,86 @@
         "listItems": ["Mục 1", "Mục 2", "Mục 3"],
         "climateTitle": "Dữ liệu khí hậu:",
         "climateData": ["Nhiệt độ: 25°C", "Độ ẩm: 65%", "Lượng mưa: 15mm"]
+      },
+      "fallbacks": {
+        "textField": "Trường văn bản",
+        "textWithIcon": "Văn bản kèm biểu tượng",
+        "option": "Tùy chọn",
+        "image": "Hình ảnh",
+        "uploadImage": "Hình ảnh cần tải lên",
+        "uploadedImage": "Hình ảnh đã tải lên",
+        "list": "Danh sách",
+        "card": "Thẻ {number}",
+        "block": "Khối {number}",
+        "field": "Trường {number}",
+        "unknownField": "Trường không được hỗ trợ: {name}"
+      },
+      "dimensions": {
+        "height": "Chiều cao: {value}px",
+        "width": "Chiều rộng: {value}px"
+      },
+      "reviewLabels": {
+        "header": "Đầu trang",
+        "footer": "Chân trang",
+        "background": "Nền",
+        "listItem": "{list} · Mục {number}",
+        "itemField": "{field} · Mục {number}",
+        "section": "Phần",
+        "block": "Khối",
+        "listItemField": "{field} · Mục {number}"
+      },
+      "fieldTypes": {
+        "field": "Trường",
+        "text": "Văn bản",
+        "text_with_icon": "Văn bản kèm biểu tượng",
+        "select_with_icons": "Lựa chọn kèm biểu tượng",
+        "searchable": "Tìm kiếm",
+        "select_background": "Chọn nền",
+        "date": "Ngày",
+        "date_range": "Khoảng ngày",
+        "page_number": "Số trang",
+        "list": "Danh sách",
+        "climate_data_puntual": "Dữ liệu khí hậu",
+        "image": "Hình ảnh",
+        "image_upload": "Tải hình ảnh lên",
+        "card": "Thẻ",
+        "moon_calendar": "Lịch trăng"
+      },
+      "moonCalendar": {
+        "title": "Lịch trăng - {month}",
+        "fullShort": "Tròn",
+        "newShort": "Non",
+        "waxingShort": "Thượng",
+        "waningShort": "Hạ"
+      },
+      "accessibility": {
+        "selectedIcon": "Biểu tượng đã chọn",
+        "moonPhase": "Pha Mặt Trăng",
+        "calendarIcon": "Biểu tượng lịch",
+        "image": "Hình ảnh",
+        "uploadedImage": "Hình ảnh đã tải lên",
+        "icon": "Biểu tượng"
+      },
+      "dateRange": {
+        "and": "và"
+      },
+      "climateFallback": {
+        "maxTemperature": "Nhiệt độ tối đa: {value}°C",
+        "minTemperature": "Nhiệt độ tối thiểu: {value}°C"
+      },
+      "statuses": {
+        "draft": "Bản nháp",
+        "pending_review": "Đang chờ xem xét",
+        "review": "Đang xem xét",
+        "approved": "Đã phê duyệt",
+        "rejected": "Đã từ chối",
+        "unknown": "Trạng thái không xác định"
+      },
+      "accessTypes": {
+        "public": "Công khai",
+        "private": "Riêng tư",
+        "restricted": "Hạn chế",
+        "unknown": "Quyền truy cập không xác định"
       }
     },
     "scrollView": {
@@ -2110,6 +2231,13 @@
     "closeModal": "Đóng cửa sổ"
   },
   "Review": {
+    "commentFor": "Nhận xét cho",
+    "writeAboutElement": "Viết nhận xét về phần tử này...",
+    "comments": "Nhận xét",
+    "noComments": "Chưa có nhận xét",
+    "selectElementToComment": "Chọn một phần tử trong bản tin để để lại nhận xét.",
+    "newGeneralComment": "Nhận xét chung mới",
+    "writeGeneralComment": "Viết nhận xét chung...",
     "newComment": "Bình luận mới",
     "reject": "Từ chối",
     "rejectSuccess": "Bản tin đã bị từ chối thành công",
@@ -2126,6 +2254,65 @@
       "openLinkTitle": "Mở liên kết",
       "goToBulletins": "Đi đến bản tin của tôi",
       "linkCopied": "Đã sao chép liên kết vào bộ nhớ tạm"
+    },
+    "rejecting": "Đang từ chối...",
+    "showComments": "Hiển thị nhận xét",
+    "noData": "Không tìm thấy dữ liệu",
+    "userFallback": "Người dùng",
+    "elementFallback": "Phần tử",
+    "seo": {
+      "pageTitle": "{title} - Trình tạo bản tin",
+      "description": "Xem xét bản tin {title}"
+    },
+    "breadcrumbs": {
+      "home": "Trang chủ",
+      "reviews": "Đánh giá"
+    },
+    "errors": {
+      "loadBulletin": "Không thể tải bản tin.",
+      "connection": "Lỗi kết nối.",
+      "approveTitle": "Lỗi phê duyệt",
+      "approve": "Đã xảy ra lỗi khi phê duyệt bản tin. Vui lòng thử lại.",
+      "reject": "Đã xảy ra lỗi khi từ chối bản tin. Hãy đảm bảo bạn đã thêm ít nhất một nhận xét.",
+      "saveComment": "Không thể lưu nhận xét.",
+      "unexpected": "Đã xảy ra lỗi không mong muốn."
+    },
+    "statuses": {
+      "draft": "Bản nháp",
+      "pending_review": "Chờ xem xét",
+      "review": "Đang xem xét",
+      "approved": "Đã phê duyệt",
+      "rejected": "Đã từ chối"
+    },
+    "elementTypes": {
+      "listItem": "Mục danh sách",
+      "itemField": "Trường của mục",
+      "element": "Phần tử"
+    },
+    "elementNames": {
+      "section": "Phần {number}",
+      "sectionFallback": "Phần",
+      "block": "Khối",
+      "blockNumber": "Khối {number}",
+      "field": "Trường",
+      "fieldNumber": "Trường {number}",
+      "list": "Danh sách",
+      "listItem": "{list} · Mục {item}",
+      "listItemField": "{field} · Mục {item}",
+      "globalHeader": "Đầu trang chung",
+      "sectionHeader": "Đầu trang của phần",
+      "globalFooter": "Chân trang chung",
+      "sectionFooter": "Chân trang của phần",
+      "headerField": "Trường đầu trang",
+      "sectionHeaderField": "Trường đầu trang của phần",
+      "footerField": "Trường chân trang",
+      "sectionFooterField": "Trường chân trang của phần",
+      "card": "Thẻ {number}",
+      "cardBlock": "Khối {block} · Thẻ {card}",
+      "cardField": "Trường {field} · Khối {block} · Thẻ {card}",
+      "cardFieldSimple": "Trường · Khối {block} · Thẻ {card}",
+      "cardListItem": "Danh sách · Mục {item} · Thẻ {card}",
+      "cardListItemField": "Trường danh sách · Mục {item} · Thẻ {card}"
     }
   },
   "ReviewPage": {

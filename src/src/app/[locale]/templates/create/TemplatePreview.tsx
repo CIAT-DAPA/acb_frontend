@@ -107,15 +107,36 @@ function getJustifyClass(justifyContent?: string): string {
   return justifyMap[justifyContent || "start"] || "justify-start";
 }
 
-function getFieldTypeBadgeLabel(fieldType?: string): string {
-  if (!fieldType) return "Field";
+const FIELD_TYPE_TRANSLATION_KEYS = {
+  text: "fieldTypes.text",
+  text_with_icon: "fieldTypes.text_with_icon",
+  select_with_icons: "fieldTypes.select_with_icons",
+  searchable: "fieldTypes.searchable",
+  select_background: "fieldTypes.select_background",
+  date: "fieldTypes.date",
+  date_range: "fieldTypes.date_range",
+  page_number: "fieldTypes.page_number",
+  list: "fieldTypes.list",
+  climate_data_puntual: "fieldTypes.climate_data_puntual",
+  image: "fieldTypes.image",
+  image_upload: "fieldTypes.image_upload",
+  card: "fieldTypes.card",
+  moon_calendar: "fieldTypes.moon_calendar",
+} as const;
 
-  return fieldType
-    .split("_")
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
+const PREVIEW_STATUS_TRANSLATION_KEYS = {
+  draft: "statuses.draft",
+  pending_review: "statuses.pending_review",
+  review: "statuses.review",
+  approved: "statuses.approved",
+  rejected: "statuses.rejected",
+} as const;
+
+const ACCESS_TYPE_TRANSLATION_KEYS = {
+  public: "accessTypes.public",
+  private: "accessTypes.private",
+  restricted: "accessTypes.restricted",
+} as const;
 
 function getSelectBackgroundUrlFromSection(
   section?: Section | null,
@@ -1164,7 +1185,46 @@ export function TemplatePreview({
   allowCardElementSelection = false,
 }: TemplatePreviewProps) {
   const t = useTranslations("CreateTemplate.preview");
+
+  const getPreviewStatusLabel = (status?: string) => {
+    if (!status) {
+      return t("statuses.unknown");
+    }
+
+    const key =
+      PREVIEW_STATUS_TRANSLATION_KEYS[
+        status as keyof typeof PREVIEW_STATUS_TRANSLATION_KEYS
+      ];
+
+    return key ? t(key) : t("statuses.unknown");
+  };
+
+  const getAccessTypeLabel = (accessType?: string) => {
+    if (!accessType) {
+      return t("accessTypes.unknown");
+    }
+
+    const key =
+      ACCESS_TYPE_TRANSLATION_KEYS[
+        accessType as keyof typeof ACCESS_TYPE_TRANSLATION_KEYS
+      ];
+
+    return key ? t(key) : t("accessTypes.unknown");
+  };
+
   const pathname = usePathname();
+
+  const getFieldTypeBadgeLabel = (fieldType?: string) => {
+    if (!fieldType) {
+      return t("fieldTypes.field");
+    }
+
+    const key =
+      FIELD_TYPE_TRANSLATION_KEYS[
+        fieldType as keyof typeof FIELD_TYPE_TRANSLATION_KEYS
+      ];
+    return key ? t(key) : t("fieldTypes.field");
+  };
 
   // Helper para renderizar el badge de comentarios
   const renderCommentBadge = (
@@ -1424,7 +1484,10 @@ export function TemplatePreview({
       case "DD, MMMM YYYY":
         return `${day}, ${monthNameCapitalized} ${year}`;
       case "DD de MMMM":
-        return `${day} de ${monthNameCapitalized}`;
+        return new Intl.DateTimeFormat(localeCode, {
+          day: "2-digit",
+          month: "long",
+        }).format(dateObj);
       case "MMMM/YY":
         return `${monthNameCapitalized}/${shortYear}`;
       case "YYYY-MM-DD":
@@ -1510,7 +1573,7 @@ export function TemplatePreview({
         // Mostrar el valor si existe, sino mostrar placeholder
         const textValue = field.value
           ? renderFieldValue(field.value)
-          : field.display_name || field.label || "Campo de texto";
+          : field.display_name || field.label || t("fallbacks.textField");
 
         const showPlainTextLabel =
           (field.field_config as any)?.showLabel ?? false;
@@ -1544,7 +1607,7 @@ export function TemplatePreview({
             textWithIconValue = renderFieldValue(field.value);
           }
         } else {
-          textWithIconValue = field.label || "Texto con icono";
+          textWithIconValue = field.label || t("fallbacks.textWithIcon");
         }
 
         // Obtener el icono: primero del valor (en listas), luego del field_config, o fallback
@@ -1587,7 +1650,7 @@ export function TemplatePreview({
                   }}
                   color={useOriginalColor ? undefined : fieldStyles.color}
                   preserveOriginalColors={useOriginalColor}
-                  alt="Icon"
+                  alt={t("accessibility.icon")}
                 />
               ) : (
                 <span style={{ fontSize: `${iconSize}px` }}>
@@ -1680,7 +1743,7 @@ export function TemplatePreview({
                     : effectiveStyles.primary_color || fieldStyles.color
                 }
                 preserveOriginalColors={selectUseOriginalColor}
-                alt="Selected icon"
+                alt={t("accessibility.selectedIcon")}
               />
             )}
             {showLabel && labelToShow && <span>{labelToShow}</span>}
@@ -1690,7 +1753,8 @@ export function TemplatePreview({
       case "searchable":
         // Mostrar la primera opción si no hay valor seleccionado
         const searchableOptions = (field.field_config as any)?.options || [];
-        const searchableValue = field.value || searchableOptions[0] || "Opción";
+        const searchableValue =
+          field.value || searchableOptions[0] || t("fallbacks.option");
 
         return (
           <div key={key} style={fieldStyles}>
@@ -1843,7 +1907,7 @@ export function TemplatePreview({
                 <span className="text-center">{startDateDisplay}</span>
                 <img
                   src={getMoonImagePath(startMoonPhase)}
-                  alt="Moon phase"
+                  alt={t("accessibility.moonPhase")}
                   className="w-8 h-8 object-contain"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src =
@@ -1854,7 +1918,7 @@ export function TemplatePreview({
 
               {/* Separador "Y" */}
               <div className="shrink-0 w-8 h-8 rounded-sm bg-[#525556] text-white flex items-center justify-center font-bold text-sm">
-                Y
+                {t("dateRange.and")}
               </div>
 
               {/* Fecha de fin con luna debajo */}
@@ -1862,7 +1926,7 @@ export function TemplatePreview({
                 <span className="text-center">{endDateDisplay}</span>
                 <img
                   src={getMoonImagePath(endMoonPhase)}
-                  alt="Moon phase"
+                  alt={t("accessibility.moonPhase")}
                   className="w-8 h-8 object-contain"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src =
@@ -2039,9 +2103,13 @@ export function TemplatePreview({
                         <tr
                           key={absoluteItemIndex}
                           data-review-id={listItemId}
-                          data-review-label={`${
-                            field.label || field.display_name || "Lista"
-                          } · Item ${absoluteItemIndex + 1}`}
+                          data-review-label={t("reviewLabels.listItem", {
+                            list:
+                              field.label ||
+                              field.display_name ||
+                              t("fallbacks.list"),
+                            number: absoluteItemIndex + 1,
+                          })}
                           data-measure-list-field-index={measurementFieldIndex}
                           data-measure-list-item-index={
                             measurementFieldIndex !== undefined
@@ -2096,11 +2164,16 @@ export function TemplatePreview({
                                   <td
                                     key={fieldIndex}
                                     data-review-id={subfieldId}
-                                    data-review-label={`${
-                                      fieldSchema.label ||
-                                      fieldSchema.display_name ||
-                                      fieldKey
-                                    } · Item ${absoluteItemIndex + 1}`}
+                                    data-review-label={t(
+                                      "reviewLabels.listItem",
+                                      {
+                                        list:
+                                          field.label ||
+                                          field.display_name ||
+                                          t("fallbacks.list"),
+                                        number: absoluteItemIndex + 1,
+                                      },
+                                    )}
                                     className={`p-2 align-top relative ${
                                       reviewMode
                                         ? "cursor-pointer hover:bg-black/5"
@@ -2289,9 +2362,13 @@ export function TemplatePreview({
                     <div
                       key={`list-item-${absoluteItemIndex}-${visualItemIndex}`}
                       data-review-id={listItemId}
-                      data-review-label={`${
-                        field.label || field.display_name || "Lista"
-                      } · Item ${absoluteItemIndex + 1}`}
+                      data-review-label={t("reviewLabels.listItem", {
+                        list:
+                          field.label ||
+                          field.display_name ||
+                          t("fallbacks.list"),
+                        number: absoluteItemIndex + 1,
+                      })}
                       data-measure-list-field-index={measurementFieldIndex}
                       data-measure-list-item-index={
                         measurementFieldIndex !== undefined
@@ -2408,11 +2485,16 @@ export function TemplatePreview({
                                 <div
                                   key={fieldIndex}
                                   data-review-id={subfieldId}
-                                  data-review-label={`${
-                                    fieldSchema.label ||
-                                    fieldSchema.display_name ||
-                                    fieldKey
-                                  } · Item ${absoluteItemIndex + 1}`}
+                                  data-review-label={t(
+                                    "reviewLabels.listItemField",
+                                    {
+                                      field:
+                                        fieldSchema.label ||
+                                        fieldSchema.display_name ||
+                                        fieldKey,
+                                      number: absoluteItemIndex + 1,
+                                    },
+                                  )}
                                   className={
                                     "relative " +
                                     (isGridLayout
@@ -2561,8 +2643,17 @@ export function TemplatePreview({
               })
             ) : (
               <>
-                <div className="text-sm">Temp. Max: 25°C</div>
-                <div className="text-sm">Temp. Min: 15°C</div>
+                <div className="text-sm">
+                  {t("climateFallback.maxTemperature", {
+                    value: 25,
+                  })}
+                </div>
+
+                <div className="text-sm">
+                  {t("climateFallback.minTemperature", {
+                    value: 15,
+                  })}
+                </div>
               </>
             )}
           </div>
@@ -2612,7 +2703,7 @@ export function TemplatePreview({
           >
             <img
               src={imageUrl}
-              alt={field.display_name || "Imagen"}
+              alt={field.display_name || t("accessibility.image")}
               className="max-w-full max-h-full object-contain block"
               onError={(e) => {
                 (e.target as HTMLImageElement).src =
@@ -2671,14 +2762,19 @@ export function TemplatePreview({
               <div className="text-center p-4">
                 <div className="text-4xl mb-2">🖼️</div>
                 <span className={PLACEHOLDER_TEXT_CLASS}>
-                  {field.display_name ||
-                    t("imageUploadPlaceholder", { default: "Imagen a subir" })}
+                  {field.display_name || t("imageUploadPlaceholder")}
                 </span>
                 {(imageHeight || imageWidth) && (
                   <div className="text-xs text-gray-400 mt-2">
-                    {imageHeight && `Altura: ${imageHeight}px`}
+                    {imageHeight &&
+                      t("dimensions.height", {
+                        value: imageHeight,
+                      })}
                     {imageHeight && imageWidth && " × "}
-                    {imageWidth && `Ancho: ${imageWidth}px`}
+                    {imageWidth &&
+                      t("dimensions.width", {
+                        value: imageWidth,
+                      })}
                   </div>
                 )}
               </div>
@@ -2695,7 +2791,7 @@ export function TemplatePreview({
           >
             <img
               src={uploadedImageUrl}
-              alt={field.display_name || "Imagen subida"}
+              alt={field.display_name || t("fallbacks.uploadImage")}
               style={{
                 width: "100%",
                 height: "100%",
@@ -3051,7 +3147,10 @@ export function TemplatePreview({
               data-card-index={cardOrderIndex}
               data-card-id={cardData.cardId}
               data-review-label={
-                cardToRender.card_name || `Card ${cardOrderIndex + 1}`
+                cardToRender.card_name ||
+                t("fallbacks.card", {
+                  number: cardOrderIndex + 1,
+                })
               }
               onClick={
                 canSelectCardElements && cardReviewId
@@ -3133,7 +3232,10 @@ export function TemplatePreview({
                       data-card-block-index={cardBlockIndex}
                       data-card-block-id={block.block_id}
                       data-review-label={
-                        block.display_name || `Bloque ${cardBlockIndex + 1}`
+                        block.display_name ||
+                        t("fallbacks.block", {
+                          number: cardBlockIndex + 1,
+                        })
                       }
                       data-card-content-block-index={
                         !reviewMode ? cardBlockIndex : undefined
@@ -3239,7 +3341,9 @@ export function TemplatePreview({
                               data-review-label={
                                 blockField.label ||
                                 blockField.display_name ||
-                                `Campo ${cardFieldIndex + 1}`
+                                t("fallbacks.field", {
+                                  number: cardFieldIndex + 1,
+                                })
                               }
                               onClick={(event) => {
                                 event.stopPropagation();
@@ -3386,11 +3490,11 @@ export function TemplatePreview({
 
         // Primero asignar las fases principales
         mainPhases.forEach(({ day, phase }) => {
-          const labels: { [key in MoonPhase]: string } = {
-            llena: "Llena",
-            nueva: "Nueva",
-            cuartoCreciente: "Crec.",
-            cuartoMenguante: "Meng.",
+          const labels: Record<MoonPhase, string> = {
+            llena: t("moonCalendar.fullShort"),
+            nueva: t("moonCalendar.newShort"),
+            cuartoCreciente: t("moonCalendar.waxingShort"),
+            cuartoMenguante: t("moonCalendar.waningShort"),
           };
           dayMoonMap[day] = {
             icon: `/assets/img/moons/${phase}.png`,
@@ -3559,19 +3663,23 @@ export function TemplatePreview({
         // Obtener configuración del título
         const moonCalendarConfig = field.field_config as any;
         const titleIcon = moonCalendarConfig?.title_icon;
-        const titleLabel =
-          moonCalendarConfig?.title_label || "Calendario lunar - {month}";
         const localizedMonthName =
           getMonthNameByIndex(selectedMonthIndex, localeCode, "long") || "";
         const displayMonth =
           localizedMonthName.charAt(0).toUpperCase() +
           localizedMonthName.slice(1);
-        const displayTitle = titleLabel.replace("{month}", displayMonth);
+        const configuredTitle = moonCalendarConfig?.title_label;
+
+        const displayTitle = configuredTitle
+          ? configuredTitle.replace("{month}", displayMonth)
+          : t("moonCalendar.title", {
+              month: displayMonth,
+            });
 
         return (
           <div key={key} style={fieldStyles} className="w-full">
             {/* Título del calendario */}
-            {(titleIcon || titleLabel) && (
+            {(titleIcon || displayTitle) && (
               <div
                 className="flex items-center gap-2 mb-2 py-1 justify-center"
                 style={{
@@ -3581,7 +3689,7 @@ export function TemplatePreview({
                 {titleIcon && (
                   <img
                     src={titleIcon}
-                    alt="Calendar icon"
+                    alt={t("accessibility.calendarIcon")}
                     className="w-5 h-5 object-contain"
                     onError={(e) => {
                       (e.target as HTMLImageElement).style.display = "none";
@@ -3669,7 +3777,10 @@ export function TemplatePreview({
                       {moonIcon && (
                         <img
                           src={moonIcon}
-                          alt={getMoonPhaseLabel(day) || "Moon phase"}
+                          alt={
+                            getMoonPhaseLabel(day) ||
+                            t("accessibility.moonPhase")
+                          }
                           className="w-7 h-7"
                           onError={(e) => {
                             (e.target as HTMLImageElement).style.display =
@@ -3703,7 +3814,10 @@ export function TemplatePreview({
         const defaultValue =
           !field.form && field.value
             ? renderFieldValue(field.value)
-            : `[${field.type}] ${field.display_name}`;
+            : t("fallbacks.unknownField", {
+                name:
+                  field.display_name || field.label || t("fieldTypes.field"),
+              });
 
         return (
           <div key={key} style={fieldStyles}>
@@ -4663,16 +4777,15 @@ export function TemplatePreview({
       {description && (
         <div className="mb-4 p-3 bg-[#bc6c25]/10 rounded-lg">
           <h3 className="font-semibold text-[#bc6c25]">
-            {data.master.template_name ||
-              t("untitled", { default: "Plantilla Sin Título" })}
+            {data.master.template_name || t("untitled")}
           </h3>
           <p className="text-sm text-[#bc6c25] mt-1">
-            {data.master.description ||
-              t("noDescription", { default: "Sin descripción" })}
+            {data.master.description || t("noDescription")}
           </p>
           <div className="text-xs text-[#bc6c25] mt-2">
-            {t("status")}: {data.master.status} | {t("access")}:{" "}
-            {data.master.access_config.access_type}
+            {t("status")}: {getPreviewStatusLabel(data.master.status)} |{" "}
+            {t("access")}:{" "}
+            {getAccessTypeLabel(data.master.access_config?.access_type)}
           </div>
         </div>
       )}
@@ -4762,7 +4875,7 @@ export function TemplatePreview({
               >
                 {reviewMode && (
                   <div className="absolute top-0 left-0 bg-purple-400 text-white text-[10px] px-1 rounded-br opacity-0 group-hover/header:opacity-100 transition-opacity z-20 pointer-events-none">
-                    Header
+                    {t("reviewLabels.header")}
                   </div>
                 )}
                 {(() => {
@@ -4817,11 +4930,7 @@ export function TemplatePreview({
           {sections.length === 0 ? (
             <div className="text-center py-12 text-[#283618]/50 flex-1 flex items-center justify-center flex-col">
               <div className="text-4xl mb-4">📄</div>
-              <p>
-                {t("noSections", {
-                  default: "No hay secciones configuradas",
-                })}
-              </p>
+              <p>{t("noSections")}</p>
             </div>
           ) : (
             baseSectionToRender && (
@@ -5122,7 +5231,7 @@ export function TemplatePreview({
                         >
                           {reviewMode && (
                             <div className="absolute top-0 left-0 bg-purple-400 text-white text-[10px] px-1 rounded-br opacity-0 group-hover/header:opacity-100 transition-opacity z-20 pointer-events-none">
-                              Header
+                              {t("reviewLabels.header")}
                             </div>
                           )}
                           {activeHeaderConfig.fields.map((field, index) => {
@@ -5209,7 +5318,7 @@ export function TemplatePreview({
                       >
                         {reviewMode && (
                           <div className="absolute top-0 right-0 bg-green-400 text-white text-[10px] px-1 rounded-bl opacity-0 group-hover/section:opacity-100 transition-opacity z-20 pointer-events-none">
-                            Section
+                            {t("reviewLabels.section")}
                           </div>
                         )}
                         {renderCommentBadge(`section-${sectionIndex}`)}
@@ -5439,7 +5548,9 @@ export function TemplatePreview({
                                                   {renderedField ??
                                                     (isBackgroundSelectorField ? (
                                                       <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-amber-700 bg-amber-100 border border-amber-300 rounded">
-                                                        BG
+                                                        {t(
+                                                          "reviewLabels.background",
+                                                        )}
                                                       </div>
                                                     ) : null)}
                                                   {renderCommentBadge(fieldId)}
@@ -5566,7 +5677,7 @@ export function TemplatePreview({
                                   >
                                     {reviewMode && (
                                       <div className="absolute top-0 left-0 bg-blue-400 text-white text-[10px] px-1 rounded-br opacity-0 group-hover/block:opacity-100 transition-opacity z-10 pointer-events-none">
-                                        Block
+                                        {t("reviewLabels.block")}
                                       </div>
                                     )}
                                     {renderCommentBadge(
@@ -5676,7 +5787,7 @@ export function TemplatePreview({
                         >
                           {reviewMode && (
                             <div className="absolute top-0 left-0 bg-purple-400 text-white text-[10px] px-1 rounded-br opacity-0 group-hover/footer:opacity-100 transition-opacity z-20 pointer-events-none">
-                              Footer
+                              {t("reviewLabels.footer")}
                             </div>
                           )}
                           {activeFooterConfig.fields.map((field, index) => {
