@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from "next-intl";
 
 interface SelectWithIconsFieldProps {
   value: string;
@@ -14,21 +15,25 @@ export function SelectWithIconsField({
   value = "",
   onChange,
   options = [],
-  placeholder = "Seleccionar...",
+  placeholder,
   disabled = false,
 }: SelectWithIconsFieldProps) {
+  const t = useTranslations("TemplateForm");
+  const finalPlaceholder = placeholder ?? t("selectOption");
+
   const inputClass =
     "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#283618] text-sm disabled:bg-gray-100 disabled:cursor-not-allowed";
 
   return (
     <select
       value={value || ""}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(event) => onChange(event.target.value)}
       className={inputClass}
       disabled={disabled}
+      aria-label={finalPlaceholder}
     >
-      <option value="">{placeholder}</option>
-      {options.map((option: string) => (
+      <option value="">{finalPlaceholder}</option>
+      {options.map((option) => (
         <option key={option} value={option}>
           {option}
         </option>

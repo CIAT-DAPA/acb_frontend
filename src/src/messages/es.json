@@ -402,7 +402,8 @@
       "createOption": "Crear: \"{value}\"",
       "noResultsCreate": "No se encontraron opciones. Presiona Enter para crear una nueva.",
       "noOptions": "No hay opciones disponibles",
-      "helper": "Escribe para buscar o crear una nueva opción"
+      "helper": "Escribe para buscar o crear una nueva opción",
+      "clearSelection": "Limpiar selección"
     },
     "confirmation": {
       "cancel": "Cancelar",
@@ -2551,5 +2552,8 @@
     "footer": "Pie de página",
     "generalComment": "Comentario General",
     "close": "Cerrar"
+  },
+  "TemplateForm": {
+    "selectOption": "Seleccionar..."
   }
 }

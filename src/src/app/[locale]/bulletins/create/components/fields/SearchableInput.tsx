@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Field } from "../../../../../../types/template";
-import { Search, Plus, X } from "lucide-react";
+import { Plus, Search, X } from "lucide-react";
 
 type DisplayOption = {
   label: string;
@@ -30,9 +30,8 @@ export function SearchableInput({
 }: SearchableInputProps) {
   const t = useTranslations("CreateBulletin");
 
-  // Usar options de prop o extraer de field
   const predefinedOptions =
-    optionsProp ||
+    optionsProp ??
     (field?.field_config && "options" in field.field_config
       ? field.field_config.options
       : []);
@@ -44,21 +43,18 @@ export function SearchableInput({
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const finalPlaceholder = placeholder || t("searchableInput.placeholder");
+  const finalPlaceholder = placeholder ?? t("searchableInput.placeholder");
 
-  // Filtrar opciones basado en el término de búsqueda
   const filteredOptions = predefinedOptions.filter((option) =>
     option.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  // Determinar si el término de búsqueda es una nueva opción
   const isNewOption =
     searchTerm.trim() !== "" &&
     !predefinedOptions.some(
-      (opt) => opt.toLowerCase() === searchTerm.toLowerCase(),
+      (option) => option.toLowerCase() === searchTerm.toLowerCase(),
     );
 
-  // Opciones a mostrar en el dropdown
   const displayOptions: DisplayOption[] = isNewOption
     ? [
         ...filteredOptions.map((option) => ({
@@ -78,7 +74,13 @@ export function SearchableInput({
         isCreateOption: false,
       }));
 
-  // Cerrar dropdown al hacer click fuera
+  const handleSelectOption = (option: DisplayOption) => {
+    onChange(option.value);
+    setIsOpen(false);
+    setSearchTerm("");
+    setHighlightedIndex(0);
+  };
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -94,63 +96,53 @@ export function SearchableInput({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Manejar navegación con teclado
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
       if (!isOpen) return;
 
-      switch (e.key) {
+      switch (event.key) {
         case "ArrowDown":
-          e.preventDefault();
-          setHighlightedIndex((prev) =>
-            prev < displayOptions.length - 1 ? prev + 1 : prev,
+          event.preventDefault();
+          setHighlightedIndex((current) =>
+            current < displayOptions.length - 1 ? current + 1 : current,
           );
           break;
         case "ArrowUp":
-          e.preventDefault();
-          setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : 0));
+          event.preventDefault();
+          setHighlightedIndex((current) => (current > 0 ? current - 1 : 0));
           break;
         case "Enter":
-          e.preventDefault();
+          event.preventDefault();
           if (displayOptions.length > 0) {
             handleSelectOption(displayOptions[highlightedIndex]);
           }
           break;
         case "Escape":
-          e.preventDefault();
+          event.preventDefault();
           setIsOpen(false);
           setSearchTerm("");
           break;
       }
     };
 
-    if (isOpen) {
-      window.addEventListener("keydown", handleKeyDown);
-      return () => window.removeEventListener("keydown", handleKeyDown);
-    }
+    if (!isOpen) return;
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, displayOptions, highlightedIndex]);
 
-  // Auto-scroll al elemento destacado
   useEffect(() => {
     if (isOpen && dropdownRef.current) {
       const highlightedElement = dropdownRef.current.children[
         highlightedIndex
-      ] as HTMLElement;
-      if (highlightedElement) {
-        highlightedElement.scrollIntoView({
-          block: "nearest",
-          behavior: "smooth",
-        });
-      }
+      ] as HTMLElement | undefined;
+
+      highlightedElement?.scrollIntoView({
+        block: "nearest",
+        behavior: "smooth",
+      });
     }
   }, [highlightedIndex, isOpen]);
-
-  const handleSelectOption = (option: DisplayOption) => {
-    onChange(option.value);
-    setIsOpen(false);
-    setSearchTerm("");
-    setHighlightedIndex(0);
-  };
 
   const handleClear = () => {
     onChange("");
@@ -163,9 +155,10 @@ export function SearchableInput({
     setSearchTerm("");
   };
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
     setHighlightedIndex(0);
+
     if (!isOpen) {
       setIsOpen(true);
     }
@@ -173,10 +166,12 @@ export function SearchableInput({
 
   return (
     <div ref={containerRef} className="relative w-full">
-      {/* Input principal */}
       <div className="relative">
         <div className="relative flex items-center">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search
+            aria-hidden="true"
+            className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+          />
           <input
             ref={inputRef}
             type="text"
@@ -184,55 +179,59 @@ export function SearchableInput({
             onChange={handleSearchChange}
             onFocus={handleInputFocus}
             placeholder={finalPlaceholder}
+            aria-label={field?.label || finalPlaceholder}
             disabled={disabled}
-            className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#283618] text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+            className="w-full rounded-md border border-gray-300 py-2 pr-10 pl-10 text-sm focus:ring-2 focus:ring-[#283618] focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100"
           />
           {value && !disabled && (
             <button
               type="button"
               onClick={handleClear}
+              aria-label={t("searchableInput.clearSelection")}
+              title={t("searchableInput.clearSelection")}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
-              <X className="w-4 h-4" />
+              <X aria-hidden="true" className="h-4 w-4" />
             </button>
           )}
         </div>
       </div>
 
-      {/* Dropdown de opciones */}
       {isOpen && !disabled && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto"
+          role="listbox"
+          className="absolute z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-md border border-gray-300 bg-white shadow-lg"
         >
           {displayOptions.length > 0 ? (
-            displayOptions.map((option, index) => {
-              return (
-                <div
-                  key={index}
-                  onClick={() => handleSelectOption(option)}
-                  className={`px-3 py-2 cursor-pointer text-sm flex items-center gap-2 ${
-                    index === highlightedIndex
-                      ? "bg-[#283618] text-white"
-                      : "hover:bg-gray-100"
-                  }`}
-                  onMouseEnter={() => setHighlightedIndex(index)}
-                >
-                  {option.isCreateOption && (
-                    <Plus
-                      className={`w-4 h-4 ${
-                        index === highlightedIndex
-                          ? "text-white"
-                          : "text-green-600"
-                      }`}
-                    />
-                  )}
-                  <span className={option.isCreateOption ? "font-medium" : ""}>
-                    {option.label}
-                  </span>
-                </div>
-              );
-            })
+            displayOptions.map((option, index) => (
+              <div
+                key={`${option.value}-${option.isCreateOption}`}
+                role="option"
+                aria-selected={index === highlightedIndex}
+                onClick={() => handleSelectOption(option)}
+                onMouseEnter={() => setHighlightedIndex(index)}
+                className={`flex cursor-pointer items-center gap-2 px-3 py-2 text-sm ${
+                  index === highlightedIndex
+                    ? "bg-[#283618] text-white"
+                    : "hover:bg-gray-100"
+                }`}
+              >
+                {option.isCreateOption && (
+                  <Plus
+                    aria-hidden="true"
+                    className={`h-4 w-4 ${
+                      index === highlightedIndex
+                        ? "text-white"
+                        : "text-green-600"
+                    }`}
+                  />
+                )}
+                <span className={option.isCreateOption ? "font-medium" : ""}>
+                  {option.label}
+                </span>
+              </div>
+            ))
           ) : (
             <div className="px-3 py-2 text-sm text-gray-500 italic">
               {searchTerm
@@ -243,9 +242,8 @@ export function SearchableInput({
         </div>
       )}
 
-      {/* Texto de ayuda */}
       {isOpen && !disabled && (
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="mt-1 text-xs text-gray-500">
           {t("searchableInput.helper")}
         </p>
       )}
