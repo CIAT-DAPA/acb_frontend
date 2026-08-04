@@ -254,7 +254,9 @@
     "statusActive": "Hoạt động",
     "statusUnknown": "Không xác định",
     "duplicate": "Nhân bản",
-    "share": "Chia sẻ"
+    "share": "Chia sẻ",
+    "reviewer": "Người đánh giá",
+    "reviewers": "Người đánh giá"
   },
   "CreateBulletin": {
     "defaultBulletinName": "{template} - {month} {year}",
@@ -274,7 +276,19 @@
       "title": "Bình luận",
       "reviewerFallback": "Người đánh giá",
       "fieldCount": "{count} bình luận về trường này",
-      "blockCount": "{count} bình luận về khối này"
+      "blockCount": "{count} bình luận về khối này",
+      "authorFallback": "Người dùng",
+      "reply": "Phản hồi",
+      "replyLabel": "Phản hồi bình luận",
+      "replyPlaceholder": "Mô tả thay đổi đã thực hiện hoặc phản hồi bình luận...",
+      "replyToComment": "Phản hồi bình luận này",
+      "cancelReply": "Hủy",
+      "sendReply": "Gửi phản hồi",
+      "sendingReply": "Đang gửi...",
+      "replyRequired": "Vui lòng nhập nội dung phản hồi trước khi gửi.",
+      "replySuccess": "Đã gửi phản hồi thành công.",
+      "replyError": "Không thể gửi phản hồi.",
+      "missingBulletin": "Không tìm thấy bản tin liên quan đến bình luận này."
     },
     "searchableInput": {
       "placeholder": "Tìm kiếm hoặc tạo tùy chọn mới...",
@@ -332,7 +346,25 @@
       "sectionPage": "Trang",
       "toPdf": "Đang chuyển đổi sang PDF...",
       "toZip": "Đang tạo tệp ZIP...",
-      "composingPrintLayout": "Đang sắp xếp các trang in"
+      "composingPrintLayout": "Đang sắp xếp các trang in",
+      "loadContentError": "Không thể tải nội dung.",
+      "defaultContentName": "Nội dung",
+      "contentIdLabel": "ID",
+      "closeAriaLabel": "Đóng hộp thoại xuất",
+      "destinationInfoAriaLabel": "Thông tin về các chế độ xuất",
+      "mobileDescription": "Xuất mỗi phần thành một ảnh JPG riêng. Phù hợp với các mẩu thông tin ngắn và xem trên thiết bị di động.",
+      "printDescription": "Cho phép xuất dưới dạng JPG hoặc PDF và sắp xếp nhiều phần trên mỗi trang theo bố cục dạng tờ in.",
+      "low": "Thấp",
+      "medium": "Trung bình",
+      "high": "Cao",
+      "ultra": "Rất cao",
+      "auto": "Tự động",
+      "a4": "A4",
+      "letter": "Letter",
+      "legal": "Legal",
+      "previewNotReady": "Bản xem trước để xuất chưa hiển thị xong tất cả các trang.",
+      "missingExportConfiguration": "Cấu hình xuất chưa hợp lệ.",
+      "unknownError": "Đã xảy ra lỗi không xác định."
     },
     "bulletinPreview": {
       "backToTemplates": "Quay lại Biểu mẫu",
@@ -550,6 +582,11 @@
       "toPdf": "Đang chuyển đổi sang PDF...",
       "toZip": "Đang tạo tệp ZIP...",
       "exportComplete": "Đã xuất xong!"
+    },
+    "validation": {
+      "requiredField": "Trường này là bắt buộc.",
+      "completeRequiredFields": "Vui lòng hoàn thành các trường bắt buộc trước khi tiếp tục. Còn lại: {count}.",
+      "requiredFieldsRemaining": "Còn {count} trường bắt buộc chưa hoàn thành. Vui lòng điền đầy đủ để tiếp tục."
     }
   },
   "CreateCard": {
@@ -2316,6 +2353,16 @@
       "cardFieldSimple": "Trường · Khối {block} · Thẻ {card}",
       "cardListItem": "Danh sách · Mục {item} · Thẻ {card}",
       "cardListItemField": "Trường danh sách · Mục {item} · Thẻ {card}"
+    },
+    "commentThread": {
+      "reply": "Trả lời",
+      "replyPlaceholder": "Nhập câu trả lời...",
+      "cancel": "Hủy",
+      "send": "Gửi trả lời",
+      "sending": "Đang gửi...",
+      "pressEnterToSend": "Nhấn Enter để gửi · Shift + Enter để xuống dòng",
+      "replySuccess": "Đã gửi câu trả lời thành công.",
+      "replyError": "Không thể gửi câu trả lời."
     }
   },
   "ReviewPage": {

@@ -199,6 +199,8 @@
     "statusRejected": "Rechazado",
     "statusActive": "Activo",
     "statusUnknown": "Desconocido",
+    "reviewer": "Revisor",
+    "reviewers": "Revisores",
     "Create": {
       "title": "Nueva Plantilla",
       "subtitle": "Crea una nueva plantilla de boletín agroclimático",
@@ -304,7 +306,19 @@
       "title": "Comentarios",
       "reviewerFallback": "Revisor",
       "fieldCount": "{count, plural, one {# comentario en este campo} other {# comentarios en este campo}}",
-      "blockCount": "{count, plural, one {# comentario en este bloque} other {# comentarios en este bloque}}"
+      "blockCount": "{count, plural, one {# comentario en este bloque} other {# comentarios en este bloque}}",
+      "authorFallback": "Usuario",
+      "reply": "Responder",
+      "replyLabel": "Respuesta al comentario",
+      "replyPlaceholder": "Describe el cambio realizado o responde al comentario...",
+      "replyToComment": "Responder a este comentario",
+      "cancelReply": "Cancelar",
+      "sendReply": "Enviar respuesta",
+      "sendingReply": "Enviando...",
+      "replyRequired": "Escribe una respuesta antes de enviarla.",
+      "replySuccess": "La respuesta se envió correctamente.",
+      "replyError": "No fue posible enviar la respuesta.",
+      "missingBulletin": "No se encontró el boletín asociado al comentario."
     },
     "title": "Crear Boletín",
     "subtitle": "Crea un nuevo boletín agroclimático utilizando una plantilla",
@@ -592,7 +606,30 @@
       "sectionPage": "Página",
       "toPdf": "Convirtiendo a PDF...",
       "toZip": "Generando archivo ZIP...",
-      "composingPrintLayout": "Componiendo páginas de impresión..."
+      "composingPrintLayout": "Componiendo páginas de impresión...",
+      "loadContentError": "No se pudo cargar el contenido.",
+      "defaultContentName": "Contenido",
+      "contentIdLabel": "ID",
+      "closeAriaLabel": "Cerrar modal de exportación",
+      "destinationInfoAriaLabel": "Información sobre los destinos de exportación",
+      "mobileDescription": "Exporta cada sección como una imagen JPG independiente. Es ideal para cápsulas de información cortas y para visualizar en dispositivos móviles.",
+      "printDescription": "Permite exportar en JPG o PDF y organizar varias secciones por página con un formato tipo pliego.",
+      "low": "Baja",
+      "medium": "Media",
+      "high": "Alta",
+      "ultra": "Ultra",
+      "auto": "Automático",
+      "a4": "A4",
+      "letter": "Carta",
+      "legal": "Legal",
+      "previewNotReady": "La vista previa de exportación no terminó de renderizar todas las páginas.",
+      "missingExportConfiguration": "La exportación no está configurada correctamente.",
+      "unknownError": "Ocurrió un error desconocido."
+    },
+    "validation": {
+      "requiredField": "Este campo es obligatorio.",
+      "completeRequiredFields": "Completa los campos obligatorios antes de continuar. Pendientes: {count}.",
+      "requiredFieldsRemaining": "Hay {count} campo(s) obligatorio(s) pendiente(s). Complétalos para continuar."
     }
   },
   "Authentication": {
@@ -2474,6 +2511,16 @@
       "cardFieldSimple": "Campo · Bloque {block} · Tarjeta {card}",
       "cardListItem": "Lista · Elemento {item} · Tarjeta {card}",
       "cardListItemField": "Campo de lista · Elemento {item} · Tarjeta {card}"
+    },
+    "commentThread": {
+      "reply": "Responder",
+      "replyPlaceholder": "Escribe una respuesta...",
+      "cancel": "Cancelar",
+      "send": "Enviar respuesta",
+      "sending": "Enviando...",
+      "pressEnterToSend": "Enter para enviar · Shift + Enter para una nueva línea",
+      "replySuccess": "La respuesta se envió correctamente.",
+      "replyError": "No fue posible enviar la respuesta."
     }
   },
   "ReviewPage": {
