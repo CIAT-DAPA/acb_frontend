@@ -1488,6 +1488,8 @@ export function TemplatePreview({
           day: "2-digit",
           month: "long",
         }).format(dateObj);
+      case "MMMM":
+        return monthNameCapitalized;
       case "MMMM/YY":
         return `${monthNameCapitalized}/${shortYear}`;
       case "YYYY-MM-DD":
