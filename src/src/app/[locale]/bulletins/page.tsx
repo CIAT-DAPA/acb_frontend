@@ -17,6 +17,7 @@ import {
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { BulletinMaster, BulletinStatus } from "@/types/bulletin";
+import type { ReviewComment, ReviewHistory } from "@/types/review";
 import BulletinAPIService from "@/services/bulletinService";
 import { TemplateAPIService } from "@/services/templateService";
 import { ReviewService } from "@/services/reviewService";
@@ -38,6 +39,169 @@ import {
   BulletinFilters,
   BULLETIN_STATUS_FILTERS,
 } from "../components/BulletinFilters";
+
+const REVIEWER_VISIBLE_STATUSES = new Set<BulletinStatus>([
+  "draft",
+  "pending_review",
+  "review",
+  "rejected",
+  "published",
+]);
+
+const unwrapReviewHistory = (response: unknown): ReviewHistory | null => {
+  const responseObject = response as Record<string, unknown> | null;
+  const candidate =
+    responseObject &&
+    typeof responseObject === "object" &&
+    "data" in responseObject
+      ? responseObject.data
+      : response;
+
+  if (!candidate || typeof candidate !== "object") {
+    return null;
+  }
+
+  const history = candidate as Partial<ReviewHistory>;
+
+  if (
+    history.bulletin_master_id ||
+    history.id ||
+    Array.isArray(history.review_cycles) ||
+    Array.isArray(history.comments)
+  ) {
+    return candidate as ReviewHistory;
+  }
+
+  return null;
+};
+
+const hasReviewComments = (history: ReviewHistory | null): boolean => {
+  if (!history) {
+    return false;
+  }
+
+  if (history.comments?.length) {
+    return true;
+  }
+
+  if (history.active_cycle?.comments?.length) {
+    return true;
+  }
+
+  return Boolean(
+    history.review_cycles?.some((cycle) => Boolean(cycle.comments?.length)),
+  );
+};
+
+const extractReviewerNames = (history: ReviewHistory | null): string[] => {
+  if (!history) {
+    return [];
+  }
+
+  const reviewers = new Map<string, string>();
+
+  const addReviewer = (
+    idValue?: unknown,
+    firstNameValue?: unknown,
+    lastNameValue?: unknown,
+    displayNameValue?: unknown,
+  ) => {
+    const id = typeof idValue === "string" ? idValue.trim() : "";
+    const firstName =
+      typeof firstNameValue === "string" ? firstNameValue.trim() : "";
+    const lastName =
+      typeof lastNameValue === "string" ? lastNameValue.trim() : "";
+    const explicitName =
+      typeof displayNameValue === "string" ? displayNameValue.trim() : "";
+    const fullName = [firstName, lastName].filter(Boolean).join(" ").trim();
+    const name = fullName || explicitName || id;
+
+    if (!name) {
+      return;
+    }
+
+    const normalizedName = name.toLocaleLowerCase();
+    const alreadyAddedByName = Array.from(reviewers.values()).some(
+      (existingName) => existingName.toLocaleLowerCase() === normalizedName,
+    );
+
+    if (alreadyAddedByName) {
+      return;
+    }
+
+    const key = id ? `id:${id}` : `name:${normalizedName}`;
+    const existingValue = reviewers.get(key);
+
+    if (!existingValue || existingValue === id) {
+      reviewers.set(key, name);
+    }
+  };
+
+  addReviewer(
+    history.reviewer_user_id,
+    history.reviewer_first_name,
+    history.reviewer_last_name,
+  );
+
+  const addCycleReviewer = (cycleValue: unknown) => {
+    if (!cycleValue || typeof cycleValue !== "object") {
+      return;
+    }
+
+    const cycle = cycleValue as Record<string, unknown>;
+    const reviewer = cycle.reviewer;
+
+    addReviewer(
+      cycle.reviewer_user_id,
+      cycle.reviewer_first_name,
+      cycle.reviewer_last_name,
+      cycle.reviewer_name,
+    );
+
+    if (typeof reviewer === "string") {
+      addReviewer(undefined, undefined, undefined, reviewer);
+      return;
+    }
+
+    if (reviewer && typeof reviewer === "object") {
+      const reviewerObject = reviewer as Record<string, unknown>;
+
+      addReviewer(
+        reviewerObject.user_id ?? reviewerObject.id ?? reviewerObject._id,
+        reviewerObject.first_name,
+        reviewerObject.last_name,
+        reviewerObject.name ?? reviewerObject.full_name,
+      );
+    }
+  };
+
+  history.review_cycles?.forEach(addCycleReviewer);
+
+  if (history.active_cycle) {
+    addCycleReviewer(history.active_cycle);
+  }
+
+  const addRootCommentAuthor = (comment: ReviewComment) => {
+    if (comment.parent_comment_id || comment.parent_id) {
+      return;
+    }
+
+    addReviewer(
+      comment.author_id,
+      comment.author_first_name,
+      comment.author_last_name,
+      comment.author_name,
+    );
+  };
+
+  history.comments?.forEach(addRootCommentAuthor);
+  history.active_cycle?.comments?.forEach(addRootCommentAuthor);
+  history.review_cycles?.forEach((cycle) =>
+    cycle.comments?.forEach(addRootCommentAuthor),
+  );
+
+  return Array.from(reviewers.values());
+};
 
 export default function Bulletins() {
   const t = useTranslations("Bulletins");
@@ -64,6 +228,9 @@ export default function Bulletins() {
   const [templateThumbnailsMap, setTemplateThumbnailsMap] = useState<
     Record<string, string[]>
   >({});
+  const [reviewersMap, setReviewersMap] = useState<Record<string, string[]>>(
+    {},
+  );
 
   // State for groups
   const [groupsMap, setGroupsMap] = useState<Record<string, string>>({});
@@ -110,6 +277,7 @@ export default function Bulletins() {
   const loadBulletins = async () => {
     setLoading(true);
     setError(null);
+    setReviewersMap({});
 
     try {
       const response = await BulletinAPIService.getBulletins();
@@ -117,15 +285,51 @@ export default function Bulletins() {
       if (response.success) {
         setBulletins(response.data);
 
-        // Obtener los nombres y thumbnails de los templates base
         const templateIds = [
           ...new Set(response.data.map((b) => b.base_template_master_id)),
         ];
-        const templatesResponse = await Promise.all(
-          templateIds.map((id) =>
-            TemplateAPIService.getTemplateById(id).catch(() => null),
-          ),
+
+        const historyCandidates = response.data.filter(
+          (bulletin) =>
+            Boolean(bulletin._id) &&
+            REVIEWER_VISIBLE_STATUSES.has(bulletin.status),
         );
+
+        const [templatesResponse, groupsResponse, reviewHistoryResults] =
+          await Promise.all([
+            Promise.all(
+              templateIds.map((id) =>
+                TemplateAPIService.getTemplateById(id).catch(() => null),
+              ),
+            ),
+            GroupAPIService.getGroups().catch(() => null),
+            Promise.all(
+              historyCandidates.map(async (bulletin) => {
+                const bulletinId = bulletin._id as string;
+
+                try {
+                  const historyResponse =
+                    await ReviewService.getReviewHistory(bulletinId);
+                  const history = unwrapReviewHistory(historyResponse);
+                  const shouldShowReviewers =
+                    bulletin.status !== "draft" || hasReviewComments(history);
+
+                  return {
+                    bulletinId,
+                    reviewers: shouldShowReviewers
+                      ? extractReviewerNames(history)
+                      : [],
+                  };
+                } catch {
+                  // Un boletín sin historial todavía no debe bloquear el listado.
+                  return {
+                    bulletinId,
+                    reviewers: [] as string[],
+                  };
+                }
+              }),
+            ),
+          ]);
 
         const newTemplatesMap: Record<string, string> = {};
         const newTemplateNameMachineMap: Record<string, string> = {};
@@ -142,15 +346,21 @@ export default function Bulletins() {
         setTemplateNameMachineMap(newTemplateNameMachineMap);
         setTemplateThumbnailsMap(newThumbnailsMap);
 
-        // Cargar grupos para mapear IDs a nombres
-        const groupsResponse = await GroupAPIService.getGroups();
-        if (groupsResponse.success) {
+        if (groupsResponse?.success) {
           const newGroupsMap: Record<string, string> = {};
           groupsResponse.data.forEach((group) => {
             newGroupsMap[group._id!] = group.group_name;
           });
           setGroupsMap(newGroupsMap);
         }
+
+        const newReviewersMap: Record<string, string[]> = {};
+        reviewHistoryResults.forEach(({ bulletinId, reviewers }) => {
+          if (reviewers.length > 0) {
+            newReviewersMap[bulletinId] = reviewers;
+          }
+        });
+        setReviewersMap(newReviewersMap);
       } else {
         setError(response.message || "Error al cargar los boletines");
       }
@@ -566,6 +776,11 @@ export default function Bulletins() {
                           id={bulletin._id!}
                           name={bulletin.bulletin_name}
                           author={creatorName}
+                          reviewers={
+                            bulletin._id
+                              ? reviewersMap[bulletin._id]
+                              : undefined
+                          }
                           lastModified={new Date(
                             bulletin.log.updated_at!,
                           ).toLocaleDateString()}

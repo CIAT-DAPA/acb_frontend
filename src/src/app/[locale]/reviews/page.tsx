@@ -15,6 +15,7 @@ import Link from "next/link";
 import { Check, Copy, FileStack, Loader2, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { BulletinMaster, BulletinStatus } from "@/types/bulletin";
+import type { ReviewComment, ReviewHistory } from "@/types/review";
 import BulletinAPIService from "@/services/bulletinService";
 import { TemplateAPIService } from "@/services/templateService";
 import { ReviewService } from "@/services/reviewService";
@@ -28,6 +29,168 @@ import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+
+const REVIEW_PAGE_STATUSES = new Set<BulletinStatus>([
+  "pending_review",
+  "review",
+  "rejected",
+  "published",
+]);
+
+const unwrapReviewHistory = (response: unknown): ReviewHistory | null => {
+  const responseObject = response as Record<string, unknown> | null;
+  const candidate =
+    responseObject &&
+    typeof responseObject === "object" &&
+    "data" in responseObject
+      ? responseObject.data
+      : response;
+
+  if (!candidate || typeof candidate !== "object") {
+    return null;
+  }
+
+  const history = candidate as Partial<ReviewHistory>;
+
+  if (
+    history.bulletin_master_id ||
+    history.id ||
+    Array.isArray(history.review_cycles) ||
+    Array.isArray(history.comments)
+  ) {
+    return candidate as ReviewHistory;
+  }
+
+  return null;
+};
+
+const hasReviewComments = (history: ReviewHistory | null): boolean => {
+  if (!history) {
+    return false;
+  }
+
+  if (history.comments?.length) {
+    return true;
+  }
+
+  if (history.active_cycle?.comments?.length) {
+    return true;
+  }
+
+  return Boolean(
+    history.review_cycles?.some((cycle) => Boolean(cycle.comments?.length)),
+  );
+};
+
+const extractReviewerNames = (history: ReviewHistory | null): string[] => {
+  if (!history) {
+    return [];
+  }
+
+  const reviewers = new Map<string, string>();
+
+  const addReviewer = (
+    idValue?: unknown,
+    firstNameValue?: unknown,
+    lastNameValue?: unknown,
+    displayNameValue?: unknown,
+  ) => {
+    const id = typeof idValue === "string" ? idValue.trim() : "";
+    const firstName =
+      typeof firstNameValue === "string" ? firstNameValue.trim() : "";
+    const lastName =
+      typeof lastNameValue === "string" ? lastNameValue.trim() : "";
+    const explicitName =
+      typeof displayNameValue === "string" ? displayNameValue.trim() : "";
+    const fullName = [firstName, lastName].filter(Boolean).join(" ").trim();
+    const name = fullName || explicitName || id;
+
+    if (!name) {
+      return;
+    }
+
+    const normalizedName = name.toLocaleLowerCase();
+    const existingNameEntry = Array.from(reviewers.entries()).find(
+      ([, existingName]) => existingName.toLocaleLowerCase() === normalizedName,
+    );
+
+    if (existingNameEntry) {
+      return;
+    }
+
+    const key = id ? `id:${id}` : `name:${normalizedName}`;
+    const existingValue = reviewers.get(key);
+
+    if (!existingValue || existingValue === id) {
+      reviewers.set(key, name);
+    }
+  };
+
+  addReviewer(
+    history.reviewer_user_id,
+    history.reviewer_first_name,
+    history.reviewer_last_name,
+  );
+
+  const addCycleReviewer = (cycleValue: unknown) => {
+    if (!cycleValue || typeof cycleValue !== "object") {
+      return;
+    }
+
+    const cycle = cycleValue as Record<string, unknown>;
+    const reviewer = cycle.reviewer;
+
+    addReviewer(
+      cycle.reviewer_user_id,
+      cycle.reviewer_first_name,
+      cycle.reviewer_last_name,
+      cycle.reviewer_name,
+    );
+
+    if (typeof reviewer === "string") {
+      addReviewer(undefined, undefined, undefined, reviewer);
+      return;
+    }
+
+    if (reviewer && typeof reviewer === "object") {
+      const reviewerObject = reviewer as Record<string, unknown>;
+
+      addReviewer(
+        reviewerObject.user_id ?? reviewerObject.id ?? reviewerObject._id,
+        reviewerObject.first_name,
+        reviewerObject.last_name,
+        reviewerObject.name ?? reviewerObject.full_name,
+      );
+    }
+  };
+
+  history.review_cycles?.forEach(addCycleReviewer);
+
+  if (history.active_cycle) {
+    addCycleReviewer(history.active_cycle);
+  }
+
+  const addRootCommentAuthor = (comment: ReviewComment) => {
+    if (comment.parent_comment_id || comment.parent_id) {
+      return;
+    }
+
+    addReviewer(
+      comment.author_id,
+      comment.author_first_name,
+      comment.author_last_name,
+      comment.author_name,
+    );
+  };
+
+  history.comments?.forEach(addRootCommentAuthor);
+  history.active_cycle?.comments?.forEach(addRootCommentAuthor);
+  history.review_cycles?.forEach((cycle) =>
+    cycle.comments?.forEach(addRootCommentAuthor),
+  );
+
+  return Array.from(reviewers.values());
+};
 
 export default function ReviewsPage() {
   const t = useTranslations("Bulletins");
@@ -52,6 +215,9 @@ export default function ReviewsPage() {
   const [templateThumbnailsMap, setTemplateThumbnailsMap] = useState<
     Record<string, string[]>
   >({});
+  const [reviewersMap, setReviewersMap] = useState<Record<string, string[]>>(
+    {},
+  );
 
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareData, setShareData] = useState<{ url: string } | null>(null);
@@ -89,6 +255,7 @@ export default function ReviewsPage() {
   const loadBulletins = async () => {
     setLoading(true);
     setError(null);
+    setReviewersMap({});
 
     try {
       const response = await BulletinAPIService.getBulletins();
@@ -98,9 +265,8 @@ export default function ReviewsPage() {
         return;
       }
 
-      const reviewBulletins = response.data
-        .filter((bulletin) => REVIEW_STATUS_FILTERS.includes(bulletin.status))
-        .sort((bulletinA, bulletinB) => {
+      const sortedBulletins = [...response.data].sort(
+        (bulletinA, bulletinB) => {
           const dateA = new Date(
             bulletinA.log.updated_at || bulletinA.log.created_at || 0,
           ).getTime();
@@ -109,9 +275,68 @@ export default function ReviewsPage() {
           ).getTime();
 
           return dateB - dateA;
-        });
+        },
+      );
+
+      const historyCandidates = sortedBulletins.filter(
+        (bulletin) =>
+          Boolean(bulletin._id) &&
+          (bulletin.status === "draft" ||
+            REVIEW_PAGE_STATUSES.has(bulletin.status) ||
+            REVIEW_STATUS_FILTERS.includes(bulletin.status)),
+      );
+
+      const historyResults = await Promise.all(
+        historyCandidates.map(async (bulletin) => {
+          const bulletinId = bulletin._id as string;
+
+          try {
+            const historyResponse =
+              await ReviewService.getReviewHistory(bulletinId);
+            const history = unwrapReviewHistory(historyResponse);
+
+            return {
+              bulletinId,
+              hasComments: hasReviewComments(history),
+              reviewers: extractReviewerNames(history),
+            };
+          } catch {
+            // Un draft que nunca fue revisado puede no tener historial todavía.
+            return {
+              bulletinId,
+              hasComments: false,
+              reviewers: [] as string[],
+            };
+          }
+        }),
+      );
+
+      const reviewedDraftIds = new Set<string>();
+      const newReviewersMap: Record<string, string[]> = {};
+
+      historyResults.forEach(({ bulletinId, hasComments, reviewers }) => {
+        if (hasComments) {
+          reviewedDraftIds.add(bulletinId);
+        }
+
+        if (reviewers.length > 0) {
+          newReviewersMap[bulletinId] = reviewers;
+        }
+      });
+
+      const reviewBulletins = sortedBulletins.filter((bulletin) => {
+        if (bulletin.status === "draft") {
+          return Boolean(bulletin._id && reviewedDraftIds.has(bulletin._id));
+        }
+
+        return (
+          REVIEW_PAGE_STATUSES.has(bulletin.status) ||
+          REVIEW_STATUS_FILTERS.includes(bulletin.status)
+        );
+      });
 
       setBulletins(reviewBulletins);
+      setReviewersMap(newReviewersMap);
 
       const templateIds = [
         ...new Set(
@@ -417,6 +642,9 @@ export default function ReviewsPage() {
                     id={bulletin._id!}
                     name={bulletin.bulletin_name}
                     author={creatorName}
+                    reviewers={
+                      bulletin._id ? reviewersMap[bulletin._id] : undefined
+                    }
                     lastModified={
                       lastModified
                         ? new Date(lastModified).toLocaleDateString()

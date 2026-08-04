@@ -254,7 +254,9 @@
     "statusActive": "Hoạt động",
     "statusUnknown": "Không xác định",
     "duplicate": "Nhân bản",
-    "share": "Chia sẻ"
+    "share": "Chia sẻ",
+    "reviewer": "Người đánh giá",
+    "reviewers": "Người đánh giá"
   },
   "CreateBulletin": {
     "defaultBulletinName": "{template} - {month} {year}",

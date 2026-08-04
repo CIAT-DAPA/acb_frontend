@@ -199,6 +199,8 @@
     "statusRejected": "Rejected",
     "statusActive": "Active",
     "statusUnknown": "Unknown",
+    "reviewer": "Reviewer",
+    "reviewers": "Reviewers",
     "Create": {
       "title": "New Template",
       "subtitle": "Create a new agroclimatic bulletin template",

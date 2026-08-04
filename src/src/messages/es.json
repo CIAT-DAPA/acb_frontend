@@ -199,6 +199,8 @@
     "statusRejected": "Rechazado",
     "statusActive": "Activo",
     "statusUnknown": "Desconocido",
+    "reviewer": "Revisor",
+    "reviewers": "Revisores",
     "Create": {
       "title": "Nueva Plantilla",
       "subtitle": "Crea una nueva plantilla de boletín agroclimático",
