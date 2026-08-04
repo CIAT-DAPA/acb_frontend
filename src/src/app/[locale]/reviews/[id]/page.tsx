@@ -1428,6 +1428,16 @@ export default function ReviewBulletinPage() {
     }
   };
 
+  const handleCloseSuccessModal = useCallback(() => {
+    setIsSuccessModalOpen(false);
+    setPublishedUrl(null);
+
+    // Force a full navigation so the approved review page is unmounted.
+    // Client-side navigation can preserve a stale route tree in layouts or
+    // intercepted/parallel routes even after the URL changes.
+    window.location.replace(reviewsPath);
+  }, [reviewsPath]);
+
   const goToPublishedBulletin = () => {
     if (!publishedUrl) {
       showToast(t("successModal.publicLinkUnavailable"), "error");
@@ -2279,9 +2289,7 @@ export default function ReviewBulletinPage() {
       {/* Success Modal (Approval with Link) */}
       <Modal
         isOpen={isSuccessModalOpen}
-        onClose={() => {
-          setIsSuccessModalOpen(false);
-        }}
+        onClose={handleCloseSuccessModal}
         title={t("successModal.title")}
         type="success"
         footer={
