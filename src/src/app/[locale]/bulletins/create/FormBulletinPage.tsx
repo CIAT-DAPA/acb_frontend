@@ -52,6 +52,14 @@ import { MODULES, PERMISSION_ACTIONS } from "../../../../types/core";
 import { decodeReviewFieldId } from "@/utils/reviewTarget";
 import type { ReviewComment } from "../../../../types/review";
 import { ReviewCommentThread } from "./components/ReviewCommentThread";
+import {
+  BULLETIN_NAME_VALIDATION_ID,
+  BULLETIN_SLUG_VALIDATION_ID,
+  getBasicInfoRequiredFieldIssues,
+  getSectionRequiredFieldIssues,
+  toRequiredFieldValidationResult,
+  type RequiredFieldIssue,
+} from "@/utils/bulletinRequiredFields";
 
 // Funciones para codificar/decodificar valores de texto
 const encodeTextFieldValue = (value: any): any => {
@@ -1167,38 +1175,84 @@ export default function FormBulletinPage({
     setPreviewPageIndex(0);
   }, [creationState.currentStep]);
 
-  // Validar paso actual
-  const isCurrentStepValid = useMemo(() => {
+  // Validar el paso actual, incluyendo todos los campos obligatorios editables.
+  const currentStepValidation = useMemo(() => {
     switch (creationState.currentStep) {
       case "select-template":
-        return !!creationState.selectedTemplateId;
-      case "basic-info":
+        return {
+          isValid: Boolean(creationState.selectedTemplateId),
+          issues: [] as RequiredFieldIssue[],
+          invalidFieldIds: [] as string[],
+        };
+
+      case "basic-info": {
+        const issues = getBasicInfoRequiredFieldIssues(creationState.data);
         const name = creationState.data.master.bulletin_name.trim();
         const nameMachine = creationState.data.master.name_machine.trim();
-        const isNameValid = name.length > 0;
-        const isSlugValid =
-          nameMachine.length > 0 &&
-          isValidSlug(nameMachine) &&
-          !existingSlugNames.includes(nameMachine);
-        return isNameValid && isSlugValid;
-      case "export":
-        return true; // El paso de exportación siempre es válido
-      default:
-        // Para pasos de sección
-        if (creationState.currentStep.startsWith("section-")) {
-          return true; // Las secciones son opcionales
+
+        if (!name) {
+          issues.unshift({
+            key: BULLETIN_NAME_VALIDATION_ID,
+            fieldId: BULLETIN_NAME_VALIDATION_ID,
+            label: t("basicInfo.fields.name.label"),
+            path: "basicInfo.master",
+          });
         }
-        return false;
+
+        if (
+          !nameMachine ||
+          !isValidSlug(nameMachine) ||
+          existingSlugNames.includes(nameMachine)
+        ) {
+          issues.push({
+            key: BULLETIN_SLUG_VALIDATION_ID,
+            fieldId: BULLETIN_SLUG_VALIDATION_ID,
+            label: t("basicInfo.fields.nameMachine.label"),
+            path: "basicInfo.master",
+          });
+        }
+
+        return toRequiredFieldValidationResult(issues);
+      }
+
+      case "export":
+        return toRequiredFieldValidationResult([]);
+
+      default: {
+        if (!creationState.currentStep.startsWith("section-")) {
+          return {
+            isValid: false,
+            issues: [] as RequiredFieldIssue[],
+            invalidFieldIds: [] as string[],
+          };
+        }
+
+        const sectionIndex = Number.parseInt(
+          creationState.currentStep.replace("section-", ""),
+          10,
+        );
+        const section = creationState.data.version.data.sections[sectionIndex];
+
+        return toRequiredFieldValidationResult(
+          getSectionRequiredFieldIssues(section, sectionIndex),
+        );
+      }
     }
   }, [
     creationState.currentStep,
     creationState.selectedTemplateId,
-    creationState.data.master.bulletin_name,
+    creationState.data,
+    existingSlugNames,
+    t,
   ]);
+
+  const isCurrentStepValid = currentStepValidation.isValid;
 
   // Navegación: siguiente paso
   const handleNext = useCallback(() => {
-    if (!isCurrentStepValid) return;
+    if (!isCurrentStepValid) {
+      return;
+    }
 
     const nextIndex = currentStepIndex + 1;
     if (nextIndex < stepConfigs.length) {
@@ -1214,15 +1268,30 @@ export default function FormBulletinPage({
     }
   }, [currentStepIndex, stepConfigs, goToStep]);
 
-  // Click en un paso del stepper
+  // Click en un paso del stepper. Retroceder siempre es válido; avanzar exige
+  // completar el paso actual.
   const handleStepClick = useCallback(
     (stepIndex: number) => {
-      // Solo permitir navegar a pasos si ya se seleccionó template
+      if (stepIndex < 0 || stepIndex >= stepConfigs.length) {
+        return;
+      }
+
+      if (stepIndex > currentStepIndex && !isCurrentStepValid) {
+        return;
+      }
+
       if (stepIndex === 0 || creationState.selectedTemplateId) {
         goToStep(stepConfigs[stepIndex].id as BulletinCreationStep);
       }
     },
-    [stepConfigs, goToStep, creationState.selectedTemplateId],
+    [
+      stepConfigs,
+      currentStepIndex,
+      isCurrentStepValid,
+      goToStep,
+      creationState.currentStep,
+      creationState.selectedTemplateId,
+    ],
   );
 
   // Finalizar creación del boletín
@@ -1920,6 +1989,7 @@ export default function FormBulletinPage({
             onUpdate={updateBulletinData}
             existingSlugNames={existingSlugNames}
             fieldComments={groupedComments.fieldComments}
+            invalidFieldIds={currentStepValidation.invalidFieldIds}
             onReplyToComment={
               canReplyToComments ? handleReplyToComment : undefined
             }
@@ -1955,6 +2025,7 @@ export default function FormBulletinPage({
               blockComments={groupedComments.blockComments}
               fieldComments={groupedComments.fieldComments}
               fieldAllComments={groupedComments.fieldAllComments}
+              invalidFieldIds={currentStepValidation.invalidFieldIds}
               onReplyToComment={
                 canReplyToComments ? handleReplyToComment : undefined
               }
@@ -2082,7 +2153,7 @@ export default function FormBulletinPage({
                   ) : (
                     <button
                       onClick={handleNext}
-                      disabled={!isCurrentStepValid}
+                      disabled={isLoading || !isCurrentStepValid}
                       className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed`}
                     >
                       {t("navigation.next")}{" "}

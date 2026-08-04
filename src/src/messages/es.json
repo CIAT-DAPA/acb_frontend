@@ -623,6 +623,11 @@
       "previewNotReady": "La vista previa de exportación no terminó de renderizar todas las páginas.",
       "missingExportConfiguration": "La exportación no está configurada correctamente.",
       "unknownError": "Ocurrió un error desconocido."
+    },
+    "validation": {
+      "requiredField": "Este campo es obligatorio.",
+      "completeRequiredFields": "Completa los campos obligatorios antes de continuar. Pendientes: {count}.",
+      "requiredFieldsRemaining": "Hay {count} campo(s) obligatorio(s) pendiente(s). Complétalos para continuar."
     }
   },
   "Authentication": {

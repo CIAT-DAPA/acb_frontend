@@ -36,6 +36,7 @@ interface SectionStepProps {
   blockComments?: Record<string, BulletinComment[]>;
   fieldComments?: Record<string, BulletinComment[]>;
   fieldAllComments?: Record<string, BulletinComment[]>;
+  invalidFieldIds?: string[];
   onReplyToComment?: (commentId: string, text: string) => Promise<void>;
 }
 
@@ -118,10 +119,68 @@ export function SectionStep({
   blockComments = {},
   fieldComments = {},
   fieldAllComments = {},
+  invalidFieldIds = [],
   onReplyToComment,
 }: SectionStepProps) {
   const t = useTranslations("CreateBulletin.section");
   const tComments = useTranslations("CreateBulletin.comments");
+  const tValidation = useTranslations("CreateBulletin.validation");
+  const [touchedFieldIds, setTouchedFieldIds] = React.useState<Set<string>>(
+    () => new Set(),
+  );
+  const invalidFieldIdSet = React.useMemo(
+    () => new Set(invalidFieldIds),
+    [invalidFieldIds],
+  );
+
+  React.useEffect(() => {
+    setTouchedFieldIds(new Set());
+  }, [sectionIndex]);
+
+  const markFieldTouched = React.useCallback((fieldId?: string) => {
+    if (!fieldId) return;
+
+    setTouchedFieldIds((current) => {
+      if (current.has(fieldId)) return current;
+
+      const next = new Set(current);
+      next.add(fieldId);
+      return next;
+    });
+  }, []);
+
+  const handleFieldBlur = React.useCallback(
+    (fieldId?: string) => (event: React.FocusEvent<HTMLDivElement>) => {
+      const nextFocusedElement = event.relatedTarget;
+
+      if (
+        nextFocusedElement instanceof Node &&
+        event.currentTarget.contains(nextFocusedElement)
+      ) {
+        return;
+      }
+
+      markFieldTouched(fieldId);
+    },
+    [markFieldTouched],
+  );
+
+  const isFieldInvalid = (fieldId?: string) =>
+    Boolean(
+      fieldId && touchedFieldIds.has(fieldId) && invalidFieldIdSet.has(fieldId),
+    );
+
+  const renderRequiredError = (fieldId?: string) =>
+    isFieldInvalid(fieldId) ? (
+      <p className="mt-1 text-sm font-medium text-red-600">
+        {tValidation("requiredField")}
+      </p>
+    ) : null;
+
+  const renderRequiredMarker = (field: Field) =>
+    field.form && field.validation?.required ? (
+      <span className="ml-1 text-red-500">*</span>
+    ) : null;
 
   const section = bulletinData.version.data.sections[sectionIndex];
 
@@ -506,12 +565,15 @@ export function SectionStep({
 
   const getFieldContainerClassName = (fieldId?: string): string => {
     const hasDirectComments = getDirectFieldCommentCount(fieldId) > 0;
+    const hasValidationError = isFieldInvalid(fieldId);
 
     return [
       "relative rounded-lg p-3 transition-all duration-200",
-      hasDirectComments
-        ? "border-2 border-amber-400 bg-amber-50/60 shadow-sm"
-        : "border-2 border-transparent",
+      hasValidationError
+        ? "border-2 border-red-400 bg-red-50/60 shadow-sm"
+        : hasDirectComments
+          ? "border-2 border-amber-400 bg-amber-50/60 shadow-sm"
+          : "border-2 border-transparent",
     ].join(" ");
   };
 
@@ -579,7 +641,7 @@ export function SectionStep({
   const renderFieldByType = (field: Field, onChange: (value: any) => void) => {
     if (!field.form) return null;
 
-    const fieldValue = field.value || "";
+    const fieldValue = field.value ?? "";
 
     switch (field.type) {
       case "list":
@@ -852,6 +914,7 @@ export function SectionStep({
                   <div
                     key={field.field_id}
                     id={`field-${field.field_id}`}
+                    onBlurCapture={handleFieldBlur(field.field_id)}
                     className={getFieldContainerClassName(field.field_id)}
                   >
                     <div className="mb-2 flex items-center justify-between gap-3">
@@ -859,6 +922,7 @@ export function SectionStep({
                         {field.display_name ||
                           field.label ||
                           t("fieldFallback")}
+                        {renderRequiredMarker(field)}
                       </label>
 
                       {renderFieldCommentBadge(field.field_id)}
@@ -868,6 +932,7 @@ export function SectionStep({
                       ? renderHeaderField(field, fieldIndex)
                       : renderReadOnlyField(field)}
 
+                    {renderRequiredError(field.field_id)}
                     {renderComments(fieldComments[field.field_id])}
 
                     {field.description && (
@@ -932,6 +997,7 @@ export function SectionStep({
                   <div
                     key={field.field_id}
                     id={`field-${field.field_id}`}
+                    onBlurCapture={handleFieldBlur(field.field_id)}
                     className={getFieldContainerClassName(field.field_id)}
                   >
                     <div className="mb-2 flex items-center justify-between gap-3">
@@ -939,6 +1005,7 @@ export function SectionStep({
                         {field.display_name ||
                           field.label ||
                           t("fieldFallback")}
+                        {renderRequiredMarker(field)}
                       </label>
 
                       {renderFieldCommentBadge(field.field_id)}
@@ -947,6 +1014,8 @@ export function SectionStep({
                     {field.form
                       ? renderField(field, blockIndex, fieldIndex)
                       : renderReadOnlyField(field)}
+
+                    {renderRequiredError(field.field_id)}
 
                     {/* Comentarios hechos directamente al campo padre */}
                     {renderComments(fieldComments[field.field_id])}
@@ -992,6 +1061,7 @@ export function SectionStep({
                   <div
                     key={field.field_id}
                     id={`field-${field.field_id}`}
+                    onBlurCapture={handleFieldBlur(field.field_id)}
                     className={getFieldContainerClassName(field.field_id)}
                   >
                     <div className="mb-2 flex items-center justify-between gap-3">
@@ -999,6 +1069,7 @@ export function SectionStep({
                         {field.display_name ||
                           field.label ||
                           t("fieldFallback")}
+                        {renderRequiredMarker(field)}
                       </label>
 
                       {renderFieldCommentBadge(field.field_id)}
@@ -1008,6 +1079,7 @@ export function SectionStep({
                       ? renderFooterField(field, fieldIndex)
                       : renderReadOnlyField(field)}
 
+                    {renderRequiredError(field.field_id)}
                     {renderComments(fieldComments[field.field_id])}
 
                     {field.description && (

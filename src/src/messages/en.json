@@ -623,6 +623,11 @@
       "previewNotReady": "The export preview did not finish rendering all pages.",
       "missingExportConfiguration": "Export is not configured correctly.",
       "unknownError": "An unknown error occurred."
+    },
+    "validation": {
+      "requiredField": "This field is required.",
+      "completeRequiredFields": "Complete the required fields before continuing. Remaining: {count}.",
+      "requiredFieldsRemaining": "There are {count} required field(s) remaining. Complete them to continue."
     }
   },
   "Authentication": {

@@ -580,6 +580,11 @@
       "toPdf": "Đang chuyển đổi sang PDF...",
       "toZip": "Đang tạo tệp ZIP...",
       "exportComplete": "Đã xuất xong!"
+    },
+    "validation": {
+      "requiredField": "Trường này là bắt buộc.",
+      "completeRequiredFields": "Vui lòng hoàn thành các trường bắt buộc trước khi tiếp tục. Còn lại: {count}.",
+      "requiredFieldsRemaining": "Còn {count} trường bắt buộc chưa hoàn thành. Vui lòng điền đầy đủ để tiếp tục."
     }
   },
   "CreateCard": {

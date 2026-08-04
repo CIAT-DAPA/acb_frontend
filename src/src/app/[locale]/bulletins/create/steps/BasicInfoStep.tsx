@@ -22,12 +22,17 @@ import {
   MoonCalendarInput,
 } from "../components/fields";
 import { ReviewCommentThread } from "../components/ReviewCommentThread";
+import {
+  BULLETIN_NAME_VALIDATION_ID,
+  BULLETIN_SLUG_VALIDATION_ID,
+} from "@/utils/bulletinRequiredFields";
 
 interface BasicInfoStepProps {
   bulletinData: CreateBulletinData;
   onUpdate: (updater: (prev: CreateBulletinData) => CreateBulletinData) => void;
   existingSlugNames: string[];
   fieldComments?: Record<string, BulletinComment[]>;
+  invalidFieldIds?: string[];
   onReplyToComment?: (commentId: string, text: string) => Promise<void>;
 }
 
@@ -36,12 +41,60 @@ export function BasicInfoStep({
   onUpdate,
   existingSlugNames,
   fieldComments = {},
+  invalidFieldIds = [],
   onReplyToComment,
 }: BasicInfoStepProps) {
   const t = useTranslations("CreateBulletin");
   const tComments = useTranslations("CreateBulletin.comments");
 
   const tHeader = useTranslations("CreateBulletin.headerFooter");
+  const [touchedFieldIds, setTouchedFieldIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const invalidFieldIdSet = React.useMemo(
+    () => new Set(invalidFieldIds),
+    [invalidFieldIds],
+  );
+
+  const markFieldTouched = React.useCallback((fieldId?: string) => {
+    if (!fieldId) return;
+
+    setTouchedFieldIds((current) => {
+      if (current.has(fieldId)) return current;
+
+      const next = new Set(current);
+      next.add(fieldId);
+      return next;
+    });
+  }, []);
+
+  const handleFieldBlur = React.useCallback(
+    (fieldId?: string) => (event: React.FocusEvent<HTMLDivElement>) => {
+      const nextFocusedElement = event.relatedTarget;
+
+      if (
+        nextFocusedElement instanceof Node &&
+        event.currentTarget.contains(nextFocusedElement)
+      ) {
+        return;
+      }
+
+      markFieldTouched(fieldId);
+    },
+    [markFieldTouched],
+  );
+
+  const isFieldInvalid = (fieldId?: string) =>
+    Boolean(
+      fieldId && touchedFieldIds.has(fieldId) && invalidFieldIdSet.has(fieldId),
+    );
+
+  const renderRequiredError = (fieldId?: string) =>
+    isFieldInvalid(fieldId) ? (
+      <p className="mt-1 text-sm font-medium text-red-600">
+        {t("validation.requiredField")}
+      </p>
+    ) : null;
 
   // Helper para normalizar valores de date_range
   const normalizeDateRangeValue = (
@@ -176,7 +229,7 @@ export function BasicInfoStep({
       ? handleHeaderFieldChange
       : handleFooterFieldChange;
 
-    const fieldValue = field.value || "";
+    const fieldValue = field.value ?? "";
 
     switch (field.type) {
       case "list":
@@ -317,7 +370,7 @@ export function BasicInfoStep({
         </div>
 
         {/* Bulletin Name */}
-        <div>
+        <div id={BULLETIN_NAME_VALIDATION_ID}>
           <label className="block text-sm font-medium text-[#283618] mb-2">
             {t("basicInfo.fields.name.label")}
             <span className="text-red-500 ml-1">*</span>
@@ -326,16 +379,23 @@ export function BasicInfoStep({
             type="text"
             value={bulletinData.master.bulletin_name}
             onChange={(e) => handleNameChange(e.target.value)}
+            onBlur={() => markFieldTouched(BULLETIN_NAME_VALIDATION_ID)}
             placeholder={t("basicInfo.fields.name.placeholder")}
-            className="w-full px-4 py-2 border border-[#283618]/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#283618]"
+            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#283618] ${
+              isFieldInvalid(BULLETIN_NAME_VALIDATION_ID)
+                ? "border-red-500 bg-red-50/40"
+                : "border-[#283618]/20"
+            }`}
+            aria-invalid={isFieldInvalid(BULLETIN_NAME_VALIDATION_ID)}
           />
+          {renderRequiredError(BULLETIN_NAME_VALIDATION_ID)}
           <p className="mt-1 text-xs text-[#283618]/60">
             {t("basicInfo.fields.name.helper")}
           </p>
         </div>
 
         {/* Machine Name */}
-        <div>
+        <div id={BULLETIN_SLUG_VALIDATION_ID}>
           <label className="block text-sm font-medium text-[#283618] mb-2">
             {t("basicInfo.fields.nameMachine.label")}
             <span className="text-red-500 ml-1">*</span>
@@ -344,16 +404,29 @@ export function BasicInfoStep({
             type="text"
             value={bulletinData.master.name_machine || ""}
             onChange={(e) => handleNameMachineChange(e.target.value)}
+            onBlur={() => markFieldTouched(BULLETIN_SLUG_VALIDATION_ID)}
             placeholder={t("basicInfo.fields.nameMachine.placeholder")}
             className={`w-full px-4 py-2 border rounded-lg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[#283618] ${
-              nameMachineError ? "border-red-500" : "border-[#283618]/20"
+              (touchedFieldIds.has(BULLETIN_SLUG_VALIDATION_ID) &&
+                nameMachineError) ||
+              isFieldInvalid(BULLETIN_SLUG_VALIDATION_ID)
+                ? "border-red-500 bg-red-50/40"
+                : "border-[#283618]/20"
             }`}
+            aria-invalid={Boolean(
+              (touchedFieldIds.has(BULLETIN_SLUG_VALIDATION_ID) &&
+                nameMachineError) ||
+              isFieldInvalid(BULLETIN_SLUG_VALIDATION_ID),
+            )}
           />
           <p className="mt-1 text-xs text-[#283618]/60">
             {t("basicInfo.fields.nameMachine.help")}
           </p>
-          {nameMachineError && (
+          {touchedFieldIds.has(BULLETIN_SLUG_VALIDATION_ID) &&
+          nameMachineError ? (
             <p className="mt-1 text-sm text-red-600">{nameMachineError}</p>
+          ) : (
+            renderRequiredError(BULLETIN_SLUG_VALIDATION_ID)
           )}
         </div>
       </div>
@@ -373,7 +446,16 @@ export function BasicInfoStep({
           {editableHeaderFields.map((field, index) => {
             const originalIndex = headerFields.findIndex((f) => f === field);
             return (
-              <div key={originalIndex}>
+              <div
+                key={originalIndex}
+                id={`field-${field.field_id}`}
+                onBlurCapture={handleFieldBlur(field.field_id)}
+                className={
+                  isFieldInvalid(field.field_id)
+                    ? "rounded-lg border border-red-300 bg-red-50/40 p-3"
+                    : undefined
+                }
+              >
                 <label className="block text-sm font-medium text-[#283618] mb-2">
                   {field.label}
                   {field.validation?.required && (
@@ -381,6 +463,7 @@ export function BasicInfoStep({
                   )}
                 </label>
                 {renderField(field, originalIndex, true)}
+                {renderRequiredError(field.field_id)}
                 {renderComments(field.field_id)}
                 {field.description && (
                   <p className="mt-1 text-xs text-[#283618]/60">
@@ -408,7 +491,16 @@ export function BasicInfoStep({
           {editableFooterFields.map((field, index) => {
             const originalIndex = footerFields.findIndex((f) => f === field);
             return (
-              <div key={originalIndex}>
+              <div
+                key={originalIndex}
+                id={`field-${field.field_id}`}
+                onBlurCapture={handleFieldBlur(field.field_id)}
+                className={
+                  isFieldInvalid(field.field_id)
+                    ? "rounded-lg border border-red-300 bg-red-50/40 p-3"
+                    : undefined
+                }
+              >
                 <label className="block text-sm font-medium text-[#283618] mb-2">
                   {field.label}
                   {field.validation?.required && (
@@ -416,6 +508,7 @@ export function BasicInfoStep({
                   )}
                 </label>
                 {renderField(field, originalIndex, false)}
+                {renderRequiredError(field.field_id)}
                 {renderComments(field.field_id)}
                 {field.description && (
                   <p className="mt-1 text-xs text-[#283618]/60">
