@@ -69,6 +69,7 @@ export interface TemplateCardProps extends BaseItemCardProps {
   totalSections?: number; // Número real total de secciones del template
   templateBaseName?: string; // Nombre del template base (solo para boletines)
   status?: string; // Estado del boletín (draft, published, etc.)
+  reviewers?: string[]; // Personas que han participado como revisores
 }
 
 // Props específicas para visual resources
@@ -352,6 +353,15 @@ export default function ItemCard(props: ItemCardProps) {
               {t("by")} {props.author}
             </span>
           </div>
+          {props.reviewers && props.reviewers.length > 0 && (
+            <div className="flex items-start gap-1 text-xs text-[#283618]/70 mb-1">
+              <Users className="h-3 w-3 shrink-0 mt-0.5" />
+              <span className="min-w-0 wrap-break-words">
+                {props.reviewers.length === 1 ? t("reviewer") : t("reviewers")}:{" "}
+                {props.reviewers.join(", ")}
+              </span>
+            </div>
+          )}
           <div className="flex items-center gap-1 text-xs text-[#283618]/60 mb-1">
             <Calendar className="h-3 w-3" />
             <span>

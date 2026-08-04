@@ -7,19 +7,59 @@ export interface APIResponse<T = any> {
   message?: string;
 }
 
+type AddCommentAPIResponse =
+  | ReviewComment
+  | APIResponse<ReviewComment>
+  | {
+      success?: boolean;
+      message?: string;
+      comment?: ReviewComment;
+      data?: ReviewComment;
+    };
+
+const isReviewComment = (value: unknown): value is ReviewComment => {
+  if (!value || typeof value !== "object") return false;
+
+  const candidate = value as Partial<ReviewComment>;
+
+  return (
+    typeof candidate.text === "string" &&
+    typeof candidate.author_id === "string" &&
+    typeof candidate.created_at === "string" &&
+    (typeof candidate.comment_id === "string" ||
+      typeof candidate.id === "string")
+  );
+};
+
+const extractCreatedComment = (
+  response: AddCommentAPIResponse,
+): ReviewComment => {
+  if (isReviewComment(response)) {
+    return response;
+  }
+
+  if (response.success === false) {
+    throw new Error(response.message || "Unable to send the comment");
+  }
+
+  if (isReviewComment(response.data)) {
+    return response.data;
+  }
+
+  if ("comment" in response && isReviewComment(response.comment)) {
+    return response.comment;
+  }
+
+  throw new Error(
+    response.message || "The server returned an invalid comment response",
+  );
+};
+
 export class ReviewService extends BaseAPIService {
-  /**
-   * Submit bulletin for review (DRAFT → PENDING_REVIEW)
-   * Creates a new review cycle with the current version.
-   */
   static async submitForReview(bulletinId: string): Promise<void> {
     return this.post(`/bulletins/reviews/${bulletinId}/submit-for-review`);
   }
 
-  /**
-   * Assign a reviewer to the bulletin (Admin only)
-   * Bulletin remains in PENDING_REVIEW until reviewer opens it.
-   */
   static async assignReviewer(
     bulletinId: string,
     reviewerId: string,
@@ -29,71 +69,46 @@ export class ReviewService extends BaseAPIService {
     });
   }
 
-  /**
-   * Open bulletin for review (PENDING_REVIEW → REVIEW)
-   * Can be done by assigned reviewer or admin.
-   */
   static async openReview(bulletinId: string): Promise<void> {
     return this.post(`/bulletins/reviews/${bulletinId}/open-review`);
   }
 
-  /**
-   * Approve bulletin (REVIEW → PUBLISHED)
-   * Can only be done by assigned reviewer or admin.
-   */
   static async approveBulletin(bulletinId: string): Promise<void> {
     return this.post(`/bulletins/reviews/${bulletinId}/approve`);
   }
 
-  /**
-   * Reject bulletin (REVIEW → REJECTED)
-   * Requires at least one comment in the current cycle.
-   * Can only be done by assigned reviewer or admin.
-   */
   static async rejectBulletin(bulletinId: string): Promise<void> {
     return this.post(`/bulletins/reviews/${bulletinId}/reject`);
   }
 
-  /**
-   * Reopen rejected bulletin for editing (REJECTED → DRAFT)
-   */
   static async reopenBulletin(bulletinId: string): Promise<void> {
     return this.post(`/bulletins/reviews/${bulletinId}/reopen`);
   }
 
-  /**
-   * Publish bulletin directly without review (DRAFT → PUBLISHED)
-   * Admin only. For bulletins that don't need review.
-   */
   static async publishDirect(bulletinId: string): Promise<void> {
     return this.post(`/bulletins/reviews/${bulletinId}/publish-direct`);
   }
 
-  /**
-   * Archive published bulletin (PUBLISHED → ARCHIVED)
-   * Admin only.
-   */
   static async archiveBulletin(bulletinId: string): Promise<void> {
     return this.post(`/bulletins/reviews/${bulletinId}/archive`);
   }
 
   /**
-   * Add a comment or reply to a bulletin review.
+   * Adds a comment or reply and normalizes the different successful response
+   * shapes returned by the API. Consumers always receive a ReviewComment.
    */
   static async addComment(
     bulletinId: string,
     payload: CommentPayload,
-  ): Promise<APIResponse<ReviewComment>> {
-    return this.post<APIResponse<ReviewComment>>(
+  ): Promise<ReviewComment> {
+    const response = await this.post<AddCommentAPIResponse>(
       `/bulletins/reviews/${bulletinId}/comments`,
       payload,
     );
+
+    return extractCreatedComment(response);
   }
 
-  /**
-   * Edit a comment's text.
-   * Only the original author can edit.
-   */
   static async editComment(
     bulletinId: string,
     commentId: string,
@@ -105,10 +120,6 @@ export class ReviewService extends BaseAPIService {
     );
   }
 
-  /**
-   * Delete a comment.
-   * Only the original author can delete.
-   */
   static async deleteComment(
     bulletinId: string,
     commentId: string,
@@ -118,9 +129,6 @@ export class ReviewService extends BaseAPIService {
     );
   }
 
-  /**
-   * Get complete review history including all cycles and comments
-   */
   static async getReviewHistory(
     bulletinId: string,
   ): Promise<APIResponse<ReviewHistory>> {

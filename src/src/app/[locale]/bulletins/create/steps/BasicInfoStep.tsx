@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { slugify, isValidSlug } from "../../../../../utils/slugify";
 import {
   CreateBulletinData,
@@ -21,12 +21,19 @@ import {
   ImageUploadInput,
   MoonCalendarInput,
 } from "../components/fields";
+import { ReviewCommentThread } from "../components/ReviewCommentThread";
+import {
+  BULLETIN_NAME_VALIDATION_ID,
+  BULLETIN_SLUG_VALIDATION_ID,
+} from "@/utils/bulletinRequiredFields";
 
 interface BasicInfoStepProps {
   bulletinData: CreateBulletinData;
   onUpdate: (updater: (prev: CreateBulletinData) => CreateBulletinData) => void;
   existingSlugNames: string[];
   fieldComments?: Record<string, BulletinComment[]>;
+  invalidFieldIds?: string[];
+  onReplyToComment?: (commentId: string, text: string) => Promise<void>;
 }
 
 export function BasicInfoStep({
@@ -34,12 +41,60 @@ export function BasicInfoStep({
   onUpdate,
   existingSlugNames,
   fieldComments = {},
+  invalidFieldIds = [],
+  onReplyToComment,
 }: BasicInfoStepProps) {
   const t = useTranslations("CreateBulletin");
   const tComments = useTranslations("CreateBulletin.comments");
 
-  const locale = useLocale();
   const tHeader = useTranslations("CreateBulletin.headerFooter");
+  const [touchedFieldIds, setTouchedFieldIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const invalidFieldIdSet = React.useMemo(
+    () => new Set(invalidFieldIds),
+    [invalidFieldIds],
+  );
+
+  const markFieldTouched = React.useCallback((fieldId?: string) => {
+    if (!fieldId) return;
+
+    setTouchedFieldIds((current) => {
+      if (current.has(fieldId)) return current;
+
+      const next = new Set(current);
+      next.add(fieldId);
+      return next;
+    });
+  }, []);
+
+  const handleFieldBlur = React.useCallback(
+    (fieldId?: string) => (event: React.FocusEvent<HTMLDivElement>) => {
+      const nextFocusedElement = event.relatedTarget;
+
+      if (
+        nextFocusedElement instanceof Node &&
+        event.currentTarget.contains(nextFocusedElement)
+      ) {
+        return;
+      }
+
+      markFieldTouched(fieldId);
+    },
+    [markFieldTouched],
+  );
+
+  const isFieldInvalid = (fieldId?: string) =>
+    Boolean(
+      fieldId && touchedFieldIds.has(fieldId) && invalidFieldIdSet.has(fieldId),
+    );
+
+  const renderRequiredError = (fieldId?: string) =>
+    isFieldInvalid(fieldId) ? (
+      <p className="mt-1 text-sm font-medium text-red-600">
+        {t("validation.requiredField")}
+      </p>
+    ) : null;
 
   // Helper para normalizar valores de date_range
   const normalizeDateRangeValue = (
@@ -159,44 +214,12 @@ export function BasicInfoStep({
     if (!comments || comments.length === 0) return null;
 
     return (
-      <div className="mt-2 bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded-r-md text-sm shadow-sm">
-        <div className="text-xs font-bold text-yellow-800 mb-1 uppercase tracking-wide">
+      <div className="mt-2 rounded-r-md border-l-4 border-yellow-400 bg-yellow-50 p-3 text-sm shadow-sm">
+        <div className="mb-2 text-xs font-bold uppercase tracking-wide text-yellow-800">
           {tComments("title")}
         </div>
-        {comments.map((comment, idx) => (
-          <div
-            key={idx}
-            className="mb-2 last:mb-0 border-b border-yellow-200 last:border-0 pb-2 last:pb-0"
-          >
-            <div className="flex justify-between items-start mb-0.5">
-              <span className="font-semibold text-yellow-900 text-xs">
-                {comment.author_first_name || tComments("reviewerFallback")}
-              </span>
-              <span className="text-[10px] text-yellow-700 opacity-70">
-                {new Date(comment.created_at).toLocaleDateString(locale)}
-              </span>
-            </div>
-            <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-wrap">
-              {comment.text}
-            </p>
-            {comment.replies && comment.replies.length > 0 && (
-              <div className="ml-3 mt-2 border-l-2 border-yellow-300 pl-3 bg-white/50 p-2 rounded-sm">
-                {comment.replies.map((reply, rIdx) => (
-                  <div key={rIdx} className="mb-1 last:mb-0">
-                    <div className="flex gap-1 items-baseline">
-                      <span className="font-semibold text-xs text-yellow-800">
-                        {reply.author_first_name ||
-                          tComments("reviewerFallback")}
-                        :{" "}
-                      </span>
-                      <p className="text-xs text-gray-600">{reply.text}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
+
+        <ReviewCommentThread comments={comments} onReply={onReplyToComment} />
       </div>
     );
   };
@@ -206,7 +229,7 @@ export function BasicInfoStep({
       ? handleHeaderFieldChange
       : handleFooterFieldChange;
 
-    const fieldValue = field.value || "";
+    const fieldValue = field.value ?? "";
 
     switch (field.type) {
       case "list":
@@ -347,7 +370,7 @@ export function BasicInfoStep({
         </div>
 
         {/* Bulletin Name */}
-        <div>
+        <div id={BULLETIN_NAME_VALIDATION_ID}>
           <label className="block text-sm font-medium text-[#283618] mb-2">
             {t("basicInfo.fields.name.label")}
             <span className="text-red-500 ml-1">*</span>
@@ -356,16 +379,23 @@ export function BasicInfoStep({
             type="text"
             value={bulletinData.master.bulletin_name}
             onChange={(e) => handleNameChange(e.target.value)}
+            onBlur={() => markFieldTouched(BULLETIN_NAME_VALIDATION_ID)}
             placeholder={t("basicInfo.fields.name.placeholder")}
-            className="w-full px-4 py-2 border border-[#283618]/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#283618]"
+            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#283618] ${
+              isFieldInvalid(BULLETIN_NAME_VALIDATION_ID)
+                ? "border-red-500 bg-red-50/40"
+                : "border-[#283618]/20"
+            }`}
+            aria-invalid={isFieldInvalid(BULLETIN_NAME_VALIDATION_ID)}
           />
+          {renderRequiredError(BULLETIN_NAME_VALIDATION_ID)}
           <p className="mt-1 text-xs text-[#283618]/60">
             {t("basicInfo.fields.name.helper")}
           </p>
         </div>
 
         {/* Machine Name */}
-        <div>
+        <div id={BULLETIN_SLUG_VALIDATION_ID}>
           <label className="block text-sm font-medium text-[#283618] mb-2">
             {t("basicInfo.fields.nameMachine.label")}
             <span className="text-red-500 ml-1">*</span>
@@ -374,16 +404,29 @@ export function BasicInfoStep({
             type="text"
             value={bulletinData.master.name_machine || ""}
             onChange={(e) => handleNameMachineChange(e.target.value)}
+            onBlur={() => markFieldTouched(BULLETIN_SLUG_VALIDATION_ID)}
             placeholder={t("basicInfo.fields.nameMachine.placeholder")}
             className={`w-full px-4 py-2 border rounded-lg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[#283618] ${
-              nameMachineError ? "border-red-500" : "border-[#283618]/20"
+              (touchedFieldIds.has(BULLETIN_SLUG_VALIDATION_ID) &&
+                nameMachineError) ||
+              isFieldInvalid(BULLETIN_SLUG_VALIDATION_ID)
+                ? "border-red-500 bg-red-50/40"
+                : "border-[#283618]/20"
             }`}
+            aria-invalid={Boolean(
+              (touchedFieldIds.has(BULLETIN_SLUG_VALIDATION_ID) &&
+                nameMachineError) ||
+              isFieldInvalid(BULLETIN_SLUG_VALIDATION_ID),
+            )}
           />
           <p className="mt-1 text-xs text-[#283618]/60">
             {t("basicInfo.fields.nameMachine.help")}
           </p>
-          {nameMachineError && (
+          {touchedFieldIds.has(BULLETIN_SLUG_VALIDATION_ID) &&
+          nameMachineError ? (
             <p className="mt-1 text-sm text-red-600">{nameMachineError}</p>
+          ) : (
+            renderRequiredError(BULLETIN_SLUG_VALIDATION_ID)
           )}
         </div>
       </div>
@@ -403,7 +446,16 @@ export function BasicInfoStep({
           {editableHeaderFields.map((field, index) => {
             const originalIndex = headerFields.findIndex((f) => f === field);
             return (
-              <div key={originalIndex}>
+              <div
+                key={originalIndex}
+                id={`field-${field.field_id}`}
+                onBlurCapture={handleFieldBlur(field.field_id)}
+                className={
+                  isFieldInvalid(field.field_id)
+                    ? "rounded-lg border border-red-300 bg-red-50/40 p-3"
+                    : undefined
+                }
+              >
                 <label className="block text-sm font-medium text-[#283618] mb-2">
                   {field.label}
                   {field.validation?.required && (
@@ -411,6 +463,7 @@ export function BasicInfoStep({
                   )}
                 </label>
                 {renderField(field, originalIndex, true)}
+                {renderRequiredError(field.field_id)}
                 {renderComments(field.field_id)}
                 {field.description && (
                   <p className="mt-1 text-xs text-[#283618]/60">
@@ -438,7 +491,16 @@ export function BasicInfoStep({
           {editableFooterFields.map((field, index) => {
             const originalIndex = footerFields.findIndex((f) => f === field);
             return (
-              <div key={originalIndex}>
+              <div
+                key={originalIndex}
+                id={`field-${field.field_id}`}
+                onBlurCapture={handleFieldBlur(field.field_id)}
+                className={
+                  isFieldInvalid(field.field_id)
+                    ? "rounded-lg border border-red-300 bg-red-50/40 p-3"
+                    : undefined
+                }
+              >
                 <label className="block text-sm font-medium text-[#283618] mb-2">
                   {field.label}
                   {field.validation?.required && (
@@ -446,6 +508,7 @@ export function BasicInfoStep({
                   )}
                 </label>
                 {renderField(field, originalIndex, false)}
+                {renderRequiredError(field.field_id)}
                 {renderComments(field.field_id)}
                 {field.description && (
                   <p className="mt-1 text-xs text-[#283618]/60">

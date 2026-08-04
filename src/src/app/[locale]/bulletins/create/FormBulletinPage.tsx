@@ -50,6 +50,16 @@ import { slugify, isValidSlug } from "../../../../utils/slugify";
 import { BulletinComment } from "@/types/bulletin"; // Updated to use renamed BulletinComment type
 import { MODULES, PERMISSION_ACTIONS } from "../../../../types/core";
 import { decodeReviewFieldId } from "@/utils/reviewTarget";
+import type { ReviewComment } from "../../../../types/review";
+import { ReviewCommentThread } from "./components/ReviewCommentThread";
+import {
+  BULLETIN_NAME_VALIDATION_ID,
+  BULLETIN_SLUG_VALIDATION_ID,
+  getBasicInfoRequiredFieldIssues,
+  getSectionRequiredFieldIssues,
+  toRequiredFieldValidationResult,
+  type RequiredFieldIssue,
+} from "@/utils/bulletinRequiredFields";
 
 // Funciones para codificar/decodificar valores de texto
 const encodeTextFieldValue = (value: any): any => {
@@ -257,6 +267,48 @@ const createRepeatablePageFromSection = (
   })),
 });
 
+const normalizeReviewComment = (comment: ReviewComment): BulletinComment => {
+  const commentId = comment.comment_id || comment.id;
+
+  if (!commentId) {
+    throw new Error("The API response does not include a comment ID");
+  }
+
+  return {
+    comment_id: commentId,
+    text: comment.text,
+    author_id: comment.author_id,
+    author_first_name: comment.author_first_name,
+    author_last_name: comment.author_last_name,
+    created_at: new Date(comment.created_at),
+    bulletin_version_id: comment.bulletin_version_id,
+    replies: comment.replies?.map(normalizeReviewComment),
+  };
+};
+
+const appendReplyToComment = (
+  currentComments: BulletinComment[],
+  parentCommentId: string,
+  reply: BulletinComment,
+): BulletinComment[] =>
+  currentComments.map((comment) => {
+    if (comment.comment_id === parentCommentId) {
+      return {
+        ...comment,
+        replies: [...(comment.replies || []), reply],
+      };
+    }
+
+    if (!comment.replies?.length) {
+      return comment;
+    }
+
+    return {
+      ...comment,
+      replies: appendReplyToComment(comment.replies, parentCommentId, reply),
+    };
+  });
+
 interface FormBulletinPageProps {
   mode?: "create" | "edit";
   bulletinId?: string;
@@ -430,6 +482,52 @@ export default function FormBulletinPage({
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const [reviewComments, setReviewComments] = useState<BulletinComment[]>(
+    comments || [],
+  );
+
+  useEffect(() => {
+    setReviewComments(comments || []);
+  }, [comments]);
+
+  const canReplyToComments = isEditMode && Boolean(persistedBulletinId);
+
+  const handleReplyToComment = useCallback(
+    async (parentCommentId: string, text: string) => {
+      const currentBulletinId = persistedBulletinId || bulletinId;
+
+      if (!currentBulletinId) {
+        const message = t("comments.missingBulletin");
+        showToast(message, "error");
+        throw new Error(message);
+      }
+
+      try {
+        const createdComment = await ReviewService.addComment(
+          currentBulletinId,
+          {
+            text,
+            parent_comment_id: parentCommentId,
+          },
+        );
+
+        const reply = normalizeReviewComment(createdComment);
+
+        setReviewComments((currentComments) =>
+          appendReplyToComment(currentComments, parentCommentId, reply),
+        );
+
+        showToast(t("comments.replySuccess"), "success");
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : t("comments.replyError");
+
+        showToast(message, "error");
+        throw error;
+      }
+    },
+    [bulletinId, persistedBulletinId, showToast, t],
+  );
 
   // Group comments by target_element
   const groupedComments = useMemo(() => {
@@ -455,7 +553,7 @@ export default function FormBulletinPage({
       collection[key].push(comment);
     };
 
-    comments?.forEach((comment) => {
+    reviewComments.forEach((comment) => {
       const target = comment.target_element;
 
       if (!target) {
@@ -500,47 +598,30 @@ export default function FormBulletinPage({
       fieldComments,
       fieldAllComments,
     };
-  }, [comments]);
+  }, [reviewComments]);
 
   // Render general comments
   const renderGeneralComments = useCallback(() => {
     if (groupedComments.generalComments.length === 0) return null;
 
     return (
-      <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-        <h3 className="text-sm font-semibold text-yellow-800 mb-2">
+      <div className="mb-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+        <h3 className="mb-2 text-sm font-semibold text-yellow-800">
           {t("comments.generalTitle")}
         </h3>
-        <ul className="list-disc pl-5 space-y-1">
-          {groupedComments.generalComments.map((comment) => (
-            <li key={comment.comment_id} className="text-sm text-yellow-900">
-              <span className="font-medium text-xs text-yellow-700 block mb-0.5">
-                {comment.author_first_name || t("comments.reviewerFallback")}:
-              </span>
-              {comment.text}
-              {comment.replies && comment.replies.length > 0 && (
-                <ul className="list-circle pl-4 mt-1 border-l-2 border-yellow-200">
-                  {comment.replies.map((reply) => (
-                    <li
-                      key={reply.comment_id}
-                      className="text-xs text-gray-600 mt-1"
-                    >
-                      <span className="font-medium">
-                        {reply.author_first_name ||
-                          t("comments.reviewerFallback")}
-                        :{" "}
-                      </span>
-                      {reply.text}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </li>
-          ))}
-        </ul>
+
+        <ReviewCommentThread
+          comments={groupedComments.generalComments}
+          onReply={canReplyToComments ? handleReplyToComment : undefined}
+        />
       </div>
     );
-  }, [groupedComments.generalComments, t]);
+  }, [
+    canReplyToComments,
+    groupedComments.generalComments,
+    handleReplyToComment,
+    t,
+  ]);
 
   // Cargar los slug names existentes al montar el componente
   useEffect(() => {
@@ -941,7 +1022,7 @@ export default function FormBulletinPage({
 
     const sections = creationState.data.version.data.sections;
 
-    if (!comments || comments.length === 0 || sections.length === 0) {
+    if (reviewComments.length === 0 || sections.length === 0) {
       return counts;
     }
 
@@ -999,7 +1080,7 @@ export default function FormBulletinPage({
       });
     });
 
-    comments.forEach((comment) => {
+    reviewComments.forEach((comment) => {
       const target = comment.target_element;
 
       let resolvedSectionIndex: number | undefined;
@@ -1034,7 +1115,7 @@ export default function FormBulletinPage({
     });
 
     return counts;
-  }, [comments, creationState.data.version.data.sections]);
+  }, [reviewComments, creationState.data.version.data.sections]);
 
   // Configuración de los pasos del stepper
   const stepConfigs = useMemo((): StepConfig[] => {
@@ -1094,38 +1175,84 @@ export default function FormBulletinPage({
     setPreviewPageIndex(0);
   }, [creationState.currentStep]);
 
-  // Validar paso actual
-  const isCurrentStepValid = useMemo(() => {
+  // Validar el paso actual, incluyendo todos los campos obligatorios editables.
+  const currentStepValidation = useMemo(() => {
     switch (creationState.currentStep) {
       case "select-template":
-        return !!creationState.selectedTemplateId;
-      case "basic-info":
+        return {
+          isValid: Boolean(creationState.selectedTemplateId),
+          issues: [] as RequiredFieldIssue[],
+          invalidFieldIds: [] as string[],
+        };
+
+      case "basic-info": {
+        const issues = getBasicInfoRequiredFieldIssues(creationState.data);
         const name = creationState.data.master.bulletin_name.trim();
         const nameMachine = creationState.data.master.name_machine.trim();
-        const isNameValid = name.length > 0;
-        const isSlugValid =
-          nameMachine.length > 0 &&
-          isValidSlug(nameMachine) &&
-          !existingSlugNames.includes(nameMachine);
-        return isNameValid && isSlugValid;
-      case "export":
-        return true; // El paso de exportación siempre es válido
-      default:
-        // Para pasos de sección
-        if (creationState.currentStep.startsWith("section-")) {
-          return true; // Las secciones son opcionales
+
+        if (!name) {
+          issues.unshift({
+            key: BULLETIN_NAME_VALIDATION_ID,
+            fieldId: BULLETIN_NAME_VALIDATION_ID,
+            label: t("basicInfo.fields.name.label"),
+            path: "basicInfo.master",
+          });
         }
-        return false;
+
+        if (
+          !nameMachine ||
+          !isValidSlug(nameMachine) ||
+          existingSlugNames.includes(nameMachine)
+        ) {
+          issues.push({
+            key: BULLETIN_SLUG_VALIDATION_ID,
+            fieldId: BULLETIN_SLUG_VALIDATION_ID,
+            label: t("basicInfo.fields.nameMachine.label"),
+            path: "basicInfo.master",
+          });
+        }
+
+        return toRequiredFieldValidationResult(issues);
+      }
+
+      case "export":
+        return toRequiredFieldValidationResult([]);
+
+      default: {
+        if (!creationState.currentStep.startsWith("section-")) {
+          return {
+            isValid: false,
+            issues: [] as RequiredFieldIssue[],
+            invalidFieldIds: [] as string[],
+          };
+        }
+
+        const sectionIndex = Number.parseInt(
+          creationState.currentStep.replace("section-", ""),
+          10,
+        );
+        const section = creationState.data.version.data.sections[sectionIndex];
+
+        return toRequiredFieldValidationResult(
+          getSectionRequiredFieldIssues(section, sectionIndex),
+        );
+      }
     }
   }, [
     creationState.currentStep,
     creationState.selectedTemplateId,
-    creationState.data.master.bulletin_name,
+    creationState.data,
+    existingSlugNames,
+    t,
   ]);
+
+  const isCurrentStepValid = currentStepValidation.isValid;
 
   // Navegación: siguiente paso
   const handleNext = useCallback(() => {
-    if (!isCurrentStepValid) return;
+    if (!isCurrentStepValid) {
+      return;
+    }
 
     const nextIndex = currentStepIndex + 1;
     if (nextIndex < stepConfigs.length) {
@@ -1141,15 +1268,30 @@ export default function FormBulletinPage({
     }
   }, [currentStepIndex, stepConfigs, goToStep]);
 
-  // Click en un paso del stepper
+  // Click en un paso del stepper. Retroceder siempre es válido; avanzar exige
+  // completar el paso actual.
   const handleStepClick = useCallback(
     (stepIndex: number) => {
-      // Solo permitir navegar a pasos si ya se seleccionó template
+      if (stepIndex < 0 || stepIndex >= stepConfigs.length) {
+        return;
+      }
+
+      if (stepIndex > currentStepIndex && !isCurrentStepValid) {
+        return;
+      }
+
       if (stepIndex === 0 || creationState.selectedTemplateId) {
         goToStep(stepConfigs[stepIndex].id as BulletinCreationStep);
       }
     },
-    [stepConfigs, goToStep, creationState.selectedTemplateId],
+    [
+      stepConfigs,
+      currentStepIndex,
+      isCurrentStepValid,
+      goToStep,
+      creationState.currentStep,
+      creationState.selectedTemplateId,
+    ],
   );
 
   // Finalizar creación del boletín
@@ -1847,6 +1989,10 @@ export default function FormBulletinPage({
             onUpdate={updateBulletinData}
             existingSlugNames={existingSlugNames}
             fieldComments={groupedComments.fieldComments}
+            invalidFieldIds={currentStepValidation.invalidFieldIds}
+            onReplyToComment={
+              canReplyToComments ? handleReplyToComment : undefined
+            }
           />
         );
 
@@ -1879,6 +2025,10 @@ export default function FormBulletinPage({
               blockComments={groupedComments.blockComments}
               fieldComments={groupedComments.fieldComments}
               fieldAllComments={groupedComments.fieldAllComments}
+              invalidFieldIds={currentStepValidation.invalidFieldIds}
+              onReplyToComment={
+                canReplyToComments ? handleReplyToComment : undefined
+              }
             />
           );
         }
@@ -2003,7 +2153,7 @@ export default function FormBulletinPage({
                   ) : (
                     <button
                       onClick={handleNext}
-                      disabled={!isCurrentStepValid}
+                      disabled={isLoading || !isCurrentStepValid}
                       className={`${btnPrimary} disabled:opacity-50 disabled:cursor-not-allowed`}
                     >
                       {t("navigation.next")}{" "}

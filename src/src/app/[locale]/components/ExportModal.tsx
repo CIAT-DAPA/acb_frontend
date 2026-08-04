@@ -1,6 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
 import {
   X,
   Download,
@@ -10,6 +17,7 @@ import {
   ArrowUp,
   ArrowDown,
   GripVertical,
+  Info,
 } from "lucide-react";
 import { CreateTemplateData } from "@/types/template";
 import { ScrollView } from "./ScrollView";
@@ -79,6 +87,136 @@ export interface ExportTechnicalConfig {
   getSectionPages: (section: any) => number;
 }
 
+type TooltipPlacement = "top" | "bottom";
+
+interface DestinationInfoTooltipProps {
+  ariaLabel: string;
+  mobileLabel: string;
+  mobileDescription: string;
+  printLabel: string;
+  printDescription: string;
+}
+
+function DestinationInfoTooltip({
+  ariaLabel,
+  mobileLabel,
+  mobileDescription,
+  printLabel,
+  printDescription,
+}: DestinationInfoTooltipProps) {
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const [position, setPosition] = useState({
+    top: 0,
+    left: 0,
+    width: 320,
+    arrowLeft: 16,
+    placement: "bottom" as TooltipPlacement,
+  });
+
+  const updatePosition = useCallback(() => {
+    const trigger = triggerRef.current;
+    if (!trigger || typeof window === "undefined") return;
+
+    const triggerRect = trigger.getBoundingClientRect();
+    const viewportPadding = 12;
+    const gap = 10;
+    const width = Math.min(320, window.innerWidth - viewportPadding * 2);
+    const tooltipHeight = tooltipRef.current?.offsetHeight ?? 128;
+    const hasSpaceBelow =
+      triggerRect.bottom + gap + tooltipHeight <=
+      window.innerHeight - viewportPadding;
+    const placement: TooltipPlacement = hasSpaceBelow ? "bottom" : "top";
+    const triggerCenter = triggerRect.left + triggerRect.width / 2;
+    const left = Math.min(
+      Math.max(triggerCenter - width / 2, viewportPadding),
+      window.innerWidth - width - viewportPadding,
+    );
+    const top =
+      placement === "bottom"
+        ? triggerRect.bottom + gap
+        : Math.max(viewportPadding, triggerRect.top - gap - tooltipHeight);
+
+    setPosition({
+      top,
+      left,
+      width,
+      arrowLeft: Math.min(Math.max(triggerCenter - left, 12), width - 12),
+      placement,
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!isVisible) return;
+
+    updatePosition();
+    const animationFrame = window.requestAnimationFrame(updatePosition);
+
+    window.addEventListener("resize", updatePosition);
+    document.addEventListener("scroll", updatePosition, true);
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      window.removeEventListener("resize", updatePosition);
+      document.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [isVisible, updatePosition]);
+
+  return (
+    <>
+      <button
+        ref={triggerRef}
+        type="button"
+        aria-label={ariaLabel}
+        aria-describedby="export-destination-tooltip"
+        onMouseEnter={() => setIsVisible(true)}
+        onMouseLeave={() => setIsVisible(false)}
+        onFocus={() => setIsVisible(true)}
+        onBlur={() => setIsVisible(false)}
+        className="flex h-5 w-5 items-center justify-center rounded-full text-[#bc6c25] transition-colors hover:bg-[#bc6c25]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffaf68] focus-visible:ring-offset-2"
+      >
+        <Info className="h-4 w-4" aria-hidden="true" />
+      </button>
+
+      {isVisible &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            ref={tooltipRef}
+            id="export-destination-tooltip"
+            role="tooltip"
+            style={{
+              top: position.top,
+              left: position.left,
+              width: position.width,
+            }}
+            className="pointer-events-none fixed z-100 rounded-lg bg-[#283618] px-3 py-2 text-left text-xs font-normal leading-relaxed text-[#fefae0] shadow-xl"
+          >
+            <p>
+              <span className="font-semibold">{mobileLabel}:</span>{" "}
+              {mobileDescription}
+            </p>
+            <p className="mt-2">
+              <span className="font-semibold">{printLabel}:</span>{" "}
+              {printDescription}
+            </p>
+            <span
+              aria-hidden="true"
+              style={{ left: position.arrowLeft }}
+              className={`absolute -translate-x-1/2 border-x-[6px] border-x-transparent ${
+                position.placement === "bottom"
+                  ? "bottom-full border-b-[6px] border-b-[#283618]"
+                  : "top-full border-t-[6px] border-t-[#283618]"
+              }`}
+            />
+          </div>,
+          document.body,
+        )}
+    </>
+  );
+}
+
 interface ExportModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -138,7 +276,7 @@ export function ExportModal({
     externalContentName ||
     loadedContent?.master.name ||
     templateData?.master.template_name ||
-    "Contenido";
+    t("defaultContentName");
   const hasCardFields = useMemo(
     () =>
       Boolean(
@@ -269,23 +407,14 @@ export function ExportModal({
         );
 
         if (!response.success || !response.data) {
-          throw new Error(
-            response.message ||
-              `No se pudo cargar ${ContentService.getContentTypeName(
-                contentType,
-              )}`,
-          );
+          throw new Error(response.message || t("loadContentError"));
         }
 
         setLoadedContent(response.data);
       } catch (err) {
         console.error(`Error cargando ${contentType}:`, err);
         setLoadError(
-          err instanceof Error
-            ? err.message
-            : `Error al cargar ${ContentService.getContentTypeName(
-                contentType,
-              )}`,
+          err instanceof Error ? err.message : t("loadContentError"),
         );
       } finally {
         setLoadingContent(false);
@@ -293,7 +422,7 @@ export function ExportModal({
     };
 
     loadContent();
-  }, [contentId, contentType, externalTemplateData, isOpen]);
+  }, [contentId, contentType, externalTemplateData, isOpen, t]);
 
   // Prevenir scroll del body cuando el modal está abierto
   useEffect(() => {
@@ -323,8 +452,8 @@ export function ExportModal({
     setConfig((previousConfig) => ({
       ...previousConfig,
       target,
-      // En modo impresión exportamos siempre PDF
-      format: target === "print" ? "pdf" : previousConfig.format,
+      // Mobile admite únicamente JPG; impresión admite JPG o PDF.
+      format: target === "mobile" ? "jpg" : previousConfig.format,
     }));
   };
 
@@ -545,12 +674,9 @@ export function ExportModal({
       }
     }
 
-    console.warn(
-      "El preview de exportación no terminó de renderizar todas las páginas.",
-      {
-        selectedSections,
-      },
-    );
+    console.warn(t("previewNotReady"), {
+      selectedSections,
+    });
   };
 
   const handleExport = async () => {
@@ -654,9 +780,7 @@ export function ExportModal({
           handleProgressUpdate,
         );
       } else {
-        throw new Error(
-          "ExportModal: Se debe proporcionar 'onExport' o habilitar 'autoExport' con 'exportConfig'",
-        );
+        throw new Error(t("missingExportConfiguration"));
       }
 
       setExportStatus("success");
@@ -672,10 +796,10 @@ export function ExportModal({
         resetModal();
       }, 2000);
     } catch (error) {
-      console.error("Error en exportación:", error);
+      console.error(t("exportError"), error);
       setExportStatus("error");
       setErrorMessage(
-        error instanceof Error ? error.message : "Error desconocido",
+        error instanceof Error ? error.message : t("unknownError"),
       );
     } finally {
       setIsExporting(false);
@@ -685,7 +809,7 @@ export function ExportModal({
   const resetModal = () => {
     setConfig({
       target: "mobile",
-      format: "pdf",
+      format: "jpg",
       quality: "ultra",
       pageSize: "auto",
       sectionsPerPage: 1,
@@ -724,7 +848,7 @@ export function ExportModal({
         ? config.selectedSections
         : allSections;
   const availableFormats: DownloadFormat[] =
-    config.target === "print" ? ["pdf"] : ["jpg", "pdf"];
+    config.target === "print" ? ["jpg", "pdf"] : ["jpg"];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -736,13 +860,15 @@ export function ExportModal({
             <p className="text-sm text-[#283618]/60 mt-1">{contentName}</p>
             {contentId && (
               <p className="text-xs text-[#283618]/40 mt-0.5 font-mono">
-                ID: {contentId}
+                {t("contentIdLabel")}: {contentId}
               </p>
             )}
           </div>
           <button
+            type="button"
             onClick={handleClose}
             disabled={isExporting || loadingContent}
+            aria-label={t("closeAriaLabel")}
             className="p-2 hover:bg-[#283618]/5 rounded-lg transition-colors disabled:opacity-50"
           >
             <X className="w-6 h-6 text-[#283618]" />
@@ -776,24 +902,50 @@ export function ExportModal({
             <div className="space-y-6">
               {/* Destino de exportación */}
               <div>
-                <label className="block text-sm font-semibold text-[#283618] mb-3">
-                  {t("destination")}
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  {(["mobile", "print"] as ExportTarget[]).map((target) => (
-                    <button
-                      key={target}
-                      onClick={() => handleTargetChange(target)}
-                      disabled={isExporting}
-                      className={`py-3 px-4 rounded text-sm transition-colors ${
-                        config.target === target
-                          ? "bg-[#bc6c25] text-[#fefae0] font-semibold"
-                          : "border-2 border-[#bc6c25] text-[#283618] hover:bg-[#bc6c25]/90 hover:text-[#fefae0]"
-                      } disabled:opacity-30 disabled:cursor-not-allowed`}
-                    >
-                      {target === "mobile" ? t("forMobile") : t("forPrint")}
-                    </button>
-                  ))}
+                <div className="mb-3 flex items-center gap-2">
+                  <span
+                    id="export-destination-label"
+                    className="text-sm font-semibold text-[#283618]"
+                  >
+                    {t("destination")}
+                  </span>
+
+                  <DestinationInfoTooltip
+                    ariaLabel={t("destinationInfoAriaLabel")}
+                    mobileLabel={t("forMobile")}
+                    mobileDescription={t("mobileDescription")}
+                    printLabel={t("forPrint")}
+                    printDescription={t("printDescription")}
+                  />
+                </div>
+
+                <div
+                  role="group"
+                  aria-labelledby="export-destination-label"
+                  className="grid grid-cols-2 gap-2"
+                >
+                  {(["mobile", "print"] as ExportTarget[]).map((target) => {
+                    const isSelected = config.target === target;
+                    const targetLabel =
+                      target === "mobile" ? t("forMobile") : t("forPrint");
+
+                    return (
+                      <button
+                        key={target}
+                        type="button"
+                        onClick={() => handleTargetChange(target)}
+                        disabled={isExporting}
+                        aria-pressed={isSelected}
+                        className={`w-full rounded px-4 py-3 text-sm transition-colors ${
+                          isSelected
+                            ? "bg-[#bc6c25] text-[#fefae0] font-semibold"
+                            : "border-2 border-[#bc6c25] text-[#283618] hover:bg-[#bc6c25]/90 hover:text-[#fefae0]"
+                        } disabled:cursor-not-allowed disabled:opacity-30`}
+                      >
+                        {targetLabel}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -826,7 +978,7 @@ export function ExportModal({
                   {t("quality")}
                 </label>
                 <div className="grid grid-cols-4 gap-2">
-                  {(["low", "medium", "high", "ultra"] as QualityOption[]).map(
+                  {(["low", "medium", "high", "ultra"] as const).map(
                     (quality) => (
                       <button
                         key={quality}
@@ -838,7 +990,7 @@ export function ExportModal({
                             : "border-2 border-[#bc6c25] text-[#283618] hover:bg-[#bc6c25]/90 hover:text-[#fefae0]"
                         } disabled:opacity-50`}
                       >
-                        {quality}
+                        {t(quality)}
                         <div className="text-xs font-normal mt-0.5 opacity-70">
                           {quality === "low" && "1x"}
                           {quality === "medium" && "1.5x"}
@@ -925,22 +1077,22 @@ export function ExportModal({
                           {t("pageSize")}
                         </label>
                         <div className="grid grid-cols-4 gap-2">
-                          {(
-                            ["auto", "a4", "letter", "legal"] as PageSize[]
-                          ).map((size) => (
-                            <button
-                              key={size}
-                              onClick={() => handlePageSizeChange(size)}
-                              disabled={isExporting}
-                              className={`py-2 px-3 rounded uppercase text-xs transition-colors ${
-                                config.pageSize === size
-                                  ? "bg-[#bc6c25] text-[#fefae0] font-semibold"
-                                  : "border-2 border-[#bc6c25] text-[#283618] hover:bg-[#bc6c25]/90 hover:text-[#fefae0]"
-                              } disabled:opacity-50`}
-                            >
-                              {size}
-                            </button>
-                          ))}
+                          {(["auto", "a4", "letter", "legal"] as const).map(
+                            (size) => (
+                              <button
+                                key={size}
+                                onClick={() => handlePageSizeChange(size)}
+                                disabled={isExporting}
+                                className={`py-2 px-3 rounded uppercase text-xs transition-colors ${
+                                  config.pageSize === size
+                                    ? "bg-[#bc6c25] text-[#fefae0] font-semibold"
+                                    : "border-2 border-[#bc6c25] text-[#283618] hover:bg-[#bc6c25]/90 hover:text-[#fefae0]"
+                                } disabled:opacity-50`}
+                              >
+                                {t(size)}
+                              </button>
+                            ),
+                          )}
                         </div>
                       </div>
 
