@@ -8,12 +8,31 @@ import type { Field } from "@/types/template";
 export const BULLETIN_NAME_VALIDATION_ID = "__bulletin_name__";
 export const BULLETIN_SLUG_VALIDATION_ID = "__bulletin_name_machine__";
 
+export type BulletinFieldValidationCode =
+  | "required"
+  | "list_min_items"
+  | "list_max_items";
+
 export interface RequiredFieldIssue {
   key: string;
   fieldId: string;
   label: string;
   path: string;
   pageIndex?: number;
+  code?: BulletinFieldValidationCode;
+  limit?: number;
+  actual?: number;
+}
+
+export interface ListItemLimits {
+  minItems?: number;
+  maxItems?: number;
+}
+
+export interface ListItemConstraintViolation {
+  type: "min" | "max";
+  limit: number;
+  actual: number;
 }
 
 export interface RequiredFieldValidationResult {
@@ -30,6 +49,110 @@ const isPlainRecord = (value: unknown): value is Record<string, unknown> =>
   value !== null &&
   !Array.isArray(value) &&
   !(value instanceof Date);
+
+const toNonNegativeInteger = (value: unknown): number | undefined => {
+  if (value === null || value === undefined || value === "") {
+    return undefined;
+  }
+
+  const parsed = Number(value);
+
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return undefined;
+  }
+
+  return Math.floor(parsed);
+};
+
+const firstDefinedInteger = (candidates: unknown[]): number | undefined => {
+  for (const candidate of candidates) {
+    const parsed = toNonNegativeInteger(candidate);
+
+    if (parsed !== undefined) {
+      return parsed;
+    }
+  }
+
+  return undefined;
+};
+
+/**
+ * Reads the total-item limits configured for a list field.
+ *
+ * The canonical keys are validation.min_items and validation.max_items.
+ * The aliases keep this compatible with templates serialized by older UI
+ * versions. max_items_per_page is intentionally excluded because it controls
+ * pagination, not the total number of allowed items.
+ */
+export const getListItemLimits = (field: Field): ListItemLimits => {
+  if (field.type !== "list") {
+    return {};
+  }
+
+  const validation: Record<string, unknown> = isPlainRecord(field.validation)
+    ? field.validation
+    : {};
+
+  const fieldConfig: Record<string, unknown> = isPlainRecord(field.field_config)
+    ? field.field_config
+    : {};
+
+  const minItems = firstDefinedInteger([
+    validation.min_items,
+    validation.minItems,
+    validation.minimum_items,
+    validation.minimumItems,
+    fieldConfig.min_items,
+    fieldConfig.minItems,
+    fieldConfig.minimum_items,
+    fieldConfig.minimumItems,
+  ]);
+
+  const maxItems = firstDefinedInteger([
+    validation.max_items,
+    validation.maxItems,
+    validation.maximum_items,
+    validation.maximumItems,
+    fieldConfig.max_items,
+    fieldConfig.maxItems,
+    fieldConfig.maximum_items,
+    fieldConfig.maximumItems,
+  ]);
+
+  return {
+    minItems,
+    maxItems,
+  };
+};
+
+export const getListItemConstraintViolation = (
+  field: Field,
+): ListItemConstraintViolation | null => {
+  if (field.form !== true || field.type !== "list") {
+    return null;
+  }
+
+  const actual = Array.isArray(field.value) ? field.value.length : 0;
+  const { minItems, maxItems } = getListItemLimits(field);
+
+  if (minItems !== undefined && actual < minItems) {
+    return {
+      type: "min",
+      limit: minItems,
+      actual,
+    };
+  }
+
+  if (maxItems !== undefined && actual > maxItems) {
+    return {
+      type: "max",
+      limit: maxItems,
+      actual,
+    };
+  }
+
+  return null;
+};
 
 /**
  * Checks whether a value contains user-provided information.
@@ -146,21 +269,42 @@ const collectIssuesFromFields = (
   pageIndex?: number,
 ) => {
   fields?.forEach((field, fieldIndex) => {
-    if (
-      !isRequiredBulletinField(field) ||
-      isRequiredBulletinFieldComplete(field)
-    ) {
+    if (field.form !== true) {
       return;
     }
 
     const fieldId = field.field_id || `${path}-field-${fieldIndex}`;
-    issues.push({
-      key: `${path}:${fieldId}`,
+    const baseIssue = {
       fieldId,
       label: field.label || field.display_name || fieldId,
       path,
       pageIndex,
-    });
+    };
+
+    const listViolation = getListItemConstraintViolation(field);
+
+    if (listViolation) {
+      issues.push({
+        ...baseIssue,
+        key: `${path}:${fieldId}:${listViolation.type}`,
+        code:
+          listViolation.type === "min" ? "list_min_items" : "list_max_items",
+        limit: listViolation.limit,
+        actual: listViolation.actual,
+      });
+      return;
+    }
+
+    if (
+      isRequiredBulletinField(field) &&
+      !isRequiredBulletinFieldComplete(field)
+    ) {
+      issues.push({
+        ...baseIssue,
+        key: `${path}:${fieldId}:required`,
+        code: "required",
+      });
+    }
   });
 };
 
