@@ -629,7 +629,9 @@
     "validation": {
       "requiredField": "Este campo es obligatorio.",
       "completeRequiredFields": "Completa los campos obligatorios antes de continuar. Pendientes: {count}.",
-      "requiredFieldsRemaining": "Hay {count} campo(s) obligatorio(s) pendiente(s). Complétalos para continuar."
+      "requiredFieldsRemaining": "Hay {count} campo(s) obligatorio(s) pendiente(s). Complétalos para continuar.",
+      "listMinItems": "Agrega al menos {min} elemento(s). Actualmente hay {current}.",
+      "listMaxItems": "Esta lista permite como máximo {max} elemento(s). Actualmente hay {current}."
     }
   },
   "Authentication": {

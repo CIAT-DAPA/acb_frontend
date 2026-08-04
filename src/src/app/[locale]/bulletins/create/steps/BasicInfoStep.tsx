@@ -25,6 +25,7 @@ import { ReviewCommentThread } from "../components/ReviewCommentThread";
 import {
   BULLETIN_NAME_VALIDATION_ID,
   BULLETIN_SLUG_VALIDATION_ID,
+  getListItemConstraintViolation,
 } from "@/utils/bulletinRequiredFields";
 
 interface BasicInfoStepProps {
@@ -46,7 +47,7 @@ export function BasicInfoStep({
 }: BasicInfoStepProps) {
   const t = useTranslations("CreateBulletin");
   const tComments = useTranslations("CreateBulletin.comments");
-
+  const tValidation = useTranslations("CreateBulletin.validation");
   const tHeader = useTranslations("CreateBulletin.headerFooter");
   const [touchedFieldIds, setTouchedFieldIds] = useState<Set<string>>(
     () => new Set(),
@@ -89,12 +90,41 @@ export function BasicInfoStep({
       fieldId && touchedFieldIds.has(fieldId) && invalidFieldIdSet.has(fieldId),
     );
 
-  const renderRequiredError = (fieldId?: string) =>
-    isFieldInvalid(fieldId) ? (
-      <p className="mt-1 text-sm font-medium text-red-600">
-        {t("validation.requiredField")}
-      </p>
+  const getFieldValidationMessage = (field: Field | string) => {
+    const fieldId = typeof field === "string" ? field : field.field_id;
+
+    if (!isFieldInvalid(fieldId)) {
+      return null;
+    }
+
+    if (typeof field !== "string") {
+      const listViolation = getListItemConstraintViolation(field);
+
+      if (listViolation?.type === "min") {
+        return tValidation("listMinItems", {
+          min: listViolation.limit,
+          current: listViolation.actual,
+        });
+      }
+
+      if (listViolation?.type === "max") {
+        return tValidation("listMaxItems", {
+          max: listViolation.limit,
+          current: listViolation.actual,
+        });
+      }
+    }
+
+    return tValidation("requiredField");
+  };
+
+  const renderFieldValidationError = (field: Field | string) => {
+    const message = getFieldValidationMessage(field);
+
+    return message ? (
+      <p className="mt-1 text-sm font-medium text-red-600">{message}</p>
     ) : null;
+  };
 
   // Helper para normalizar valores de date_range
   const normalizeDateRangeValue = (
@@ -238,7 +268,10 @@ export function BasicInfoStep({
           <ListFieldEditor
             field={field}
             value={listValue}
-            onChange={(value) => handleChange(index, value)}
+            onChange={(value) => {
+              markFieldTouched(field.field_id);
+              handleChange(index, value);
+            }}
           />
         );
 
@@ -388,7 +421,7 @@ export function BasicInfoStep({
             }`}
             aria-invalid={isFieldInvalid(BULLETIN_NAME_VALIDATION_ID)}
           />
-          {renderRequiredError(BULLETIN_NAME_VALIDATION_ID)}
+          {renderFieldValidationError(BULLETIN_NAME_VALIDATION_ID)}
           <p className="mt-1 text-xs text-[#283618]/60">
             {t("basicInfo.fields.name.helper")}
           </p>
@@ -426,7 +459,7 @@ export function BasicInfoStep({
           nameMachineError ? (
             <p className="mt-1 text-sm text-red-600">{nameMachineError}</p>
           ) : (
-            renderRequiredError(BULLETIN_SLUG_VALIDATION_ID)
+            renderFieldValidationError(BULLETIN_SLUG_VALIDATION_ID)
           )}
         </div>
       </div>
@@ -463,7 +496,7 @@ export function BasicInfoStep({
                   )}
                 </label>
                 {renderField(field, originalIndex, true)}
-                {renderRequiredError(field.field_id)}
+                {renderFieldValidationError(field)}
                 {renderComments(field.field_id)}
                 {field.description && (
                   <p className="mt-1 text-xs text-[#283618]/60">
@@ -508,7 +541,7 @@ export function BasicInfoStep({
                   )}
                 </label>
                 {renderField(field, originalIndex, false)}
-                {renderRequiredError(field.field_id)}
+                {renderFieldValidationError(field)}
                 {renderComments(field.field_id)}
                 {field.description && (
                   <p className="mt-1 text-xs text-[#283618]/60">
