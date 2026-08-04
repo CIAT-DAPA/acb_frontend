@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import {
   CreateBulletinData,
   BulletinComment,
@@ -23,6 +23,7 @@ import {
   ImageUploadInput,
   MoonCalendarInput,
 } from "../components/fields";
+import { ReviewCommentThread } from "../components/ReviewCommentThread";
 import { MessageCircle } from "lucide-react";
 
 interface SectionStepProps {
@@ -35,6 +36,7 @@ interface SectionStepProps {
   blockComments?: Record<string, BulletinComment[]>;
   fieldComments?: Record<string, BulletinComment[]>;
   fieldAllComments?: Record<string, BulletinComment[]>;
+  onReplyToComment?: (commentId: string, text: string) => Promise<void>;
 }
 
 // Helper para normalizar valores de date_range
@@ -116,11 +118,10 @@ export function SectionStep({
   blockComments = {},
   fieldComments = {},
   fieldAllComments = {},
+  onReplyToComment,
 }: SectionStepProps) {
   const t = useTranslations("CreateBulletin.section");
   const tComments = useTranslations("CreateBulletin.comments");
-
-  const locale = useLocale();
 
   const section = bulletinData.version.data.sections[sectionIndex];
 
@@ -475,55 +476,22 @@ export function SectionStep({
     }));
   };
 
-  // Función unificada para renderizar cualquier tipo de campo
+  // Función unificada para renderizar comentarios de sección, bloque o campo.
   const renderComments = (targetComments: BulletinComment[] | undefined) => {
     if (!targetComments || targetComments.length === 0) {
       return null;
     }
 
     return (
-      <div className="mt-2 bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded-r-md text-sm shadow-sm">
-        <div className="text-xs font-bold text-yellow-800 mb-2 uppercase tracking-wide">
+      <div className="mt-2 rounded-r-md border-l-4 border-yellow-400 bg-yellow-50 p-3 text-sm shadow-sm">
+        <div className="mb-2 text-xs font-bold uppercase tracking-wide text-yellow-800">
           {tComments("title")}
         </div>
 
-        {targetComments.map((comment) => (
-          <div
-            key={comment.comment_id}
-            className="mb-2 last:mb-0 border-b border-yellow-200 last:border-0 pb-2 last:pb-0"
-          >
-            <div className="flex justify-between items-start mb-1">
-              <span className="font-semibold text-yellow-900 text-xs">
-                {comment.author_first_name || tComments("reviewerFallback")}
-              </span>
-
-              <span className="text-[10px] text-yellow-700 opacity-70">
-                {comment.created_at
-                  ? new Date(comment.created_at).toLocaleDateString(locale)
-                  : ""}
-              </span>
-            </div>
-
-            <p className="text-sm text-yellow-900 whitespace-pre-wrap">
-              {comment.text}
-            </p>
-
-            {comment.replies && comment.replies.length > 0 && (
-              <div className="mt-2 pl-3 border-l-2 border-yellow-300 space-y-2">
-                {comment.replies.map((reply) => (
-                  <div key={reply.comment_id}>
-                    <span className="text-xs font-semibold text-yellow-800">
-                      {reply.author_first_name || tComments("reviewerFallback")}
-                      :
-                    </span>
-
-                    <p className="text-xs text-gray-600">{reply.text}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
+        <ReviewCommentThread
+          comments={targetComments}
+          onReply={onReplyToComment}
+        />
       </div>
     );
   };

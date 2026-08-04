@@ -304,7 +304,19 @@
       "title": "Comments",
       "reviewerFallback": "Reviewer",
       "fieldCount": "{count, plural, one {# comment on this field} other {# comments on this field}}",
-      "blockCount": "{count, plural, one {# comment on this block} other {# comments on this block}}"
+      "blockCount": "{count, plural, one {# comment on this block} other {# comments on this block}}",
+      "authorFallback": "User",
+      "reply": "Reply",
+      "replyLabel": "Reply to comment",
+      "replyPlaceholder": "Describe the change you made or reply to the comment...",
+      "replyToComment": "Reply to this comment",
+      "cancelReply": "Cancel",
+      "sendReply": "Send reply",
+      "sendingReply": "Sending...",
+      "replyRequired": "Enter a reply before sending it.",
+      "replySuccess": "The reply was sent successfully.",
+      "replyError": "The reply could not be sent.",
+      "missingBulletin": "The bulletin associated with this comment could not be found."
     },
     "title": "Create Bulletin",
     "subtitle": "Create a new agroclimatic bulletin using a template",
@@ -2494,6 +2506,16 @@
       "cardFieldSimple": "Field · Block {block} · Card {card}",
       "cardListItem": "List · Item {item} · Card {card}",
       "cardListItemField": "List field · Item {item} · Card {card}"
+    },
+    "commentThread": {
+      "reply": "Reply",
+      "replyPlaceholder": "Write a reply...",
+      "cancel": "Cancel",
+      "send": "Send reply",
+      "sending": "Sending...",
+      "pressEnterToSend": "Enter to send · Shift + Enter for a new line",
+      "replySuccess": "The reply was sent successfully.",
+      "replyError": "The reply could not be sent."
     }
   },
   "ReviewPage": {

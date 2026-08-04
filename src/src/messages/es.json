@@ -304,7 +304,19 @@
       "title": "Comentarios",
       "reviewerFallback": "Revisor",
       "fieldCount": "{count, plural, one {# comentario en este campo} other {# comentarios en este campo}}",
-      "blockCount": "{count, plural, one {# comentario en este bloque} other {# comentarios en este bloque}}"
+      "blockCount": "{count, plural, one {# comentario en este bloque} other {# comentarios en este bloque}}",
+      "authorFallback": "Usuario",
+      "reply": "Responder",
+      "replyLabel": "Respuesta al comentario",
+      "replyPlaceholder": "Describe el cambio realizado o responde al comentario...",
+      "replyToComment": "Responder a este comentario",
+      "cancelReply": "Cancelar",
+      "sendReply": "Enviar respuesta",
+      "sendingReply": "Enviando...",
+      "replyRequired": "Escribe una respuesta antes de enviarla.",
+      "replySuccess": "La respuesta se envió correctamente.",
+      "replyError": "No fue posible enviar la respuesta.",
+      "missingBulletin": "No se encontró el boletín asociado al comentario."
     },
     "title": "Crear Boletín",
     "subtitle": "Crea un nuevo boletín agroclimático utilizando una plantilla",
@@ -2492,6 +2504,16 @@
       "cardFieldSimple": "Campo · Bloque {block} · Tarjeta {card}",
       "cardListItem": "Lista · Elemento {item} · Tarjeta {card}",
       "cardListItemField": "Campo de lista · Elemento {item} · Tarjeta {card}"
+    },
+    "commentThread": {
+      "reply": "Responder",
+      "replyPlaceholder": "Escribe una respuesta...",
+      "cancel": "Cancelar",
+      "send": "Enviar respuesta",
+      "sending": "Enviando...",
+      "pressEnterToSend": "Enter para enviar · Shift + Enter para una nueva línea",
+      "replySuccess": "La respuesta se envió correctamente.",
+      "replyError": "No fue posible enviar la respuesta."
     }
   },
   "ReviewPage": {

@@ -12,6 +12,8 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Send,
+  MessageCircleReply,
+  X,
   MoreVertical,
   ExternalLink,
   Copy,
@@ -164,6 +166,300 @@ const decodeTextFields = (data: any): any => {
 
   return decodedData;
 };
+
+const getReviewCommentId = (comment: ReviewComment): string =>
+  comment.comment_id || comment.id || "";
+
+const getReviewCommentAuthorName = (
+  comment: ReviewComment,
+  fallback: string,
+): string => {
+  const fullName = [comment.author_first_name, comment.author_last_name]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+
+  return fullName || comment.author_name || fallback;
+};
+
+const normalizeCreatedReviewComment = (
+  response: unknown,
+  fallbackText: string,
+  parentCommentId?: string,
+): ReviewComment => {
+  const responseObject = response as any;
+  const rawComment =
+    responseObject?.data ?? responseObject?.comment ?? responseObject ?? {};
+  const commentId =
+    rawComment.comment_id || rawComment.id || crypto.randomUUID();
+
+  return {
+    ...rawComment,
+    id: rawComment.id || commentId,
+    comment_id: commentId,
+    text: rawComment.text ?? fallbackText,
+    author_id: rawComment.author_id ?? "",
+    created_at: rawComment.created_at ?? new Date().toISOString(),
+    is_editable: rawComment.is_editable ?? false,
+    parent_comment_id: rawComment.parent_comment_id ?? parentCommentId ?? null,
+    replies: Array.isArray(rawComment.replies) ? rawComment.replies : [],
+  } as ReviewComment;
+};
+
+const appendReplyToCommentTree = (
+  currentComments: ReviewComment[],
+  parentCommentId: string,
+  reply: ReviewComment,
+): ReviewComment[] =>
+  currentComments.map((comment) => {
+    if (getReviewCommentId(comment) === parentCommentId) {
+      return {
+        ...comment,
+        replies: [...(comment.replies || []), reply],
+      };
+    }
+
+    if (!comment.replies?.length) {
+      return comment;
+    }
+
+    return {
+      ...comment,
+      replies: appendReplyToCommentTree(
+        comment.replies,
+        parentCommentId,
+        reply,
+      ),
+    };
+  });
+
+const countCommentMessages = (currentComments: ReviewComment[]): number =>
+  currentComments.reduce(
+    (total, comment) => total + 1 + countCommentMessages(comment.replies || []),
+    0,
+  );
+
+interface ReviewerCommentThreadLabels {
+  reply: string;
+  replyPlaceholder: string;
+  cancel: string;
+  send: string;
+  sending: string;
+  pressEnterToSend: string;
+  userFallback: string;
+}
+
+interface ReviewerCommentThreadItemProps {
+  comment: ReviewComment;
+  locale: string;
+  labels: ReviewerCommentThreadLabels;
+  onReply: (parentCommentId: string, text: string) => Promise<void>;
+  depth?: number;
+  targetLabel?: string;
+  isSelected?: boolean;
+  onSelect?: () => void;
+}
+
+function ReviewerCommentThreadItem({
+  comment,
+  locale,
+  labels,
+  onReply,
+  depth = 0,
+  targetLabel,
+  isSelected = false,
+  onSelect,
+}: ReviewerCommentThreadItemProps) {
+  const [isReplying, setIsReplying] = useState(false);
+  const [replyText, setReplyText] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const commentId = getReviewCommentId(comment);
+  const isRootComment = depth === 0;
+  const avatarClass =
+    depth % 2 === 0
+      ? "bg-blue-100 text-blue-600"
+      : "bg-amber-100 text-amber-700";
+
+  const submitReply = async () => {
+    const normalizedText = replyText.trim();
+
+    if (!commentId || !normalizedText || isSubmitting) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await onReply(commentId, normalizedText);
+      setReplyText("");
+      setIsReplying(false);
+    } catch {
+      // The page callback already displays the localized error toast.
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const content = (
+    <>
+      {isRootComment && targetLabel && (
+        <div className="mb-2 flex items-center gap-1.5">
+          <span className="max-w-60 truncate rounded-md bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-600">
+            {targetLabel}
+          </span>
+        </div>
+      )}
+
+      <div className="mb-2 flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <div
+            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${avatarClass}`}
+          >
+            {(
+              comment.author_first_name?.[0] ||
+              comment.author_name?.[0] ||
+              "U"
+            ).toUpperCase()}
+          </div>
+          <span className="truncate text-xs font-medium text-gray-900">
+            {getReviewCommentAuthorName(comment, labels.userFallback)}
+          </span>
+        </div>
+
+        <time className="shrink-0 text-[10px] text-gray-400">
+          {new Intl.DateTimeFormat(locale, {
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          }).format(new Date(comment.created_at))}
+        </time>
+      </div>
+
+      <p className="whitespace-pre-wrap wrap-break-word pl-8 leading-relaxed text-gray-600">
+        {comment.text}
+      </p>
+
+      {commentId && (
+        <div className="mt-2 pl-8">
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              setIsReplying((current) => !current);
+              setReplyText("");
+            }}
+            className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+            aria-expanded={isReplying}
+          >
+            <MessageCircleReply className="h-3.5 w-3.5" />
+            {labels.reply}
+          </button>
+        </div>
+      )}
+
+      {isReplying && commentId && (
+        <div
+          className="mt-2 ml-8 rounded-lg border border-blue-100 bg-white p-2.5"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <textarea
+            value={replyText}
+            onChange={(event) => setReplyText(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                void submitReply();
+              }
+            }}
+            placeholder={labels.replyPlaceholder}
+            rows={3}
+            maxLength={2000}
+            autoFocus
+            disabled={isSubmitting}
+            className="w-full resize-y rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-700 outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+          />
+
+          <div className="mt-2 flex items-center justify-between gap-2">
+            <span className="text-[9px] text-gray-400">
+              {labels.pressEnterToSend}
+            </span>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  if (isSubmitting) return;
+                  setIsReplying(false);
+                  setReplyText("");
+                }}
+                disabled={isSubmitting}
+                className="inline-flex items-center gap-1 rounded-md border border-gray-200 px-2 py-1 text-[10px] font-medium text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <X className="h-3 w-3" />
+                {labels.cancel}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => void submitReply()}
+                disabled={!replyText.trim() || isSubmitting}
+                className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-2 py-1 text-[10px] font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isSubmitting ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Send className="h-3 w-3" />
+                )}
+                {isSubmitting ? labels.sending : labels.send}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {comment.replies && comment.replies.length > 0 && (
+        <div className="mt-3 space-y-2">
+          {comment.replies.map((reply, replyIndex) => (
+            <ReviewerCommentThreadItem
+              key={getReviewCommentId(reply) || `${commentId}-${replyIndex}`}
+              comment={reply}
+              locale={locale}
+              labels={labels}
+              onReply={onReply}
+              depth={depth + 1}
+            />
+          ))}
+        </div>
+      )}
+    </>
+  );
+
+  if (!isRootComment) {
+    return (
+      <div className="ml-3 border-l-2 border-gray-100 pl-3">
+        <article className="rounded-lg bg-gray-50/80 p-3 text-xs">
+          {content}
+        </article>
+      </div>
+    );
+  }
+
+  return (
+    <article
+      onClick={onSelect}
+      className={`group relative rounded-xl border p-3 text-sm transition-all duration-200 ${
+        onSelect ? "cursor-pointer" : "cursor-default"
+      } ${
+        isSelected
+          ? "border-blue-200 bg-blue-50 shadow-sm ring-1 ring-blue-100"
+          : "border-gray-100 bg-white hover:border-gray-200 hover:shadow-sm"
+      }`}
+    >
+      {content}
+    </article>
+  );
+}
 
 export default function ReviewBulletinPage() {
   const params = useParams();
@@ -841,6 +1137,24 @@ export default function ReviewBulletinPage() {
     return counts;
   }, [mappedComments]);
 
+  const commentMessageCount = useMemo(
+    () => countCommentMessages(mappedComments),
+    [mappedComments],
+  );
+
+  const commentThreadLabels = useMemo<ReviewerCommentThreadLabels>(
+    () => ({
+      reply: t("commentThread.reply"),
+      replyPlaceholder: t("commentThread.replyPlaceholder"),
+      cancel: t("commentThread.cancel"),
+      send: t("commentThread.send"),
+      sending: t("commentThread.sending"),
+      pressEnterToSend: t("commentThread.pressEnterToSend"),
+      userFallback: t("userFallback"),
+    }),
+    [t],
+  );
+
   // SEO: Actualizar metadatos cuando se carga el boletín
   useEffect(() => {
     if (!bulletin?.master?.bulletin_name) {
@@ -1361,74 +1675,50 @@ export default function ReviewBulletinPage() {
         };
 
         const response = await ReviewService.addComment(bulletinId, payload);
+        const commentData = normalizeCreatedReviewComment(
+          response,
+          commentText.trim(),
+        );
 
-        // Si llegamos aquí, la creación fue exitosa (el servicio lanza error si falla)
-        // Relax checks to support direct object returns or wrapped responses
-        // e.g. { success: true, data: comment } OR { id: "...", text: "..." }
-        console.log("Response from addComment:", response);
-        const isSuccessful =
-          response &&
-          (response.success === true || // Explicit success flag
-            response.data || // Data object exists
-            (response as any).comment_id); // Check for comment_id in response
+        const newComment = {
+          ...commentData,
+          target_element: {
+            ...(commentData.target_element || {}),
+            ...target,
 
-        if (isSuccessful) {
-          console.log("Comment created successfully:", response);
-          const commentData = response.data
-            ? response.data
-            : {
-                comment_id: (response as any).comment_id,
-                text: (response as any).text,
-                target_element: (response as any).target_element,
-                created_at: (response as any).created_at,
-                author_id: (response as any).author_id,
-                author_first_name: (response as any).author_first_name,
-                author_last_name: (response as any).author_last_name,
-              };
+            id: selection.id,
+            type: selection.type,
 
-          const newComment = {
-            ...commentData,
-            target_element: {
-              ...(commentData?.target_element || {}),
-              ...target,
+            section_index: selection.sectionIndex,
+            block_index: selection.blockIndex,
+            field_index: selection.fieldIndex,
 
-              id: selection.id,
-              type: selection.type,
+            item_index:
+              selection.type === "list_item" ||
+              selection.type === "list_item_field"
+                ? selection.itemIndex
+                : undefined,
 
-              section_index: selection.sectionIndex,
-              block_index: selection.blockIndex,
-              field_index: selection.fieldIndex,
+            item_field_id:
+              selection.type === "list_item_field"
+                ? selection.schemaKey
+                : undefined,
 
-              item_index:
-                selection.type === "list_item" ||
-                selection.type === "list_item_field"
-                  ? selection.itemIndex
-                  : undefined,
+            card_index: selection.cardIndex,
+            card_id: selection.cardId,
 
-              item_field_id:
-                selection.type === "list_item_field"
-                  ? selection.schemaKey
-                  : undefined,
+            card_block_index: selection.cardBlockIndex,
+            card_block_id: selection.cardBlockId,
 
-              card_index: selection.cardIndex,
-              card_id: selection.cardId,
+            card_field_index: selection.cardFieldIndex,
+            card_field_id: selection.cardFieldId,
 
-              card_block_index: selection.cardBlockIndex,
-              card_block_id: selection.cardBlockId,
+            display_name: getElementName(),
+          },
+        } as ReviewComment;
 
-              card_field_index: selection.cardFieldIndex,
-              card_field_id: selection.cardFieldId,
-
-              display_name: getElementName(),
-            },
-          } as ReviewComment;
-
-          setComments((prev) => [...prev, newComment]);
-          setCommentText("");
-        } else {
-          console.error("Save comment failed:", response);
-          showToast(t("errors.saveComment"), "error");
-        }
+        setComments((prev) => [...prev, newComment]);
+        setCommentText("");
       } catch (error) {
         console.error("Error saving comment:", error);
         showToast(t("errors.saveComment"), "error");
@@ -1437,6 +1727,37 @@ export default function ReviewBulletinPage() {
       }
     }
   };
+
+  const handleReplyToComment = useCallback(
+    async (parentCommentId: string, text: string) => {
+      try {
+        const response = await ReviewService.addComment(bulletinId, {
+          text,
+          parent_comment_id: parentCommentId,
+        });
+        const createdReply = normalizeCreatedReviewComment(
+          response,
+          text,
+          parentCommentId,
+        );
+
+        setComments((currentComments) =>
+          appendReplyToCommentTree(
+            currentComments,
+            parentCommentId,
+            createdReply,
+          ),
+        );
+
+        showToast(t("commentThread.replySuccess"), "success");
+      } catch (error) {
+        console.error("Error replying to review comment:", error);
+        showToast(t("commentThread.replyError"), "error");
+        throw error;
+      }
+    },
+    [bulletinId, showToast, t],
+  );
 
   const getElementName = () => {
     if (!bulletin || !selection.id) {
@@ -1808,7 +2129,7 @@ export default function ReviewBulletinPage() {
                 <div className="flex items-center gap-2 font-semibold text-gray-700">
                   <MessageSquare className="h-4 w-4" />
                   <span>
-                    {t("comments")} ({mappedComments.length})
+                    {t("comments")} ({commentMessageCount})
                   </span>
                 </div>
                 <button
@@ -1831,97 +2152,67 @@ export default function ReviewBulletinPage() {
                   </div>
                 ) : (
                   sortedComments.map((comment, idx) => {
-                    const isSelected =
-                      selection.id &&
-                      comment.target_element?.id === selection.id;
-                    return (
-                      <div
-                        key={comment.comment_id || idx}
-                        onClick={() => {
-                          const target = comment.target_element;
+                    const target = comment.target_element;
+                    const isSelected = Boolean(
+                      selection.id && target?.id === selection.id,
+                    );
+                    const targetLabel = target
+                      ? target.display_name ||
+                        getCommentTargetTypeLabel(target.type)
+                      : tCommon("generalComment");
 
-                          if (!target?.id || !target.type) {
-                            return;
-                          }
+                    const selectCommentTarget = () => {
+                      if (!target?.id || !target.type) {
+                        return;
+                      }
 
-                          setSelection({
-                            type: target.type as EditorSelection["type"],
-                            id: target.id,
+                      setSelection({
+                        type: target.type as EditorSelection["type"],
+                        id: target.id,
 
-                            sectionIndex: target.section_index,
-                            blockIndex: target.block_index,
-                            fieldIndex: target.field_index,
+                        sectionIndex: target.section_index ?? undefined,
+                        blockIndex: target.block_index ?? undefined,
+                        fieldIndex: target.field_index ?? undefined,
 
-                            itemIndex:
-                              typeof target.item_index === "number"
-                                ? target.item_index
-                                : undefined,
+                        itemIndex:
+                          typeof target.item_index === "number"
+                            ? target.item_index
+                            : undefined,
 
-                            schemaKey: target.item_field_id || undefined,
+                        schemaKey: target.item_field_id || undefined,
+
+                        cardIndex: target.card_index ?? undefined,
+                        cardId: target.card_id || undefined,
+                        cardBlockIndex: target.card_block_index ?? undefined,
+                        cardBlockId: target.card_block_id || undefined,
+                        cardFieldIndex: target.card_field_index ?? undefined,
+                        cardFieldId: target.card_field_id || undefined,
+                      });
+
+                      setTimeout(() => {
+                        const selector = `[data-review-id="${target.id}"]`;
+                        const element = document.querySelector(selector);
+
+                        if (element) {
+                          element.scrollIntoView({
+                            behavior: "smooth",
+                            block: "center",
                           });
+                        }
+                      }, 100);
+                    };
 
-                          setTimeout(() => {
-                            const selector = `[data-review-id="${target.id}"]`;
-
-                            const element = document.querySelector(selector);
-
-                            if (element) {
-                              element.scrollIntoView({
-                                behavior: "smooth",
-                                block: "center",
-                              });
-                            }
-                          }, 100);
-                        }}
-                        className={`group relative border rounded-xl p-3 text-sm transition-all duration-200 cursor-pointer ${
-                          isSelected
-                            ? "bg-blue-50 border-blue-200 shadow-sm ring-1 ring-blue-100"
-                            : "bg-white border-gray-100 hover:border-gray-200 hover:shadow-sm"
-                        }`}
-                      >
-                        {/* Target Badge */}
-                        {comment.target_element ? (
-                          <div className="flex items-center gap-1.5 mb-2">
-                            <span className="text-[10px] font-medium px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded-md truncate max-w-[200px]">
-                              {comment.target_element.display_name ||
-                                getCommentTargetTypeLabel(
-                                  comment.target_element.type,
-                                )}
-                            </span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-1.5 mb-2">
-                            <span className="text-[10px] font-medium px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded-md">
-                              {tCommon("generalComment")}
-                            </span>
-                          </div>
-                        )}
-
-                        <div className="flex justify-between items-start mb-2">
-                          <div className="flex items-center gap-2">
-                            <div className="h-6 w-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">
-                              {(
-                                comment.author_first_name?.[0] ||
-                                comment.author_name?.[0] ||
-                                "U"
-                              ).toUpperCase()}
-                            </div>
-                            <span className="font-medium text-gray-900 text-xs">
-                              {comment.author_first_name || t("userFallback")}
-                            </span>
-                          </div>
-                          <span className="text-[10px] text-gray-400">
-                            {new Date(comment.created_at).toLocaleDateString(
-                              locale,
-                              { month: "short", day: "numeric" },
-                            )}
-                          </span>
-                        </div>
-
-                        <p className="text-gray-600 leading-relaxed whitespace-pre-wrap wrap-break-word pl-8">
-                          {comment.text}
-                        </p>
-                      </div>
+                    return (
+                      <ReviewerCommentThreadItem
+                        key={getReviewCommentId(comment) || idx}
+                        comment={comment}
+                        locale={locale}
+                        labels={commentThreadLabels}
+                        onReply={handleReplyToComment}
+                        targetLabel={targetLabel}
+                        isSelected={isSelected}
+                        onSelect={selectCommentTarget}
+                      />
                     );
                   })
                 )}
