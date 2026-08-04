@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import {
   Loader2,
@@ -463,7 +463,6 @@ function ReviewerCommentThreadItem({
 
 export default function ReviewBulletinPage() {
   const params = useParams();
-  const router = useRouter();
   const { showToast } = useToast();
 
   const t = useTranslations("Review");
@@ -1428,15 +1427,26 @@ export default function ReviewBulletinPage() {
     }
   };
 
+  const navigateToReviews = useCallback(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const reviewsUrl = new URL(reviewsPath, window.location.origin);
+
+    window.history.replaceState(
+      window.history.state,
+      "",
+      reviewsUrl.toString(),
+    );
+    window.location.reload();
+  }, [reviewsPath]);
+
   const handleCloseSuccessModal = useCallback(() => {
     setIsSuccessModalOpen(false);
     setPublishedUrl(null);
-
-    // Force a full navigation so the approved review page is unmounted.
-    // Client-side navigation can preserve a stale route tree in layouts or
-    // intercepted/parallel routes even after the URL changes.
-    window.location.replace(reviewsPath);
-  }, [reviewsPath]);
+    navigateToReviews();
+  }, [navigateToReviews]);
 
   const goToPublishedBulletin = () => {
     if (!publishedUrl) {
@@ -1473,7 +1483,7 @@ export default function ReviewBulletinPage() {
       await ReviewService.rejectBulletin(bulletinId);
 
       showToast(t("rejectSuccess"), "success");
-      router.replace(reviewsPath);
+      navigateToReviews();
     } catch (error: any) {
       console.error("Error rejecting bulletin:", error);
 

@@ -19,6 +19,7 @@ const DATE_FORMATS = [
   "dddd, DD - MM",
   "DD, MMMM YYYY",
   "DD de MMMM",
+  "MMMM",
   "MMMM/YY",
 ] as const;
 

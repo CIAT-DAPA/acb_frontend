@@ -8,7 +8,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { Field } from "../../../../../../types/template";
+import { DateFieldConfig, Field } from "../../../../../../types/template";
 import {
   getLocaleDatePattern,
   getLocalizedMonthNames,
@@ -24,6 +24,29 @@ interface DateInputProps {
   disabled?: boolean;
 }
 
+const parseLocalDate = (dateString: string): Date | null => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateString);
+
+  if (!match) {
+    return null;
+  }
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const parsedDate = new Date(year, month - 1, day);
+
+  if (
+    parsedDate.getFullYear() !== year ||
+    parsedDate.getMonth() !== month - 1 ||
+    parsedDate.getDate() !== day
+  ) {
+    return null;
+  }
+
+  return parsedDate;
+};
+
 export function DateInput({
   field,
   value,
@@ -37,10 +60,21 @@ export function DateInput({
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
+  const config = (field?.field_config as DateFieldConfig | undefined) || {};
+  const configuredDateFormat = config.date_format?.trim();
   const dateLabel = field?.label || "Date";
-  const datePlaceholder = getLocaleDatePattern(localeCode);
+  const datePlaceholder =
+    configuredDateFormat || getLocaleDatePattern(localeCode);
   const monthNames = getLocalizedMonthNames(localeCode, "long");
   const weekDayLabels = getLocalizedWeekdayLabels(localeCode, "short");
+
+  const capitalizeLocalizedValue = (text: string): string => {
+    if (!text) {
+      return text;
+    }
+
+    return text.charAt(0).toLocaleUpperCase(localeCode) + text.slice(1);
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -59,24 +93,80 @@ export function DateInput({
   }, []);
 
   useEffect(() => {
-    if (value) {
-      const [year, month] = value.split("-").map(Number);
-      if (Number.isFinite(year) && Number.isFinite(month)) {
-        setCurrentMonth(new Date(year, month - 1, 1));
-      }
+    const parsedValue = parseLocalDate(value);
+
+    if (parsedValue) {
+      setCurrentMonth(
+        new Date(parsedValue.getFullYear(), parsedValue.getMonth(), 1),
+      );
     }
   }, [value]);
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "";
-    const [year, month, day] = dateString.split("-").map(Number);
-    const date = new Date(year, month - 1, day);
+  const formatDate = (dateString: string): string => {
+    if (!dateString) {
+      return "";
+    }
 
-    return date.toLocaleDateString(localeCode, {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
+    const date = parseLocalDate(dateString);
+
+    if (!date) {
+      return dateString;
+    }
+
+    // Preserve the previous locale-based numeric display for legacy fields
+    // that do not have a date_format stored yet.
+    if (!configuredDateFormat) {
+      return date.toLocaleDateString(localeCode, {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+    }
+
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    const shortYear = String(year).slice(-2);
+
+    const dayName = capitalizeLocalizedValue(
+      date.toLocaleDateString(localeCode, { weekday: "long" }),
+    );
+    const monthName = capitalizeLocalizedValue(
+      date.toLocaleDateString(localeCode, { month: "long" }),
+    );
+
+    switch (configuredDateFormat) {
+      case "DD/MM/YYYY":
+        return `${day}/${month}/${year}`;
+
+      case "MM/DD/YYYY":
+        return `${month}/${day}/${year}`;
+
+      case "DD-MM-YYYY":
+        return `${day}-${month}-${year}`;
+
+      case "dddd, DD - MM":
+        return `${dayName}, ${day} - ${month}`;
+
+      case "DD, MMMM YYYY":
+        return `${day}, ${monthName} ${year}`;
+
+      case "DD de MMMM":
+        return new Intl.DateTimeFormat(localeCode, {
+          day: "2-digit",
+          month: "long",
+        }).format(date);
+
+      case "MMMM":
+        return monthName;
+
+      case "MMMM/YY":
+        return `${monthName}/${shortYear}`;
+
+      case "YYYY-MM-DD":
+      default:
+        return `${year}-${month}-${day}`;
+    }
   };
 
   const getDaysInMonth = (year: number, month: number) => {
@@ -114,6 +204,8 @@ export function DateInput({
       selectedDate.getMonth() + 1,
     ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
+    // Always persist an unambiguous ISO local date. date_format only controls
+    // how that value is presented to the user.
     onChange(dateString);
     setIsOpen(false);
   };
@@ -145,6 +237,7 @@ export function DateInput({
           key={day}
           type="button"
           onClick={() => handleDayClick(day)}
+          disabled={disabled}
           className={`
             h-10 w-10 flex items-center justify-center text-sm font-medium transition-all rounded-full
             ${
@@ -168,6 +261,10 @@ export function DateInput({
       setIsOpen(true);
     }
   };
+
+  const currentMonthLabel = capitalizeLocalizedValue(
+    monthNames[currentMonth.getMonth()] || "",
+  );
 
   return (
     <div className="space-y-4 relative" ref={containerRef}>
@@ -205,7 +302,7 @@ export function DateInput({
               <ChevronLeft className="w-5 h-5" />
             </button>
             <span className="font-semibold text-gray-900">
-              {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+              {currentMonthLabel} {currentMonth.getFullYear()}
             </span>
             <button
               type="button"

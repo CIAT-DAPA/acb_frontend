@@ -25,6 +25,7 @@ import {
 } from "../components/fields";
 import { ReviewCommentThread } from "../components/ReviewCommentThread";
 import { MessageCircle } from "lucide-react";
+import { getListItemConstraintViolation } from "@/utils/bulletinRequiredFields";
 
 interface SectionStepProps {
   bulletinData: CreateBulletinData;
@@ -170,12 +171,37 @@ export function SectionStep({
       fieldId && touchedFieldIds.has(fieldId) && invalidFieldIdSet.has(fieldId),
     );
 
-  const renderRequiredError = (fieldId?: string) =>
-    isFieldInvalid(fieldId) ? (
-      <p className="mt-1 text-sm font-medium text-red-600">
-        {tValidation("requiredField")}
-      </p>
+  const getFieldValidationMessage = (field: Field) => {
+    if (!isFieldInvalid(field.field_id)) {
+      return null;
+    }
+
+    const listViolation = getListItemConstraintViolation(field);
+
+    if (listViolation?.type === "min") {
+      return tValidation("listMinItems", {
+        min: listViolation.limit,
+        current: listViolation.actual,
+      });
+    }
+
+    if (listViolation?.type === "max") {
+      return tValidation("listMaxItems", {
+        max: listViolation.limit,
+        current: listViolation.actual,
+      });
+    }
+
+    return tValidation("requiredField");
+  };
+
+  const renderFieldValidationError = (field: Field) => {
+    const message = getFieldValidationMessage(field);
+
+    return message ? (
+      <p className="mt-1 text-sm font-medium text-red-600">{message}</p>
     ) : null;
+  };
 
   const renderRequiredMarker = (field: Field) =>
     field.form && field.validation?.required ? (
@@ -650,7 +676,10 @@ export function SectionStep({
           <ListFieldEditor
             field={field}
             value={listValue}
-            onChange={onChange}
+            onChange={(value) => {
+              markFieldTouched(field.field_id);
+              onChange(value);
+            }}
             commentsByTarget={fieldComments}
             renderComments={renderComments}
           />
@@ -932,7 +961,7 @@ export function SectionStep({
                       ? renderHeaderField(field, fieldIndex)
                       : renderReadOnlyField(field)}
 
-                    {renderRequiredError(field.field_id)}
+                    {renderFieldValidationError(field)}
                     {renderComments(fieldComments[field.field_id])}
 
                     {field.description && (
@@ -1015,7 +1044,7 @@ export function SectionStep({
                       ? renderField(field, blockIndex, fieldIndex)
                       : renderReadOnlyField(field)}
 
-                    {renderRequiredError(field.field_id)}
+                    {renderFieldValidationError(field)}
 
                     {/* Comentarios hechos directamente al campo padre */}
                     {renderComments(fieldComments[field.field_id])}
@@ -1079,7 +1108,7 @@ export function SectionStep({
                       ? renderFooterField(field, fieldIndex)
                       : renderReadOnlyField(field)}
 
-                    {renderRequiredError(field.field_id)}
+                    {renderFieldValidationError(field)}
                     {renderComments(fieldComments[field.field_id])}
 
                     {field.description && (

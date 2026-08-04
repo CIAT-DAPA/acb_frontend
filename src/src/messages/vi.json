@@ -586,7 +586,9 @@
     "validation": {
       "requiredField": "Trường này là bắt buộc.",
       "completeRequiredFields": "Vui lòng hoàn thành các trường bắt buộc trước khi tiếp tục. Còn lại: {count}.",
-      "requiredFieldsRemaining": "Còn {count} trường bắt buộc chưa hoàn thành. Vui lòng điền đầy đủ để tiếp tục."
+      "requiredFieldsRemaining": "Còn {count} trường bắt buộc chưa hoàn thành. Vui lòng điền đầy đủ để tiếp tục.",
+      "listMinItems": "Hãy thêm ít nhất {min} mục. Hiện có {current} mục.",
+      "listMaxItems": "Danh sách này cho phép tối đa {max} mục. Hiện có {current} mục."
     }
   },
   "CreateCard": {

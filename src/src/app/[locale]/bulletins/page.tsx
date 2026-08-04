@@ -15,12 +15,10 @@ import {
   Info,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { BulletinMaster, BulletinStatus } from "@/types/bulletin";
-import type { ReviewComment, ReviewHistory } from "@/types/review";
 import BulletinAPIService from "@/services/bulletinService";
 import { TemplateAPIService } from "@/services/templateService";
-import { ReviewService } from "@/services/reviewService";
 import { GroupAPIService } from "@/services/groupService";
 import ItemCard, { AccessInfo } from "../components/ItemCard";
 import { DuplicateItemModal } from "../components/DuplicateItemModal";
@@ -28,6 +26,7 @@ import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useAuth } from "@/hooks/useAuth";
 import { useParams } from "next/navigation";
+import { loadReviewSummaryBatches } from "@/utils/reviewSummaryCache";
 import {
   btnOutlineSecondary,
   btnPrimary,
@@ -39,6 +38,7 @@ import {
   BulletinFilters,
   BULLETIN_STATUS_FILTERS,
 } from "../components/BulletinFilters";
+import { ReviewService } from "@/services/reviewService";
 
 const REVIEWER_VISIBLE_STATUSES = new Set<BulletinStatus>([
   "draft",
@@ -47,161 +47,6 @@ const REVIEWER_VISIBLE_STATUSES = new Set<BulletinStatus>([
   "rejected",
   "published",
 ]);
-
-const unwrapReviewHistory = (response: unknown): ReviewHistory | null => {
-  const responseObject = response as Record<string, unknown> | null;
-  const candidate =
-    responseObject &&
-    typeof responseObject === "object" &&
-    "data" in responseObject
-      ? responseObject.data
-      : response;
-
-  if (!candidate || typeof candidate !== "object") {
-    return null;
-  }
-
-  const history = candidate as Partial<ReviewHistory>;
-
-  if (
-    history.bulletin_master_id ||
-    history.id ||
-    Array.isArray(history.review_cycles) ||
-    Array.isArray(history.comments)
-  ) {
-    return candidate as ReviewHistory;
-  }
-
-  return null;
-};
-
-const hasReviewComments = (history: ReviewHistory | null): boolean => {
-  if (!history) {
-    return false;
-  }
-
-  if (history.comments?.length) {
-    return true;
-  }
-
-  if (history.active_cycle?.comments?.length) {
-    return true;
-  }
-
-  return Boolean(
-    history.review_cycles?.some((cycle) => Boolean(cycle.comments?.length)),
-  );
-};
-
-const extractReviewerNames = (history: ReviewHistory | null): string[] => {
-  if (!history) {
-    return [];
-  }
-
-  const reviewers = new Map<string, string>();
-
-  const addReviewer = (
-    idValue?: unknown,
-    firstNameValue?: unknown,
-    lastNameValue?: unknown,
-    displayNameValue?: unknown,
-  ) => {
-    const id = typeof idValue === "string" ? idValue.trim() : "";
-    const firstName =
-      typeof firstNameValue === "string" ? firstNameValue.trim() : "";
-    const lastName =
-      typeof lastNameValue === "string" ? lastNameValue.trim() : "";
-    const explicitName =
-      typeof displayNameValue === "string" ? displayNameValue.trim() : "";
-    const fullName = [firstName, lastName].filter(Boolean).join(" ").trim();
-    const name = fullName || explicitName || id;
-
-    if (!name) {
-      return;
-    }
-
-    const normalizedName = name.toLocaleLowerCase();
-    const alreadyAddedByName = Array.from(reviewers.values()).some(
-      (existingName) => existingName.toLocaleLowerCase() === normalizedName,
-    );
-
-    if (alreadyAddedByName) {
-      return;
-    }
-
-    const key = id ? `id:${id}` : `name:${normalizedName}`;
-    const existingValue = reviewers.get(key);
-
-    if (!existingValue || existingValue === id) {
-      reviewers.set(key, name);
-    }
-  };
-
-  addReviewer(
-    history.reviewer_user_id,
-    history.reviewer_first_name,
-    history.reviewer_last_name,
-  );
-
-  const addCycleReviewer = (cycleValue: unknown) => {
-    if (!cycleValue || typeof cycleValue !== "object") {
-      return;
-    }
-
-    const cycle = cycleValue as Record<string, unknown>;
-    const reviewer = cycle.reviewer;
-
-    addReviewer(
-      cycle.reviewer_user_id,
-      cycle.reviewer_first_name,
-      cycle.reviewer_last_name,
-      cycle.reviewer_name,
-    );
-
-    if (typeof reviewer === "string") {
-      addReviewer(undefined, undefined, undefined, reviewer);
-      return;
-    }
-
-    if (reviewer && typeof reviewer === "object") {
-      const reviewerObject = reviewer as Record<string, unknown>;
-
-      addReviewer(
-        reviewerObject.user_id ?? reviewerObject.id ?? reviewerObject._id,
-        reviewerObject.first_name,
-        reviewerObject.last_name,
-        reviewerObject.name ?? reviewerObject.full_name,
-      );
-    }
-  };
-
-  history.review_cycles?.forEach(addCycleReviewer);
-
-  if (history.active_cycle) {
-    addCycleReviewer(history.active_cycle);
-  }
-
-  const addRootCommentAuthor = (comment: ReviewComment) => {
-    if (comment.parent_comment_id || comment.parent_id) {
-      return;
-    }
-
-    addReviewer(
-      comment.author_id,
-      comment.author_first_name,
-      comment.author_last_name,
-      comment.author_name,
-    );
-  };
-
-  history.comments?.forEach(addRootCommentAuthor);
-  history.active_cycle?.comments?.forEach(addRootCommentAuthor);
-  history.review_cycles?.forEach((cycle) =>
-    cycle.comments?.forEach(addRootCommentAuthor),
-  );
-
-  return Array.from(reviewers.values());
-};
 
 export default function Bulletins() {
   const t = useTranslations("Bulletins");
@@ -219,6 +64,7 @@ export default function Bulletins() {
     "all",
   );
   const [loading, setLoading] = useState(true);
+  const [metadataLoading, setMetadataLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [bulletins, setBulletins] = useState<BulletinMaster[]>([]);
   const [templatesMap, setTemplatesMap] = useState<Record<string, string>>({});
@@ -231,6 +77,7 @@ export default function Bulletins() {
   const [reviewersMap, setReviewersMap] = useState<Record<string, string[]>>(
     {},
   );
+  const loadRequestRef = useRef(0);
 
   // State for groups
   const [groupsMap, setGroupsMap] = useState<Record<string, string>>({});
@@ -266,108 +113,169 @@ export default function Bulletins() {
 
     if (!authenticated) {
       setLoading(false);
+      setMetadataLoading(false);
       setError(null);
       return;
     }
 
-    loadBulletins();
+    void loadBulletins();
+
+    return () => {
+      loadRequestRef.current += 1;
+    };
   }, [locale, authLoading, authenticated]);
+
+  const loadTemplateAndGroupMetadata = async (
+    loadedBulletins: BulletinMaster[],
+    requestId: number,
+  ) => {
+    setMetadataLoading(true);
+
+    try {
+      const templateIds = [
+        ...new Set(
+          loadedBulletins
+            .map((bulletin) => bulletin.base_template_master_id)
+            .filter(Boolean),
+        ),
+      ];
+
+      const [templatesResponse, groupsResponse] = await Promise.all([
+        Promise.all(
+          templateIds.map((id) =>
+            TemplateAPIService.getTemplateById(id).catch(() => null),
+          ),
+        ),
+        GroupAPIService.getGroups().catch(() => null),
+      ]);
+
+      if (requestId !== loadRequestRef.current) {
+        return;
+      }
+
+      const newTemplatesMap: Record<string, string> = {};
+      const newTemplateNameMachineMap: Record<string, string> = {};
+      const newThumbnailsMap: Record<string, string[]> = {};
+
+      templatesResponse.forEach((templateResponse) => {
+        if (templateResponse?.success && templateResponse.data) {
+          const template = templateResponse.data as any;
+          newTemplatesMap[template._id!] = template.template_name;
+          newTemplateNameMachineMap[template._id!] = template.name_machine;
+          newThumbnailsMap[template._id!] = template.thumbnail_images || [];
+        }
+      });
+
+      setTemplatesMap(newTemplatesMap);
+      setTemplateNameMachineMap(newTemplateNameMachineMap);
+      setTemplateThumbnailsMap(newThumbnailsMap);
+
+      if (groupsResponse?.success) {
+        const newGroupsMap: Record<string, string> = {};
+
+        groupsResponse.data.forEach((group) => {
+          newGroupsMap[group._id!] = group.group_name;
+        });
+
+        setGroupsMap(newGroupsMap);
+      }
+    } finally {
+      if (requestId === loadRequestRef.current) {
+        setMetadataLoading(false);
+      }
+    }
+  };
+
+  const loadReviewerMetadata = async (
+    loadedBulletins: BulletinMaster[],
+    requestId: number,
+  ) => {
+    const candidates = loadedBulletins
+      .filter(
+        (bulletin) =>
+          Boolean(bulletin._id) &&
+          REVIEWER_VISIBLE_STATUSES.has(bulletin.status),
+      )
+      // Drafts need an extra comments check, so resolve the other statuses first.
+      .sort(
+        (bulletinA, bulletinB) =>
+          Number(bulletinA.status === "draft") -
+          Number(bulletinB.status === "draft"),
+      )
+      .map((bulletin) => ({
+        bulletinId: bulletin._id as string,
+        cacheVersion: `${bulletin.status}:${
+          bulletin.log?.updated_at || bulletin.log?.created_at || ""
+        }`,
+      }));
+
+    const statusById = new Map(
+      loadedBulletins
+        .filter((bulletin) => Boolean(bulletin._id))
+        .map((bulletin) => [bulletin._id as string, bulletin.status]),
+    );
+
+    await loadReviewSummaryBatches(candidates, {
+      batchSize: 6,
+      shouldContinue: () => requestId === loadRequestRef.current,
+      onBatch: (results) => {
+        setReviewersMap((currentMap) => {
+          const nextMap = { ...currentMap };
+
+          results.forEach(({ bulletinId, reviewers, hasComments }) => {
+            const status = statusById.get(bulletinId);
+            const shouldShowReviewers = status !== "draft" || hasComments;
+
+            if (shouldShowReviewers && reviewers.length > 0) {
+              nextMap[bulletinId] = reviewers;
+            } else {
+              delete nextMap[bulletinId];
+            }
+          });
+
+          return nextMap;
+        });
+      },
+    });
+  };
 
   // Función para cargar boletines desde la API
   const loadBulletins = async () => {
+    const requestId = loadRequestRef.current + 1;
+    loadRequestRef.current = requestId;
+
     setLoading(true);
+    setMetadataLoading(false);
     setError(null);
     setReviewersMap({});
 
     try {
       const response = await BulletinAPIService.getBulletins();
 
-      if (response.success) {
-        setBulletins(response.data);
-
-        const templateIds = [
-          ...new Set(response.data.map((b) => b.base_template_master_id)),
-        ];
-
-        const historyCandidates = response.data.filter(
-          (bulletin) =>
-            Boolean(bulletin._id) &&
-            REVIEWER_VISIBLE_STATUSES.has(bulletin.status),
-        );
-
-        const [templatesResponse, groupsResponse, reviewHistoryResults] =
-          await Promise.all([
-            Promise.all(
-              templateIds.map((id) =>
-                TemplateAPIService.getTemplateById(id).catch(() => null),
-              ),
-            ),
-            GroupAPIService.getGroups().catch(() => null),
-            Promise.all(
-              historyCandidates.map(async (bulletin) => {
-                const bulletinId = bulletin._id as string;
-
-                try {
-                  const historyResponse =
-                    await ReviewService.getReviewHistory(bulletinId);
-                  const history = unwrapReviewHistory(historyResponse);
-                  const shouldShowReviewers =
-                    bulletin.status !== "draft" || hasReviewComments(history);
-
-                  return {
-                    bulletinId,
-                    reviewers: shouldShowReviewers
-                      ? extractReviewerNames(history)
-                      : [],
-                  };
-                } catch {
-                  // Un boletín sin historial todavía no debe bloquear el listado.
-                  return {
-                    bulletinId,
-                    reviewers: [] as string[],
-                  };
-                }
-              }),
-            ),
-          ]);
-
-        const newTemplatesMap: Record<string, string> = {};
-        const newTemplateNameMachineMap: Record<string, string> = {};
-        const newThumbnailsMap: Record<string, string[]> = {};
-        templatesResponse.forEach((res) => {
-          if (res?.success && res.data) {
-            const template = res.data as any;
-            newTemplatesMap[template._id!] = template.template_name;
-            newTemplateNameMachineMap[template._id!] = template.name_machine;
-            newThumbnailsMap[template._id!] = template.thumbnail_images || [];
-          }
-        });
-        setTemplatesMap(newTemplatesMap);
-        setTemplateNameMachineMap(newTemplateNameMachineMap);
-        setTemplateThumbnailsMap(newThumbnailsMap);
-
-        if (groupsResponse?.success) {
-          const newGroupsMap: Record<string, string> = {};
-          groupsResponse.data.forEach((group) => {
-            newGroupsMap[group._id!] = group.group_name;
-          });
-          setGroupsMap(newGroupsMap);
-        }
-
-        const newReviewersMap: Record<string, string[]> = {};
-        reviewHistoryResults.forEach(({ bulletinId, reviewers }) => {
-          if (reviewers.length > 0) {
-            newReviewersMap[bulletinId] = reviewers;
-          }
-        });
-        setReviewersMap(newReviewersMap);
-      } else {
-        setError(response.message || "Error al cargar los boletines");
+      if (requestId !== loadRequestRef.current) {
+        return;
       }
-    } catch (err) {
-      setError("Error de conexión al cargar los boletines");
-    } finally {
+
+      if (!response.success) {
+        setError(response.message || "Error al cargar los boletines");
+        return;
+      }
+
+      // The bulletin endpoint is the only request that blocks the page loader.
+      // Templates, groups and reviewer histories hydrate the cards afterwards.
+      setBulletins(response.data);
       setLoading(false);
+
+      void loadTemplateAndGroupMetadata(response.data, requestId);
+      void loadReviewerMetadata(response.data, requestId);
+    } catch {
+      if (requestId === loadRequestRef.current) {
+        setError("Error de conexión al cargar los boletines");
+      }
+    } finally {
+      if (requestId === loadRequestRef.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -493,6 +401,13 @@ export default function Bulletins() {
         return latestB - latestA;
       });
   }, [filteredBulletins, templatesMap, t]);
+
+  const isPreparingBulletinCards =
+    !loading &&
+    !error &&
+    metadataLoading &&
+    bulletins.length > 0 &&
+    groupedBulletins.length === 0;
 
   const handleDuplicateBulletin = (bulletin: BulletinMaster) => {
     setBulletinToDuplicate(bulletin);
@@ -665,6 +580,16 @@ export default function Bulletins() {
             </div>
           )}
 
+          {/* The bulletin request already finished, but template metadata is
+              still needed to build the grouped cards. Keep a loading state
+              instead of briefly rendering the empty-state message. */}
+          {isPreparingBulletinCards && (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-[#ffaf68]" />
+              <span className="ml-2 text-[#283618]/60">{t("loading")}</span>
+            </div>
+          )}
+
           {/* Error State */}
           {error && (
             <div className="text-center py-12">
@@ -676,7 +601,7 @@ export default function Bulletins() {
           )}
 
           {/* Bulletins Grid */}
-          {!loading && !error && (
+          {!loading && !error && !isPreparingBulletinCards && (
             <div className="space-y-8">
               {groupedBulletins.map((group) => (
                 <section key={group.templateId} className="space-y-4">
@@ -900,19 +825,25 @@ export default function Bulletins() {
           )}
 
           {/* Empty State */}
-          {!loading && !error && groupedBulletins.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-[#283618]/60 mb-4">
-                {searchTerm ? t("noResults") : t("noResults")}
-              </p>
-              {!searchTerm &&
-                can(PERMISSION_ACTIONS.Create, MODULES.BULLETINS_COMPOSER) && (
-                  <Link href="/bulletins/create" className={btnPrimary}>
-                    {t("createFirst")}
-                  </Link>
-                )}
-            </div>
-          )}
+          {!loading &&
+            !metadataLoading &&
+            !error &&
+            groupedBulletins.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-[#283618]/60 mb-4">
+                  {searchTerm ? t("noResults") : t("noResults")}
+                </p>
+                {!searchTerm &&
+                  can(
+                    PERMISSION_ACTIONS.Create,
+                    MODULES.BULLETINS_COMPOSER,
+                  ) && (
+                    <Link href="/bulletins/create" className={btnPrimary}>
+                      {t("createFirst")}
+                    </Link>
+                  )}
+              </div>
+            )}
         </div>
       </main>
 

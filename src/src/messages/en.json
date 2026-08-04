@@ -629,7 +629,9 @@
     "validation": {
       "requiredField": "This field is required.",
       "completeRequiredFields": "Complete the required fields before continuing. Remaining: {count}.",
-      "requiredFieldsRemaining": "There are {count} required field(s) remaining. Complete them to continue."
+      "requiredFieldsRemaining": "There are {count} required field(s) remaining. Complete them to continue.",
+      "listMinItems": "Add at least {min} item(s). There are currently {current}.",
+      "listMaxItems": "This list allows at most {max} item(s). There are currently {current}."
     }
   },
   "Authentication": {
