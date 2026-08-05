@@ -20,6 +20,7 @@ import {
   SearchableInput,
   SelectBackgroundField,
   CardFieldInput,
+  ImageInput,
   ImageUploadInput,
   MoonCalendarInput,
 } from "../components/fields";
@@ -775,6 +776,15 @@ export function SectionStep({
             precedingCardIds={precedingCardIds}
             commentsByTarget={fieldComments}
             renderComments={renderComments}
+          />
+        );
+
+      case "image":
+        return (
+          <ImageInput
+            field={field}
+            value={fieldValue as string}
+            onChange={onChange}
           />
         );
 

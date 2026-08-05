@@ -2697,6 +2697,14 @@ export function TemplatePreview({
         const showImageLabel = imageConfig?.show_label ?? false;
         const configImageLabel = imageConfig?.label_text || "";
 
+        const configuredImageMaxHeight = Number(imageConfig?.max_height);
+
+        const imageMaxHeight =
+          Number.isFinite(configuredImageMaxHeight) &&
+          configuredImageMaxHeight > 0
+            ? configuredImageMaxHeight
+            : undefined;
+
         // El label puede venir del config o del item (en listas)
         const finalImageLabel = itemImageLabel || configImageLabel;
 
@@ -2721,7 +2729,12 @@ export function TemplatePreview({
             <img
               src={imageUrl}
               alt={field.display_name || t("accessibility.image")}
-              className="max-w-full max-h-full object-contain block"
+              className="block max-w-full object-contain"
+              style={{
+                width: "auto",
+                height: "auto",
+                maxHeight: imageMaxHeight ? `${imageMaxHeight}px` : undefined,
+              }}
               onError={(e) => {
                 (e.target as HTMLImageElement).src =
                   "/assets/img/imageNotFound.png";
@@ -2729,6 +2742,7 @@ export function TemplatePreview({
               onLoad={(e) => {
                 const img = e.target as HTMLImageElement;
                 const label = img.nextElementSibling as HTMLElement;
+
                 if (label) {
                   label.style.maxWidth = `${img.offsetWidth + 24}px`;
                 }

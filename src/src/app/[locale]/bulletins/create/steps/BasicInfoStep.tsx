@@ -18,6 +18,7 @@ import {
   DateRangeInput,
   SelectInput,
   SearchableInput,
+  ImageInput,
   ImageUploadInput,
   MoonCalendarInput,
 } from "../components/fields";
@@ -337,6 +338,15 @@ export function BasicInfoStep({
             value={fieldValue as string}
             onChange={(value) => handleChange(index, value)}
             maxLength={field.validation?.max_length}
+          />
+        );
+
+      case "image":
+        return (
+          <ImageInput
+            field={field}
+            value={fieldValue as string}
+            onChange={(value) => handleChange(index, value)}
           />
         );
 

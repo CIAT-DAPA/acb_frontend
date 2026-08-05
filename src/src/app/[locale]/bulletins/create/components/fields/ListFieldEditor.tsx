@@ -23,6 +23,7 @@ import {
   SearchableInput,
   SelectWithIconsField,
   ClimateDataField,
+  ImageInput,
 } from "./index";
 import { btnOutlineSecondary } from "@/app/[locale]/components/ui";
 import { VisualResourceSelector } from "../../../../templates/create/components/VisualResourceSelector";
@@ -836,6 +837,22 @@ export function ListFieldEditor({
             options={selectOptions}
           />
         );
+
+      case "image": {
+        const imageField = {
+          ...fieldDef,
+          field_id: fieldDef.field_id || fieldId,
+          type: "image",
+        } as Field;
+
+        return (
+          <ImageInput
+            field={imageField}
+            value={typeof fieldValue === "string" ? fieldValue : ""}
+            onChange={handleChange}
+          />
+        );
+      }
 
       case "climate_data_puntual":
         return (

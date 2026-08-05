@@ -545,6 +545,21 @@
       "noFieldsToComplete": "Thẻ này không có trường nào cần hoàn thành",
       "noCardsSelected": "Chưa chọn cây trồng nào. Vui lòng chọn và nhấn + thêm"
     },
+    "imageInput": {
+      "uploadedImageAlt": "Hình ảnh đã tải lên",
+      "remove": "Xóa hình ảnh",
+      "uploading": "Đang tải hình ảnh lên...",
+      "clickToUpload": "Nhấp để tải lên",
+      "orDrag": "hoặc kéo hình ảnh vào đây",
+      "formats": "Định dạng: {formats}",
+      "maxSize": "Kích thước tối đa: {size} MB",
+      "maxHeight": "Chiều cao tối đa: {height} px",
+      "errors": {
+        "invalidFormat": "Định dạng không được hỗ trợ. Các định dạng được chấp nhận: {formats}",
+        "fileTooLarge": "Tệp quá lớn. Kích thước tối đa: {size} MB",
+        "upload": "Không thể tải hình ảnh lên. Vui lòng thử lại."
+      }
+    },
     "listField": {
       "items": "{count} mục",
       "maximum": "(tối đa: {max})",
@@ -1524,7 +1539,10 @@
         "galleryPreviewLabel": "Xem trước thư viện",
         "previewNumber": "Xem trước {number}",
         "galleryPreviewHelp": "Người dùng sẽ có thể chọn một trong những hình ảnh này",
-        "selectImageTitle": "Chọn hình ảnh {number}"
+        "selectImageTitle": "Chọn hình ảnh {number}",
+        "maxHeightLabel": "Chiều cao tối đa của hình ảnh",
+        "maxHeightPlaceholder": "Ví dụ: 300",
+        "maxHeightHelp": "Xác định chiều cao tối đa bằng pixel. Hình ảnh sẽ giữ nguyên tỷ lệ. Để trống để sử dụng chiều cao gốc của hình ảnh."
       },
       "listConfig": {
         "addField": "Thêm trường thông tin",
