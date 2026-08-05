@@ -1269,7 +1269,13 @@
           }
         },
         "saving": "Đang lưu...",
-        "saveTemplate": "Lưu mẫu"
+        "saveTemplate": "Lưu mẫu",
+        "canvasIntro": {
+          "title": "Khám phá canvas",
+          "message": "Kéo phần nền để di chuyển xung quanh mẫu hoặc bản tin.",
+          "zoomHint": "Sử dụng Ctrl + con lăn hoặc các nút -/+ để phóng to và thu nhỏ.",
+          "dismiss": "Đóng hướng dẫn"
+        }
       },
       "cancel": "Hủy bỏ",
       "actions": {

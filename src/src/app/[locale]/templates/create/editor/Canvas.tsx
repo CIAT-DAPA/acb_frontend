@@ -1,10 +1,10 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import { CreateTemplateData } from "@/types/template";
 import { EditorSelection, CanvasState } from "./types";
 import { UnifiedBulletinPreview } from "@/app/[locale]/components/UnifiedBulletinPreview";
 import * as ui from "../../../components/ui";
 import { useTranslations } from "next-intl";
-import { Layers, GripVertical } from "lucide-react";
+import { Layers, GripVertical, Move, ZoomIn, X } from "lucide-react";
 
 type CanvasInteractionMode = "edit" | "review";
 
@@ -150,10 +150,22 @@ export const Canvas: React.FC<CanvasProps> = ({
   const shouldRenderAllPages = renderAllPages;
   const t = useTranslations("CreateTemplate.fieldEditor");
   const containerRef = useRef<HTMLDivElement>(null);
+  const transformLayerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const introHasRunRef = useRef(false);
+  const introCancelledRef = useRef(false);
+  const introTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const [canvasState, setCanvasState] = useState<CanvasState>({
     scale: 1,
     position: { x: 0, y: 0 },
   });
+  const [introPhase, setIntroPhase] = useState<"overview" | "focus" | "idle">(
+    "overview",
+  );
+  const [isCanvasVisible, setIsCanvasVisible] = useState(false);
+  const [showNavigationHint, setShowNavigationHint] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 });
   const [draggedSectionIndex, setDraggedSectionIndex] = useState<number | null>(
@@ -218,6 +230,276 @@ export const Canvas: React.FC<CanvasProps> = ({
     }
   }, [canvasState, onCanvasChange]);
 
+  const clearIntroTimers = useCallback(() => {
+    introTimersRef.current.forEach((timer) => clearTimeout(timer));
+    introTimersRef.current = [];
+  }, []);
+
+  const cancelIntroAnimation = useCallback(() => {
+    introCancelledRef.current = true;
+    clearIntroTimers();
+    setIntroPhase("idle");
+    setIsCanvasVisible(true);
+  }, [clearIntroTimers]);
+
+  const getElementBounds = useCallback((element: HTMLElement) => {
+    const transformLayer = transformLayerRef.current;
+
+    if (!transformLayer) {
+      return null;
+    }
+
+    let x = 0;
+    let y = 0;
+    let currentElement: HTMLElement | null = element;
+
+    while (currentElement && currentElement !== transformLayer) {
+      x += currentElement.offsetLeft;
+      y += currentElement.offsetTop;
+      currentElement = currentElement.offsetParent as HTMLElement | null;
+    }
+
+    if (currentElement !== transformLayer) {
+      return null;
+    }
+
+    return {
+      x,
+      y,
+      width: Math.max(element.offsetWidth, 1),
+      height: Math.max(element.offsetHeight, 1),
+    };
+  }, []);
+
+  const getCombinedBounds = useCallback(
+    (elements: HTMLElement[]) => {
+      const bounds = elements
+        .map((element) => getElementBounds(element))
+        .filter(
+          (
+            value,
+          ): value is {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          } => Boolean(value),
+        );
+
+      if (bounds.length === 0) {
+        return null;
+      }
+
+      const left = Math.min(...bounds.map((item) => item.x));
+      const top = Math.min(...bounds.map((item) => item.y));
+      const right = Math.max(...bounds.map((item) => item.x + item.width));
+      const bottom = Math.max(...bounds.map((item) => item.y + item.height));
+
+      return {
+        x: left,
+        y: top,
+        width: Math.max(right - left, 1),
+        height: Math.max(bottom - top, 1),
+      };
+    },
+    [getElementBounds],
+  );
+
+  const createCenteredCanvasState = useCallback(
+    (
+      bounds: { x: number; y: number; width: number; height: number },
+      padding: number,
+      maxScale: number,
+    ): CanvasState | null => {
+      const container = containerRef.current;
+
+      if (!container) {
+        return null;
+      }
+
+      const viewportWidth = container.clientWidth;
+      const viewportHeight = container.clientHeight;
+
+      if (viewportWidth <= 0 || viewportHeight <= 0) {
+        return null;
+      }
+
+      const availableWidth = Math.max(viewportWidth - padding * 2, 1);
+      const availableHeight = Math.max(viewportHeight - padding * 2, 1);
+      const fittedScale = Math.min(
+        availableWidth / bounds.width,
+        availableHeight / bounds.height,
+        maxScale,
+      );
+      const scale = Math.min(Math.max(fittedScale, 0.1), 5);
+
+      return {
+        scale,
+        position: {
+          x: (viewportWidth - bounds.width * scale) / 2 - bounds.x * scale,
+          y: (viewportHeight - bounds.height * scale) / 2 - bounds.y * scale,
+        },
+      };
+    },
+    [],
+  );
+
+  const getOverviewCanvasState = useCallback((): CanvasState | null => {
+    const content = contentRef.current;
+
+    if (!content) {
+      return null;
+    }
+
+    const sectionElements = Array.from(
+      content.querySelectorAll<HTMLElement>("[id^='template-section-']"),
+    ).filter((element) => /^template-section-\d+$/.test(element.id));
+
+    const targetElements =
+      sectionElements.length > 0 ? sectionElements : [content];
+    const bounds = getCombinedBounds(targetElements);
+
+    if (!bounds) {
+      return null;
+    }
+
+    // Include the section title/actions that sit above each section.
+    const boundsWithLabels = {
+      ...bounds,
+      y: bounds.y - 48,
+      height: bounds.height + 48,
+    };
+
+    return createCenteredCanvasState(boundsWithLabels, 52, 0.65);
+  }, [createCenteredCanvasState, getCombinedBounds]);
+
+  const getFirstSectionCanvasState = useCallback((): CanvasState | null => {
+    const content = contentRef.current;
+
+    if (!content) {
+      return null;
+    }
+
+    const firstPage = content.querySelector<HTMLElement>(
+      "#template-section-0-page-0",
+    );
+    const firstSection = content.querySelector<HTMLElement>(
+      "#template-section-0",
+    );
+    const target = firstPage || firstSection || content;
+    const bounds = getElementBounds(target);
+
+    if (!bounds) {
+      return null;
+    }
+
+    return createCenteredCanvasState(bounds, 64, 0.95);
+  }, [createCenteredCanvasState, getElementBounds]);
+
+  useEffect(() => {
+    if (introHasRunRef.current) {
+      return;
+    }
+
+    introCancelledRef.current = false;
+
+    const content = contentRef.current;
+    let resizeObserver: ResizeObserver | null = null;
+    let stableLayoutTimer: ReturnType<typeof setTimeout> | null = null;
+    let fallbackTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const startIntro = () => {
+      if (introHasRunRef.current || introCancelledRef.current) {
+        return;
+      }
+
+      const overviewState = getOverviewCanvasState();
+
+      if (!overviewState) {
+        return;
+      }
+
+      introHasRunRef.current = true;
+      resizeObserver?.disconnect();
+
+      setIntroPhase("overview");
+      setCanvasState(overviewState);
+      setIsCanvasVisible(true);
+      setShowNavigationHint(true);
+
+      const focusTimer = setTimeout(() => {
+        if (introCancelledRef.current) {
+          return;
+        }
+
+        const firstSectionState = getFirstSectionCanvasState();
+
+        if (firstSectionState) {
+          setIntroPhase("focus");
+          setCanvasState(firstSectionState);
+        }
+      }, 1000);
+
+      const finishTimer = setTimeout(() => {
+        if (!introCancelledRef.current) {
+          setIntroPhase("idle");
+        }
+      }, 2000);
+
+      introTimersRef.current = [focusTimer, finishTimer];
+
+      if (hintTimerRef.current) {
+        clearTimeout(hintTimerRef.current);
+      }
+
+      hintTimerRef.current = setTimeout(() => {
+        setShowNavigationHint(false);
+      }, 7000);
+    };
+
+    const scheduleIntro = () => {
+      if (stableLayoutTimer) {
+        clearTimeout(stableLayoutTimer);
+      }
+
+      stableLayoutTimer = setTimeout(startIntro, 260);
+    };
+
+    if (content && typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(scheduleIntro);
+      resizeObserver.observe(content);
+
+      if (containerRef.current) {
+        resizeObserver.observe(containerRef.current);
+      }
+    }
+
+    scheduleIntro();
+    fallbackTimer = setTimeout(startIntro, 1000);
+
+    return () => {
+      resizeObserver?.disconnect();
+
+      if (stableLayoutTimer) {
+        clearTimeout(stableLayoutTimer);
+      }
+
+      if (fallbackTimer) {
+        clearTimeout(fallbackTimer);
+      }
+    };
+  }, [getFirstSectionCanvasState, getOverviewCanvasState]);
+
+  useEffect(() => {
+    return () => {
+      clearIntroTimers();
+
+      if (hintTimerRef.current) {
+        clearTimeout(hintTimerRef.current);
+      }
+    };
+  }, [clearIntroTimers]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Don't trigger if typing in an input
@@ -249,6 +531,8 @@ export const Canvas: React.FC<CanvasProps> = ({
     if (!container) return;
 
     const handleWheelNative = (e: WheelEvent) => {
+      cancelIntroAnimation();
+
       if (e.ctrlKey) {
         e.preventDefault();
         const zoomSensitivity = 0.001;
@@ -283,7 +567,7 @@ export const Canvas: React.FC<CanvasProps> = ({
     return () => {
       container.removeEventListener("wheel", handleWheelNative);
     };
-  }, []);
+  }, [cancelIntroAnimation]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     // Enable dragging on space key hold or middle mouse button
@@ -379,16 +663,6 @@ export const Canvas: React.FC<CanvasProps> = ({
     setDraggedSectionIndex(null);
     setDragOverSectionIndex(null);
   };
-
-  // Center canvas initially
-  useEffect(() => {
-    // Reset to a safe known "good" position where checking top-left is guaranteed to show content
-    // We start at x=100, y=50 to give some breathing room but ensure first section is visible
-    setCanvasState({
-      scale: 0.8,
-      position: { x: 100, y: 50 },
-    });
-  }, []);
 
   const handleElementClick = (
     type:
@@ -832,6 +1106,7 @@ export const Canvas: React.FC<CanvasProps> = ({
     <div
       ref={containerRef}
       className="w-full h-full overflow-hidden bg-[#e5e5e5] relative cursor-grab select-none canvas-bg"
+      onMouseDownCapture={cancelIntroAnimation}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
@@ -849,14 +1124,23 @@ export const Canvas: React.FC<CanvasProps> = ({
       />
 
       <div
+        ref={transformLayerRef}
         style={{
           transform: `translate(${canvasState.position.x}px, ${canvasState.position.y}px) scale(${canvasState.scale})`,
           transformOrigin: "0 0",
-          transition: isDragging ? "none" : "transform 0.1s ease-out",
+          transition: isDragging
+            ? "none"
+            : introPhase === "focus"
+              ? "transform 900ms cubic-bezier(0.22, 1, 0.36, 1)"
+              : introPhase === "overview"
+                ? "transform 450ms ease-out"
+                : "transform 0.1s ease-out",
+          opacity: isCanvasVisible ? 1 : 0,
+          pointerEvents: isCanvasVisible ? "auto" : "none",
         }}
-        className="w-auto h-auto min-w-full min-h-full p-20 origin-top-left"
+        className="relative w-auto h-auto min-w-full min-h-full p-20 origin-top-left transition-opacity duration-300"
       >
-        <div className="flex gap-8 origin-top-left">
+        <div ref={contentRef} className="flex gap-8 origin-top-left">
           {!data.version.content.sections ||
           data.version.content.sections.length === 0 ? (
             <div className="w-max bg-white shadow-xl">
@@ -904,6 +1188,7 @@ export const Canvas: React.FC<CanvasProps> = ({
                     (_, pageIndex) => (
                       <div
                         key={`section-${index}-page-${pageIndex}`}
+                        id={`template-section-${index}-page-${pageIndex}`}
                         className="w-max bg-white shadow-xl"
                       >
                         <UnifiedBulletinPreview
@@ -1039,12 +1324,55 @@ export const Canvas: React.FC<CanvasProps> = ({
         </div>
       </div>
 
+      {showNavigationHint && (
+        <div
+          className="interactive-element absolute left-1/2 top-4 z-40 w-[min(92%,520px)] -translate-x-1/2 rounded-xl border border-[#283618]/15 bg-white/95 p-4 shadow-xl backdrop-blur-sm"
+          role="status"
+          aria-live="polite"
+          onMouseDown={(event) => event.stopPropagation()}
+        >
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#283618]/10 text-[#283618]">
+              <Move size={18} />
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold text-[#283618]">
+                {t("editor.canvasIntro.title")}
+              </p>
+              <p className="mt-1 text-sm leading-relaxed text-[#606c38]">
+                {t("editor.canvasIntro.message")}
+              </p>
+
+              <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-[#bc6c25]">
+                <ZoomIn size={14} />
+                <span>{t("editor.canvasIntro.zoomHint")}</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowNavigationHint(false)}
+              className="rounded-md p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+              aria-label={t("editor.canvasIntro.dismiss")}
+              title={t("editor.canvasIntro.dismiss")}
+            >
+              <X size={18} />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Zoom Controls Overlay */}
-      <div className="absolute bottom-4 left-4 bg-white rounded-lg shadow-md p-2 flex gap-2">
+      <div className="interactive-element absolute bottom-4 left-4 bg-white rounded-lg shadow-md p-2 flex gap-2">
         <button
-          onClick={() =>
-            setCanvasState((s) => ({ ...s, scale: s.scale - 0.1 }))
-          }
+          onClick={() => {
+            cancelIntroAnimation();
+            setCanvasState((state) => ({
+              ...state,
+              scale: Math.max(0.1, state.scale - 0.1),
+            }));
+          }}
           className="px-2 hover:bg-gray-100 rounded"
         >
           -
@@ -1053,9 +1381,13 @@ export const Canvas: React.FC<CanvasProps> = ({
           {Math.round(canvasState.scale * 100)}%
         </span>
         <button
-          onClick={() =>
-            setCanvasState((s) => ({ ...s, scale: s.scale + 0.1 }))
-          }
+          onClick={() => {
+            cancelIntroAnimation();
+            setCanvasState((state) => ({
+              ...state,
+              scale: Math.min(5, state.scale + 0.1),
+            }));
+          }}
           className="px-2 hover:bg-gray-100 rounded"
         >
           +
