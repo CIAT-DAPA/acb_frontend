@@ -576,7 +576,12 @@
       "changeIcon": "Thay đổi biểu tượng",
       "selectIcon": "Chọn biểu tượng",
       "markHighlight": "Đánh dấu là quan trọng",
-      "removeHighlight": "Bỏ đánh dấu quan trọng"
+      "removeHighlight": "Bỏ đánh dấu quan trọng",
+      "clearAllItems": "Xóa nội dung danh sách",
+      "clearAllItemsConfirm": "Bạn có chắc chắn muốn xóa toàn bộ thông tin trong danh sách này không? Không thể hoàn tác hành động này.",
+      "clearAllItemsModalTitle": "Xóa toàn bộ danh sách?",
+      "clearAllItemsModalConfirm": "Xóa danh sách",
+      "clearAllItemsModalCancel": "Hủy"
     },
     "climateField": {
       "noParameters": "Không có tham số khí hậu nào được cấu hình"
