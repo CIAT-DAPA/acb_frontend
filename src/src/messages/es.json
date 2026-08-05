@@ -1240,6 +1240,12 @@
             "selectedDefault": "Seleccionado como valor por defecto",
             "selectDefault": "Usar como valor por defecto"
           }
+        },
+        "canvasIntro": {
+          "title": "Explora el canvas",
+          "message": "Arrastra el fondo para desplazarte por la plantilla o el boletín.",
+          "zoomHint": "Usa Ctrl + rueda o los controles -/+ para acercar y alejar.",
+          "dismiss": "Cerrar ayuda"
         }
       },
       "closeEditor": "Cerrar editor",
