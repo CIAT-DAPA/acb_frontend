@@ -6,10 +6,21 @@ import { Upload, X } from "lucide-react";
 import { Field } from "../../../../../../types/template";
 import { normalizeAssetUrl } from "@/utils/assetUrl";
 
+type ImageInputValue =
+  | string
+  | {
+      url?: string | null;
+      path?: string | null;
+      label?: string;
+      [key: string]: unknown;
+    }
+  | null
+  | undefined;
+
 interface ImageInputProps {
   field?: Field;
-  value: string;
-  onChange: (value: string) => void;
+  value: ImageInputValue;
+  onChange: (value: ImageInputValue) => void;
   disabled?: boolean;
 }
 
@@ -25,6 +36,24 @@ const MIME_TYPES: Record<string, string> = {
 const isTemporaryBulletinImage = (url: string) =>
   url.includes("/bulletins/temp/");
 
+const getImageUrl = (value: ImageInputValue): string => {
+  if (typeof value === "string") {
+    return value.trim();
+  }
+
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    if (typeof value.url === "string") {
+      return value.url.trim();
+    }
+
+    if (typeof value.path === "string") {
+      return value.path.trim();
+    }
+  }
+
+  return "";
+};
+
 export function ImageInput({
   field,
   value,
@@ -39,6 +68,25 @@ export function ImageInput({
   const [error, setError] = useState<string | null>(null);
 
   const fieldConfig = (field?.field_config as any) || {};
+  const imageUrl = getImageUrl(value);
+
+  const buildNextValue = (nextUrl: string): ImageInputValue => {
+    if (!nextUrl) {
+      return "";
+    }
+
+    // Preserve legacy metadata such as an item-specific label while updating
+    // the URL. New values continue to be stored as a plain string.
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      const { path: _legacyPath, ...currentValue } = value;
+      return {
+        ...currentValue,
+        url: nextUrl,
+      };
+    }
+
+    return nextUrl;
+  };
 
   const allowedFormats = useMemo(
     () =>
@@ -113,11 +161,11 @@ export function ImageInput({
       }
 
       // Only delete the previous temp file after the new upload succeeds.
-      if (value && value !== uploadedUrl) {
-        await deleteTemporaryImage(value);
+      if (imageUrl && imageUrl !== uploadedUrl) {
+        await deleteTemporaryImage(imageUrl);
       }
 
-      onChange(uploadedUrl);
+      onChange(buildNextValue(uploadedUrl));
     } catch (uploadError) {
       console.error("Image upload error:", uploadError);
       setError(t("errors.upload"));
@@ -145,7 +193,7 @@ export function ImageInput({
   };
 
   const handleRemoveImage = async () => {
-    if (value) await deleteTemporaryImage(value);
+    if (imageUrl) await deleteTemporaryImage(imageUrl);
 
     onChange("");
     setError(null);
@@ -206,10 +254,10 @@ export function ImageInput({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        {value ? (
+        {imageUrl ? (
           <div className="relative flex w-full items-center justify-center p-3">
             <img
-              src={normalizeAssetUrl(value)}
+              src={normalizeAssetUrl(imageUrl)}
               alt={field?.label || t("uploadedImageAlt")}
               className="block object-contain"
               style={{
