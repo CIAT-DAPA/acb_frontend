@@ -9,6 +9,7 @@ import {
   Upload,
   HelpCircle,
   MessageCircle,
+  Star,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
@@ -23,6 +24,7 @@ import {
   SearchableInput,
   SelectWithIconsField,
   ClimateDataField,
+  ImageInput,
 } from "./index";
 import { btnOutlineSecondary } from "@/app/[locale]/components/ui";
 import { VisualResourceSelector } from "../../../../templates/create/components/VisualResourceSelector";
@@ -672,6 +674,26 @@ export function ListFieldEditor({
     onChange(newValue);
   };
 
+  // Marcar o desmarcar un ítem como destacado.
+  // Al desmarcarlo se elimina la propiedad para mantener limpio el payload.
+  const handleToggleHighlight = (itemIndex: number) => {
+    const newValue = value.map((item, index) => {
+      if (index !== itemIndex) {
+        return item;
+      }
+
+      const currentItem =
+        item && typeof item === "object" && !Array.isArray(item) ? item : {};
+      const { __highlight, ...itemWithoutHighlight } = currentItem;
+
+      return __highlight
+        ? itemWithoutHighlight
+        : { ...itemWithoutHighlight, __highlight: true };
+    });
+
+    onChange(newValue);
+  };
+
   // Toggle expand/collapse de un item
   const toggleExpand = (index: number) => {
     const currentExpandedIndex = [...expandedItems][0];
@@ -836,6 +858,22 @@ export function ListFieldEditor({
             options={selectOptions}
           />
         );
+
+      case "image": {
+        const imageField = {
+          ...fieldDef,
+          field_id: fieldDef.field_id || fieldId,
+          type: "image",
+        } as Field;
+
+        return (
+          <ImageInput
+            field={imageField}
+            value={typeof fieldValue === "string" ? fieldValue : ""}
+            onChange={handleChange}
+          />
+        );
+      }
 
       case "climate_data_puntual":
         return (
@@ -1013,6 +1051,7 @@ export function ListFieldEditor({
             directItemCommentCount + nestedItemCommentCount;
 
           const hasAnyItemComments = totalItemCommentCount > 0;
+          const isHighlighted = Boolean(item?.__highlight);
 
           return (
             <div
@@ -1020,16 +1059,23 @@ export function ListFieldEditor({
               id={itemTargetId ? `review-target-${itemTargetId}` : undefined}
               className={[
                 "overflow-hidden rounded-lg transition-all duration-200",
+                isHighlighted ? "font-bold **:font-bold!" : "",
                 hasItemComments
                   ? "border-2 border-amber-400 bg-amber-50/60 shadow-sm"
-                  : "border border-gray-300",
+                  : isHighlighted
+                    ? "border border-[#dda15e]/60 bg-[#fefae0]/50 shadow-sm"
+                    : "border border-gray-300",
               ].join(" ")}
             >
               {/* Header del ítem */}
               <div
                 className={[
                   "flex items-center justify-between px-4 py-2 transition-colors",
-                  hasAnyItemComments ? "bg-amber-50" : "bg-gray-50",
+                  hasAnyItemComments
+                    ? "bg-amber-50"
+                    : isHighlighted
+                      ? "bg-[#fefae0]/90"
+                      : "bg-gray-50",
                 ].join(" ")}
               >
                 <button
@@ -1064,6 +1110,35 @@ export function ListFieldEditor({
                   {!readOnly && (
                     <button
                       type="button"
+                      onClick={() => handleToggleHighlight(itemIndex)}
+                      className={[
+                        "rounded p-1 transition-colors",
+                        isHighlighted
+                          ? "text-[#bc6c25] hover:text-[#9c581d]"
+                          : "text-gray-400 hover:text-[#bc6c25]",
+                      ].join(" ")}
+                      title={
+                        isHighlighted
+                          ? t("removeHighlight")
+                          : t("markHighlight")
+                      }
+                      aria-label={
+                        isHighlighted
+                          ? t("removeHighlight")
+                          : t("markHighlight")
+                      }
+                      aria-pressed={isHighlighted}
+                    >
+                      <Star
+                        size={17}
+                        fill={isHighlighted ? "currentColor" : "none"}
+                      />
+                    </button>
+                  )}
+
+                  {!readOnly && (
+                    <button
+                      type="button"
                       onClick={() => handleRemoveItem(itemIndex)}
                       disabled={value.length <= minItems}
                       className="text-red-600 transition-colors hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
@@ -1083,7 +1158,12 @@ export function ListFieldEditor({
 
               {/* Campos internos del ítem */}
               {expandedItems.has(itemIndex) && (
-                <div className="space-y-3 bg-white p-4">
+                <div
+                  className={[
+                    "space-y-3 p-4",
+                    isHighlighted ? "bg-[#fefae0]/30" : "bg-white",
+                  ].join(" ")}
+                >
                   {Object.entries(itemSchema).map(
                     ([itemFieldId, fieldDef]: [string, any]) => {
                       const subfieldTargetId = getSubfieldTargetId(

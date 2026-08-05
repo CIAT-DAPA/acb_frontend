@@ -453,6 +453,21 @@
       "noFieldsToComplete": "Esta card no tiene campos para completar",
       "noCardsSelected": "No hay cards seleccionadas. Selecciona una card para comenzar."
     },
+    "imageInput": {
+      "uploadedImageAlt": "Imagen subida",
+      "remove": "Eliminar imagen",
+      "uploading": "Subiendo imagen...",
+      "clickToUpload": "Haz clic para subir",
+      "orDrag": "o arrastra una imagen aquí",
+      "formats": "Formatos: {formats}",
+      "maxSize": "Tamaño máximo: {size} MB",
+      "maxHeight": "Altura máxima: {height} px",
+      "errors": {
+        "invalidFormat": "Formato no permitido. Solo se aceptan: {formats}",
+        "fileTooLarge": "El archivo es demasiado grande. Tamaño máximo: {size} MB",
+        "upload": "Error al subir la imagen. Intenta nuevamente."
+      }
+    },
     "listField": {
       "items": "{count} item(s)",
       "maximum": "(máximo: {max})",
@@ -467,7 +482,9 @@
       "noItems": "No hay items. Haz clic en \"Agregar item\" para comenzar.",
       "icons": "Iconos",
       "changeIcon": "Cambiar icono",
-      "selectIcon": "Seleccionar icono"
+      "selectIcon": "Seleccionar icono",
+      "markHighlight": "Marcar como importante",
+      "removeHighlight": "Quitar marca de importante"
     },
     "climateField": {
       "noParameters": "No hay parámetros climáticos configurados"
@@ -1456,7 +1473,10 @@
         "galleryPreviewLabel": "Vista Previa de la Galería",
         "previewNumber": "Preview {number}",
         "galleryPreviewHelp": "El usuario podrá seleccionar una de estas imágenes",
-        "selectImageTitle": "Seleccionar Imagen {number}"
+        "selectImageTitle": "Seleccionar Imagen {number}",
+        "maxHeightLabel": "Altura máxima de la imagen",
+        "maxHeightPlaceholder": "Ej. 300",
+        "maxHeightHelp": "Define la altura máxima en píxeles. La imagen conservará su proporción. Déjalo vacío para utilizar su altura original."
       },
       "imageUploadConfig": {
         "allowedFormatsLabel": "Formatos de Imagen Permitidos",
