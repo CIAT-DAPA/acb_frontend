@@ -662,14 +662,13 @@ export default function FormBulletinPage({
     loadTemplateNameMachine();
   }, [initialData]);
 
-  // Helper para extraer todas las URLs de imágenes del boletín
   const extractImageUrls = useCallback((data: CreateBulletinData): string[] => {
     const imageUrls: string[] = [];
 
     const extractFromFields = (fields: Field[]) => {
       fields.forEach((field) => {
         if (
-          field.type === "image_upload" &&
+          (field.type === "image" || field.type === "image_upload") &&
           field.value &&
           typeof field.value === "string"
         ) {
@@ -678,29 +677,23 @@ export default function FormBulletinPage({
       });
     };
 
-    // Extraer de header
     if (data.version.data.header_config?.fields) {
       extractFromFields(data.version.data.header_config.fields);
     }
 
-    // Extraer de footer
     if (data.version.data.footer_config?.fields) {
       extractFromFields(data.version.data.footer_config.fields);
     }
 
-    // Extraer de secciones
     data.version.data.sections.forEach((section) => {
-      // Header de sección
       if (section.header_config?.fields) {
         extractFromFields(section.header_config.fields);
       }
 
-      // Footer de sección
       if (section.footer_config?.fields) {
         extractFromFields(section.footer_config.fields);
       }
 
-      // Bloques de sección
       section.blocks.forEach((block) => {
         extractFromFields(block.fields);
       });
@@ -722,6 +715,112 @@ export default function FormBulletinPage({
 
     return imageUrls;
   }, []);
+
+  const finalizeBulletinImages = useCallback(
+    async (data: CreateBulletinData): Promise<CreateBulletinData> => {
+      /*
+       * Obtener solamente imágenes temporales y eliminar
+       * posibles URLs repetidas.
+       */
+      const tempImages = Array.from(
+        new Set(
+          extractImageUrls(data).filter((url) =>
+            url.includes("/bulletins/temp/"),
+          ),
+        ),
+      );
+
+      /*
+       * Si no hay imágenes temporales, no es necesario
+       * llamar al endpoint.
+       */
+      if (tempImages.length === 0) {
+        return data;
+      }
+
+      const finalizeResponse = await fetch("/api/finalize-bulletin-images", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          tempImages,
+        }),
+      });
+
+      if (!finalizeResponse.ok) {
+        throw new Error("No fue posible guardar las imágenes del boletín");
+      }
+
+      const responseData = await finalizeResponse.json();
+      const permanentImages = responseData.images;
+
+      if (
+        !Array.isArray(permanentImages) ||
+        permanentImages.length !== tempImages.length
+      ) {
+        throw new Error(
+          "La respuesta de finalización de imágenes no es válida",
+        );
+      }
+
+      /*
+       * Crear una relación entre cada URL temporal
+       * y su nueva URL permanente.
+       */
+      const urlMap = new Map<string, string>();
+
+      tempImages.forEach((temporaryUrl, index) => {
+        urlMap.set(temporaryUrl, permanentImages[index]);
+      });
+
+      /*
+       * Clonar los datos para no modificar directamente
+       * el estado actual de React.
+       */
+      const finalizedData = structuredClone(data);
+
+      const updateFields = (fields?: Field[]) => {
+        fields?.forEach((field) => {
+          if (
+            (field.type === "image" || field.type === "image_upload") &&
+            typeof field.value === "string"
+          ) {
+            const permanentUrl = urlMap.get(field.value);
+
+            if (permanentUrl) {
+              field.value = permanentUrl;
+            }
+          }
+        });
+      };
+
+      updateFields(finalizedData.version.data.header_config?.fields);
+
+      updateFields(finalizedData.version.data.footer_config?.fields);
+
+      finalizedData.version.data.sections.forEach((section) => {
+        updateFields(section.header_config?.fields);
+        updateFields(section.footer_config?.fields);
+
+        section.blocks.forEach((block) => {
+          updateFields(block.fields);
+        });
+
+        section.repeatable_pages?.forEach((page) => {
+          updateFields(page.header_config?.fields);
+          updateFields(page.footer_config?.fields);
+
+          page.blocks.forEach((block) => {
+            updateFields(block.fields);
+          });
+        });
+      });
+
+      return finalizedData;
+    },
+    [extractImageUrls],
+  );
 
   // Cargar template seleccionado y llenar estructura inicial
   const loadTemplateVersion = useCallback(
@@ -1404,7 +1503,6 @@ export default function FormBulletinPage({
 
     setIsLoading(true);
     try {
-      // Asegurarse de que el estado sea draft
       const draftData = {
         ...creationState.data,
         master: {
@@ -1413,8 +1511,23 @@ export default function FormBulletinPage({
         },
       };
 
-      // Codificar los campos de texto antes de guardar
-      const encodedData = encodeTextFields(draftData);
+      /*
+       * Mover las imágenes temporales a almacenamiento
+       * permanente antes de guardar el borrador.
+       */
+      const finalizedData = await finalizeBulletinImages(draftData);
+
+      /*
+       * Actualizar el estado local para que, si el usuario
+       * continúa editando, utilice las URLs permanentes.
+       */
+      setCreationState((previous) => ({
+        ...previous,
+        data: finalizedData,
+      }));
+
+      // Codificar los campos de texto después de finalizar imágenes
+      const encodedData = encodeTextFields(finalizedData);
 
       if (persistedBulletinId) {
         // MODO EDICIÓN: Actualizar el boletín existente
@@ -1501,7 +1614,14 @@ export default function FormBulletinPage({
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, creationState.data, persistedBulletinId, showToast, t]);
+  }, [
+    isLoading,
+    creationState.data,
+    persistedBulletinId,
+    showToast,
+    t,
+    finalizeBulletinImages,
+  ]);
 
   const handleContinueEditingDraft = useCallback(() => {
     setShowDraftSavedModal(false);
@@ -1528,8 +1648,14 @@ export default function FormBulletinPage({
         },
       };
 
-      // Codificar los campos de texto antes de guardar
-      const encodedData = encodeTextFields(draftData);
+      const finalizedData = await finalizeBulletinImages(draftData);
+
+      setCreationState((previous) => ({
+        ...previous,
+        data: finalizedData,
+      }));
+
+      const encodedData = encodeTextFields(finalizedData);
 
       let currentBulletinId = persistedBulletinId;
 
@@ -1639,6 +1765,7 @@ export default function FormBulletinPage({
     t,
     router,
     bulletinsPath,
+    finalizeBulletinImages,
   ]);
 
   // Función para publicar
@@ -1657,92 +1784,14 @@ export default function FormBulletinPage({
         },
       };
 
-      // Extraer todas las imágenes temporales para moverlas a permanentes
-      const tempImages = extractImageUrls(draftData).filter((url) =>
-        url.includes("/bulletins/temp/"),
-      );
+      const finalizedData = await finalizeBulletinImages(draftData);
 
-      // Mover imágenes a almacenamiento permanente
-      let finalizedData = draftData;
-      if (tempImages.length > 0) {
-        const finalizeResponse = await fetch("/api/finalize-bulletin-images", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ tempImages }),
-        });
+      setCreationState((previous) => ({
+        ...previous,
+        data: finalizedData,
+      }));
 
-        if (finalizeResponse.ok) {
-          const { images: permanentImages } = await finalizeResponse.json();
-
-          // Actualizar las URLs en los datos del boletín
-          const updateImageUrls = (
-            data: CreateBulletinData,
-            urlMap: Map<string, string>,
-          ) => {
-            const updateFields = (fields: Field[]) => {
-              fields.forEach((field) => {
-                if (
-                  field.type === "image_upload" &&
-                  field.value &&
-                  typeof field.value === "string"
-                ) {
-                  const newUrl = urlMap.get(field.value);
-                  if (newUrl) {
-                    field.value = newUrl;
-                  }
-                }
-              });
-            };
-
-            if (data.version.data.header_config?.fields) {
-              updateFields(data.version.data.header_config.fields);
-            }
-
-            if (data.version.data.footer_config?.fields) {
-              updateFields(data.version.data.footer_config.fields);
-            }
-
-            data.version.data.sections.forEach((section) => {
-              if (section.header_config?.fields) {
-                updateFields(section.header_config.fields);
-              }
-
-              if (section.footer_config?.fields) {
-                updateFields(section.footer_config.fields);
-              }
-
-              section.blocks.forEach((block) => {
-                updateFields(block.fields);
-              });
-
-              section.repeatable_pages?.forEach((page) => {
-                if (page.header_config?.fields) {
-                  updateFields(page.header_config.fields);
-                }
-
-                if (page.footer_config?.fields) {
-                  updateFields(page.footer_config.fields);
-                }
-
-                page.blocks.forEach((block) => {
-                  updateFields(block.fields);
-                });
-              });
-            });
-          };
-
-          // Crear mapa de URLs temporales a permanentes
-          const urlMap = new Map<string, string>();
-          tempImages.forEach((tempUrl, index) => {
-            urlMap.set(tempUrl, permanentImages[index]);
-          });
-
-          finalizedData = JSON.parse(JSON.stringify(draftData));
-          updateImageUrls(finalizedData, urlMap);
-        }
-      }
-
-      // Codificar los campos de texto antes de guardar
+      // Codificar los campos de texto después de finalizar imágenes
       const encodedData = encodeTextFields(finalizedData);
 
       let currentBulletinId = persistedBulletinId;
@@ -1850,6 +1899,7 @@ export default function FormBulletinPage({
     showToast,
     t,
     extractImageUrls,
+    finalizeBulletinImages,
   ]);
 
   const handleConfirmAction = useCallback(() => {

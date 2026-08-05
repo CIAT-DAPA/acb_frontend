@@ -453,6 +453,21 @@
       "noFieldsToComplete": "This card has no fields to complete",
       "noCardsSelected": "No cards selected. Select a card to begin."
     },
+    "imageInput": {
+      "uploadedImageAlt": "Uploaded image",
+      "remove": "Remove image",
+      "uploading": "Uploading image...",
+      "clickToUpload": "Click to upload",
+      "orDrag": "or drag an image here",
+      "formats": "Formats: {formats}",
+      "maxSize": "Maximum size: {size} MB",
+      "maxHeight": "Maximum height: {height} px",
+      "errors": {
+        "invalidFormat": "Unsupported format. Accepted formats: {formats}",
+        "fileTooLarge": "The file is too large. Maximum size: {size} MB",
+        "upload": "The image could not be uploaded. Please try again."
+      }
+    },
     "listField": {
       "items": "{count} item(s)",
       "maximum": "(maximum: {max})",
@@ -467,7 +482,9 @@
       "noItems": "No items. Click \"Add item\" to begin.",
       "icons": "Icons",
       "changeIcon": "Change icon",
-      "selectIcon": "Select icon"
+      "selectIcon": "Select icon",
+      "markHighlight": "Mark as important",
+      "removeHighlight": "Remove important mark"
     },
     "climateField": {
       "noParameters": "No climate parameters configured"
@@ -1458,7 +1475,10 @@
         "galleryPreviewLabel": "Gallery Preview",
         "previewNumber": "Preview {number}",
         "galleryPreviewHelp": "The user will be able to select one of these images",
-        "selectImageTitle": "Select Image {number}"
+        "selectImageTitle": "Select Image {number}",
+        "maxHeightLabel": "Maximum image height",
+        "maxHeightPlaceholder": "Example: 300",
+        "maxHeightHelp": "Defines the maximum height in pixels. The image will preserve its aspect ratio. Leave it empty to use its original height."
       },
       "imageUploadConfig": {
         "allowedFormatsLabel": "Allowed Image Formats",
