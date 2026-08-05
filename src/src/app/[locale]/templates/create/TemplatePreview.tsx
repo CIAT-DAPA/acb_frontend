@@ -2115,6 +2115,9 @@ export function TemplatePreview({
 
                       const isListItemSelected =
                         Boolean(listItemId) && selectedElementId === listItemId;
+                      const isHighlighted = Boolean(
+                        (item as Record<string, any>)?.__highlight,
+                      );
 
                       return (
                         <tr
@@ -2144,13 +2147,24 @@ export function TemplatePreview({
                                 }
                               : undefined
                           }
-                          className={
+                          className={[
+                            isHighlighted ? "font-bold **:font-bold!" : "",
                             canSelectListItems
                               ? isListItemSelected
                                 ? "outline-2 outline-emerald-500 cursor-pointer"
                                 : "hover:outline-2 hover:outline-emerald-300 cursor-pointer"
-                              : undefined
-                          }
+                              : "",
+                          ]
+                            .filter(Boolean)
+                            .join(" ")}
+                          style={{
+                            backgroundColor: isHighlighted
+                              ? "rgba(254, 250, 224, 0.7)"
+                              : undefined,
+                            boxShadow: isHighlighted
+                              ? "inset 0 0 0 1px rgba(221, 161, 94, 0.4)"
+                              : undefined,
+                          }}
                         >
                           {field.field_config?.item_schema &&
                             Object.entries(field.field_config.item_schema).map(
@@ -2214,6 +2228,9 @@ export function TemplatePreview({
                                         : undefined
                                     }
                                     style={{
+                                      backgroundColor: isHighlighted
+                                        ? "rgba(254, 250, 224, 0.45)"
+                                        : undefined,
                                       padding: effectiveStyles.padding || "8px",
                                       borderBottomWidth:
                                         renderItemIndex ===
@@ -2373,6 +2390,9 @@ export function TemplatePreview({
 
                   const isListItemSelected =
                     Boolean(listItemId) && selectedElementId === listItemId;
+                  const isHighlighted = Boolean(
+                    (item as Record<string, any>)?.__highlight,
+                  );
                   const itemSlice = listFieldPage?.itemSlices?.[itemIndex];
 
                   const listItemNode = (
@@ -2403,7 +2423,11 @@ export function TemplatePreview({
                         listItemsLayout === "horizontal"
                           ? "flex items-start"
                           : "flex w-full"
-                      } ${canSelectListItems ? "cursor-pointer transition-all" : ""} ${
+                      } ${isHighlighted ? "font-bold **:font-bold!" : ""} ${
+                        canSelectListItems
+                          ? "cursor-pointer transition-all"
+                          : ""
+                      } ${
                         isListItemSelected
                           ? "ring-2 ring-emerald-500"
                           : canSelectListItems
@@ -2412,6 +2436,16 @@ export function TemplatePreview({
                       }`}
                       style={{
                         ...listItemStyles,
+                        backgroundColor:
+                          isHighlighted &&
+                          (!effectiveStyles.background_color ||
+                            effectiveStyles.background_color === "transparent")
+                            ? "rgba(254, 250, 224, 0.7)"
+                            : listItemStyles.backgroundColor,
+                        boxShadow: isHighlighted
+                          ? "inset 0 0 0 1px rgba(221, 161, 94, 0.4)"
+                          : undefined,
+                        borderRadius: isHighlighted ? "8px" : undefined,
                         alignItems: effectiveStyles.align_items || "start",
                         gap: "8px",
                       }}
@@ -2696,9 +2730,7 @@ export function TemplatePreview({
         const imageConfig = field.field_config as any;
         const showImageLabel = imageConfig?.show_label ?? false;
         const configImageLabel = imageConfig?.label_text || "";
-
         const configuredImageMaxHeight = Number(imageConfig?.max_height);
-
         const imageMaxHeight =
           Number.isFinite(configuredImageMaxHeight) &&
           configuredImageMaxHeight > 0
@@ -2729,10 +2761,11 @@ export function TemplatePreview({
             <img
               src={imageUrl}
               alt={field.display_name || t("accessibility.image")}
-              className="block max-w-full object-contain"
+              className="block object-contain"
               style={{
                 width: "auto",
                 height: "auto",
+                maxWidth: "100%",
                 maxHeight: imageMaxHeight ? `${imageMaxHeight}px` : undefined,
               }}
               onError={(e) => {
@@ -2742,7 +2775,6 @@ export function TemplatePreview({
               onLoad={(e) => {
                 const img = e.target as HTMLImageElement;
                 const label = img.nextElementSibling as HTMLElement;
-
                 if (label) {
                   label.style.maxWidth = `${img.offsetWidth + 24}px`;
                 }

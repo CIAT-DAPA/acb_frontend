@@ -207,12 +207,15 @@ export function ImageInput({
         onDrop={handleDrop}
       >
         {value ? (
-          <div className="relative flex min-h-32 w-full items-center justify-center p-3">
+          <div className="relative flex w-full items-center justify-center p-3">
             <img
               src={normalizeAssetUrl(value)}
               alt={field?.label || t("uploadedImageAlt")}
-              className="block h-auto max-w-full object-contain"
+              className="block object-contain"
               style={{
+                width: "auto",
+                height: "auto",
+                maxWidth: "100%",
                 maxHeight: maxHeight ? `${maxHeight}px` : undefined,
               }}
               onError={(event) => {

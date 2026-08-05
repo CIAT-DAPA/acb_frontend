@@ -574,7 +574,9 @@
       "noItems": "Không có mục nào. Nhấn \"Thêm mục\" để bắt đầu.",
       "icons": "Biểu tượng",
       "changeIcon": "Thay đổi biểu tượng",
-      "selectIcon": "Chọn biểu tượng"
+      "selectIcon": "Chọn biểu tượng",
+      "markHighlight": "Đánh dấu là quan trọng",
+      "removeHighlight": "Bỏ đánh dấu quan trọng"
     },
     "climateField": {
       "noParameters": "Không có tham số khí hậu nào được cấu hình"

@@ -482,7 +482,9 @@
       "noItems": "No hay items. Haz clic en \"Agregar item\" para comenzar.",
       "icons": "Iconos",
       "changeIcon": "Cambiar icono",
-      "selectIcon": "Seleccionar icono"
+      "selectIcon": "Seleccionar icono",
+      "markHighlight": "Marcar como importante",
+      "removeHighlight": "Quitar marca de importante"
     },
     "climateField": {
       "noParameters": "No hay parámetros climáticos configurados"
