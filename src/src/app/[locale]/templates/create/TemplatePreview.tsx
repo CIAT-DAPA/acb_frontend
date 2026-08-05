@@ -1441,14 +1441,29 @@ export function TemplatePreview({
     return `${baseUrl}${encodedPath}`;
   };
 
-  // Helper para parsear fechas como locales
+  // Helper para parsear fechas locales sin permitir desbordamientos.
+  // Por ejemplo, 2025-15-12 ya no se convierte silenciosamente en otra fecha.
   const parseLocalDate = (date: string | Date): Date => {
-    if (typeof date !== "string") return date;
+    if (date instanceof Date) {
+      return Number.isNaN(date.getTime()) ? new Date(Number.NaN) : date;
+    }
+
     if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       const [year, month, day] = date.split("-").map(Number);
-      return new Date(year, month - 1, day);
+      const parsedDate = new Date(year, month - 1, day);
+
+      const isValidDate =
+        parsedDate.getFullYear() === year &&
+        parsedDate.getMonth() === month - 1 &&
+        parsedDate.getDate() === day;
+
+      return isValidDate ? parsedDate : new Date(Number.NaN);
     }
-    return new Date(date);
+
+    const parsedDate = new Date(date);
+    return Number.isNaN(parsedDate.getTime())
+      ? new Date(Number.NaN)
+      : parsedDate;
   };
 
   // Helper function to format dates according to field configuration

@@ -265,6 +265,125 @@ export function ListFieldEditor({
     return values.map((value) => value.replace(/^"|"$/g, ""));
   };
 
+  const buildIsoDate = (year: number, month: number, day: number) => {
+    const parsedDate = new Date(year, month - 1, day);
+
+    const isValidDate =
+      parsedDate.getFullYear() === year &&
+      parsedDate.getMonth() === month - 1 &&
+      parsedDate.getDate() === day;
+
+    if (!isValidDate) {
+      return "";
+    }
+
+    return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(
+      2,
+      "0",
+    )}`;
+  };
+
+  // El CSV usa DD/MM/YYYY, pero el estado siempre guarda YYYY-MM-DD.
+  const normalizeCsvDate = (rawValue: string) => {
+    const dateValue = rawValue.trim();
+
+    if (!dateValue) {
+      return "";
+    }
+
+    // También aceptar valores que ya vengan normalizados.
+    const isoMatch = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(dateValue);
+    if (isoMatch) {
+      return buildIsoDate(
+        Number(isoMatch[1]),
+        Number(isoMatch[2]),
+        Number(isoMatch[3]),
+      );
+    }
+
+    const dmyMatch = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(dateValue);
+    if (!dmyMatch) {
+      return "";
+    }
+
+    const day = Number(dmyMatch[1]);
+    const month = Number(dmyMatch[2]);
+    const year = Number(dmyMatch[3]);
+
+    return buildIsoDate(year, month, day);
+  };
+
+  const isEmptyValue = (rawValue: unknown): boolean => {
+    if (rawValue === null || rawValue === undefined) {
+      return true;
+    }
+
+    if (typeof rawValue === "string") {
+      return rawValue.trim() === "";
+    }
+
+    if (typeof rawValue === "number" || typeof rawValue === "boolean") {
+      return false;
+    }
+
+    if (Array.isArray(rawValue)) {
+      return rawValue.length === 0 || rawValue.every(isEmptyValue);
+    }
+
+    if (typeof rawValue === "object") {
+      const nestedValues = Object.values(rawValue as Record<string, unknown>);
+      return nestedValues.length === 0 || nestedValues.every(isEmptyValue);
+    }
+
+    return false;
+  };
+
+  const isEmptyItem = (item: unknown): boolean => {
+    if (!item || typeof item !== "object" || Array.isArray(item)) {
+      return true;
+    }
+
+    const itemValue = item as Record<string, unknown>;
+    return itemSchemaKeys.every((fieldId) => isEmptyValue(itemValue[fieldId]));
+  };
+
+  const mergeImportedItems = (importedItems: any[]) => {
+    const mergedItems = value.map((item) => ({ ...item }));
+    const affectedIndexes: number[] = [];
+    let importedIndex = 0;
+
+    // Primero ocupar los ítems existentes que estén completamente vacíos.
+    for (let itemIndex = 0; itemIndex < mergedItems.length; itemIndex++) {
+      if (importedIndex >= importedItems.length) {
+        break;
+      }
+
+      if (!isEmptyItem(mergedItems[itemIndex])) {
+        continue;
+      }
+
+      mergedItems[itemIndex] = {
+        ...mergedItems[itemIndex],
+        ...importedItems[importedIndex],
+      };
+      affectedIndexes.push(itemIndex);
+      importedIndex += 1;
+    }
+
+    // Después anexar únicamente lo que no alcanzó a ocupar un espacio vacío.
+    while (importedIndex < importedItems.length) {
+      if (maxItems && mergedItems.length >= maxItems) {
+        break;
+      }
+
+      affectedIndexes.push(mergedItems.length);
+      mergedItems.push(importedItems[importedIndex]);
+      importedIndex += 1;
+    }
+
+    return { mergedItems, affectedIndexes };
+  };
+
   const decodeCsvBuffer = (buffer: ArrayBuffer) => {
     const bytes = new Uint8Array(buffer);
 
@@ -408,20 +527,18 @@ export function ListFieldEditor({
         const values = parseCsvLine(line);
         const newItem = createEmptyItem();
 
-        // Fill date
+        // Fill date. El CSV trae DD/MM/YYYY y el estado usa YYYY-MM-DD.
         if (dateIndex !== -1 && dateFieldId) {
           const dateStr = values[dateIndex] || "";
-          // Simple parser for MM/DD/YYYY to YYYY-MM-DD if needed
-          // Assuming input is MM/DD/YYYY based on user example
-          const parts = dateStr.split("/");
-          if (parts.length === 3) {
-            newItem[dateFieldId] = `${parts[2]}-${parts[0].padStart(
-              2,
-              "0",
-            )}-${parts[1].padStart(2, "0")}`;
-          } else {
-            newItem[dateFieldId] = dateStr;
+          const normalizedDate = normalizeCsvDate(dateStr);
+
+          if (dateStr.trim() && !normalizedDate) {
+            console.warn(
+              `Fecha inválida en la fila ${i + 1}: "${dateStr}". Se esperaba DD/MM/YYYY.`,
+            );
           }
+
+          newItem[dateFieldId] = normalizedDate;
         }
 
         // Fill climate data
@@ -447,13 +564,19 @@ export function ListFieldEditor({
         newItems.push(newItem);
       }
 
-      if (newItems.length > 0) {
-        onChange([...value, ...newItems]);
-        // Expand new items
+      const importableItems = newItems.filter((item) => !isEmptyItem(item));
+
+      if (importableItems.length > 0) {
+        const { mergedItems, affectedIndexes } =
+          mergeImportedItems(importableItems);
+
+        onChange(mergedItems);
+
+        // Expandir tanto los espacios reemplazados como los ítems anexados.
         const newExpanded = new Set(expandedItems);
-        for (let i = 0; i < newItems.length; i++) {
-          newExpanded.add(value.length + i);
-        }
+        affectedIndexes.forEach((itemIndex) => {
+          newExpanded.add(itemIndex);
+        });
         setExpandedItems(newExpanded);
       }
     } finally {
@@ -818,7 +941,7 @@ export function ListFieldEditor({
                             {t("dateFormat")}
                           </p>
                           <code className="bg-gray-100 px-2 py-1 rounded text-xs text-gray-600 block w-fit">
-                            MM/DD/YYYY
+                            DD/MM/YYYY
                           </code>
                         </div>
                         <div>
