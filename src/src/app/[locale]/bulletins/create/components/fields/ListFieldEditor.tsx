@@ -726,8 +726,19 @@ export function ListFieldEditor({
       }
     };
 
-    const fieldValue =
-      value[itemIndex]?.[fieldId] ?? getDefaultValue(fieldDef.type);
+    const storedFieldValue = value[itemIndex]?.[fieldId];
+    const hasStoredFieldValue =
+      storedFieldValue !== undefined &&
+      storedFieldValue !== null &&
+      storedFieldValue !== "";
+
+    // Match TemplatePreview's resolution logic. Production bulletins may keep
+    // an existing/default image in item_schema.value while the item itself has
+    // an empty value.
+    const fieldValue = hasStoredFieldValue
+      ? storedFieldValue
+      : (fieldDef.value ?? getDefaultValue(fieldDef.type));
+
     const handleChange = (val: any) =>
       handleFieldChange(itemIndex, fieldId, val);
 
@@ -869,7 +880,7 @@ export function ListFieldEditor({
         return (
           <ImageInput
             field={imageField}
-            value={typeof fieldValue === "string" ? fieldValue : ""}
+            value={fieldValue}
             onChange={handleChange}
           />
         );
