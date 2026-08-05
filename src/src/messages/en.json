@@ -1243,7 +1243,13 @@
           }
         },
         "saving": "Saving...",
-        "saveTemplate": "Save Template"
+        "saveTemplate": "Save Template",
+        "canvasIntro": {
+          "title": "Explore the canvas",
+          "message": "Drag the background to move around the template or bulletin.",
+          "zoomHint": "Use Ctrl + scroll or the -/+ controls to zoom in and out.",
+          "dismiss": "Close help"
+        }
       },
       "title": "Field Editor",
       "basicInfo": "Basic Information",
