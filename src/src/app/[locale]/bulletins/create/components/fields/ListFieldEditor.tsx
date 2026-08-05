@@ -28,6 +28,7 @@ import {
 } from "./index";
 import { btnOutlineSecondary } from "@/app/[locale]/components/ui";
 import { VisualResourceSelector } from "../../../../templates/create/components/VisualResourceSelector";
+import { ConfirmationModal } from "../../../../components/ConfirmationModal";
 import { BulletinComment } from "@/types/bulletin";
 import { encodeReviewFieldId } from "@/utils/reviewTarget";
 
@@ -64,6 +65,7 @@ export function ListFieldEditor({
   const t = useTranslations("CreateBulletin.listField");
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set([0]));
   const [showHelp, setShowHelp] = useState(false);
+  const [showClearAllModal, setShowClearAllModal] = useState(false);
   const [showIconSelector, setShowIconSelector] = useState(false);
   const [editingIconTarget, setEditingIconTarget] = useState<{
     itemIndex: number;
@@ -694,6 +696,119 @@ export function ListFieldEditor({
     onChange(newValue);
   };
 
+  const getImageUrlFromValue = (rawValue: unknown): string => {
+    if (typeof rawValue === "string") {
+      return rawValue.trim();
+    }
+
+    if (rawValue && typeof rawValue === "object" && !Array.isArray(rawValue)) {
+      const imageValue = rawValue as { url?: unknown; path?: unknown };
+
+      if (typeof imageValue.url === "string") {
+        return imageValue.url.trim();
+      }
+
+      if (typeof imageValue.path === "string") {
+        return imageValue.path.trim();
+      }
+    }
+
+    return "";
+  };
+
+  // Encontrar imágenes temporales dentro de los ítems antes de vaciar la lista.
+  // También soporta listas anidadas y el formato histórico { url, label }.
+  const getTemporaryImageUrls = (): string[] => {
+    const temporaryUrls = new Set<string>();
+
+    const collectFromField = (fieldDef: any, rawValue: unknown) => {
+      if (fieldDef?.type === "image" || fieldDef?.type === "image_upload") {
+        const imageUrl = getImageUrlFromValue(rawValue);
+
+        if (imageUrl.includes("/bulletins/temp/")) {
+          temporaryUrls.add(imageUrl);
+        }
+
+        return;
+      }
+
+      if (fieldDef?.type === "list" && Array.isArray(rawValue)) {
+        const nestedItemSchema = fieldDef.field_config?.item_schema || {};
+
+        rawValue.forEach((nestedItem) => {
+          if (
+            !nestedItem ||
+            typeof nestedItem !== "object" ||
+            Array.isArray(nestedItem)
+          ) {
+            return;
+          }
+
+          Object.entries(nestedItemSchema).forEach(
+            ([nestedFieldId, nestedFieldDef]) => {
+              collectFromField(
+                nestedFieldDef,
+                (nestedItem as Record<string, unknown>)[nestedFieldId],
+              );
+            },
+          );
+        });
+      }
+    };
+
+    value.forEach((item) => {
+      if (!item || typeof item !== "object" || Array.isArray(item)) {
+        return;
+      }
+
+      Object.entries(itemSchema).forEach(([itemFieldId, itemFieldDef]) => {
+        collectFromField(
+          itemFieldDef,
+          (item as Record<string, unknown>)[itemFieldId],
+        );
+      });
+    });
+
+    return Array.from(temporaryUrls);
+  };
+
+  const handleConfirmClearAllItems = async () => {
+    // Cerrar el modal antes de iniciar la limpieza.
+    setShowClearAllModal(false);
+
+    const temporaryImageUrls = getTemporaryImageUrls();
+
+    // Solo se eliminan archivos temporales. Los recursos permanentes pueden
+    // estar siendo usados por otros boletines y no deben borrarse aquí.
+    if (temporaryImageUrls.length > 0) {
+      const deleteResults = await Promise.allSettled(
+        temporaryImageUrls.map((imageUrl) =>
+          fetch(
+            `/api/delete-bulletin-image?url=${encodeURIComponent(imageUrl)}`,
+            { method: "DELETE" },
+          ),
+        ),
+      );
+
+      deleteResults.forEach((result, index) => {
+        if (result.status === "rejected") {
+          console.warn(
+            "Error deleting temporary image while clearing list:",
+            temporaryImageUrls[index],
+            result.reason,
+          );
+        }
+      });
+    }
+
+    const clearedItems = Array.from({ length: minItems }, () =>
+      createEmptyItem(),
+    );
+
+    onChange(clearedItems);
+    setExpandedItems(clearedItems.length > 0 ? new Set([0]) : new Set());
+  };
+
   // Toggle expand/collapse de un item
   const toggleExpand = (index: number) => {
     const currentExpandedIndex = [...expandedItems][0];
@@ -918,6 +1033,19 @@ export function ListFieldEditor({
     }
   }, []);
 
+  const hasItemsToClear =
+    value.length > minItems ||
+    value.some(
+      (item) =>
+        !isEmptyItem(item) ||
+        Boolean(
+          item &&
+          typeof item === "object" &&
+          !Array.isArray(item) &&
+          (item as Record<string, unknown>).__highlight,
+        ),
+    );
+
   const formatReadOnlyValue = (rawValue: unknown): string => {
     if (rawValue === null || rawValue === undefined || rawValue === "") {
       return "Sin valor";
@@ -1013,6 +1141,17 @@ export function ListFieldEditor({
                 </div>
               </div>
             )}
+            <button
+              type="button"
+              onClick={() => setShowClearAllModal(true)}
+              disabled={!hasItemsToClear}
+              className="inline-flex items-center gap-2 rounded-md border border-red-300 bg-white px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:border-red-400 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+              title={t("clearAllItems")}
+            >
+              <Trash2 size={16} />
+              {t("clearAllItems")}
+            </button>
+
             <button
               type="button"
               onClick={handleAddItem}
@@ -1285,6 +1424,17 @@ export function ListFieldEditor({
           <p className="text-sm">{t("noItems")}</p>
         </div>
       )}
+
+      <ConfirmationModal
+        isOpen={showClearAllModal}
+        onClose={() => setShowClearAllModal(false)}
+        onConfirm={() => void handleConfirmClearAllItems()}
+        title={t("clearAllItemsModalTitle")}
+        message={t("clearAllItemsConfirm")}
+        confirmLabel={t("clearAllItemsModalConfirm")}
+        cancelLabel={t("clearAllItemsModalCancel")}
+        isDangerous={true}
+      />
 
       <VisualResourceSelector
         isOpen={showIconSelector}
