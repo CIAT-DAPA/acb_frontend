@@ -484,7 +484,12 @@
       "changeIcon": "Change icon",
       "selectIcon": "Select icon",
       "markHighlight": "Mark as important",
-      "removeHighlight": "Remove important mark"
+      "removeHighlight": "Remove important mark",
+      "clearAllItems": "Clear list",
+      "clearAllItemsConfirm": "Are you sure you want to remove all information from this list? This action cannot be undone.",
+      "clearAllItemsModalTitle": "Clear the entire list?",
+      "clearAllItemsModalConfirm": "Clear list",
+      "clearAllItemsModalCancel": "Cancel"
     },
     "climateField": {
       "noParameters": "No climate parameters configured"

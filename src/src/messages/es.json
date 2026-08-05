@@ -484,7 +484,12 @@
       "changeIcon": "Cambiar icono",
       "selectIcon": "Seleccionar icono",
       "markHighlight": "Marcar como importante",
-      "removeHighlight": "Quitar marca de importante"
+      "removeHighlight": "Quitar marca de importante",
+      "clearAllItems": "Vaciar lista",
+      "clearAllItemsConfirm": "¿Estás seguro de que deseas borrar toda la información de esta lista? Esta acción no se puede deshacer.",
+      "clearAllItemsModalTitle": "¿Vaciar toda la lista?",
+      "clearAllItemsModalConfirm": "Vaciar lista",
+      "clearAllItemsModalCancel": "Cancelar"
     },
     "climateField": {
       "noParameters": "No hay parámetros climáticos configurados"
