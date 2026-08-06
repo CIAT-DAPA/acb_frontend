@@ -457,6 +457,11 @@
         "empty": "Không có giá trị",
         "yes": "Có",
         "no": "Không"
+      },
+      "skippableNotice": {
+        "title": "Phần này là tùy chọn",
+        "message": "Bạn có thể tiếp tục mà không cần hoàn thành phần này. Nếu tất cả các trường có thể chỉnh sửa vẫn để trống, phần này sẽ không xuất hiện khi duyệt, xuất tệp hoặc trong bản tin đã xuất bản.",
+         "description": "Nếu bạn để trống tất cả các trường trong phần này, phần đó sẽ tự động bị bỏ qua và không xuất hiện khi xuất hoặc xuất bản bản tin."
       }
     },
     "confirmation": {
@@ -604,7 +609,8 @@
       "sectionPage": "Trang",
       "toPdf": "Đang chuyển đổi sang PDF...",
       "toZip": "Đang tạo tệp ZIP...",
-      "exportComplete": "Đã xuất xong!"
+      "exportComplete": "Đã xuất xong!",
+      "noRenderableSections": "Không có phần nào có nội dung để xuất."
     },
     "validation": {
       "requiredField": "Trường này là bắt buộc.",
@@ -1040,7 +1046,10 @@
         "blocks": "Phần",
         "noBlocks": "Không có khối nào trong phần này",
         "sectionId": "ID phần",
-        "iconUrl": "Biểu tượng đường dẫn"
+        "iconUrl": "Biểu tượng đường dẫn",
+        "skippable": "Cho phép bỏ qua phần này",
+        "skippableHelp": "Nếu người tạo bản tin để trống tất cả các trường có thể chỉnh sửa, phần này sẽ không xuất hiện khi duyệt, xuất tệp hoặc trong bản tin đã xuất bản.",
+        "repeatable": "Cho phép lặp lại phần"
       },
       "overview": {
         "page": "Trang",
@@ -1223,6 +1232,9 @@
           "header_field": "Trường Đầu trang",
           "footer_field": "Trường Chân trang"
         },
+
+        "noRenderableSections": "Không có phần nào có nội dung để hiển thị.",
+        "noSections": "Mẫu này chưa có phần nào.",
         "untitled": "Không có tiêu đề",
         "displayName": "Tên hiển thị",
         "id": "ID",

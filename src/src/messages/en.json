@@ -436,6 +436,11 @@
         "empty": "No value",
         "yes": "Yes",
         "no": "No"
+      },
+      "skippableNotice": {
+        "title": "This section is optional",
+        "message": "You can continue without completing it. If all editable fields remain empty, it will not appear in review, exports, or the published bulletin.",
+        "description": "If you leave all fields in this section empty, it will be automatically omitted and will not appear when exporting or publishing the bulletin."
       }
     },
     "fillData": {
@@ -578,7 +583,8 @@
       "sectionPage": "Page",
       "toPdf": "Converting to PDF...",
       "toZip": "Generating ZIP file...",
-      "exportComplete": "Export completed!"
+      "exportComplete": "Export completed!",
+      "noRenderableSections": "There are no sections with content to export."
     },
     "exportModal": {
       "title": "Export Content",
@@ -1083,7 +1089,10 @@
         "blocks": "Blocks",
         "noBlocks": "No blocks in this section",
         "sectionId": "Section ID",
-        "iconUrl": "Icon URL"
+        "iconUrl": "Icon URL",
+        "skippable": "Allow this section to be skipped",
+        "skippableHelp": "If the bulletin creator leaves every editable field empty, the section will not appear in review, exports, or the published bulletin.",
+        "repeatable": "Allow this section to be repeated"
       },
       "block": {
         "editName": "Edit block name",
@@ -1197,6 +1206,8 @@
           "header_field": "Header Field",
           "footer_field": "Footer Field"
         },
+        "noRenderableSections": "There are no sections with content to display.",
+        "noSections": "This template does not have any sections yet.",
         "untitled": "Untitled",
         "displayName": "Display Name",
         "id": "ID",

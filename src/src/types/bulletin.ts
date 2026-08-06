@@ -52,6 +52,7 @@ export interface BulletinSection {
   style_config?: StyleConfig;
   icon_url: string;
   repeatable?: boolean;
+  skippable?: boolean;
   header_config?: BulletinHeaderFooterConfig; // Header específico de la sección con valores
   footer_config?: BulletinHeaderFooterConfig; // Footer específico de la sección con valores
   blocks: BulletinBlock[];

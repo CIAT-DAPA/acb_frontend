@@ -1,10 +1,17 @@
-import React, { useRef, useState, useEffect, useCallback } from "react";
+import React, {
+  useRef,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import { CreateTemplateData } from "@/types/template";
 import { EditorSelection, CanvasState } from "./types";
 import { UnifiedBulletinPreview } from "@/app/[locale]/components/UnifiedBulletinPreview";
 import * as ui from "../../../components/ui";
 import { useTranslations } from "next-intl";
 import { Layers, GripVertical, Move, ZoomIn, X } from "lucide-react";
+import { shouldRenderBulletinSection } from "@/utils/sectionVisibility";
 
 type CanvasInteractionMode = "edit" | "review";
 
@@ -216,6 +223,16 @@ export const Canvas: React.FC<CanvasProps> = ({
     },
   );
 
+  const visibleSectionEntries = useMemo(
+    () =>
+      data.version.content.sections
+        .map((section, originalIndex) => ({ section, originalIndex }))
+        .filter(({ section }) =>
+          isReviewInteraction ? shouldRenderBulletinSection(section) : true,
+        ),
+    [data.version.content.sections, isReviewInteraction],
+  );
+
   useEffect(() => {
     if (!shouldRenderAllPages) {
       return;
@@ -380,12 +397,11 @@ export const Canvas: React.FC<CanvasProps> = ({
       return null;
     }
 
-    const firstPage = content.querySelector<HTMLElement>(
-      "#template-section-0-page-0",
-    );
     const firstSection = content.querySelector<HTMLElement>(
-      "#template-section-0",
+      "[id^='template-section-']",
     );
+    const firstPage =
+      firstSection?.querySelector<HTMLElement>("[id*='-page-']");
     const target = firstPage || firstSection || content;
     const bounds = getElementBounds(target);
 
@@ -1142,23 +1158,16 @@ export const Canvas: React.FC<CanvasProps> = ({
       >
         <div ref={contentRef} className="flex gap-8 origin-top-left">
           {!data.version.content.sections ||
-          data.version.content.sections.length === 0 ? (
-            <div className="w-max bg-white shadow-xl">
-              <UnifiedBulletinPreview
-                data={data}
-                variant="single"
-                reviewMode={true}
-                allowListItemSelection={isReviewInteraction}
-                allowListSubfieldEditing={interactionMode === "edit"}
-                allowCardElementSelection={isReviewInteraction}
-                onElementClick={handleElementClick}
-                selectedSectionIndex={0}
-                selectedElementId={selection.id}
-                commentCounts={isReviewInteraction ? commentCounts : undefined}
-              />
+          visibleSectionEntries.length === 0 ? (
+            <div className="w-[520px] rounded-lg border border-dashed border-gray-300 bg-white p-10 text-center shadow-xl">
+              <p className="text-sm font-medium text-gray-600">
+                {isReviewInteraction
+                  ? t("editor.noRenderableSections")
+                  : t("editor.noSections")}
+              </p>
             </div>
           ) : (
-            data.version.content.sections.map((section, index) => (
+            visibleSectionEntries.map(({ section, originalIndex: index }) => (
               <div
                 key={index}
                 id={`template-section-${index}`}
