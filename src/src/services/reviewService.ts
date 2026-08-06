@@ -1,5 +1,12 @@
 import { BaseAPIService } from "./apiConfig";
-import { ReviewHistory, ReviewComment, CommentPayload } from "../types/review";
+import {
+  ReviewHistory,
+  ReviewComment,
+  CommentPayload,
+  ReviewSession,
+  ReviewCollaborationState,
+  ReviewDecisionPayload,
+} from "../types/review";
 
 export interface APIResponse<T = any> {
   success: boolean;
@@ -65,7 +72,7 @@ export class ReviewService extends BaseAPIService {
     reviewerId: string,
   ): Promise<void> {
     return this.post(`/bulletins/reviews/${bulletinId}/assign-reviewer`, {
-      reviewer_id: reviewerId,
+      reviewer_user_id: reviewerId,
     });
   }
 
@@ -73,12 +80,22 @@ export class ReviewService extends BaseAPIService {
     return this.post(`/bulletins/reviews/${bulletinId}/open-review`);
   }
 
-  static async approveBulletin(bulletinId: string): Promise<void> {
-    return this.post(`/bulletins/reviews/${bulletinId}/approve`);
+  static async approveBulletin(
+    bulletinId: string,
+    options: ReviewDecisionPayload = {},
+  ): Promise<void> {
+    return this.post(`/bulletins/reviews/${bulletinId}/approve`, {
+      confirm_other_reviewers: options.confirm_other_reviewers ?? false,
+    });
   }
 
-  static async rejectBulletin(bulletinId: string): Promise<void> {
-    return this.post(`/bulletins/reviews/${bulletinId}/reject`);
+  static async rejectBulletin(
+    bulletinId: string,
+    options: ReviewDecisionPayload = {},
+  ): Promise<void> {
+    return this.post(`/bulletins/reviews/${bulletinId}/reject`, {
+      confirm_other_reviewers: options.confirm_other_reviewers ?? false,
+    });
   }
 
   static async reopenBulletin(bulletinId: string): Promise<void> {
@@ -91,6 +108,50 @@ export class ReviewService extends BaseAPIService {
 
   static async archiveBulletin(bulletinId: string): Promise<void> {
     return this.post(`/bulletins/reviews/${bulletinId}/archive`);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Presencia y estado de revisión colaborativa
+  // ---------------------------------------------------------------------------
+
+  static async createReviewSession(
+    bulletinId: string,
+    sessionId: string,
+  ): Promise<ReviewSession> {
+    return this.post<ReviewSession>(
+      `/bulletins/reviews/${bulletinId}/sessions`,
+      { session_id: sessionId },
+    );
+  }
+
+  static async heartbeatReviewSession(
+    bulletinId: string,
+    sessionId: string,
+  ): Promise<ReviewSession> {
+    return this.patch<ReviewSession>(
+      `/bulletins/reviews/${bulletinId}/sessions/${encodeURIComponent(
+        sessionId,
+      )}/heartbeat`,
+    );
+  }
+
+  static async closeReviewSession(
+    bulletinId: string,
+    sessionId: string,
+  ): Promise<void> {
+    return this.delete(
+      `/bulletins/reviews/${bulletinId}/sessions/${encodeURIComponent(
+        sessionId,
+      )}`,
+    );
+  }
+
+  static async getCollaborationState(
+    bulletinId: string,
+  ): Promise<ReviewCollaborationState> {
+    return this.get<ReviewCollaborationState>(
+      `/bulletins/reviews/${bulletinId}/collaboration-state`,
+    );
   }
 
   /**
@@ -131,8 +192,8 @@ export class ReviewService extends BaseAPIService {
 
   static async getReviewHistory(
     bulletinId: string,
-  ): Promise<APIResponse<ReviewHistory>> {
-    return this.get<APIResponse<ReviewHistory>>(
+  ): Promise<ReviewHistory | APIResponse<ReviewHistory>> {
+    return this.get<ReviewHistory | APIResponse<ReviewHistory>>(
       `/bulletins/reviews/${bulletinId}/review-history`,
     );
   }

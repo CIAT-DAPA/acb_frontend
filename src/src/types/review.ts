@@ -129,3 +129,92 @@ export interface ReviewHistory {
   current_status?: string;
   past_cycles?: ReviewCycle[];
 }
+
+// -----------------------------------------------------------------------------
+// Revisión colaborativa
+// -----------------------------------------------------------------------------
+
+export type BulletinReviewStatus =
+  | "draft"
+  | "pending_review"
+  | "review"
+  | "rejected"
+  | "published"
+  | "archived";
+
+export type ReviewDecisionAction = "approved" | "rejected";
+
+export interface ReviewSessionCreatePayload {
+  session_id: string;
+}
+
+export interface ReviewDecisionPayload {
+  confirm_other_reviewers?: boolean;
+}
+
+export interface ActiveReviewer {
+  user_id: string;
+  first_name?: string | null;
+  last_name?: string | null;
+  entered_at: string;
+  last_seen_at: string;
+  session_count: number;
+  is_current_user: boolean;
+}
+
+export interface ReviewSession {
+  session_id: string;
+  bulletin_id: string;
+  user_id: string;
+  first_name?: string | null;
+  last_name?: string | null;
+  entered_at: string;
+  last_seen_at: string;
+}
+
+export interface ReviewFinalDecision {
+  cycle_number: number;
+  action: ReviewDecisionAction;
+  target_status: BulletinReviewStatus | string;
+  decided_by: string;
+  decided_by_first_name?: string | null;
+  decided_by_last_name?: string | null;
+  decided_at: string;
+}
+
+export interface ReviewCollaborationState {
+  bulletin_id: string;
+  status: BulletinReviewStatus | string;
+  cycle_number?: number | null;
+  active_reviewers: ActiveReviewer[];
+  final_decision?: ReviewFinalDecision | null;
+}
+
+export type ReviewConflictCode =
+  | "OTHER_REVIEWERS_ACTIVE"
+  | "REVIEW_ALREADY_FINALIZED"
+  | "REVIEW_SESSION_ID_CONFLICT";
+
+export interface ReviewConflictDetail {
+  code: ReviewConflictCode;
+  message: string;
+  active_reviewers?: ActiveReviewer[];
+  current_status?: BulletinReviewStatus | string;
+  final_decision?: ReviewFinalDecision | null;
+}
+
+export interface ReviewConflictResponse {
+  detail: ReviewConflictDetail;
+}
+
+export const isReviewConflictDetail = (
+  value: unknown,
+): value is ReviewConflictDetail => {
+  if (!value || typeof value !== "object") return false;
+
+  const candidate = value as Partial<ReviewConflictDetail>;
+
+  return (
+    typeof candidate.code === "string" && typeof candidate.message === "string"
+  );
+};
