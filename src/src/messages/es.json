@@ -436,6 +436,11 @@
         "empty": "Sin valor",
         "yes": "Sí",
         "no": "No"
+      },
+      "skippableNotice": {
+        "title": "Esta sección es opcional",
+        "message": "Puedes continuar sin completarla. Si todos sus campos editables quedan vacíos, no aparecerá en la revisión, la exportación ni el boletín publicado.",
+        "description": "Si dejas todos los campos de esta sección vacíos, se omitirá automáticamente y no aparecerá al exportar ni al publicar el boletín."
       }
     },
     "fillData": {
@@ -578,7 +583,8 @@
       "sectionPage": "Página",
       "toPdf": "Convirtiendo a PDF...",
       "toZip": "Generando archivo ZIP...",
-      "exportComplete": "¡Exportación completada!"
+      "exportComplete": "¡Exportación completada!",
+      "noRenderableSections": "No hay secciones con contenido para exportar."
     },
     "exportModal": {
       "title": "Exportar Contenido",
@@ -1081,7 +1087,10 @@
         "blocks": "Bloques",
         "noBlocks": "No hay bloques en esta sección",
         "sectionId": "ID de Sección",
-        "iconUrl": "URL del Icono"
+        "iconUrl": "URL del Icono",
+        "skippable": "Permitir omitir esta sección",
+        "skippableHelp": "Si el creador del boletín no completa ningún campo editable, la sección no aparecerá en la revisión, la exportación ni el boletín publicado.",
+        "repeatable": "Permitir repetir esta sección"
       },
       "block": {
         "editName": "Editar nombre del bloque",
@@ -1197,6 +1206,8 @@
           "footer_field": "Campo de Pie de Página"
         },
         "untitled": "Sin Título",
+        "noRenderableSections": "No hay secciones con contenido para mostrar.",
+        "noSections": "Esta plantilla todavía no tiene secciones.",
         "displayName": "Nombre para mostrar",
         "id": "ID",
         "addBlock": "Agregar Bloque",

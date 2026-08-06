@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { CreateTemplateData } from "@/types/template";
 import {
@@ -8,6 +8,7 @@ import {
   ExportTechnicalConfig,
 } from "@/app/[locale]/components/ExportModal";
 import { UnifiedBulletinPreview } from "@/app/[locale]/components/UnifiedBulletinPreview";
+import { filterTemplateDataForOutput } from "@/utils/sectionVisibility";
 
 interface ExportStepProps {
   previewData: CreateTemplateData;
@@ -23,18 +24,21 @@ export function ExportStep({
   const t = useTranslations("CreateBulletin.export");
   const [isModalOpen, setIsModalOpen] = React.useState(false);
 
-  // Exponer la función handleExport para que pueda ser llamada desde el padre
+  const outputData = useMemo(
+    () => filterTemplateDataForOutput(previewData),
+    [previewData],
+  );
+
   React.useEffect(() => {
-    // Guardar la función de exportación en una referencia global
     (window as any).__bulletinExportHandler = () => setIsModalOpen(true);
+
+    return () => {
+      delete (window as any).__bulletinExportHandler;
+    };
   }, []);
 
-  // Función helper para calcular el número total de páginas de una sección
   const getSectionTotalPages = (section: any): number => {
     let maxPages = 1;
-
-    // Las secciones ya están flattened, así que no hay más repeatable_pages
-    // Solo contar paginación de lists y cards
 
     section.blocks?.forEach((block: any) => {
       if (block?.print === false) {
@@ -46,24 +50,22 @@ export function ExportStep({
           return;
         }
 
-        // Detectar paginación para listas
         if (field.type === "list") {
           const rawMax = field.field_config?.max_items_per_page;
           const maxItemsPerPage = rawMax ? Number(rawMax) : 0;
-
           const items = Array.isArray(field.value) ? field.value : [];
 
           if (items.length > 0 && maxItemsPerPage > 0) {
-            const pageCount = Math.ceil(items.length / maxItemsPerPage);
-            maxPages = Math.max(maxPages, pageCount);
+            maxPages = Math.max(
+              maxPages,
+              Math.ceil(items.length / maxItemsPerPage),
+            );
           }
         }
 
-        // Detectar paginación para cards (cada card es una página)
         if (field.type === "card" && Array.isArray(field.value)) {
-          const cards = field.value;
-          if (cards.length > 1) {
-            maxPages = Math.max(maxPages, cards.length);
+          if (field.value.length > 1) {
+            maxPages = Math.max(maxPages, field.value.length);
           }
         }
       });
@@ -72,7 +74,6 @@ export function ExportStep({
     return maxPages;
   };
 
-  // Configuración técnica para el export modal en modo auto
   const exportConfig: ExportTechnicalConfig = {
     containerSelector: "#bulletin-export-preview .flex.gap-8",
     itemSelectorTemplate: (sectionIndex: number, pageIndex: number) =>
@@ -84,7 +85,6 @@ export function ExportStep({
 
   return (
     <div className="space-y-6">
-      {/* Header con título y descripción */}
       <div className="bg-white rounded-lg p-6 shadow-sm border border-[#283618]/10">
         <h2 className="text-xl font-semibold text-[#283618] mb-2">
           {t("title")}
@@ -92,13 +92,18 @@ export function ExportStep({
         <p className="text-[#606c38] text-sm">{t("description")}</p>
       </div>
 
-      {/* Preview completo en modo scroll horizontal con páginas expandidas */}
+      {outputData.version.content.sections.length === 0 && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+          {t("noRenderableSections")}
+        </div>
+      )}
+
       <div
         id="bulletin-export-preview"
         className="bg-white rounded-lg shadow-sm border border-[#283618]/10 overflow-hidden"
       >
         <UnifiedBulletinPreview
-          data={previewData}
+          data={outputData}
           variant="full-scroll"
           cardEmptyStateMode="select-card"
           scrollConfig={{
@@ -112,16 +117,15 @@ export function ExportStep({
         />
       </div>
 
-      {/* Modal de exportación en modo auto-export */}
       <ExportModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         autoExport={true}
         exportConfig={exportConfig}
-        sections={previewData.version.content.sections}
-        totalSections={previewData.version.content.sections.length}
+        sections={outputData.version.content.sections}
+        totalSections={outputData.version.content.sections.length}
         contentName={bulletinName}
-        templateData={previewData}
+        templateData={outputData}
       />
     </div>
   );

@@ -309,6 +309,7 @@ export interface Section {
   icon_url: string;
   print?: boolean;
   repeatable?: boolean;
+  skippable?: boolean; // Si true, se omite del resultado cuando todos sus campos editables están vacíos
   header_config?: HeaderFooterConfig; // Header específico de la sección
   footer_config?: HeaderFooterConfig; // Footer específico de la sección
   blocks: Block[];
