@@ -13,6 +13,7 @@ import {
   generateArticleSchema,
   generateBreadcrumbSchema,
 } from "@/utils/seoUtils";
+import { filterTemplateDataForOutput } from "@/utils/sectionVisibility";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://bulletin.aclimate.org";
@@ -162,7 +163,9 @@ export default async function PublicBulletinPage({ params }: PageProps) {
   const description = buildBulletinDescription(bulletin);
   const canonicalUrl = buildCanonicalUrl(locale, templateSlug, bulletinSlug);
 
-  const templateData = bulletinToTemplateData(bulletin, bulletinSlug);
+  const templateData = filterTemplateDataForOutput(
+    bulletinToTemplateData(bulletin, bulletinSlug),
+  );
   const cardsMetadata = bulletin.cards_metadata || {};
 
   const publishedAt =

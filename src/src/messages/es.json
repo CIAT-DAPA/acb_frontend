@@ -436,6 +436,11 @@
         "empty": "Sin valor",
         "yes": "Sí",
         "no": "No"
+      },
+      "skippableNotice": {
+        "title": "Esta sección es opcional",
+        "message": "Puedes continuar sin completarla. Si todos sus campos editables quedan vacíos, no aparecerá en la revisión, la exportación ni el boletín publicado.",
+        "description": "Si dejas todos los campos de esta sección vacíos, se omitirá automáticamente y no aparecerá al exportar ni al publicar el boletín."
       }
     },
     "fillData": {
@@ -578,7 +583,8 @@
       "sectionPage": "Página",
       "toPdf": "Convirtiendo a PDF...",
       "toZip": "Generando archivo ZIP...",
-      "exportComplete": "¡Exportación completada!"
+      "exportComplete": "¡Exportación completada!",
+      "noRenderableSections": "No hay secciones con contenido para exportar."
     },
     "exportModal": {
       "title": "Exportar Contenido",
@@ -1081,7 +1087,10 @@
         "blocks": "Bloques",
         "noBlocks": "No hay bloques en esta sección",
         "sectionId": "ID de Sección",
-        "iconUrl": "URL del Icono"
+        "iconUrl": "URL del Icono",
+        "skippable": "Permitir omitir esta sección",
+        "skippableHelp": "Si el creador del boletín no completa ningún campo editable, la sección no aparecerá en la revisión, la exportación ni el boletín publicado.",
+        "repeatable": "Permitir repetir esta sección"
       },
       "block": {
         "editName": "Editar nombre del bloque",
@@ -1197,6 +1206,8 @@
           "footer_field": "Campo de Pie de Página"
         },
         "untitled": "Sin Título",
+        "noRenderableSections": "No hay secciones con contenido para mostrar.",
+        "noSections": "Esta plantilla todavía no tiene secciones.",
         "displayName": "Nombre para mostrar",
         "id": "ID",
         "addBlock": "Agregar Bloque",
@@ -2514,7 +2525,8 @@
       "pending_review": "Pendiente de revisión",
       "review": "En revisión",
       "approved": "Aprobado",
-      "rejected": "Rechazado"
+      "rejected": "Rechazado",
+      "published": "Publicado"
     },
     "elementTypes": {
       "listItem": "Elemento de lista",
@@ -2555,6 +2567,26 @@
       "pressEnterToSend": "Enter para enviar · Shift + Enter para una nueva línea",
       "replySuccess": "La respuesta se envió correctamente.",
       "replyError": "No fue posible enviar la respuesta."
+    },
+    "collaboration": {
+      "reviewingNow": "Revisando ahora:",
+      "unknownReviewer": "Otro revisor",
+      "approving": "Publicando...",
+      "otherReviewersWarning": "Hay otros revisores activos",
+      "activeReviewersLabel": "También están revisando este boletín:",
+      "confirmApproveTitle": "¿Aprobar y publicar de todas formas?",
+      "confirmRejectTitle": "¿Rechazar de todas formas?",
+      "approveWarningDescription": "Si continúas, el boletín será publicado y las demás personas ya no podrán agregar comentarios ni tomar una decisión final.",
+      "rejectWarningDescription": "Si continúas, el boletín será rechazado y las demás personas ya no podrán agregar comentarios ni tomar una decisión final.",
+      "confirmApprove": "Aprobar y publicar",
+      "confirmReject": "Rechazar boletín",
+      "cancel": "Cancelar",
+      "finalizedPublishedTitle": "La revisión ya fue finalizada",
+      "finalizedRejectedTitle": "El boletín ya fue rechazado",
+      "finalizedPublishedMessage": "{reviewer} aprobó y publicó este boletín mientras lo estabas revisando.",
+      "finalizedRejectedMessage": "{reviewer} rechazó este boletín mientras lo estabas revisando.",
+      "continueViewing": "Continuar viendo",
+      "backToReviews": "Volver a revisiones"
     }
   },
   "ReviewPage": {

@@ -25,7 +25,7 @@ import {
   MoonCalendarInput,
 } from "../components/fields";
 import { ReviewCommentThread } from "../components/ReviewCommentThread";
-import { MessageCircle } from "lucide-react";
+import { Info, MessageCircle } from "lucide-react";
 import { getListItemConstraintViolation } from "@/utils/bulletinRequiredFields";
 
 interface SectionStepProps {
@@ -900,7 +900,30 @@ export function SectionStep({
               number: sectionIndex + 1,
             })}
         </h3>
+
         <p className="text-sm text-[#606c38] mb-4">{t("description")}</p>
+
+        {section.skippable && (
+          <div
+            role="note"
+            className="mb-4 flex items-start gap-3 rounded-lg border border-[#dda15e]/40 bg-[#fefae0] px-4 py-3"
+          >
+            <div className="mt-0.5 shrink-0 rounded-full bg-[#dda15e]/20 p-1.5">
+              <Info className="h-4 w-4 text-[#bc6c25]" />
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold text-[#283618]">
+                {t("skippableNotice.title")}
+              </p>
+
+              <p className="mt-1 text-sm leading-relaxed text-[#606c38]">
+                {t("skippableNotice.description")}
+              </p>
+            </div>
+          </div>
+        )}
+
         {section.section_id &&
           renderComments(sectionComments[section.section_id])}
       </div>

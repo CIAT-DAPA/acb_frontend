@@ -1242,8 +1242,31 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                 }
                 className={ui.checkboxClass}
               />
-              Sección repetible
+              {t("sections.section.repeatable")}
             </label>
+
+            {!isCardMode && (
+              <label
+                className={`${ui.imageCardClass} cursor-pointer hover:bg-gray-50 flex items-start gap-3`}
+              >
+                <input
+                  type="checkbox"
+                  checked={Boolean((currentObject as Section)?.skippable)}
+                  onChange={(e) =>
+                    updateSection({ skippable: e.target.checked })
+                  }
+                  className={`${ui.checkboxClass} mt-0.5`}
+                />
+                <span className="min-w-0">
+                  <span className="block text-sm font-medium text-gray-700">
+                    {t("sections.section.skippable")}
+                  </span>
+                  <span className="mt-0.5 block text-[11px] leading-4 text-gray-500">
+                    {t("sections.section.skippableHelp")}
+                  </span>
+                </span>
+              </label>
+            )}
 
             <div>
               <button
