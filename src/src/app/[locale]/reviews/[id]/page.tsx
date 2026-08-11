@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import {
@@ -18,19 +18,25 @@ import {
   ExternalLink,
   Copy,
   AlertTriangle,
+  Users,
 } from "lucide-react";
 import { BulletinAPIService } from "@/services/bulletinService";
 import { ReviewService } from "@/services/reviewService";
+import { isAPIError } from "@/services/apiConfig";
 import { TemplateAPIService } from "@/services/templateService";
 import { Modal } from "@/components/Modal";
 import { useToast } from "@/components/Toast";
 import { Canvas } from "../../templates/create/editor/Canvas";
 import { EditorSelection } from "../../templates/create/editor/types";
 import {
+  ActiveReviewer,
   CommentPayload,
+  ReviewCollaborationState,
   ReviewComment,
+  ReviewFinalDecision,
   ReviewHistory,
   CommentTargetElement,
+  isReviewConflictDetail,
 } from "@/types/review";
 import {
   btnPrimary,
@@ -258,6 +264,7 @@ interface ReviewerCommentThreadItemProps {
   targetLabel?: string;
   isSelected?: boolean;
   onSelect?: () => void;
+  readOnly?: boolean;
 }
 
 function ReviewerCommentThreadItem({
@@ -269,6 +276,7 @@ function ReviewerCommentThreadItem({
   targetLabel,
   isSelected = false,
   onSelect,
+  readOnly = false,
 }: ReviewerCommentThreadItemProps) {
   const [isReplying, setIsReplying] = useState(false);
   const [replyText, setReplyText] = useState("");
@@ -340,7 +348,7 @@ function ReviewerCommentThreadItem({
         {comment.text}
       </p>
 
-      {commentId && (
+      {commentId && !readOnly && (
         <div className="mt-2 pl-8">
           <button
             type="button"
@@ -428,6 +436,7 @@ function ReviewerCommentThreadItem({
               labels={labels}
               onReply={onReply}
               depth={depth + 1}
+              readOnly={readOnly}
             />
           ))}
         </div>
@@ -524,8 +533,62 @@ export default function ReviewBulletinPage() {
   const [modalMessage, setModalMessage] = useState("");
   const [modalTitle, setModalTitle] = useState("");
   const [isRejecting, setIsRejecting] = useState(false);
+  const [isApproving, setIsApproving] = useState(false);
+
+  // Estado de revisión colaborativa. Cada pestaña tiene una sesión diferente.
+  const reviewSessionIdRef = useRef<string | null>(null);
+  const currentReviewerUserIdRef = useRef<string | null>(null);
+  const localDecisionInProgressRef = useRef(false);
+  const localDecisionCompletedRef = useRef(false);
+  const finalizedModalKeyRef = useRef<string | null>(null);
+
+  const [collaborationState, setCollaborationState] =
+    useState<ReviewCollaborationState | null>(null);
+  const [pendingDecision, setPendingDecision] = useState<
+    "approve" | "reject" | null
+  >(null);
+  const [decisionReviewers, setDecisionReviewers] = useState<ActiveReviewer[]>(
+    [],
+  );
+  const [isCollaborationConfirmOpen, setIsCollaborationConfirmOpen] =
+    useState(false);
+  const [isReviewFinalizedModalOpen, setIsReviewFinalizedModalOpen] =
+    useState(false);
+  const [finalizedDecision, setFinalizedDecision] =
+    useState<ReviewFinalDecision | null>(null);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const activeReviewers = collaborationState?.active_reviewers || [];
+  const isReviewFinalized = Boolean(
+    collaborationState && collaborationState.status !== "review",
+  );
+  const reviewActionsDisabled = isApproving || isRejecting || isReviewFinalized;
+
+  const getActiveReviewerName = (reviewer: ActiveReviewer): string => {
+    const fullName = [reviewer.first_name, reviewer.last_name]
+      .filter(Boolean)
+      .join(" ")
+      .trim();
+
+    return fullName || t("collaboration.unknownReviewer");
+  };
+
+  const getDecisionReviewerName = (
+    decision: ReviewFinalDecision | null,
+  ): string => {
+    if (!decision) return t("collaboration.unknownReviewer");
+
+    const fullName = [
+      decision.decided_by_first_name,
+      decision.decided_by_last_name,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .trim();
+
+    return fullName || t("collaboration.unknownReviewer");
+  };
 
   const mappedComments = useMemo(() => {
     if (!bulletin || !comments.length) {
@@ -1219,6 +1282,66 @@ export default function ReviewBulletinPage() {
     }
   }, [bulletin, locale, bulletinId, t]);
 
+  const applyFinalizedReviewState = useCallback(
+    (
+      status: string,
+      decision: ReviewFinalDecision | null | undefined,
+      showModal: boolean,
+    ) => {
+      setFinalizedDecision(decision || null);
+      setCollaborationState((current) => ({
+        bulletin_id: bulletinId,
+        status,
+        cycle_number: current?.cycle_number,
+        active_reviewers: current?.active_reviewers || [],
+        final_decision: decision || null,
+      }));
+
+      setBulletin((current: any) =>
+        current
+          ? {
+              ...current,
+              master: {
+                ...current.master,
+                status,
+              },
+            }
+          : current,
+      );
+
+      if (!showModal) return;
+
+      const modalKey = `${status}:${decision?.decided_at || "unknown"}`;
+      if (finalizedModalKeyRef.current === modalKey) return;
+
+      finalizedModalKeyRef.current = modalKey;
+      setIsReviewFinalizedModalOpen(true);
+    },
+    [bulletinId],
+  );
+
+  const refreshCollaborationState = useCallback(async () => {
+    const state = await ReviewService.getCollaborationState(bulletinId);
+    setCollaborationState(state);
+
+    if (state.status !== "review") {
+      const wasDecidedByCurrentUser = Boolean(
+        state.final_decision?.decided_by &&
+        state.final_decision.decided_by === currentReviewerUserIdRef.current,
+      );
+
+      applyFinalizedReviewState(
+        state.status,
+        state.final_decision,
+        !localDecisionInProgressRef.current &&
+          !localDecisionCompletedRef.current &&
+          !wasDecidedByCurrentUser,
+      );
+    }
+
+    return state;
+  }, [applyFinalizedReviewState, bulletinId]);
+
   const loadComments = useCallback(async () => {
     try {
       const response = await ReviewService.getReviewHistory(bulletinId);
@@ -1368,6 +1491,16 @@ export default function ReviewBulletinPage() {
     setBulletin(null);
     setComments([]);
     setReviewHistory(null);
+    setCollaborationState(null);
+    setPendingDecision(null);
+    setDecisionReviewers([]);
+    setFinalizedDecision(null);
+    setIsCollaborationConfirmOpen(false);
+    setIsReviewFinalizedModalOpen(false);
+    finalizedModalKeyRef.current = null;
+    localDecisionInProgressRef.current = false;
+    localDecisionCompletedRef.current = false;
+    currentReviewerUserIdRef.current = null;
     setError(null);
     setSelection({
       type: "template",
@@ -1378,10 +1511,187 @@ export default function ReviewBulletinPage() {
     void loadComments();
   }, [bulletinId, locale, loadBulletinData, loadComments]);
 
-  const handleApprove = async () => {
+  useEffect(() => {
+    if (!bulletinId || bulletin?.master?.status !== "review") {
+      return;
+    }
+
+    let disposed = false;
+    let sessionRegistered = false;
+    let registrationPromise: Promise<void> | null = null;
+    const sessionId = crypto.randomUUID();
+    reviewSessionIdRef.current = sessionId;
+
+    const ensureSessionRegistered = async (): Promise<void> => {
+      if (disposed || sessionRegistered) return;
+
+      if (registrationPromise) {
+        await registrationPromise;
+        return;
+      }
+
+      registrationPromise = (async () => {
+        try {
+          const session = await ReviewService.createReviewSession(
+            bulletinId,
+            sessionId,
+          );
+
+          // React Strict Mode can dispose an effect while the POST is in
+          // flight. Close that late-created session instead of leaking it.
+          if (disposed) {
+            await ReviewService.closeReviewSession(bulletinId, sessionId).catch(
+              () => undefined,
+            );
+            return;
+          }
+
+          sessionRegistered = true;
+          currentReviewerUserIdRef.current = session.user_id;
+          await refreshCollaborationState();
+        } catch (error) {
+          sessionRegistered = false;
+
+          if (!disposed) {
+            console.error(
+              "Error creating review collaboration session:",
+              error,
+            );
+          }
+        } finally {
+          registrationPromise = null;
+        }
+      })();
+
+      await registrationPromise;
+    };
+
+    const sendHeartbeat = async () => {
+      if (disposed) return;
+
+      if (!sessionRegistered) {
+        await ensureSessionRegistered();
+        return;
+      }
+
+      try {
+        await ReviewService.heartbeatReviewSession(bulletinId, sessionId);
+      } catch (error) {
+        // A TTL cleanup, API restart, hot reload, or an early focus event can
+        // invalidate the session. Recreate it transparently instead of
+        // leaving presence disabled for the rest of the page lifetime.
+        if (isAPIError(error) && error.status === 404) {
+          sessionRegistered = false;
+          await ensureSessionRegistered();
+          return;
+        }
+
+        if (!disposed) {
+          console.warn("Review heartbeat failed:", error);
+        }
+      }
+    };
+
+    const pollReview = async () => {
+      try {
+        await Promise.all([refreshCollaborationState(), loadComments()]);
+      } catch (error) {
+        if (!disposed) {
+          console.warn("Review collaboration polling failed:", error);
+        }
+      }
+    };
+
+    void ensureSessionRegistered();
+
+    const heartbeatTimer = window.setInterval(() => {
+      void sendHeartbeat();
+    }, 15_000);
+
+    const pollingTimer = window.setInterval(() => {
+      void pollReview();
+    }, 5_000);
+
+    const handleWindowFocus = () => {
+      void sendHeartbeat();
+      void pollReview();
+    };
+
+    window.addEventListener("focus", handleWindowFocus);
+
+    return () => {
+      disposed = true;
+      sessionRegistered = false;
+      window.clearInterval(heartbeatTimer);
+      window.clearInterval(pollingTimer);
+      window.removeEventListener("focus", handleWindowFocus);
+
+      if (reviewSessionIdRef.current === sessionId) {
+        reviewSessionIdRef.current = null;
+      }
+
+      void ReviewService.closeReviewSession(bulletinId, sessionId).catch(
+        () => undefined,
+      );
+    };
+  }, [
+    bulletin?.master?.status,
+    bulletinId,
+    loadComments,
+    refreshCollaborationState,
+  ]);
+
+  const handleDecisionConflict = (
+    error: unknown,
+    action: "approve" | "reject",
+  ): boolean => {
+    if (
+      !isAPIError(error) ||
+      error.status !== 409 ||
+      !isReviewConflictDetail(error.detail)
+    ) {
+      return false;
+    }
+
+    const detail = error.detail;
+
+    if (detail.code === "OTHER_REVIEWERS_ACTIVE") {
+      setPendingDecision(action);
+      setDecisionReviewers(detail.active_reviewers || []);
+      setIsCollaborationConfirmOpen(true);
+      return true;
+    }
+
+    if (detail.code === "REVIEW_ALREADY_FINALIZED") {
+      localDecisionInProgressRef.current = false;
+      localDecisionCompletedRef.current = false;
+
+      applyFinalizedReviewState(
+        detail.current_status ||
+          detail.final_decision?.target_status ||
+          "published",
+        detail.final_decision,
+        true,
+      );
+      return true;
+    }
+
+    return false;
+  };
+
+  const performApprove = async (confirmOtherReviewers = false) => {
+    if (isApproving || isRejecting || isReviewFinalized) return;
+
+    localDecisionInProgressRef.current = true;
+    localDecisionCompletedRef.current = false;
+    setIsApproving(true);
+
     try {
-      setLoading(true);
-      await ReviewService.approveBulletin(bulletinId);
+      await ReviewService.approveBulletin(bulletinId, {
+        confirm_other_reviewers: confirmOtherReviewers,
+      });
+      localDecisionCompletedRef.current = true;
+      applyFinalizedReviewState("published", null, false);
 
       // Successfully approved. Now let's try to get the public URL.
       let url = "";
@@ -1417,13 +1727,20 @@ export default function ReviewBulletinPage() {
       setIsSuccessModalOpen(true);
       showToast(t("successModal.title"), "success");
     } catch (error: any) {
+      localDecisionCompletedRef.current = false;
+
+      if (handleDecisionConflict(error, "approve")) {
+        return;
+      }
+
       console.error("Error approving bulletin:", error);
       showToast(t("errors.approve"), "error");
       setModalTitle(t("errors.approveTitle"));
       setModalMessage(t("errors.approve"));
       // setIsErrorModalOpen(true); // Disable modal since we use Toast now
     } finally {
-      setLoading(false);
+      localDecisionInProgressRef.current = false;
+      setIsApproving(false);
     }
   };
 
@@ -1462,6 +1779,7 @@ export default function ReviewBulletinPage() {
     pending_review: "statuses.pending_review",
     review: "statuses.review",
     approved: "statuses.approved",
+    published: "statuses.published",
     rejected: "statuses.rejected",
   } as const;
 
@@ -1472,24 +1790,93 @@ export default function ReviewBulletinPage() {
     return key ? t(key) : status.replaceAll("_", " ");
   };
 
-  const handleReject = async () => {
-    if (isRejecting) {
+  const performReject = async (confirmOtherReviewers = false) => {
+    if (isRejecting || isApproving || isReviewFinalized) {
       return;
     }
 
+    localDecisionInProgressRef.current = true;
+    localDecisionCompletedRef.current = false;
     setIsRejecting(true);
 
     try {
-      await ReviewService.rejectBulletin(bulletinId);
+      await ReviewService.rejectBulletin(bulletinId, {
+        confirm_other_reviewers: confirmOtherReviewers,
+      });
+      localDecisionCompletedRef.current = true;
+      applyFinalizedReviewState("rejected", null, false);
 
       showToast(t("rejectSuccess"), "success");
       navigateToReviews();
     } catch (error: any) {
-      console.error("Error rejecting bulletin:", error);
+      localDecisionCompletedRef.current = false;
 
+      if (handleDecisionConflict(error, "reject")) {
+        return;
+      }
+
+      console.error("Error rejecting bulletin:", error);
       showToast(t("errors.reject"), "error");
     } finally {
+      localDecisionInProgressRef.current = false;
       setIsRejecting(false);
+    }
+  };
+
+  const requestReviewDecision = async (action: "approve" | "reject") => {
+    if (reviewActionsDisabled) return;
+
+    try {
+      const state = await refreshCollaborationState();
+
+      if (state.status !== "review") {
+        applyFinalizedReviewState(state.status, state.final_decision, true);
+        return;
+      }
+
+      const otherReviewers = state.active_reviewers.filter(
+        (reviewer) => !reviewer.is_current_user || reviewer.session_count > 1,
+      );
+
+      if (otherReviewers.length > 0) {
+        setPendingDecision(action);
+        setDecisionReviewers(otherReviewers);
+        setIsCollaborationConfirmOpen(true);
+        return;
+      }
+    } catch (error) {
+      // Si la consulta previa falla, el endpoint final seguirá protegiendo
+      // la concurrencia y devolverá un 409 cuando corresponda.
+      console.warn(
+        "Could not refresh collaboration state before action:",
+        error,
+      );
+    }
+
+    if (action === "approve") {
+      await performApprove(false);
+    } else {
+      await performReject(false);
+    }
+  };
+
+  const handleApprove = () => {
+    void requestReviewDecision("approve");
+  };
+
+  const handleReject = () => {
+    void requestReviewDecision("reject");
+  };
+
+  const handleConfirmCollaborativeDecision = () => {
+    const action = pendingDecision;
+    setIsCollaborationConfirmOpen(false);
+    setPendingDecision(null);
+
+    if (action === "approve") {
+      void performApprove(true);
+    } else if (action === "reject") {
+      void performReject(true);
     }
   };
 
@@ -2069,6 +2456,21 @@ export default function ReviewBulletinPage() {
               >
                 {getStatusLabel(bulletin.master.status)}
               </span>
+
+              {activeReviewers.length > 0 && (
+                <div
+                  className="flex min-w-0 items-center gap-1.5 text-xs text-gray-500"
+                  title={activeReviewers.map(getActiveReviewerName).join(", ")}
+                >
+                  <Users className="h-3.5 w-3.5 shrink-0 text-[#606c38]" />
+                  <span className="shrink-0 font-medium text-[#606c38]">
+                    {t("collaboration.reviewingNow")}
+                  </span>
+                  <span className="max-w-72 truncate">
+                    {activeReviewers.map(getActiveReviewerName).join(", ")}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -2077,7 +2479,7 @@ export default function ReviewBulletinPage() {
           <button
             type="button"
             onClick={handleReject}
-            disabled={isRejecting}
+            disabled={reviewActionsDisabled}
             className="
               px-4 py-2 border border-red-200 text-red-600 rounded-lg
               hover:bg-red-50 flex items-center gap-2 font-medium
@@ -2095,10 +2497,17 @@ export default function ReviewBulletinPage() {
           </button>
           <button
             onClick={handleApprove}
-            className={`${btnPrimary} flex items-center gap-2 shadow-md`}
+            disabled={reviewActionsDisabled}
+            className={`${btnPrimary} flex items-center gap-2 shadow-md disabled:cursor-not-allowed disabled:opacity-60`}
           >
-            <CheckCircle className="h-5 w-5" />
-            {t("approveAndPublish")}
+            {isApproving ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <CheckCircle className="h-5 w-5" />
+            )}
+            {isApproving
+              ? t("collaboration.approving")
+              : t("approveAndPublish")}
           </button>
         </div>
       </div>
@@ -2232,6 +2641,7 @@ export default function ReviewBulletinPage() {
                         targetLabel={targetLabel}
                         isSelected={isSelected}
                         onSelect={selectCommentTarget}
+                        readOnly={isReviewFinalized}
                       />
                     );
                   })
@@ -2267,6 +2677,7 @@ export default function ReviewBulletinPage() {
                         : t("writeGeneralComment")
                     }
                     value={commentText}
+                    disabled={isReviewFinalized}
                     onChange={(e) => setCommentText(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && !e.shiftKey) {
@@ -2277,7 +2688,11 @@ export default function ReviewBulletinPage() {
                   ></textarea>
                   <button
                     onClick={saveComment}
-                    disabled={!commentText.trim() || isSubmittingComment}
+                    disabled={
+                      isReviewFinalized ||
+                      !commentText.trim() ||
+                      isSubmittingComment
+                    }
                     className="absolute bottom-3 right-3 p-1.5 rounded-md text-blue-600 hover:bg-blue-100 disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
                   >
                     {isSubmittingComment ? (
@@ -2295,6 +2710,135 @@ export default function ReviewBulletinPage() {
           )}
         </div>
       </div>
+
+      <Modal
+        isOpen={isCollaborationConfirmOpen}
+        onClose={() => {
+          if (isApproving || isRejecting) return;
+          setIsCollaborationConfirmOpen(false);
+          setPendingDecision(null);
+        }}
+        title={
+          pendingDecision === "approve"
+            ? t("collaboration.confirmApproveTitle")
+            : t("collaboration.confirmRejectTitle")
+        }
+        footer={
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setIsCollaborationConfirmOpen(false);
+                setPendingDecision(null);
+              }}
+              disabled={isApproving || isRejecting}
+              className={btnOutlineSecondary}
+            >
+              {t("collaboration.cancel")}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleConfirmCollaborativeDecision}
+              disabled={isApproving || isRejecting}
+              className={
+                pendingDecision === "reject"
+                  ? "inline-flex items-center justify-center rounded-lg bg-red-600 px-4 py-2 font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  : `${btnPrimary} disabled:cursor-not-allowed disabled:opacity-60`
+              }
+            >
+              {pendingDecision === "approve"
+                ? t("collaboration.confirmApprove")
+                : t("collaboration.confirmReject")}
+            </button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+            <div>
+              <p className="font-semibold text-amber-900">
+                {t("collaboration.otherReviewersWarning")}
+              </p>
+              <p className="mt-1 text-sm leading-relaxed text-amber-800">
+                {pendingDecision === "approve"
+                  ? t("collaboration.approveWarningDescription")
+                  : t("collaboration.rejectWarningDescription")}
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <p className="mb-2 text-sm font-medium text-gray-700">
+              {t("collaboration.activeReviewersLabel")}
+            </p>
+            <div className="space-y-2">
+              {decisionReviewers.map((reviewer) => (
+                <div
+                  key={reviewer.user_id}
+                  className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700"
+                >
+                  <Users className="h-4 w-4 text-[#606c38]" />
+                  <span>{getActiveReviewerName(reviewer)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isReviewFinalizedModalOpen}
+        onClose={() => setIsReviewFinalizedModalOpen(false)}
+        title={
+          finalizedDecision?.action === "rejected"
+            ? t("collaboration.finalizedRejectedTitle")
+            : t("collaboration.finalizedPublishedTitle")
+        }
+        footer={
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setIsReviewFinalizedModalOpen(false)}
+              className={btnOutlineSecondary}
+            >
+              {t("collaboration.continueViewing")}
+            </button>
+            <button
+              type="button"
+              onClick={navigateToReviews}
+              className={btnPrimary}
+            >
+              {t("collaboration.backToReviews")}
+            </button>
+          </div>
+        }
+      >
+        <div className="flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[#bc6c25]" />
+          <div className="min-w-0">
+            <p className="font-semibold text-gray-900">
+              {finalizedDecision?.action === "rejected"
+                ? t("collaboration.finalizedRejectedMessage", {
+                    reviewer: getDecisionReviewerName(finalizedDecision),
+                  })
+                : t("collaboration.finalizedPublishedMessage", {
+                    reviewer: getDecisionReviewerName(finalizedDecision),
+                  })}
+            </p>
+
+            {finalizedDecision?.decided_at && (
+              <p className="mt-2 text-sm text-gray-500">
+                {new Intl.DateTimeFormat(locale, {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                }).format(new Date(finalizedDecision.decided_at))}
+              </p>
+            )}
+          </div>
+        </div>
+      </Modal>
 
       {/* Success Modal (Approval with Link) */}
       <Modal

@@ -461,7 +461,7 @@
       "skippableNotice": {
         "title": "Phần này là tùy chọn",
         "message": "Bạn có thể tiếp tục mà không cần hoàn thành phần này. Nếu tất cả các trường có thể chỉnh sửa vẫn để trống, phần này sẽ không xuất hiện khi duyệt, xuất tệp hoặc trong bản tin đã xuất bản.",
-         "description": "Nếu bạn để trống tất cả các trường trong phần này, phần đó sẽ tự động bị bỏ qua và không xuất hiện khi xuất hoặc xuất bản bản tin."
+        "description": "Nếu bạn để trống tất cả các trường trong phần này, phần đó sẽ tự động bị bỏ qua và không xuất hiện khi xuất hoặc xuất bản bản tin."
       }
     },
     "confirmation": {
@@ -2368,7 +2368,8 @@
       "pending_review": "Chờ xem xét",
       "review": "Đang xem xét",
       "approved": "Đã phê duyệt",
-      "rejected": "Đã từ chối"
+      "rejected": "Đã từ chối",
+      "published": "Đã xuất bản"
     },
     "elementTypes": {
       "listItem": "Mục danh sách",
@@ -2409,6 +2410,26 @@
       "pressEnterToSend": "Nhấn Enter để gửi · Shift + Enter để xuống dòng",
       "replySuccess": "Đã gửi câu trả lời thành công.",
       "replyError": "Không thể gửi câu trả lời."
+    },
+    "collaboration": {
+      "reviewingNow": "Đang xem xét:",
+      "unknownReviewer": "Người đánh giá khác",
+      "approving": "Đang xuất bản...",
+      "otherReviewersWarning": "Có người đánh giá khác đang hoạt động",
+      "activeReviewersLabel": "Cũng đang xem xét bản tin này:",
+      "confirmApproveTitle": "Vẫn phê duyệt và xuất bản?",
+      "confirmRejectTitle": "Vẫn từ chối?",
+      "approveWarningDescription": "Nếu tiếp tục, bản tin sẽ được xuất bản và những người đánh giá khác sẽ không thể thêm nhận xét hoặc đưa ra quyết định cuối cùng.",
+      "rejectWarningDescription": "Nếu tiếp tục, bản tin sẽ bị từ chối và những người đánh giá khác sẽ không thể thêm nhận xét hoặc đưa ra quyết định cuối cùng.",
+      "confirmApprove": "Phê duyệt và xuất bản",
+      "confirmReject": "Từ chối bản tin",
+      "cancel": "Hủy",
+      "finalizedPublishedTitle": "Quá trình xem xét đã hoàn tất",
+      "finalizedRejectedTitle": "Bản tin đã bị từ chối",
+      "finalizedPublishedMessage": "{reviewer} đã phê duyệt và xuất bản bản tin này trong khi bạn đang xem xét.",
+      "finalizedRejectedMessage": "{reviewer} đã từ chối bản tin này trong khi bạn đang xem xét.",
+      "continueViewing": "Tiếp tục xem",
+      "backToReviews": "Quay lại danh sách đánh giá"
     }
   },
   "ReviewPage": {

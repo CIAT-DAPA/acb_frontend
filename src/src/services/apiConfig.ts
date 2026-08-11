@@ -8,6 +8,41 @@ export const API_CONFIG = {
   },
 } as const;
 
+export class APIError<TDetail = unknown> extends Error {
+  readonly status: number;
+  readonly statusText: string;
+  readonly detail?: TDetail;
+  readonly body?: unknown;
+
+  constructor(options: {
+    message: string;
+    status: number;
+    statusText: string;
+    detail?: TDetail;
+    body?: unknown;
+  }) {
+    super(options.message);
+    this.name = "APIError";
+    this.status = options.status;
+    this.statusText = options.statusText;
+    this.detail = options.detail;
+    this.body = options.body;
+  }
+}
+
+export const isAPIError = (error: unknown): error is APIError<unknown> => {
+  if (error instanceof APIError) return true;
+
+  if (!error || typeof error !== "object") return false;
+
+  const candidate = error as Partial<APIError<unknown>>;
+  return (
+    candidate.name === "APIError" &&
+    typeof candidate.message === "string" &&
+    typeof candidate.status === "number"
+  );
+};
+
 // Función utilitaria para crear URLs con parámetros
 export const buildURL = (
   endpoint: string,
@@ -24,78 +59,91 @@ export const buildURL = (
   return url.toString();
 };
 
+const toReadableError = (value: unknown): string => {
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => {
+        if (typeof item === "string") return item;
+
+        if (item && typeof item === "object") {
+          const maybeMsg = (item as any).msg;
+          const maybeLoc = (item as any).loc;
+
+          if (typeof maybeMsg === "string") {
+            if (Array.isArray(maybeLoc) && maybeLoc.length > 0) {
+              return `${maybeLoc.join(".")}: ${maybeMsg}`;
+            }
+            return maybeMsg;
+          }
+        }
+
+        try {
+          return JSON.stringify(item);
+        } catch {
+          return String(item);
+        }
+      })
+      .filter(Boolean)
+      .join(" | ");
+  }
+
+  if (value && typeof value === "object") {
+    const maybeMessage = (value as any).message;
+    const maybeDetail = (value as any).detail;
+
+    if (typeof maybeMessage === "string") return maybeMessage;
+    if (maybeDetail !== undefined) return toReadableError(maybeDetail);
+
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return String(value);
+    }
+  }
+
+  return "";
+};
+
 // Función utilitaria para manejar respuestas de fetch
 export const handleFetchResponse = async <T = any>(
   response: Response,
 ): Promise<T> => {
   if (!response.ok) {
     const errorText = await response.text();
-    let errorMessage: string;
+    let parsedBody: unknown = errorText;
 
-    const toReadableError = (value: unknown): string => {
-      if (typeof value === "string") return value;
-      if (typeof value === "number" || typeof value === "boolean") {
-        return String(value);
+    if (errorText) {
+      try {
+        parsedBody = JSON.parse(errorText);
+      } catch {
+        parsedBody = errorText;
       }
-
-      if (Array.isArray(value)) {
-        const parts = value
-          .map((item) => {
-            if (typeof item === "string") return item;
-
-            if (item && typeof item === "object") {
-              const maybeMsg = (item as any).msg;
-              const maybeLoc = (item as any).loc;
-
-              if (typeof maybeMsg === "string") {
-                if (Array.isArray(maybeLoc) && maybeLoc.length > 0) {
-                  return `${maybeLoc.join(".")}: ${maybeMsg}`;
-                }
-                return maybeMsg;
-              }
-            }
-
-            try {
-              return JSON.stringify(item);
-            } catch {
-              return String(item);
-            }
-          })
-          .filter(Boolean);
-
-        return parts.join(" | ");
-      }
-
-      if (value && typeof value === "object") {
-        const maybeMessage = (value as any).message;
-        const maybeDetail = (value as any).detail;
-
-        if (typeof maybeMessage === "string") return maybeMessage;
-        if (maybeDetail !== undefined) return toReadableError(maybeDetail);
-
-        try {
-          return JSON.stringify(value);
-        } catch {
-          return String(value);
-        }
-      }
-
-      return "";
-    };
-
-    try {
-      const errorJson = JSON.parse(errorText);
-      errorMessage =
-        toReadableError(errorJson.message) ||
-        toReadableError(errorJson.detail) ||
-        toReadableError(errorJson) ||
-        `HTTP ${response.status}: ${response.statusText}`;
-    } catch {
-      errorMessage =
-        errorText || `HTTP ${response.status}: ${response.statusText}`;
     }
 
-    throw new Error(errorMessage);
+    const responseObject =
+      parsedBody && typeof parsedBody === "object"
+        ? (parsedBody as Record<string, unknown>)
+        : undefined;
+
+    const detail = responseObject?.detail ?? parsedBody;
+    const errorMessage =
+      toReadableError(responseObject?.message) ||
+      toReadableError(detail) ||
+      toReadableError(parsedBody) ||
+      `HTTP ${response.status}: ${response.statusText}`;
+
+    throw new APIError({
+      message: errorMessage,
+      status: response.status,
+      statusText: response.statusText,
+      detail,
+      body: parsedBody,
+    });
   }
 
   const contentType = response.headers.get("content-type");
@@ -116,7 +164,8 @@ export const createFetchOptions = (options: RequestInit = {}): RequestInit => {
       : null;
 
   // Para FormData, no establecer Content-Type (el navegador lo hace automáticamente)
-  const isFormData = options.body instanceof FormData;
+  const isFormData =
+    typeof FormData !== "undefined" && options.body instanceof FormData;
   const headers = new Headers(isFormData ? {} : API_CONFIG.DEFAULT_HEADERS);
 
   // Agregar token de autorización si existe
@@ -159,7 +208,19 @@ export abstract class BaseAPIService {
       const response = await fetch(url, fetchOptions);
       return await handleFetchResponse<T>(response);
     } catch (error) {
-      console.error(`API Error - ${options.method || "GET"} ${url}:`, error);
+      // HTTP 4xx responses are expected application-level outcomes in flows
+      // such as collaborative-review conflicts and session recovery. Logging
+      // them with console.error makes Next.js show a development error overlay
+      // even when the caller handles the APIError correctly.
+      if (isAPIError(error) && error.status < 500) {
+        console.warn(
+          `API response - ${options.method || "GET"} ${url}:`,
+          error.message,
+        );
+      } else {
+        console.error(`API Error - ${options.method || "GET"} ${url}:`, error);
+      }
+
       throw error;
     }
   }
@@ -178,7 +239,7 @@ export abstract class BaseAPIService {
   ): Promise<T> {
     return this.request<T>(endpoint, {
       method: "POST",
-      body: data ? JSON.stringify(data) : undefined,
+      body: data !== undefined ? JSON.stringify(data) : undefined,
     });
   }
 
@@ -188,7 +249,17 @@ export abstract class BaseAPIService {
   ): Promise<T> {
     return this.request<T>(endpoint, {
       method: "PUT",
-      body: data ? JSON.stringify(data) : undefined,
+      body: data !== undefined ? JSON.stringify(data) : undefined,
+    });
+  }
+
+  protected static async patch<T = any>(
+    endpoint: string,
+    data?: any,
+  ): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: "PATCH",
+      body: data !== undefined ? JSON.stringify(data) : undefined,
     });
   }
 

@@ -2527,7 +2527,8 @@
       "pending_review": "Pending review",
       "review": "In review",
       "approved": "Approved",
-      "rejected": "Rejected"
+      "rejected": "Rejected",
+      "published": "Published"
     },
     "elementTypes": {
       "listItem": "List item",
@@ -2568,6 +2569,26 @@
       "pressEnterToSend": "Enter to send · Shift + Enter for a new line",
       "replySuccess": "The reply was sent successfully.",
       "replyError": "The reply could not be sent."
+    },
+    "collaboration": {
+      "reviewingNow": "Reviewing now:",
+      "unknownReviewer": "Another reviewer",
+      "approving": "Publishing...",
+      "otherReviewersWarning": "Other reviewers are active",
+      "activeReviewersLabel": "Also reviewing this bulletin:",
+      "confirmApproveTitle": "Approve and publish anyway?",
+      "confirmRejectTitle": "Reject anyway?",
+      "approveWarningDescription": "If you continue, the bulletin will be published and the other reviewers will no longer be able to add comments or make a final decision.",
+      "rejectWarningDescription": "If you continue, the bulletin will be rejected and the other reviewers will no longer be able to add comments or make a final decision.",
+      "confirmApprove": "Approve and publish",
+      "confirmReject": "Reject bulletin",
+      "cancel": "Cancel",
+      "finalizedPublishedTitle": "The review has already been finalized",
+      "finalizedRejectedTitle": "The bulletin has already been rejected",
+      "finalizedPublishedMessage": "{reviewer} approved and published this bulletin while you were reviewing it.",
+      "finalizedRejectedMessage": "{reviewer} rejected this bulletin while you were reviewing it.",
+      "continueViewing": "Continue viewing",
+      "backToReviews": "Back to reviews"
     }
   },
   "ReviewPage": {
