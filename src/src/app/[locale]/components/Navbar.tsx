@@ -290,6 +290,18 @@ export function Navbar() {
                 menuRef={workspacesMenuRef}
               />
             )}
+
+            {/* Link del Manual - Público */}
+            <li>
+              <a
+                href="http://docsbulletin.aclimate.org/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${NAV_BASE} ${NAV_INACTIVE}`}
+              >
+                {t("manual")}
+              </a>
+            </li>
           </ul>
 
           {/* Selector de idioma */}
@@ -403,6 +415,18 @@ export function Navbar() {
               >
                 {t("partners")}
               </Link>
+            </li>
+
+            {/* Link del Manual - Móvil - Público */}
+            <li>
+              <a
+                href="http://docsbulletin.aclimate.org/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#fefae0]/80 hover:text-[#ffaf68] transition-colors"
+              >
+                {t("manual")}
+              </a>
             </li>
           </ul>
 
