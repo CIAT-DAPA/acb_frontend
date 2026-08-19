@@ -841,15 +841,22 @@ export function ListFieldEditor({
       }
     };
 
-    const storedFieldValue = value[itemIndex]?.[fieldId];
-    const hasStoredFieldValue =
-      storedFieldValue !== undefined &&
-      storedFieldValue !== null &&
-      storedFieldValue !== "";
+    const currentItem = value[itemIndex];
+    const storedFieldValue = currentItem?.[fieldId];
+    const isImageField =
+      fieldDef.type === "image" || fieldDef.type === "image_upload";
 
-    // Match TemplatePreview's resolution logic. Production bulletins may keep
-    // an existing/default image in item_schema.value while the item itself has
-    // an empty value.
+    // Para imágenes, un string vacío significa explícitamente que el usuario
+    // eliminó la imagen. No volver al value por defecto del item_schema.
+    const hasStoredFieldValue = isImageField
+      ? Boolean(
+          currentItem &&
+          Object.prototype.hasOwnProperty.call(currentItem, fieldId),
+        )
+      : storedFieldValue !== undefined &&
+        storedFieldValue !== null &&
+        storedFieldValue !== "";
+
     const fieldValue = hasStoredFieldValue
       ? storedFieldValue
       : (fieldDef.value ?? getDefaultValue(fieldDef.type));

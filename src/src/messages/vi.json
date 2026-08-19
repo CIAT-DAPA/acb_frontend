@@ -561,6 +561,8 @@
       "formats": "Định dạng: {formats}",
       "maxSize": "Kích thước tối đa: {size} MB",
       "maxHeight": "Chiều cao tối đa: {height} px",
+      "selectFromVisualResources": "Chọn từ Tài nguyên Trực quan",
+      "selectFromVisualResourcesTitle": "Chọn hình ảnh hoặc biểu tượng",
       "errors": {
         "invalidFormat": "Định dạng không được hỗ trợ. Các định dạng được chấp nhận: {formats}",
         "fileTooLarge": "Tệp quá lớn. Kích thước tối đa: {size} MB",
