@@ -469,6 +469,8 @@
       "formats": "Formatos: {formats}",
       "maxSize": "Tamaño máximo: {size} MB",
       "maxHeight": "Altura máxima: {height} px",
+      "selectFromVisualResources": "Seleccionar de Recursos Visuales",
+      "selectFromVisualResourcesTitle": "Seleccionar imagen o icono",
       "errors": {
         "invalidFormat": "Formato no permitido. Solo se aceptan: {formats}",
         "fileTooLarge": "El archivo es demasiado grande. Tamaño máximo: {size} MB",

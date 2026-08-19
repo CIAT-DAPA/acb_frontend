@@ -2,9 +2,10 @@
 
 import React, { useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Upload, X } from "lucide-react";
+import { Upload, X, Image as ImageIcon } from "lucide-react";
 import { Field } from "../../../../../../types/template";
 import { normalizeAssetUrl } from "@/utils/assetUrl";
+import { VisualResourceSelector } from "../../../../templates/create/components/VisualResourceSelector";
 
 type ImageInputValue =
   | string
@@ -66,6 +67,8 @@ export function ImageInput({
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showVisualResourceSelector, setShowVisualResourceSelector] =
+    useState(false);
 
   const fieldConfig = (field?.field_config as any) || {};
   const imageUrl = getImageUrl(value);
@@ -228,6 +231,19 @@ export function ImageInput({
     if (file) void handleFileSelect(file);
   };
 
+  const handleVisualResourceSelect = async (resourceUrl: string) => {
+    setError(null);
+
+    // If the previous value was a temporary upload, remove that temporary
+    // file before switching to a permanent Visual Resource. Permanent Visual
+    // Resources are never deleted from here.
+    if (imageUrl && imageUrl !== resourceUrl) {
+      await deleteTemporaryImage(imageUrl);
+    }
+
+    onChange(buildNextValue(resourceUrl));
+  };
+
   return (
     <div className="space-y-2">
       <input
@@ -323,6 +339,18 @@ export function ImageInput({
         )}
       </div>
 
+      {!disabled && (
+        <button
+          type="button"
+          onClick={() => setShowVisualResourceSelector(true)}
+          disabled={uploading}
+          className="flex w-full items-center justify-center gap-2 rounded-md border border-[#283618]/30 bg-white px-4 py-2 text-sm font-medium text-[#283618] transition-colors hover:bg-[#283618]/5 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <ImageIcon className="h-4 w-4" />
+          {t("selectFromVisualResources")}
+        </button>
+      )}
+
       {error && (
         <div className="rounded-md border border-red-200 bg-red-50 p-2 text-sm text-red-600">
           {error}
@@ -332,6 +360,17 @@ export function ImageInput({
       {field?.description && (
         <p className="text-xs text-gray-500">{field.description}</p>
       )}
+
+      <VisualResourceSelector
+        isOpen={showVisualResourceSelector}
+        onClose={() => setShowVisualResourceSelector(false)}
+        onSelect={(resourceUrl) => {
+          void handleVisualResourceSelect(resourceUrl);
+        }}
+        title={t("selectFromVisualResourcesTitle")}
+        resourceType="both"
+        selectedUrl={imageUrl || undefined}
+      />
     </div>
   );
 }
