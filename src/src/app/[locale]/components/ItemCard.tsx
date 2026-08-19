@@ -67,6 +67,7 @@ export interface TemplateCardProps extends BaseItemCardProps {
   lastModified: string;
   thumbnailImages?: string[]; // Array de thumbnails de las secciones (máximo 3)
   totalSections?: number; // Número real total de secciones del template
+  totalPages?: number; // Número real total de páginas del boletín
   templateBaseName?: string; // Nombre del template base (solo para boletines)
   status?: string; // Estado del boletín (draft, published, etc.)
   reviewers?: string[]; // Personas que han participado como revisores
@@ -270,18 +271,30 @@ export default function ItemCard(props: ItemCardProps) {
 
   // Renderizar card para templates
   if (props.type === "template") {
-    // Usar totalSections si está disponible, sino usar el número de thumbnails
-    const totalSections =
-      props.totalSections || props.thumbnailImages?.length || 1;
-    const hasMutipleSections = totalSections > 1;
+    const thumbnailCount = props.thumbnailImages?.length || 0;
+    const hasMultipleThumbnails = thumbnailCount > 1;
+
+    const contentCount =
+      typeof props.totalPages === "number"
+        ? props.totalPages
+        : typeof props.totalSections === "number"
+          ? props.totalSections
+          : undefined;
+
+    const contentCountLabel =
+      typeof props.totalPages === "number"
+        ? contentCount === 1
+          ? t("page")
+          : t("pages")
+        : contentCount === 1
+          ? t("section")
+          : t("sections");
 
     return (
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow group">
         {/* Thumbnails para templates */}
         <div className="h-64 bg-gray-100 relative overflow-hidden">
-          {hasMutipleSections &&
-          props.thumbnailImages &&
-          props.thumbnailImages.length > 1 ? (
+          {hasMultipleThumbnails && props.thumbnailImages ? (
             // Mostrar grilla de thumbnails cuando hay múltiples secciones
             <div
               className="grid gap-0.5 h-full"
@@ -303,11 +316,13 @@ export default function ItemCard(props: ItemCardProps) {
                   />
                 </div>
               ))}
-              {totalSections > 3 && (
-                <div className="absolute bottom-1 right-1 bg-black/70 text-white text-xs px-2 py-0.5 rounded-full">
-                  +{totalSections - 3}
-                </div>
-              )}
+
+              {typeof props.totalSections === "number" &&
+                props.totalSections > 3 && (
+                  <div className="absolute bottom-1 right-1 bg-black/70 text-white text-xs px-2 py-0.5 rounded-full">
+                    +{props.totalSections - 3}
+                  </div>
+                )}
             </div>
           ) : (
             // Mostrar una sola imagen cuando hay una sección
@@ -334,11 +349,13 @@ export default function ItemCard(props: ItemCardProps) {
             <h3 className="font-medium text-sm text-[#283618] truncate flex-1">
               {props.name}
             </h3>
-            {hasMutipleSections && (
+
+            {contentCount !== undefined && (
               <span className="text-xs text-[#283618]/60 ml-2 whitespace-nowrap">
-                {totalSections} {totalSections === 1 ? t("page") : t("pages")}
+                {contentCount} {contentCountLabel}
               </span>
             )}
+
             {props.status && (
               <div>
                 <span className={getStatusBadgeClass(props.status)}>

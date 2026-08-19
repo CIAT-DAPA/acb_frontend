@@ -35,6 +35,7 @@ import { TemplateMaster } from "@/types/template";
 import { PreviewModal } from "../components/PreviewModal";
 import { DuplicateItemModal } from "../components/DuplicateItemModal";
 import { useAuth } from "@/hooks/useAuth";
+import { useTemplateSectionCounts } from "@/hooks/useItemCardCounts";
 
 export default function Templates() {
   const t = useTranslations("Templates");
@@ -76,6 +77,11 @@ export default function Templates() {
     null,
   );
   const { authenticated, loading: authLoading } = useAuth();
+
+  const templateSectionCounts = useTemplateSectionCounts(
+    templates,
+    authenticated && !authLoading,
+  );
 
   // Helper para obtener el nombre del autor
   const getAuthorName = (log: TemplateMaster["log"]) =>
@@ -431,7 +437,7 @@ export default function Templates() {
                         template.log.updated_at!,
                       ).toLocaleDateString()}
                       thumbnailImages={template.thumbnail_images}
-                      totalSections={template.section_count}
+                      totalSections={templateSectionCounts[template._id!]}
                       accessInfo={getAccessInfo(template)}
                       previewBtn={true}
                       onPreview={() => handlePreviewTemplate(template._id!)}

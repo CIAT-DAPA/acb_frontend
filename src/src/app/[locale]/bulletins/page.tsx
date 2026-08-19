@@ -25,6 +25,7 @@ import { DuplicateItemModal } from "../components/DuplicateItemModal";
 import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useAuth } from "@/hooks/useAuth";
+import { useBulletinPageCounts } from "@/hooks/useItemCardCounts";
 import { useParams } from "next/navigation";
 import { loadReviewSummaryBatches } from "@/utils/reviewSummaryCache";
 import {
@@ -98,6 +99,11 @@ export default function Bulletins() {
 
   const { can } = usePermissions();
   const { authenticated, loading: authLoading } = useAuth();
+
+  const bulletinPageCounts = useBulletinPageCounts(
+    bulletins,
+    authenticated && !authLoading,
+  );
 
   const getBulletinTimestamp = (bulletin: BulletinMaster): number => {
     return new Date(
@@ -717,6 +723,11 @@ export default function Bulletins() {
                             templateThumbnailsMap[
                               bulletin.base_template_master_id
                             ] || []
+                          }
+                          totalPages={
+                            bulletin._id
+                              ? bulletinPageCounts[bulletin._id]
+                              : undefined
                           }
                           accessInfo={getAccessInfo(bulletin)}
                           previewBtn={showViewBtn}
