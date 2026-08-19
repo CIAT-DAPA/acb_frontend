@@ -96,6 +96,7 @@ export interface BulletinMaster {
   access_config: AccessConfig;
   status: BulletinStatus;
   thumbnail_images?: string[]; // Opcional - imágenes de preview del boletín
+  page_count?: number; // Conteo de páginas cuando el backend lo provee
 }
 
 // ============================================

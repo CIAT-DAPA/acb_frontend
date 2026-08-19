@@ -27,6 +27,7 @@ import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { useBulletinPageCounts } from "@/hooks/useItemCardCounts";
 import { loadReviewSummaryBatches } from "@/utils/reviewSummaryCache";
 import { ReviewService } from "@/services/reviewService";
 
@@ -57,6 +58,12 @@ export default function ReviewsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [bulletins, setBulletins] = useState<BulletinMaster[]>([]);
+
+  const bulletinPageCounts = useBulletinPageCounts(
+    bulletins,
+    authenticated && !authLoading,
+  );
+
   const [templatesMap, setTemplatesMap] = useState<Record<string, string>>({});
   const [templateNameMachineMap, setTemplateNameMachineMap] = useState<
     Record<string, string>
@@ -521,6 +528,11 @@ export default function ReviewsPage() {
                     thumbnailImages={
                       templateThumbnailsMap[bulletin.base_template_master_id] ||
                       []
+                    }
+                    totalPages={
+                      bulletin._id
+                        ? bulletinPageCounts[bulletin._id]
+                        : undefined
                     }
                     previewBtn={showViewBtn}
                     onPreview={showViewBtn ? handleView : undefined}
