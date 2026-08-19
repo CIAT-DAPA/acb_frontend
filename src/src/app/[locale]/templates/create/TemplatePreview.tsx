@@ -138,6 +138,29 @@ const ACCESS_TYPE_TRANSLATION_KEYS = {
   restricted: "accessTypes.restricted",
 } as const;
 
+function resolveListItemFieldValue(
+  item: Record<string, any>,
+  fieldKey: string,
+  fieldSchema: Field,
+): Field["value"] {
+  const itemFieldValue = item[fieldKey];
+  const isImageField =
+    fieldSchema.type === "image" || fieldSchema.type === "image_upload";
+  const hasExplicitValue = Object.prototype.hasOwnProperty.call(item, fieldKey);
+
+  // Para imágenes, un string vacío es intencional: significa que el usuario
+  // eliminó la imagen. Solo usar el default si el item nunca tuvo ese campo.
+  if (isImageField && hasExplicitValue) {
+    return itemFieldValue;
+  }
+
+  return itemFieldValue !== undefined &&
+    itemFieldValue !== null &&
+    itemFieldValue !== ""
+    ? itemFieldValue
+    : fieldSchema.value;
+}
+
 function getSelectBackgroundUrlFromSection(
   section?: Section | null,
 ): string | undefined {
@@ -2173,16 +2196,13 @@ export function TemplatePreview({
                                 fieldIndex,
                                 array,
                               ) => {
-                                const itemFieldValue = (
-                                  item as Record<string, any>
-                                )[fieldKey];
                                 const fieldSchema = itemFieldSchema as Field;
                                 const resolvedItemFieldValue =
-                                  itemFieldValue !== undefined &&
-                                  itemFieldValue !== null &&
-                                  itemFieldValue !== ""
-                                    ? itemFieldValue
-                                    : fieldSchema.value;
+                                  resolveListItemFieldValue(
+                                    item as Record<string, any>,
+                                    fieldKey,
+                                    fieldSchema,
+                                  );
                                 const subfieldId = listItemId
                                   ? `${listItemId}-subfield-${fieldKey}`
                                   : undefined;
@@ -2482,17 +2502,15 @@ export function TemplatePreview({
                           0 ? (
                           Object.entries(field.field_config.item_schema).map(
                             ([fieldKey, itemFieldSchema], fieldIndex) => {
-                              // Obtener el valor del sub-field del item actual
-                              const itemFieldValue = (
-                                item as Record<string, any>
-                              )[fieldKey];
+                              // Obtener el valor del sub-field del item actual.
+                              // Un image vacío se respeta como "sin imagen".
                               const fieldSchema = itemFieldSchema as Field;
                               const resolvedItemFieldValue =
-                                itemFieldValue !== undefined &&
-                                itemFieldValue !== null &&
-                                itemFieldValue !== ""
-                                  ? itemFieldValue
-                                  : fieldSchema.value;
+                                resolveListItemFieldValue(
+                                  item as Record<string, any>,
+                                  fieldKey,
+                                  fieldSchema,
+                                );
 
                               // Determinar si el campo debe expandirse (texto) o usar ancho natural (iconos, números, etc.)
                               const shouldExpand =
@@ -2741,15 +2759,9 @@ export function TemplatePreview({
         const finalImageLabel = itemImageLabel || configImageLabel;
 
         if (!imageUrl) {
-          return (
-            <div
-              key={key}
-              style={fieldStyles}
-              className={PLACEHOLDER_CONTAINER_CLASS}
-            >
-              <span className={PLACEHOLDER_TEXT_CLASS}>{t("noImage")}</span>
-            </div>
-          );
+          // En el boletín, una imagen vacía significa realmente "sin imagen".
+          // No renderizar placeholder ni volver a un icono por defecto.
+          return null;
         }
 
         return (

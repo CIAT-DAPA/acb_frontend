@@ -665,16 +665,28 @@ export default function FormBulletinPage({
   const extractImageUrls = useCallback((data: CreateBulletinData): string[] => {
     const imageUrls: string[] = [];
 
-    const extractFromFields = (fields: Field[]) => {
-      fields.forEach((field) => {
-        if (
-          (field.type === "image" || field.type === "image_upload") &&
-          field.value &&
-          typeof field.value === "string"
-        ) {
-          imageUrls.push(field.value);
+    const extractFromValue = (value: unknown) => {
+      if (typeof value === "string") {
+        if (value.includes("/bulletins/temp/")) {
+          imageUrls.push(value);
         }
-      });
+        return;
+      }
+
+      if (Array.isArray(value)) {
+        value.forEach(extractFromValue);
+        return;
+      }
+
+      if (value && typeof value === "object" && !(value instanceof Date)) {
+        Object.values(value as Record<string, unknown>).forEach(
+          extractFromValue,
+        );
+      }
+    };
+
+    const extractFromFields = (fields: Field[]) => {
+      fields.forEach((field) => extractFromValue(field.value));
     };
 
     if (data.version.data.header_config?.fields) {
@@ -780,18 +792,29 @@ export default function FormBulletinPage({
        */
       const finalizedData = structuredClone(data);
 
+      const replaceTemporaryUrls = (value: unknown): unknown => {
+        if (typeof value === "string") {
+          return urlMap.get(value) || value;
+        }
+
+        if (Array.isArray(value)) {
+          return value.map(replaceTemporaryUrls);
+        }
+
+        if (value && typeof value === "object" && !(value instanceof Date)) {
+          return Object.fromEntries(
+            Object.entries(value as Record<string, unknown>).map(
+              ([key, nestedValue]) => [key, replaceTemporaryUrls(nestedValue)],
+            ),
+          );
+        }
+
+        return value;
+      };
+
       const updateFields = (fields?: Field[]) => {
         fields?.forEach((field) => {
-          if (
-            (field.type === "image" || field.type === "image_upload") &&
-            typeof field.value === "string"
-          ) {
-            const permanentUrl = urlMap.get(field.value);
-
-            if (permanentUrl) {
-              field.value = permanentUrl;
-            }
-          }
+          field.value = replaceTemporaryUrls(field.value) as Field["value"];
         });
       };
 
@@ -953,6 +976,12 @@ export default function FormBulletinPage({
             if (field.type === "text_with_icon") {
               // text_with_icon puede venir como string u objeto; decodificar ambos formatos
               return decodeTextWithIconValue(field.value);
+            }
+            if (field.type === "image" && field.form) {
+              // Las imágenes editables pertenecen al boletín, no al template.
+              // Aunque el template conserve un value histórico, el editor debe
+              // iniciar vacío para que el usuario suba o seleccione su imagen.
+              return "";
             }
             return field.value ?? null;
           };
