@@ -1204,6 +1204,7 @@ export const Canvas: React.FC<CanvasProps> = ({
                           data={data}
                           variant="single"
                           reviewMode={true}
+                          isCardMode={isCardMode}
                           allowListItemSelection={isReviewInteraction}
                           allowListSubfieldEditing={interactionMode === "edit"}
                           allowCardElementSelection={isReviewInteraction}

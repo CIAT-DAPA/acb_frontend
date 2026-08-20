@@ -47,6 +47,7 @@ interface UnifiedBulletinPreviewProps {
   hidePagination?: boolean;
   resolvedSectionPageCounts?: number[];
   reviewMode?: boolean;
+  isCardMode?: boolean;
   allowListItemSelection?: boolean;
   allowCardElementSelection?: boolean;
   onElementClick?: (
@@ -84,6 +85,7 @@ export function UnifiedBulletinPreview({
   hidePagination = false,
   resolvedSectionPageCounts,
   reviewMode = false,
+  isCardMode = false,
   allowListItemSelection = false,
   onElementClick,
   selectedElementId,
@@ -129,6 +131,7 @@ export function UnifiedBulletinPreview({
         cardsMetadataLoading={cardsMetadataLoading}
         resolvedSectionPageCounts={resolvedSectionPageCounts}
         reviewMode={reviewMode}
+        isCardMode={isCardMode}
         allowListItemSelection={allowListItemSelection}
         allowListSubfieldEditing={allowListSubfieldEditing}
         allowCardElementSelection={allowCardElementSelection}

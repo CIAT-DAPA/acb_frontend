@@ -107,17 +107,17 @@ export default function FormCardPage({
     const newErrors: Record<string, string[]> = {};
 
     if (currentStep === "basic-info") {
-      // Validar nombre
+      // El nombre es obligatorio
       if (!data.card_name.trim()) {
         newErrors.card_name = [t("basicInfo.errors.nameRequired")];
       }
 
-      // Validar tipo
+      // El tipo de card es obligatorio
       if (!data.card_type) {
         newErrors.card_type = [t("basicInfo.errors.typeRequired")];
       }
 
-      // Validar grupos si es restringido
+      // Si la card es restringida, debe tener al menos un grupo
       if (
         data.access_config.access_type === "restricted" &&
         (!data.access_config.allowed_groups ||
@@ -125,14 +125,13 @@ export default function FormCardPage({
       ) {
         newErrors.allowed_groups = [t("basicInfo.errors.groupsRequired")];
       }
-    } else if (currentStep === "content") {
-      // Validar que haya al menos un bloque
-      if (data.content.blocks.length === 0) {
-        newErrors.blocks = [t("content.errors.blocksRequired")];
-      }
     }
 
+    // El contenido puede estar vacío.
+    // No es obligatorio crear bloques para guardar la card.
+
     handleErrorsChange(newErrors);
+
     return Object.keys(newErrors).length === 0;
   }, [creationState, t, handleErrorsChange]);
 
@@ -156,18 +155,16 @@ export default function FormCardPage({
 
   // Función para guardar la card
   const handleSave = useCallback(async () => {
-    // Validate everything before saving
     const { data } = creationState;
+
+    // Una Card solamente necesita nombre y tipo para poder guardarse.
     if (!data.card_name.trim()) {
       showToast(t("basicInfo.errors.nameRequired"), "error");
       return;
     }
+
     if (!data.card_type) {
       showToast(t("basicInfo.errors.typeRequired"), "error");
-      return;
-    }
-    if (data.content.blocks.length === 0) {
-      showToast(t("content.errors.blocksRequired"), "error");
       return;
     }
 
@@ -182,6 +179,8 @@ export default function FormCardPage({
       if (!response.success) {
         throw new Error(response.message || "Error al guardar la card");
       }
+
+      // resto de tu código...
 
       const savedCardId = isEditMode ? cardId : response.data?._id;
       if (!savedCardId) {
