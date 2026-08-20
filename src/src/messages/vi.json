@@ -753,7 +753,20 @@
     "title": "Tạo thẻ",
     "titleEdit": "Chỉnh sửa thẻ",
     "subtitle": "Xác định nội dung mẫu (sẵn có) có thể dùng trong bản tin.",
-    "backToCards": "Quay lại Thẻ"
+    "backToCards": "Quay lại Thẻ",
+    "guide": {
+      "step": "Bước {current} / {total}",
+      "nameTitle": "Đặt tên cho thẻ",
+      "nameDescription": "Nhập tên và chọn loại thẻ để bắt đầu.",
+      "blockTitle": "Thêm khối đầu tiên",
+      "blockDescription": "Sau khi hoàn tất thông tin cơ bản, hãy chọn thẻ trên vùng thiết kế để thêm khối đầu tiên.",
+      "blockInlineDescription": "Các khối giúp tổ chức nội dung của thẻ. Hãy thêm khối đầu tiên để tiếp tục.",
+      "fieldTitle": "Thêm một trường",
+      "fieldDescription": "Chọn khối bạn vừa tạo và thêm trường đầu tiên cho nội dung của thẻ.",
+      "fieldInlineDescription": "Các trường xác định thông tin trong khối này. Hãy thêm một trường để tiếp tục làm việc.",
+      "canvasNoBlocks": "Thêm một khối để bắt đầu",
+      "canvasNoFields": "Thêm một trường để tiếp tục làm việc"
+    }
   },
   "Groups": {
     "table": {

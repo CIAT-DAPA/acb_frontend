@@ -2371,6 +2371,19 @@
       "content": "Contenido",
       "noFields": "Sin campos",
       "noContent": "No hay contenido aún"
+    },
+    "guide": {
+      "step": "Paso {current} de {total}",
+      "nameTitle": "Ponle un nombre a tu card",
+      "nameDescription": "Escribe un nombre y selecciona el tipo de card para comenzar.",
+      "blockTitle": "Agrega tu primer bloque",
+      "blockDescription": "Después de completar la información básica, selecciona la card en el lienzo para agregar el primer bloque.",
+      "blockInlineDescription": "Los bloques organizan el contenido de la card. Agrega el primero para continuar.",
+      "fieldTitle": "Agrega un campo",
+      "fieldDescription": "Selecciona el bloque que creaste y agrega el primer campo que formará parte de la card.",
+      "fieldInlineDescription": "Los campos definen la información que tendrá este bloque. Agrega uno para seguir trabajando.",
+      "canvasNoBlocks": "Agrega un bloque para comenzar",
+      "canvasNoFields": "Agrega un campo para seguir trabajando"
     }
   },
   "Dashboard": {

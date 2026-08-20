@@ -2373,6 +2373,19 @@
       "content": "Content",
       "noFields": "No fields",
       "noContent": "No content yet"
+    },
+    "guide": {
+      "step": "Step {current} of {total}",
+      "nameTitle": "Give your card a name",
+      "nameDescription": "Enter a name and select the card type to get started.",
+      "blockTitle": "Add your first block",
+      "blockDescription": "After completing the basic information, select the card on the canvas to add the first block.",
+      "blockInlineDescription": "Blocks organize the card content. Add the first one to continue.",
+      "fieldTitle": "Add a field",
+      "fieldDescription": "Select the block you created and add the first field that will be part of the card.",
+      "fieldInlineDescription": "Fields define the information in this block. Add one to keep working.",
+      "canvasNoBlocks": "Add a block to get started",
+      "canvasNoFields": "Add a field to keep working"
     }
   },
   "Dashboard": {

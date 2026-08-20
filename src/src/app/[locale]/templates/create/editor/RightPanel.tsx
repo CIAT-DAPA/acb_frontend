@@ -68,6 +68,24 @@ export const RightPanel: React.FC<RightPanelProps> = ({
 
   // Card Types state
   const [cardTypes, setCardTypes] = useState<EnumValue[]>([]);
+  const cardSection = data.version.content.sections[0];
+  const cardBlocks = cardSection?.blocks || [];
+
+  const hasCardName = Boolean(data.master.template_name?.trim());
+
+  const hasCardBlocks = cardBlocks.length > 0;
+
+  const hasCardFields = cardBlocks.some(
+    (block) => (block.fields?.length || 0) > 0,
+  );
+
+  const cardGuideStep = !hasCardName
+    ? 1
+    : !hasCardBlocks
+      ? 2
+      : !hasCardFields
+        ? 3
+        : null;
 
   // Load card types if in card mode
   React.useEffect(() => {
@@ -580,6 +598,33 @@ export const RightPanel: React.FC<RightPanelProps> = ({
         </h2>
 
         <div className="space-y-4 overflow-y-auto flex-1 pr-2">
+          {isCardMode && cardGuideStep && (
+            <div className="rounded-lg border border-[#bc6c25]/30 bg-[#bc6c25]/5 p-3">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-[#bc6c25]">
+                {tCreateCard("guide.step", {
+                  current: cardGuideStep,
+                  total: 3,
+                })}
+              </span>
+
+              <p className="mt-1 text-sm font-semibold text-[#283618]">
+                {cardGuideStep === 1
+                  ? tCreateCard("guide.nameTitle")
+                  : cardGuideStep === 2
+                    ? tCreateCard("guide.blockTitle")
+                    : tCreateCard("guide.fieldTitle")}
+              </p>
+
+              <p className="mt-1 text-xs leading-5 text-[#283618]/70">
+                {cardGuideStep === 1
+                  ? tCreateCard("guide.nameDescription")
+                  : cardGuideStep === 2
+                    ? tCreateCard("guide.blockDescription")
+                    : tCreateCard("guide.fieldDescription")}
+              </p>
+            </div>
+          )}
+
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">
               {t("basicInfo.fields.name.label")}
@@ -1268,12 +1313,26 @@ export const RightPanel: React.FC<RightPanelProps> = ({
               </label>
             )}
 
-            <div>
+            <div className="space-y-2">
+              {isCardMode &&
+                ((currentObject as Section)?.blocks?.length || 0) === 0 && (
+                  <div className="rounded-md border border-dashed border-[#bc6c25]/40 bg-[#bc6c25]/5 p-3">
+                    <p className="text-sm font-semibold text-[#283618]">
+                      {tCreateCard("guide.blockTitle")}
+                    </p>
+
+                    <p className="mt-1 text-xs leading-5 text-[#283618]/70">
+                      {tCreateCard("guide.blockInlineDescription")}
+                    </p>
+                  </div>
+                )}
+
               <button
                 onClick={handleAddBlock}
                 className={`${ui.btnOutlineSecondary} w-full justify-center border-dashed`}
               >
-                <Plus size={14} /> {t("fieldEditor.editor.addBlock")}
+                <Plus size={14} />
+                {t("fieldEditor.editor.addBlock")}
               </button>
             </div>
 
@@ -1675,12 +1734,26 @@ export const RightPanel: React.FC<RightPanelProps> = ({
               {t("fieldEditor.editor.visibility.print")}
             </label>
 
-            <div>
+            <div className="space-y-2">
+              {isCardMode &&
+                ((currentObject as Block)?.fields?.length || 0) === 0 && (
+                  <div className="rounded-md border border-dashed border-[#bc6c25]/40 bg-[#bc6c25]/5 p-3">
+                    <p className="text-sm font-semibold text-[#283618]">
+                      {tCreateCard("guide.fieldTitle")}
+                    </p>
+
+                    <p className="mt-1 text-xs leading-5 text-[#283618]/70">
+                      {tCreateCard("guide.fieldInlineDescription")}
+                    </p>
+                  </div>
+                )}
+
               <button
                 onClick={handleAddField}
                 className={`${ui.btnOutlineSecondary} w-full justify-center border-dashed`}
               >
-                <Plus size={14} /> {t("fieldEditor.editor.addField")}
+                <Plus size={14} />
+                {t("fieldEditor.editor.addField")}
               </button>
             </div>
 
