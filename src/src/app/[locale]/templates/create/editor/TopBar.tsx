@@ -42,7 +42,11 @@ export const TopBar: React.FC<TopBarProps> = ({
             type="text"
             value={templateName}
             onChange={(e) => onNameChange(e.target.value)}
-            placeholder={t("basicInfo.fields.name.placeholder")}
+            placeholder={
+              isCardMode
+                ? tCards("basicInfo.namePlaceholder")
+                : t("basicInfo.fields.name.placeholder")
+            }
             className="text-lg font-medium text-gray-900 border-none outline-none focus:ring-0 bg-transparent p-0 placeholder:text-gray-400"
           />
         </div>

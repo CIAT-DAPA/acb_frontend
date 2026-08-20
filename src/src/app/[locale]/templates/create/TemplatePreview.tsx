@@ -1148,6 +1148,7 @@ interface TemplatePreviewProps {
   cardsMetadataLoading?: boolean; // Indica que un contenedor padre está precargando cards
   resolvedSectionPageCounts?: number[]; // Cantidad de páginas reales por sección para page numbers globales
   reviewMode?: boolean;
+  isCardMode?: boolean;
   onElementClick?: (
     type:
       | "section"
@@ -1198,6 +1199,7 @@ export function TemplatePreview({
   cardsMetadataLoading = false,
   resolvedSectionPageCounts,
   reviewMode = false,
+  isCardMode = false,
   allowListItemSelection = false,
   onElementClick,
   selectedElementId,
@@ -1208,6 +1210,7 @@ export function TemplatePreview({
   allowCardElementSelection = false,
 }: TemplatePreviewProps) {
   const t = useTranslations("CreateTemplate.preview");
+  const tCreateCard = useTranslations("CreateCard");
 
   const getPreviewStatusLabel = (status?: string) => {
     if (!status) {
@@ -3978,7 +3981,9 @@ export function TemplatePreview({
         >
           {visibleFields.length === 0 ? (
             <div className="text-sm text-[#283618]/50 italic">
-              {t("noFieldsInBlock")}
+              {isCardMode
+                ? tCreateCard("guide.canvasNoFields")
+                : t("noFieldsInBlock")}
             </div>
           ) : (
             visibleFields.map((field, fieldIndex) => (
@@ -5401,7 +5406,9 @@ export function TemplatePreview({
                         <div className="space-y-1 w-full flex-1 flex flex-col overflow-hidden">
                           {blockEntries.length === 0 ? (
                             <div className="text-sm text-[#283618]/50 italic pl-4">
-                              {t("noBlocksInSection")}
+                              {isCardMode
+                                ? tCreateCard("guide.canvasNoBlocks")
+                                : t("noBlocksInSection")}
                             </div>
                           ) : (
                             blockEntries.map(
@@ -5540,7 +5547,11 @@ export function TemplatePreview({
                                         if (bulletinFields.length === 0) {
                                           return (
                                             <div className="text-sm text-[#283618]/50 italic">
-                                              {t("noFieldsInBlock")}
+                                              {isCardMode
+                                                ? tCreateCard(
+                                                    "guide.canvasNoFields",
+                                                  )
+                                                : t("noFieldsInBlock")}
                                             </div>
                                           );
                                         }
