@@ -1996,7 +1996,6 @@
       "review": "Gestionar proceso de revisión",
       "cardManagement": "Gestionar cards reutilizables",
       "accessControl": "Gestionar usuarios y roles",
-      "visualResources": "Gestionar imágenes e iconos de Recursos Visuales",
       "crudNote": "Cada módulo puede tener permisos de {create}, {read}, {update} y {delete} (CRUD).",
       "create": "Crear",
       "read": "Leer",
@@ -2064,10 +2063,6 @@
       "accesscontrol": {
         "name": "Control de Acceso",
         "description": "Gestionar usuarios, roles y grupos"
-      },
-      "visualresources": {
-        "name": "Recursos Visuales",
-        "description": "Gestionar imágenes e iconos disponibles en Recursos Visuales"
       }
     },
     "crud": {

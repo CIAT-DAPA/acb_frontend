@@ -36,25 +36,27 @@ export function Navbar() {
       name: t("templates"),
       path: "/templates",
       requiresAuth: true,
-      module: MODULES.TEMPLATE_MANAGEMENT,
+      modules: [MODULES.TEMPLATE_MANAGEMENT],
     },
     {
       name: t("cards"),
       path: "/cards",
       requiresAuth: true,
-      module: MODULES.CARD_MANAGEMENT,
+      modules: [MODULES.CARD_MANAGEMENT],
     },
     {
       name: t("visualResources"),
       path: "/templates/visual-resources",
       requiresAuth: true,
-      module: MODULES.VISUAL_RESOURCES,
+      modules: [MODULES.TEMPLATE_MANAGEMENT, MODULES.CARD_MANAGEMENT],
     },
   ];
 
   // Filtrar items de configuración según permisos
   const VISIBLE_CONFIG_ITEMS = CONFIG_ITEMS.filter(
-    (item) => !item.requiresAuth || (authenticated && can("r", item.module)),
+    (item) =>
+      !item.requiresAuth ||
+      (authenticated && item.modules.some((module) => can("r", module))),
   );
 
   // Verificar si el usuario puede ver bulletins

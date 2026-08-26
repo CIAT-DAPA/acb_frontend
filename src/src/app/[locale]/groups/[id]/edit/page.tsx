@@ -28,7 +28,6 @@ import {
 } from "../../../components/ui";
 import { GroupAPIService } from "@/services/groupService";
 import { RoleAPIService } from "@/services/roleService";
-import { UserService } from "@/services/userService";
 import { GroupUserRole } from "@/types/groups";
 import { Role } from "@/types/roles";
 import { User } from "@/types/user";
@@ -89,8 +88,7 @@ export default function EditGroupPage() {
     setUserLoadError(null);
 
     try {
-      // El selector necesita candidatos, no solo los primeros 10 usuarios.
-      const response = await UserService.getActiveUsers({ limit: 1000 });
+      const response = await GroupAPIService.getAvailableUsers(groupId);
 
       if (response.success && response.data) {
         setUsers(response.data);

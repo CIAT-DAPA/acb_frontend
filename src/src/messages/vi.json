@@ -69,7 +69,6 @@
       "review": "Quản lý quy trình đánh giá",
       "cardManagement": "Quản lý các thẻ có thể tái sử dụng",
       "accessControl": "Quản lý người dùng và vai trò",
-      "visualResources": "Quản lý hình ảnh và biểu tượng trong Tài nguyên trực quan",
       "crudNote": "Mỗi mô-đun có thể có các quyền {create}, {read}, {update} và {delete} (CRUD)."
     },
     "title": "Quản lý Quyền hạn theo Vai trò",
@@ -1010,10 +1009,6 @@
       "accesscontrol": {
         "name": "Kiểm soát truy cập",
         "description": "Quản lý người dùng, vai trò và nhóm"
-      },
-      "visualresources": {
-        "name": "Tài nguyên trực quan",
-        "description": "Quản lý hình ảnh và biểu tượng có sẵn trong Tài nguyên trực quan"
       }
     },
     "backToRoles": "Quay lại Vai trò",

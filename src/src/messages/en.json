@@ -1998,7 +1998,6 @@
       "review": "Manage review process",
       "cardManagement": "Manage reusable cards",
       "accessControl": "Manage users and roles",
-      "visualResources": "Manage images and icons in Visual Resources",
       "crudNote": "Each module can have {create}, {read}, {update}, and {delete} permissions (CRUD).",
       "create": "Create",
       "read": "Read",
@@ -2066,10 +2065,6 @@
       "accesscontrol": {
         "name": "Access Control",
         "description": "Manage users, roles and groups"
-      },
-      "visualresources": {
-        "name": "Visual Resources",
-        "description": "Manage images and icons available in Visual Resources"
       }
     },
     "crud": {

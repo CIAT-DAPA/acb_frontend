@@ -17,6 +17,7 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
   fallback?: React.ReactNode;
   requiredPermission?: PermissionRequirement;
+  requiredAnyPermission?: PermissionRequirement[];
   requireSuperadmin?: boolean;
 }
 
@@ -24,6 +25,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   fallback,
   requiredPermission,
+  requiredAnyPermission,
   requireSuperadmin,
 }) => {
   const {
@@ -86,7 +88,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // Si se requiere permiso adicional, verificarlo
-  if (requiredPermission || requireSuperadmin) {
+  if (
+    requiredPermission ||
+    requiredAnyPermission?.length ||
+    requireSuperadmin
+  ) {
     const lacksPermission = requiredPermission
       ? !can(
           requiredPermission.action,
@@ -95,9 +101,19 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         )
       : false;
 
+    const lacksAnyPermission = requiredAnyPermission?.length
+      ? !requiredAnyPermission.some((permission) =>
+          can(
+            permission.action,
+            permission.module,
+            permission.resourceGroupIds,
+          ),
+        )
+      : false;
+
     const lacksSuperadmin = !!requireSuperadmin && !isSuperadmin;
 
-    if (lacksPermission || lacksSuperadmin) {
+    if (lacksPermission || lacksAnyPermission || lacksSuperadmin) {
       return (
         <div className="min-h-screen flex items-center justify-center px-4">
           <div className="text-center p-6">
