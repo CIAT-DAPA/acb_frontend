@@ -441,8 +441,8 @@ export default function RolesPage() {
                 <div className="flex items-start gap-2">
                   <span className="font-medium">•</span>
                   <span>
-                    <strong>external_integrations:</strong>{" "}
-                    {t("permissionsInfo.externalIntegrations")}
+                    <strong>visual_resources:</strong>{" "}
+                    {t("permissionsInfo.visualResources")}
                   </span>
                 </div>
               </div>

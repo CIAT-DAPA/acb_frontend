@@ -34,7 +34,7 @@ export interface RolePermissions {
   review: CRUDPermissions; // Permisos para gestionar el proceso de revisión
   card_management: CRUDPermissions; // Permisos para gestionar cards o contenidos reutilizables
   access_control: CRUDPermissions; // Permisos para gestionar usuarios, roles y grupos
-  external_integrations: CRUDPermissions; // Permisos para gestionar integraciones externas
+  visual_resources: CRUDPermissions; // Permisos para gestionar imágenes e iconos de Visual Resources
 }
 
 // ============================================

@@ -48,7 +48,7 @@ export function Navbar() {
       name: t("visualResources"),
       path: "/templates/visual-resources",
       requiresAuth: true,
-      module: MODULES.TEMPLATE_MANAGEMENT, // Usar el mismo módulo que templates
+      module: MODULES.VISUAL_RESOURCES,
     },
   ];
 

@@ -63,7 +63,7 @@ export default function CreateRolePage() {
     review: { c: false, r: false, u: false, d: false },
     card_management: { c: false, r: false, u: false, d: false },
     access_control: { c: false, r: false, u: false, d: false },
-    external_integrations: { c: false, r: false, u: false, d: false },
+    visual_resources: { c: false, r: false, u: false, d: false },
   });
 
   // Estados de UI
@@ -346,7 +346,7 @@ export default function CreateRolePage() {
                           "review",
                           "card_management",
                           "access_control",
-                          "external_integrations",
+                          "visual_resources",
                         ] as PermissionModule[]
                       ).map((module) => {
                         const modulePerms = permissions[module];

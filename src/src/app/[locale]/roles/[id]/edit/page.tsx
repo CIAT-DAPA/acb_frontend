@@ -63,7 +63,7 @@ export default function EditRolePage() {
     review: { c: false, r: false, u: false, d: false },
     card_management: { c: false, r: false, u: false, d: false },
     access_control: { c: false, r: false, u: false, d: false },
-    external_integrations: { c: false, r: false, u: false, d: false },
+    visual_resources: { c: false, r: false, u: false, d: false },
   });
 
   // Estados de UI
@@ -105,8 +105,8 @@ export default function EditRolePage() {
           access_control:
             role.permissions.access_control ||
             ({ c: false, r: false, u: false, d: false } as const),
-          external_integrations:
-            role.permissions.external_integrations ||
+          visual_resources:
+            role.permissions.visual_resources ||
             ({ c: false, r: false, u: false, d: false } as const),
         });
       } else {
@@ -414,7 +414,7 @@ export default function EditRolePage() {
                           "review",
                           "card_management",
                           "access_control",
-                          "external_integrations",
+                          "visual_resources",
                         ] as PermissionModule[]
                       ).map((module) => {
                         const modulePerms = permissions[module];

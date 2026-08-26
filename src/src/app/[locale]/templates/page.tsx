@@ -1,201 +1,115 @@
 "use client";
 
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
 import {
-  Plus,
+  ArrowLeft,
+  Upload,
   Search,
-  Loader2,
+  Image as ImageIcon,
   Trash2,
-  X,
+  Loader2,
   AlertCircle,
-  FileText,
-  Calendar,
-  User,
+  Save,
+  X,
 } from "lucide-react";
 import Image from "next/image";
-import ItemCard, { AccessInfo } from "../components/ItemCard";
-import { TemplateAPIService } from "../../../services/templateService";
-import { GroupAPIService } from "../../../services/groupService";
 import { ProtectedRoute } from "../../../components/ProtectedRoute";
-import usePermissions from "@/hooks/usePermissions";
-import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
-import { useToast } from "../../../components/Toast";
+import ItemCard from "../components/ItemCard";
 import {
   container,
   btnPrimary,
-  btnOutlineSecondary,
   searchField,
   pageTitle,
   pageSubtitle,
+  inputField,
+  btnOutlineSecondary,
 } from "../components/ui";
-import { TemplateMaster } from "@/types/template";
-import { PreviewModal } from "../components/PreviewModal";
-import { DuplicateItemModal } from "../components/DuplicateItemModal";
-import { useAuth } from "@/hooks/useAuth";
-import { useTemplateSectionCounts } from "@/hooks/useItemCardCounts";
+import { VisualResource } from "@/types/visualResource";
+import { VisualResourcesService } from "@/services/visualResourcesService";
+import { useToast } from "../../../components/Toast";
+import { normalizeAssetUrl, toAbsoluteAssetUrl } from "@/utils/assetUrl";
+import usePermissions from "@/hooks/usePermissions";
+import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
 
-export default function Templates() {
-  const t = useTranslations("Templates");
-  const tNavbar = useTranslations("Navbar");
-
-  // Establecer el título de la página
-  useEffect(() => {
-    document.title = `Bulletin builder - ${tNavbar("templates")}`;
-  }, [tNavbar]);
+export default function VisualResources() {
+  const t = useTranslations("VisualResources");
   const { showToast } = useToast();
   const { can } = usePermissions();
-  const params = useParams();
-  const locale = params.locale as string;
   const [searchTerm, setSearchTerm] = useState("");
-  const [templates, setTemplates] = useState<TemplateMaster[]>([]);
-  const [filteredTemplates, setFilteredTemplates] = useState<TemplateMaster[]>(
-    [],
-  );
-  const [loading, setLoading] = useState(true);
+  const [filterType, setFilterType] = useState<"all" | "image" | "icon">("all");
+  const [allResources, setAllResources] = useState<VisualResource[]>([]); // Todos los recursos originales
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedResource, setSelectedResource] =
+    useState<VisualResource | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [templateToDelete, setTemplateToDelete] =
-    useState<TemplateMaster | null>(null);
+  const [resourceToDelete, setResourceToDelete] =
+    useState<VisualResource | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
-  const [templateToDuplicate, setTemplateToDuplicate] =
-    useState<TemplateMaster | null>(null);
-  const [isDuplicating, setIsDuplicating] = useState(false);
-  const [duplicateTemplateName, setDuplicateTemplateName] = useState("");
-  const [duplicateTemplateDescription, setDuplicateTemplateDescription] =
-    useState("");
 
-  // State for groups
-  const [groupsMap, setGroupsMap] = useState<Record<string, string>>({});
+  // Estados para la edición
+  const [editForm, setEditForm] = useState({
+    file_name: "",
+    file_type: "image" as "image" | "icon",
+    access_type: "public" as "public" | "private" | "restricted",
+    group_name: "",
+  });
+  const [isEditing, setIsEditing] = useState(false);
+  const [availableGroups, setAvailableGroups] = useState<string[]>([]);
 
-  // Estados para el modal de preview
-  const [showPreviewModal, setShowPreviewModal] = useState(false);
-  const [previewTemplateId, setPreviewTemplateId] = useState<string | null>(
-    null,
-  );
-  const { authenticated, loading: authLoading } = useAuth();
-
-  const templateSectionCounts = useTemplateSectionCounts(
-    templates,
-    authenticated && !authLoading,
-  );
-
-  // Helper para obtener el nombre del autor
-  const getAuthorName = (log: TemplateMaster["log"]) =>
-    `${log.updater_first_name || ""} ${log.updater_last_name || ""}`.trim() ||
-    `${log.creator_first_name || ""} ${log.creator_last_name || ""}`.trim();
-
-  const getTemplateTimestamp = (template: TemplateMaster): number => {
+  const getResourceTimestamp = (resource: VisualResource): number => {
     return new Date(
-      template.log?.updated_at || template.log?.created_at || 0,
+      resource.log?.updated_at || resource.log?.created_at || 0,
     ).getTime();
   };
 
-  // Cargar templates solo cuando la autenticación ya está resuelta
-  useEffect(() => {
-    if (authLoading) {
-      return;
-    }
+  const getResourceGroupIds = (resource: VisualResource) =>
+    resource.access_config.access_type === "restricted"
+      ? resource.access_config.allowed_groups
+      : undefined;
 
-    if (!authenticated) {
-      setLoading(false);
-      setError(null);
-      return;
-    }
+  const canCreateVisualResource = can(
+    PERMISSION_ACTIONS.Create,
+    MODULES.VISUAL_RESOURCES,
+  );
 
-    loadTemplates();
-  }, [authLoading, authenticated]);
-
-  // Función para cargar templates desde la API
-  const loadTemplates = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await TemplateAPIService.getTemplates();
-      const templatesActive = (response.data || []).filter(
-        (template) => template.status === "active",
-      );
-      const sortedTemplates = [...templatesActive].sort(
-        (a, b) => getTemplateTimestamp(b) - getTemplateTimestamp(a),
-      );
-
-      if (response.success) {
-        setTemplates(sortedTemplates);
-        setFilteredTemplates(sortedTemplates);
-
-        // Cargar grupos para mapear IDs a nombres
-        const groupsResponse = await GroupAPIService.getGroups();
-        if (groupsResponse.success) {
-          const newGroupsMap: Record<string, string> = {};
-          groupsResponse.data.forEach((group) => {
-            newGroupsMap[group._id!] = group.group_name;
-          });
-          setGroupsMap(newGroupsMap);
-        }
-      } else {
-        setError(response.message || t("loadError"));
-      }
-    } catch (err) {
-      setError(t("connectionError"));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Función helper para obtener la información de acceso
-  const getAccessInfo = (template: TemplateMaster): AccessInfo => {
-    const accessType = template.access_config?.access_type || "private";
-
-    if (accessType === "public") {
-      return { type: "public" };
-    }
-
-    if (accessType === "restricted" && template.access_config?.allowed_groups) {
-      const groupId = template.access_config.allowed_groups[0];
-      const groupName = groupsMap[groupId];
-      return {
-        type: "restricted",
-        groupId,
-        groupName: groupName || groupId,
-      };
-    }
-
-    return { type: "private" };
-  };
-
-  // Filtrar templates cuando cambia el término de búsqueda
-  useEffect(() => {
-    const term = searchTerm.trim().toLowerCase();
-
-    const filtered = templates.filter((template) => {
-      const matchesSearch =
-        !term ||
-        template.template_name.toLowerCase().includes(term) ||
-        getAuthorName(template.log).toLowerCase().includes(term);
-
-      return matchesSearch;
-    });
-
-    const sortedFiltered = [...filtered].sort(
-      (a, b) => getTemplateTimestamp(b) - getTemplateTimestamp(a),
+  const canUpdateVisualResource = (resource: VisualResource) =>
+    can(
+      PERMISSION_ACTIONS.Update,
+      MODULES.VISUAL_RESOURCES,
+      getResourceGroupIds(resource),
     );
 
-    setFilteredTemplates(sortedFiltered);
-  }, [searchTerm, templates]);
+  const canDeleteVisualResource = (resource: VisualResource) =>
+    can(
+      PERMISSION_ACTIONS.Delete,
+      MODULES.VISUAL_RESOURCES,
+      getResourceGroupIds(resource),
+    );
 
-  // Efecto para cerrar el modal con la tecla Escape
+  // Cargar recursos visuales al montar el componente (solo una vez)
+  useEffect(() => {
+    loadVisualResources();
+    loadAvailableGroups();
+  }, []);
+
+  // Efecto para cerrar los modales con la tecla Escape
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && showDeleteModal && !isDeleting) {
-        handleCloseDeleteModal();
+      if (event.key === "Escape") {
+        if (showEditModal) {
+          handleCloseEdit();
+        } else if (showDeleteModal && !isDeleting) {
+          handleCloseDeleteModal();
+        }
       }
     };
 
-    if (showDeleteModal) {
+    if (showEditModal || showDeleteModal) {
       document.addEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "hidden"; // Prevenir scroll del fondo
     }
@@ -204,135 +118,220 @@ export default function Templates() {
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "unset"; // Restaurar scroll
     };
-  }, [showDeleteModal, isDeleting]);
+  }, [showEditModal, showDeleteModal, isDeleting]);
+
+  const loadVisualResources = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response =
+        await VisualResourcesService.getVisualResourcesByStatus("active");
+      const sortedResources = [...(response.data || [])].sort(
+        (a, b) => getResourceTimestamp(b) - getResourceTimestamp(a),
+      );
+      setAllResources(sortedResources);
+    } catch (err) {
+      setError("Error de conexión al cargar los recursos visuales");
+      console.error("Error loading visual resources:", err);
+      setAllResources([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredResources = allResources
+    .filter((resource) => {
+      const matchesType =
+        filterType === "all" || resource.file_type === filterType;
+      const matchesSearch =
+        !searchTerm ||
+        resource.file_name.toLowerCase().includes(searchTerm.toLowerCase());
+      return matchesType && matchesSearch;
+    })
+    .sort((a, b) => getResourceTimestamp(b) - getResourceTimestamp(a));
+
+  const getResourceTags = (resource: VisualResource): string[] => {
+    const tags: string[] = [resource.file_type];
+    if (resource.access_config.access_type !== "public") {
+      tags.push(resource.access_config.access_type);
+    }
+    return tags;
+  };
+
+  // Función para cargar grupos disponibles
+  const loadAvailableGroups = async () => {
+    try {
+      const response = await VisualResourcesService.getAvailableGroups();
+      if (response.success && response.data) {
+        setAvailableGroups(response.data);
+      }
+    } catch (error) {
+      console.error("Error loading available groups:", error);
+      // Fallback: usar grupos de ejemplo si el endpoint no está disponible
+      setAvailableGroups(["Admin", "Research", "Public"]);
+    }
+  };
+
+  // Función para abrir el modal de edición
+  const handleEditResource = (resource: VisualResource) => {
+    if (!canUpdateVisualResource(resource)) return;
+
+    setSelectedResource(resource);
+    setEditForm({
+      file_name: resource.file_name,
+      file_type: resource.file_type,
+      access_type: resource.access_config.access_type,
+      group_name: resource.access_config.allowed_groups?.[0] || "",
+    });
+    setShowEditModal(true);
+  };
+
+  // Función para cerrar el modal de edición
+  const handleCloseEdit = () => {
+    setSelectedResource(null);
+    setShowEditModal(false);
+    setIsEditing(false);
+    setEditForm({
+      file_name: "",
+      file_type: "image",
+      access_type: "public",
+      group_name: "",
+    });
+  };
+
+  const handleSaveChanges = async () => {
+    if (!selectedResource || !canUpdateVisualResource(selectedResource)) return;
+
+    setIsEditing(true);
+    setError(null);
+    try {
+      const updateData = {
+        file_name: editForm.file_name,
+        file_type: editForm.file_type,
+        status: "active" as const,
+        access_config: {
+          access_type: editForm.access_type,
+          allowed_groups:
+            editForm.access_type === "restricted" && editForm.group_name
+              ? [editForm.group_name]
+              : [],
+        },
+      };
+
+      const response = await VisualResourcesService.updateVisualResource(
+        selectedResource.id,
+        updateData,
+      );
+
+      if (response.success) {
+        setAllResources((prev) =>
+          prev.map((r) =>
+            r.id === selectedResource.id ? { ...r, ...updateData } : r,
+          ),
+        );
+        handleCloseEdit();
+        showToast(t("editSuccess"), "success");
+      } else {
+        throw new Error(response.message || "Error al actualizar el recurso");
+      }
+    } catch (error) {
+      console.error("Error updating resource:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : t("editError");
+      setError(errorMessage);
+      showToast(errorMessage, "error");
+    } finally {
+      setIsEditing(false);
+    }
+  };
 
   // Función para mostrar el modal de confirmación de eliminación
-  const handleDeleteTemplate = (template: TemplateMaster) => {
-    setTemplateToDelete(template);
+  const handleDeleteResource = (resource: VisualResource) => {
+    if (!canDeleteVisualResource(resource)) return;
+
+    setResourceToDelete(resource);
     setShowDeleteModal(true);
   };
 
   // Función para cerrar el modal de eliminación
   const handleCloseDeleteModal = () => {
-    if (!isDeleting) {
-      setShowDeleteModal(false);
-      setTemplateToDelete(null);
-    }
+    setShowDeleteModal(false);
+    setResourceToDelete(null);
+    setIsDeleting(false);
   };
 
-  const handleDuplicateTemplate = (template: TemplateMaster) => {
-    setTemplateToDuplicate(template);
-    setDuplicateTemplateName(`${template.template_name} - ${t("copySuffix")}`);
-    setDuplicateTemplateDescription(template.description || "");
-    setShowDuplicateModal(true);
-  };
-
-  const handleCloseDuplicateModal = () => {
-    if (!isDuplicating) {
-      setShowDuplicateModal(false);
-      setTemplateToDuplicate(null);
-      setDuplicateTemplateName("");
-      setDuplicateTemplateDescription("");
-      setIsDuplicating(false);
-    }
-  };
-
-  const handleConfirmDuplicate = async () => {
-    if (!templateToDuplicate?._id) {
-      return;
-    }
-
-    setIsDuplicating(true);
-
-    try {
-      const response = await TemplateAPIService.cloneTemplate(
-        templateToDuplicate._id,
-        {
-          template_name: duplicateTemplateName.trim(),
-          description: duplicateTemplateDescription.trim() || undefined,
-        },
-      );
-
-      if (!response.success) {
-        throw new Error(response.message || "Error al duplicar la plantilla");
-      }
-
-      showToast(
-        t("duplicateSuccess", { name: duplicateTemplateName }),
-        "success",
-        3000,
-      );
-      await loadTemplates();
-      handleCloseDuplicateModal();
-    } catch (error) {
-      console.error("Error duplicating template:", error);
-      showToast(
-        t("duplicateError", {
-          name: templateToDuplicate.template_name,
-          error: error instanceof Error ? error.message : t("unknownError"),
-        }),
-        "error",
-        5000,
-      );
-      setIsDuplicating(false);
-    }
-  };
-
-  // Función para confirmar la eliminación (archivar)
   const handleConfirmDelete = async () => {
-    if (!templateToDelete) return;
-
-    setIsDeleting(true);
+    if (!resourceToDelete || !canDeleteVisualResource(resourceToDelete)) return;
 
     try {
-      const response = await TemplateAPIService.updateTemplate(
-        templateToDelete._id!,
-        { status: "archived" },
+      setIsDeleting(true);
+      const response = await VisualResourcesService.deleteVisualResource(
+        resourceToDelete.id,
       );
 
       if (!response.success) {
-        throw new Error(response.message || "Error al archivar la plantilla");
+        throw new Error(response.message || t("deleteError"));
       }
 
-      showToast(
-        t("deleteSuccess", { name: templateToDelete.template_name }),
-        "success",
-        3000,
+      setAllResources((prev) =>
+        prev.filter((r) => r.id !== resourceToDelete.id),
       );
-      loadTemplates();
       handleCloseDeleteModal();
+      showToast(t("deleteSuccess"), "success");
     } catch (error) {
-      console.error("Error archiving template:", error);
-      showToast(
-        t("deleteError", {
-          name: templateToDelete.template_name,
-          error: error instanceof Error ? error.message : t("unknownError"),
-        }),
-        "error",
-        5000,
-      );
-    } finally {
+      console.error("Error al eliminar el recurso:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : t("deleteError");
+      setError(errorMessage);
+      showToast(errorMessage, "error");
       setIsDeleting(false);
     }
   };
 
-  // Función para manejar el preview de un template
-  const handlePreviewTemplate = (templateId: string) => {
-    setPreviewTemplateId(templateId);
-    setShowPreviewModal(true);
-  };
+  // Función para descargar un recurso
+  const handleDownloadResource = async (resource: VisualResource) => {
+    try {
+      setDownloadingId(resource.id);
 
-  // Función para cerrar el modal de preview
-  const handleClosePreview = () => {
-    setShowPreviewModal(false);
-    setPreviewTemplateId(null);
+      // Construir la URL completa del recurso
+      const fullImageUrl = toAbsoluteAssetUrl(resource.file_url);
+
+      // Fetch la imagen como blob para asegurar la descarga
+      const response = await fetch(fullImageUrl);
+      if (!response.ok) {
+        throw new Error("Error al obtener el archivo");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      // Crear un elemento 'a' temporal para descargar
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = resource.file_name;
+
+      // Agregar al DOM, hacer click y remover
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Limpiar la URL del blob
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error al descargar el recurso:", error);
+      alert(
+        "Error al descargar el archivo. Verifica que el archivo esté disponible.",
+      );
+    } finally {
+      setDownloadingId(null);
+    }
   };
 
   return (
     <ProtectedRoute
       requiredPermission={{
         action: PERMISSION_ACTIONS.Read,
-        module: MODULES.TEMPLATE_MANAGEMENT,
+        module: MODULES.VISUAL_RESOURCES,
       }}
     >
       <main>
@@ -340,17 +339,22 @@ export default function Templates() {
           <div className={container}>
             <div className="flex justify-between items-center">
               <div>
+                <div className="flex items-center gap-4 mb-2">
+                  <Link
+                    href="/templates"
+                    className="flex items-center gap-2 text-[#283618]/80 hover:text-[#283618] transition-colors"
+                  >
+                    <ArrowLeft className="h-5 w-5" />
+                    <span>{t("backToTemplates")}</span>
+                  </Link>
+                </div>
                 <h1 className={pageTitle}>{t("title")}</h1>
                 <p className={pageSubtitle}>{t("subtitle")}</p>
               </div>
               <div className="hidden lg:block rotate-12">
-                <Image
-                  src="/assets/img/bol1.jpg"
-                  alt="Templates dashboard"
-                  width={150}
-                  height={319}
-                  className="object-contain drop-shadow-lg"
-                />
+                <div className="w-32 h-32 bg-linear-to-br from-[#ffaf68] to-[#ff8c42] rounded-lg flex items-center justify-center">
+                  <ImageIcon className="h-16 w-16 text-white" />
+                </div>
               </div>
             </div>
           </div>
@@ -358,18 +362,20 @@ export default function Templates() {
 
         {/* Content Section */}
         <div className={`${container} py-8`}>
-          {/* Search Bar y Botones */}
-          <div className="mb-8 space-y-4">
-            {/* Botón Recursos Visuales */}
-            {can(PERMISSION_ACTIONS.Create, MODULES.TEMPLATE_MANAGEMENT) && (
+          {canCreateVisualResource && (
+            <div className="mb-4">
               <Link
-                href="/templates/create"
-                className={`${btnPrimary} whitespace-nowrap`}
+                href="/templates/visual-resources/upload"
+                className={btnPrimary}
               >
-                <Plus className="h-5 w-5" />
-                <span>{t("createNew")}</span>
+                <Upload className="h-5 w-5" />
+                <span>{t("uploadFile")}</span>
               </Link>
-            )}
+            </div>
+          )}
+
+          {/* Toolbar */}
+          <div className="flex flex-col sm:flex-row gap-2 mb-8">
             {/* Search Bar */}
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#283618]/50" />
@@ -381,115 +387,317 @@ export default function Templates() {
                 className={searchField}
               />
             </div>
+
+            {/* Filtros y controles */}
+            <div className="flex gap-2">
+              {/* Filtro por tipo */}
+              <select
+                value={filterType}
+                onChange={(e) =>
+                  setFilterType(e.target.value as "all" | "image" | "icon")
+                }
+                className={`${inputField} cursor-pointer`}
+              >
+                <option value="all">{t("allFiles")}</option>
+                <option value="image">{t("images")}</option>
+                <option value="icon">{t("icons")}</option>
+              </select>
+            </div>
           </div>
 
-          {/* Loading State */}
+          {/* Estado de carga */}
           {loading && (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-[#ffaf68]" />
-              <span className="ml-2 text-[#283618]/60">{t("loading")}</span>
+              <span className="ml-2 text-[#283618]">Cargando recursos...</span>
             </div>
           )}
 
-          {/* Error State */}
-          {error && (
-            <div className="text-center py-12">
-              <p className="text-red-600 mb-4">{error}</p>
-              <button onClick={() => loadTemplates()} className={btnPrimary}>
-                {t("retry")}
-              </button>
+          {/* Mensaje de error */}
+          {error && !loading && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-5 w-5" />
+                <p>{error}</p>
+                <button
+                  onClick={loadVisualResources}
+                  className="ml-auto text-red-800 hover:text-red-900 underline"
+                >
+                  Reintentar
+                </button>
+              </div>
             </div>
           )}
 
-          {/* Templates Grid */}
+          {/* Grilla de recursos */}
           {!loading && !error && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredTemplates
-                .filter((template, index, array) => {
-                  // Filter out templates without valid _id and remove duplicates
-                  return (
-                    template._id &&
-                    array.findIndex((t) => t._id === template._id) === index
-                  );
-                })
-                .map((template, index) => {
-                  const allowedGroups =
-                    template.access_config?.allowed_groups || [];
-                  const canEdit = can(
-                    PERMISSION_ACTIONS.Update,
-                    MODULES.TEMPLATE_MANAGEMENT,
-                    allowedGroups,
-                  );
-                  const canDelete = can(
-                    PERMISSION_ACTIONS.Delete,
-                    MODULES.TEMPLATE_MANAGEMENT,
-                    allowedGroups,
-                  );
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+              {filteredResources.map((resource) => {
+                const updaterName =
+                  resource.log.updater_first_name &&
+                  resource.log.updater_last_name
+                    ? `${resource.log.updater_first_name} ${resource.log.updater_last_name}`
+                    : "";
+                const creatorName =
+                  resource.log.creator_first_name &&
+                  resource.log.creator_last_name
+                    ? `${resource.log.creator_first_name} ${resource.log.creator_last_name}`
+                    : "";
 
-                  return (
-                    <ItemCard
-                      key={template._id || `template-${index}`}
-                      type="template"
-                      id={template._id!}
-                      name={template.template_name}
-                      author={getAuthorName(template.log)}
-                      lastModified={new Date(
-                        template.log.updated_at!,
-                      ).toLocaleDateString()}
-                      thumbnailImages={template.thumbnail_images}
-                      totalSections={templateSectionCounts[template._id!]}
-                      accessInfo={getAccessInfo(template)}
-                      previewBtn={true}
-                      onPreview={() => handlePreviewTemplate(template._id!)}
-                      editBtn={canEdit}
-                      onEdit={
-                        canEdit
-                          ? () =>
-                              (window.location.href = `/templates/${template._id}/edit`)
-                          : undefined
-                      }
-                      duplicateBtn={canEdit}
-                      onDuplicate={
-                        canEdit
-                          ? () => handleDuplicateTemplate(template)
-                          : undefined
-                      }
-                      isDuplicating={
-                        isDuplicating &&
-                        templateToDuplicate?._id === template._id
-                      }
-                      deleteBtn={canDelete}
-                      onDelete={
-                        canDelete
-                          ? () => handleDeleteTemplate(template)
-                          : undefined
-                      }
-                      isDeleting={
-                        isDeleting && templateToDelete?._id === template._id
-                      }
-                    />
-                  );
-                })}
+                return (
+                  <ItemCard
+                    key={resource.id}
+                    type="visual-resource"
+                    id={resource.id}
+                    name={resource.file_name}
+                    image={normalizeAssetUrl(resource.file_url)}
+                    fileType={resource.file_type}
+                    author={updaterName || creatorName}
+                    tags={getResourceTags(resource)}
+                    editBtn={canUpdateVisualResource(resource)}
+                    onEdit={
+                      canUpdateVisualResource(resource)
+                        ? () => handleEditResource(resource)
+                        : undefined
+                    }
+                    downloadBtn={true}
+                    onDownload={() => handleDownloadResource(resource)}
+                    deleteBtn={canDeleteVisualResource(resource)}
+                    onDelete={
+                      canDeleteVisualResource(resource)
+                        ? () => handleDeleteResource(resource)
+                        : undefined
+                    }
+                    isDownloading={downloadingId === resource.id}
+                  />
+                );
+              })}
             </div>
           )}
 
-          {/* Empty State */}
-          {!loading && !error && filteredTemplates.length === 0 && (
+          {/* Empty State - Solo mostrar si no hay carga ni error */}
+          {!loading && !error && filteredResources.length === 0 && (
             <div className="text-center py-12">
-              <p className="text-[#283618]/60 mb-4">{t("noResults")}</p>
-              {!searchTerm &&
-                can(PERMISSION_ACTIONS.Create, MODULES.TEMPLATE_MANAGEMENT) && (
-                  <Link href="/templates/create" className={btnPrimary}>
-                    {t("createFirst")}
-                  </Link>
-                )}
+              <ImageIcon className="h-16 w-16 text-[#283618]/80 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-[#283618] mb-2">
+                {searchTerm ? t("noResults") : t("noResources")}
+              </h3>
+              <p className="text-[#283618]/80 mb-6">
+                {searchTerm ? t("tryDifferentSearch") : t("uploadFirst")}
+              </p>
+              {canCreateVisualResource && (
+                <Link
+                  href="/templates/visual-resources/upload"
+                  className={btnPrimary}
+                >
+                  <Upload className="h-5 w-5" />
+                  <span>{t("uploadFirstFile")}</span>
+                </Link>
+              )}
             </div>
           )}
         </div>
       </main>
 
+      {/* Modal de Edición */}
+      {showEditModal && selectedResource && (
+        <div
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+          onClick={handleCloseEdit}
+        >
+          <div
+            className="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header del modal */}
+            <div className="flex items-center justify-between p-4 border-b">
+              <div>
+                <h3 className="text-lg font-medium text-[#283618]">
+                  {t("editResource")}
+                </h3>
+                <p className="text-sm text-[#283618]/80">
+                  {selectedResource.file_type} • ID: {selectedResource.id}
+                </p>
+              </div>
+              <button
+                onClick={handleCloseEdit}
+                className="p-2 text-[#283618]/80 hover:text-[#283618] transition-colors cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Contenido del modal */}
+            <div className="p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Vista previa del recurso */}
+                <div>
+                  <h4 className="text-md font-medium text-[#283618] mb-3">
+                    {t("preview")}
+                  </h4>
+                  <div className="flex items-center justify-center bg-gray-50 rounded-lg min-h-[300px] p-4">
+                    <Image
+                      src={normalizeAssetUrl(selectedResource.file_url)}
+                      alt={selectedResource.file_name}
+                      width={400}
+                      height={300}
+                      className="w-auto h-auto max-w-full max-h-[280px] object-contain"
+                      onError={(e) => {
+                        e.currentTarget.src = "/assets/img/imageNotFound.png";
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Formulario de edición */}
+                <div>
+                  <h4 className="text-md font-medium text-[#283618] mb-3">
+                    {t("resourceInfo")}
+                  </h4>
+
+                  <div className="space-y-4">
+                    {/* Nombre del archivo */}
+                    <div>
+                      <label className="block text-sm font-medium text-[#283618] mb-2">
+                        {t("fileName")}
+                      </label>
+                      <input
+                        type="text"
+                        value={editForm.file_name}
+                        onChange={(e) =>
+                          setEditForm((prev) => ({
+                            ...prev,
+                            file_name: e.target.value,
+                          }))
+                        }
+                        className={inputField}
+                        placeholder={t("fileNamePlaceholder")}
+                      />
+                    </div>
+
+                    {/* Tipo de archivo */}
+                    <div>
+                      <label className="block text-sm font-medium text-[#283618] mb-2">
+                        {t("fileType")}
+                      </label>
+                      <select
+                        value={editForm.file_type}
+                        onChange={(e) =>
+                          setEditForm((prev) => ({
+                            ...prev,
+                            file_type: e.target.value as "image" | "icon",
+                          }))
+                        }
+                        className={`${inputField} cursor-pointer`}
+                      >
+                        <option value="image">{t("image")}</option>
+                        <option value="icon">{t("icon")}</option>
+                      </select>
+                    </div>
+
+                    {/* Tipo de acceso */}
+                    <div>
+                      <label className="block text-sm font-medium text-[#283618] mb-2">
+                        {t("accessTypeLabel")}
+                      </label>
+                      <select
+                        value={editForm.access_type}
+                        onChange={(e) =>
+                          setEditForm((prev) => ({
+                            ...prev,
+                            access_type: e.target.value as
+                              | "public"
+                              | "private"
+                              | "restricted",
+                          }))
+                        }
+                        className={`${inputField} cursor-pointer`}
+                      >
+                        <option value="public">{t("publicAccess")}</option>
+                        <option value="private">{t("privateAccess")}</option>
+                        <option value="restricted">
+                          {t("restrictedAccess")}
+                        </option>
+                      </select>
+                    </div>
+
+                    {/* Selector de grupo (solo si es restringido) */}
+                    {editForm.access_type === "restricted" && (
+                      <div>
+                        <label className="block text-sm font-medium text-[#283618] mb-2">
+                          {t("allowedGroup")}
+                        </label>
+                        <select
+                          value={editForm.group_name}
+                          onChange={(e) =>
+                            setEditForm((prev) => ({
+                              ...prev,
+                              group_name: e.target.value,
+                            }))
+                          }
+                          className={inputField}
+                        >
+                          <option value="">{t("selectGroup")}</option>
+                          {availableGroups.map((group) => (
+                            <option key={group} value={group}>
+                              {group}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Mensajes de error */}
+              {error && (
+                <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="h-5 w-5" />
+                    <p>{error}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Botones de acción */}
+              <div className="flex gap-4 justify-end mt-6 pt-4 border-t border-gray-200">
+                <button
+                  onClick={handleCloseEdit}
+                  className={btnOutlineSecondary}
+                  disabled={isEditing}
+                >
+                  {t("cancelEdit")}
+                </button>
+                <button
+                  onClick={handleSaveChanges}
+                  disabled={isEditing || !editForm.file_name.trim()}
+                  className={`${btnPrimary} ${
+                    isEditing || !editForm.file_name.trim()
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}
+                >
+                  {isEditing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>{t("saving")}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4" />
+                      <span>{t("saveChanges")}</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modal de Confirmación de Eliminación */}
-      {showDeleteModal && templateToDelete && (
+      {showDeleteModal && resourceToDelete && (
         <div
           className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
           onClick={handleCloseDeleteModal}
@@ -520,36 +728,32 @@ export default function Templates() {
             {/* Contenido del modal */}
             <div className="p-6">
               <div className="flex gap-4">
-                {/* Icono del template */}
+                {/* Vista previa pequeña del recurso */}
                 <div className="shrink-0">
-                  <div className="w-16 h-16 bg-[#ffaf68]/20 rounded-lg flex items-center justify-center">
-                    <FileText className="h-8 w-8 text-[#ffaf68]" />
+                  <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
+                    <Image
+                      src={normalizeAssetUrl(resourceToDelete.file_url)}
+                      alt={resourceToDelete.file_name}
+                      width={64}
+                      height={64}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = "/assets/img/imageNotFound.png";
+                      }}
+                    />
                   </div>
                 </div>
 
                 {/* Mensaje de confirmación */}
                 <div className="flex-1">
-                  <p className="text-[#283618] mb-3">
+                  <p className="text-[#283618] mb-2">
                     {t("deleteConfirmMessage", {
-                      name: templateToDelete.template_name,
+                      fileName: resourceToDelete.file_name,
                     })}
                   </p>
-                  <div className="text-sm text-[#283618]/70 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <User className="h-3 w-3" />
-                      <span>
-                        {t("by")} {getAuthorName(templateToDelete.log)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-3 w-3" />
-                      <span>
-                        {t("lastModified")}:{" "}
-                        {new Date(
-                          templateToDelete.log.updated_at!,
-                        ).toLocaleDateString()}
-                      </span>
-                    </div>
+                  <div className="text-sm text-[#283618]/70">
+                    <p>Tipo: {resourceToDelete.file_type}</p>
+                    <p>ID: {resourceToDelete.id}</p>
                   </div>
                 </div>
               </div>
@@ -578,9 +782,7 @@ export default function Templates() {
                 onClick={handleConfirmDelete}
                 disabled={isDeleting}
                 className={`bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium transition-colors ${
-                  isDeleting
-                    ? "opacity-50 cursor-not-allowed"
-                    : "cursor-pointer"
+                  isDeleting ? "opacity-50 cursor-not-allowed" : ""
                 }`}
               >
                 {isDeleting ? (
@@ -591,72 +793,13 @@ export default function Templates() {
                 ) : (
                   <>
                     <Trash2 className="h-4 w-4" />
-                    <span>{t("confirmDeleteBtn")}</span>
+                    <span>{t("confirmDelete")}</span>
                   </>
                 )}
               </button>
             </div>
           </div>
         </div>
-      )}
-
-      <DuplicateItemModal
-        isOpen={showDuplicateModal && Boolean(templateToDuplicate)}
-        onClose={handleCloseDuplicateModal}
-        onConfirm={handleConfirmDuplicate}
-        isSubmitting={isDuplicating}
-        title={t("duplicateConfirmTitle")}
-        message={t("duplicateConfirmMessage")}
-        nameLabel={t("templateNameLabel")}
-        namePlaceholder={t("templateNamePlaceholder")}
-        nameValue={duplicateTemplateName}
-        onNameChange={setDuplicateTemplateName}
-        descriptionLabel={t("descriptionLabel")}
-        descriptionPlaceholder={t("descriptionPlaceholder")}
-        descriptionValue={duplicateTemplateDescription}
-        onDescriptionChange={setDuplicateTemplateDescription}
-        cancelLabel={t("cancelDuplicate")}
-        confirmLabel={t("confirmDuplicateBtn")}
-        submittingLabel={t("duplicating")}
-        originalItemLabel={t("originalTemplateLabel")}
-        originalPreview={
-          templateToDuplicate ? (
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-[#ffaf68]/20 rounded-lg flex items-center justify-center shrink-0">
-                <FileText className="h-6 w-6 text-[#ffaf68]" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-[#283618] truncate">
-                  {templateToDuplicate.template_name}
-                </p>
-                <p className="text-xs text-[#283618]/60 truncate">
-                  {t("by")} {getAuthorName(templateToDuplicate.log)}
-                </p>
-              </div>
-            </div>
-          ) : null
-        }
-        headerAccentClassName="bg-[#ffaf68]/20 text-[#ffaf68]"
-        nameInputId="duplicate-template-name"
-        descriptionInputId="duplicate-template-description"
-      />
-
-      {/* Modal de Preview */}
-      {showPreviewModal && previewTemplateId && (
-        <PreviewModal
-          isOpen={showPreviewModal}
-          onClose={handleClosePreview}
-          contentType="template"
-          contentId={previewTemplateId}
-          locale={locale}
-          actions={{
-            onEdit: (id) => (window.location.href = `/templates/${id}/edit`),
-            onDelete: (id) => {
-              const template = templates.find((t) => t._id === id);
-              if (template) handleDeleteTemplate(template);
-            },
-          }}
-        />
       )}
     </ProtectedRoute>
   );
