@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { X, Loader2 } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { X, Loader2, Search } from "lucide-react";
 import { VisualResourcesService } from "@/services/visualResourcesService";
 import { VisualResource } from "@/types/visualResource";
 import Image from "next/image";
 import { normalizeAssetUrl } from "@/utils/assetUrl";
+import { useTranslations } from "next-intl";
 
 export interface VisualResourceSelectorProps {
   /** Si el modal está visible */
@@ -36,14 +37,17 @@ export const VisualResourceSelector: React.FC<VisualResourceSelectorProps> = ({
   gridColumns = 4,
   closeButtonText = "Cerrar",
 }) => {
+  const t = useTranslations("VisualResources");
   const [availableResources, setAvailableResources] = useState<
     VisualResource[]
   >([]);
   const [loadingResources, setLoadingResources] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Cargar recursos disponibles cuando el modal se abre
   useEffect(() => {
     if (isOpen) {
+      setSearchTerm("");
       loadResources();
     }
   }, [isOpen, resourceType]);
@@ -77,6 +81,20 @@ export const VisualResourceSelector: React.FC<VisualResourceSelectorProps> = ({
     onClose();
   };
 
+  const filteredResources = useMemo(() => {
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+
+    if (!normalizedSearch) {
+      return availableResources;
+    }
+
+    return availableResources.filter((resource) =>
+      [resource.file_name, resource.file_type].some((value) =>
+        value?.toLowerCase().includes(normalizedSearch),
+      ),
+    );
+  }, [availableResources, searchTerm]);
+
   if (!isOpen) return null;
 
   const gridColsClass =
@@ -103,6 +121,19 @@ export const VisualResourceSelector: React.FC<VisualResourceSelectorProps> = ({
           </button>
         </div>
 
+        {/* Search */}
+        <div className="relative mb-4">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#283618]/40" />
+          <input
+            type="search"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            placeholder={t("searchPlaceholder")}
+            className="w-full rounded-md border border-gray-300 bg-white py-2 pl-9 pr-3 text-sm text-[#283618] outline-none transition focus:border-[#bc6c25] focus:ring-2 focus:ring-[#bc6c25]/20"
+            aria-label={t("searchPlaceholder")}
+          />
+        </div>
+
         {/* Content */}
         {loadingResources ? (
           <div className="text-center py-12">
@@ -113,23 +144,19 @@ export const VisualResourceSelector: React.FC<VisualResourceSelectorProps> = ({
           </div>
         ) : availableResources.length === 0 ? (
           <div className="text-center py-12 text-amber-600">
-            <p className="mb-2">
-              No hay{" "}
-              {resourceType === "icon"
-                ? "iconos"
-                : resourceType === "image"
-                  ? "imágenes"
-                  : "recursos"}{" "}
-              disponibles.
-            </p>
-            <p className="text-sm">
-              Por favor, sube recursos en la sección de Recursos Visuales.
-            </p>
+            <p className="mb-2">{t("noResources")}</p>
+            <p className="text-sm">{t("uploadFirst")}</p>
+          </div>
+        ) : filteredResources.length === 0 ? (
+          <div className="text-center py-12 text-[#283618]/60">
+            <Search className="mx-auto mb-3 h-8 w-8 opacity-30" />
+            <p className="mb-1 font-medium">{t("noResults")}</p>
+            <p className="text-sm">{t("tryDifferentSearch")}</p>
           </div>
         ) : (
-          <div className="overflow-y-auto max-h-[calc(90vh-180px)]">
+          <div className="overflow-y-auto max-h-[calc(90vh-230px)]">
             <div className={`grid ${gridColsClass} gap-4 p-2`}>
-              {availableResources.map((resource) => {
+              {filteredResources.map((resource) => {
                 const normalizedResourceUrl = normalizeAssetUrl(
                   resource.file_url,
                 );
