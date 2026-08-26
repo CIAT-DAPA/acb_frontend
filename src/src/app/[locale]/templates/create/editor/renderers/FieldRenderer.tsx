@@ -155,10 +155,16 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({
   if (field.type === "text_with_icon") {
     const iconSize = effectiveStyles.icon_size || 24;
     const useOriginalColor = effectiveStyles.icon_use_original_color === true;
-    // Mock logic for icon
-    const iconUrl =
-      (field.field_config as any)?.selected_icon ||
-      (field.field_config as any)?.icon_options?.[0];
+    const configuredSelectedIcon =
+      (field.field_config as any)?.selected_icon || null;
+    const firstIconOption =
+      (field.field_config as any)?.icon_options?.[0] || null;
+
+    // Para campos editables, icon_options es la fuente de verdad. Esto evita
+    // que un selected_icon heredado mantenga visible un icono anterior.
+    const iconUrl = field.form
+      ? firstIconOption || configuredSelectedIcon
+      : configuredSelectedIcon || firstIconOption;
 
     return (
       <div
