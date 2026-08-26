@@ -53,6 +53,7 @@ export default function EditGroupPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loadingRoles, setLoadingRoles] = useState(true);
   const [loadingUsers, setLoadingUsers] = useState(true);
+  const [userLoadError, setUserLoadError] = useState<string | null>(null);
 
   // Estados de UI
   const [isLoading, setIsLoading] = useState(true);
@@ -85,12 +86,24 @@ export default function EditGroupPage() {
 
   const loadUsers = async () => {
     setLoadingUsers(true);
+    setUserLoadError(null);
+
     try {
-      const response = await UserService.getActiveUsers();
-      if (response.success && response.data) setUsers(response.data);
+      // El selector necesita candidatos, no solo los primeros 10 usuarios.
+      const response = await UserService.getActiveUsers({ limit: 1000 });
+
+      if (response.success && response.data) {
+        setUsers(response.data);
+      } else {
+        const message = response.message || t("usersLoadError");
+        setUsers([]);
+        setUserLoadError(message);
+        console.warn("Unable to load users for group administration:", message);
+      }
     } catch (error) {
       console.error("Error loading users:", error);
-      showToast("Error de conexión al cargar los usuarios", "error", 4000);
+      setUsers([]);
+      setUserLoadError(t("usersLoadError"));
     } finally {
       setLoadingUsers(false);
     }
@@ -156,7 +169,7 @@ export default function EditGroupPage() {
   const updateUser = (
     index: number,
     field: "user_id" | "role_id",
-    value: string
+    value: string,
   ) => {
     const updated = [...usersAccess];
     updated[index] = { ...updated[index], [field]: value };
@@ -187,7 +200,7 @@ export default function EditGroupPage() {
         country: country.trim().toUpperCase(),
         description: description.trim(),
         users_access: usersAccess.filter(
-          (u) => u.user_id.trim() && u.role_id.trim()
+          (u) => u.user_id.trim() && u.role_id.trim(),
         ),
       });
 
@@ -196,7 +209,7 @@ export default function EditGroupPage() {
           ? t("updateSuccess")
           : response.message || t("updateError"),
         response.success ? "success" : "error",
-        4000
+        4000,
       );
       if (response.success) router.push("/groups");
     } catch (error) {
@@ -250,7 +263,7 @@ export default function EditGroupPage() {
                 <p className={pageSubtitle}>{t("subtitleEdit")}</p>
               </div>
               <div className="hidden lg:block">
-                <div className="w-32 h-32 bg-gradient-to-br from-[#606c38] to-[#283618] rounded-lg flex items-center justify-center rotate-6">
+                <div className="w-32 h-32 bg-linear-to-br from-[#606c38] to-[#283618] rounded-lg flex items-center justify-center rotate-6">
                   <Users className="h-16 w-16 text-white" />
                 </div>
               </div>
@@ -317,7 +330,7 @@ export default function EditGroupPage() {
                           disabled={isSubmitting}
                         />
                       </div>
-                      <div className="flex-shrink-0 w-16 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-3xl">
+                      <div className="shrink-0 w-16 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-3xl">
                         {getCountryFlag(country)}
                       </div>
                     </div>
@@ -369,6 +382,12 @@ export default function EditGroupPage() {
                     <p className="text-sm text-[#283618]/60 mt-1">
                       {t("usersAccessDescription")}
                     </p>
+                    {userLoadError && (
+                      <div className="mt-3 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                        <span>{userLoadError}</span>
+                      </div>
+                    )}
                   </div>
                   <button
                     type="button"
@@ -443,7 +462,7 @@ export default function EditGroupPage() {
                           )}
                         </div>
 
-                        <div className="flex-shrink-0">
+                        <div className="shrink-0">
                           <button
                             type="button"
                             onClick={() => removeUser(index)}
