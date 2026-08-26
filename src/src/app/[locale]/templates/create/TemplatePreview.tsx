@@ -1654,13 +1654,22 @@ export function TemplatePreview({
         }
 
         // Obtener el icono: primero del valor (en listas), luego del field_config, o fallback
-        const selectedIcon =
-          iconFromValue ||
-          (field.field_config as any)?.selected_icon ||
-          (field.field_config?.icon_options &&
+        const configuredSelectedIcon =
+          (field.field_config as any)?.selected_icon || null;
+        const firstIconOption =
+          field.field_config?.icon_options &&
           field.field_config.icon_options.length > 0
             ? field.field_config.icon_options[0]
-            : null);
+            : null;
+
+        // En campos editables (form=true), icon_options es la fuente de verdad.
+        // selected_icon puede quedar en templates antiguos y provocar que el
+        // preview siga mostrando un icono viejo después de cambiar la opción.
+        const selectedIcon =
+          iconFromValue ||
+          (field.form
+            ? firstIconOption || configuredSelectedIcon
+            : configuredSelectedIcon || firstIconOption);
 
         const iconSize = effectiveStyles.icon_size || 24;
         const useOriginalColor =

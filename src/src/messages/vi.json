@@ -32,7 +32,7 @@
       "accesscontrol": "Truy cập",
       "dashboardbulletins": "Bảng điều khiển",
       "review": "Rà soát",
-      "externalintegrations": "Tích hợp"
+      "visualresources": "Tài nguyên trực quan"
     },
     "noResultsSearch": "Hãy thử các thuật ngữ tìm kiếm khác nhau",
     "table": {
@@ -43,11 +43,11 @@
       "enabledModules": "Các mô-đun được kích hoạt",
       "actions": "Các hoạt động",
       "viewDetails": "Xem chi tiết",
-      "modulesCount": "{count} / 7 mô-đun",
+      "modulesCount": "{count} / 6 mô-đun",
       "hide": "Ẩn",
       "activePermissionsLabel": "Quyền truy cập đã kích hoạt",
-      "enabledModulesLabel": "của 7 mô-đun được kích hoạt",
-      "enabledModulesCount": "{count} trong số 7 mô-đun được bật",
+      "enabledModulesLabel": "của 6 mô-đun được kích hoạt",
+      "enabledModulesCount": "{count} trong số 6 mô-đun được bật",
       "modulesAndPermissions": "Các Mô-đun và Quyền hạn CRUD:",
       "noModulesEnabled": "Vai trò này chưa được bật quyền truy cập vào mô-đun nào."
     },
@@ -69,7 +69,6 @@
       "review": "Quản lý quy trình đánh giá",
       "cardManagement": "Quản lý các thẻ có thể tái sử dụng",
       "accessControl": "Quản lý người dùng và vai trò",
-      "externalIntegrations": "Quản lý tích hợp",
       "crudNote": "Mỗi mô-đun có thể có các quyền {create}, {read}, {update} và {delete} (CRUD)."
     },
     "title": "Quản lý Quyền hạn theo Vai trò",
@@ -1010,10 +1009,6 @@
       "accesscontrol": {
         "name": "Kiểm soát truy cập",
         "description": "Quản lý người dùng, vai trò và nhóm"
-      },
-      "externalintegrations": {
-        "name": "Các Hệ thống Tích hợp Ngoài",
-        "description": "Cấu hình tích hợp với các hệ thống bên ngoài"
       }
     },
     "backToRoles": "Quay lại Vai trò",
@@ -2279,6 +2274,7 @@
     "userIdPlaceholder": "ví dụ 507f1f77bcf86cd799439011",
     "selectUser": "Chọn người dùng",
     "noUsersFound": "Không tìm thấy người dùng",
+    "usersLoadError": "Không thể tải danh sách người dùng khả dụng. Hãy kiểm tra quyền truy vấn người dùng của vai trò.",
     "roleIdPlaceholder": "ví dụ 507f191e810c19729de860ea",
     "selectRole": "Chọn một vai trò",
     "noUsers": "Chưa có người dùng nào được chỉ định",

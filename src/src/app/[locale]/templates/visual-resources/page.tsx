@@ -30,10 +30,13 @@ import { VisualResource } from "@/types/visualResource";
 import { VisualResourcesService } from "@/services/visualResourcesService";
 import { useToast } from "../../../../components/Toast";
 import { normalizeAssetUrl, toAbsoluteAssetUrl } from "@/utils/assetUrl";
+import usePermissions from "@/hooks/usePermissions";
+import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
 
 export default function VisualResources() {
   const t = useTranslations("VisualResources");
   const { showToast } = useToast();
+  const { can } = usePermissions();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<"all" | "image" | "icon">("all");
   const [allResources, setAllResources] = useState<VisualResource[]>([]); // Todos los recursos originales
@@ -63,6 +66,34 @@ export default function VisualResources() {
       resource.log?.updated_at || resource.log?.created_at || 0,
     ).getTime();
   };
+
+  const getResourceGroupIds = (resource: VisualResource) =>
+    resource.access_config.access_type === "restricted"
+      ? resource.access_config.allowed_groups
+      : undefined;
+
+  const canUseVisualResources = (
+    action: (typeof PERMISSION_ACTIONS)[keyof typeof PERMISSION_ACTIONS],
+    resourceGroupIds?: string[],
+  ) =>
+    can(action, MODULES.TEMPLATE_MANAGEMENT, resourceGroupIds) ||
+    can(action, MODULES.CARD_MANAGEMENT, resourceGroupIds);
+
+  const canCreateVisualResource = canUseVisualResources(
+    PERMISSION_ACTIONS.Create,
+  );
+
+  const canUpdateVisualResource = (resource: VisualResource) =>
+    canUseVisualResources(
+      PERMISSION_ACTIONS.Update,
+      getResourceGroupIds(resource),
+    );
+
+  const canDeleteVisualResource = (resource: VisualResource) =>
+    canUseVisualResources(
+      PERMISSION_ACTIONS.Delete,
+      getResourceGroupIds(resource),
+    );
 
   // Cargar recursos visuales al montar el componente (solo una vez)
   useEffect(() => {
@@ -147,6 +178,8 @@ export default function VisualResources() {
 
   // Función para abrir el modal de edición
   const handleEditResource = (resource: VisualResource) => {
+    if (!canUpdateVisualResource(resource)) return;
+
     setSelectedResource(resource);
     setEditForm({
       file_name: resource.file_name,
@@ -171,7 +204,7 @@ export default function VisualResources() {
   };
 
   const handleSaveChanges = async () => {
-    if (!selectedResource) return;
+    if (!selectedResource || !canUpdateVisualResource(selectedResource)) return;
 
     setIsEditing(true);
     setError(null);
@@ -218,6 +251,8 @@ export default function VisualResources() {
 
   // Función para mostrar el modal de confirmación de eliminación
   const handleDeleteResource = (resource: VisualResource) => {
+    if (!canDeleteVisualResource(resource)) return;
+
     setResourceToDelete(resource);
     setShowDeleteModal(true);
   };
@@ -230,11 +265,18 @@ export default function VisualResources() {
   };
 
   const handleConfirmDelete = async () => {
-    if (!resourceToDelete) return;
+    if (!resourceToDelete || !canDeleteVisualResource(resourceToDelete)) return;
 
     try {
       setIsDeleting(true);
-      await VisualResourcesService.deleteVisualResource(resourceToDelete.id);
+      const response = await VisualResourcesService.deleteVisualResource(
+        resourceToDelete.id,
+      );
+
+      if (!response.success) {
+        throw new Error(response.message || t("deleteError"));
+      }
+
       setAllResources((prev) =>
         prev.filter((r) => r.id !== resourceToDelete.id),
       );
@@ -290,7 +332,18 @@ export default function VisualResources() {
   };
 
   return (
-    <ProtectedRoute>
+    <ProtectedRoute
+      requiredAnyPermission={[
+        {
+          action: PERMISSION_ACTIONS.Read,
+          module: MODULES.TEMPLATE_MANAGEMENT,
+        },
+        {
+          action: PERMISSION_ACTIONS.Read,
+          module: MODULES.CARD_MANAGEMENT,
+        },
+      ]}
+    >
       <main>
         <section className="desk-texture desk-texture-strong bg-[#fefae0] py-10">
           <div className={container}>
@@ -319,16 +372,17 @@ export default function VisualResources() {
 
         {/* Content Section */}
         <div className={`${container} py-8`}>
-          <div className="mb-4">
-            {/* Botón subir */}
-            <Link
-              href="/templates/visual-resources/upload"
-              className={btnPrimary}
-            >
-              <Upload className="h-5 w-5" />
-              <span>{t("uploadFile")}</span>
-            </Link>
-          </div>
+          {canCreateVisualResource && (
+            <div className="mb-4">
+              <Link
+                href="/templates/visual-resources/upload"
+                className={btnPrimary}
+              >
+                <Upload className="h-5 w-5" />
+                <span>{t("uploadFile")}</span>
+              </Link>
+            </div>
+          )}
 
           {/* Toolbar */}
           <div className="flex flex-col sm:flex-row gap-2 mb-8">
@@ -410,12 +464,20 @@ export default function VisualResources() {
                     fileType={resource.file_type}
                     author={updaterName || creatorName}
                     tags={getResourceTags(resource)}
-                    editBtn={true}
-                    onEdit={() => handleEditResource(resource)}
+                    editBtn={canUpdateVisualResource(resource)}
+                    onEdit={
+                      canUpdateVisualResource(resource)
+                        ? () => handleEditResource(resource)
+                        : undefined
+                    }
                     downloadBtn={true}
                     onDownload={() => handleDownloadResource(resource)}
-                    deleteBtn={true}
-                    onDelete={() => handleDeleteResource(resource)}
+                    deleteBtn={canDeleteVisualResource(resource)}
+                    onDelete={
+                      canDeleteVisualResource(resource)
+                        ? () => handleDeleteResource(resource)
+                        : undefined
+                    }
                     isDownloading={downloadingId === resource.id}
                   />
                 );
@@ -433,13 +495,15 @@ export default function VisualResources() {
               <p className="text-[#283618]/80 mb-6">
                 {searchTerm ? t("tryDifferentSearch") : t("uploadFirst")}
               </p>
-              <Link
-                href="/templates/visual-resources/upload"
-                className={btnPrimary}
-              >
-                <Upload className="h-5 w-5" />
-                <span>{t("uploadFirstFile")}</span>
-              </Link>
+              {canCreateVisualResource && (
+                <Link
+                  href="/templates/visual-resources/upload"
+                  className={btnPrimary}
+                >
+                  <Upload className="h-5 w-5" />
+                  <span>{t("uploadFirstFile")}</span>
+                </Link>
+              )}
             </div>
           )}
         </div>

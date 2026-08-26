@@ -43,15 +43,36 @@ export const TextWithIconFieldTypeConfig: React.FC<
 
   const handleIconOptionChange = (url: string) => {
     if (editingIconIndex !== null) {
+      const previousIcon = iconOptions[editingIconIndex];
       const newIcons = [...iconOptions];
       newIcons[editingIconIndex] = url;
-      updateFieldConfig({ icon_options: newIcons });
+
+      // Algunos campos antiguos conservan selected_icon aunque sean form=true.
+      // Si ese valor apunta al icono que estamos reemplazando (o al primer
+      // icono que usa el preview como muestra), sincronizarlo evita que el
+      // preview siga mostrando la URL anterior.
+      const shouldSyncSelectedIcon =
+        editingIconIndex === 0 || fieldConfig?.selected_icon === previousIcon;
+
+      updateFieldConfig({
+        icon_options: newIcons,
+        ...(shouldSyncSelectedIcon ? { selected_icon: url } : {}),
+      });
     }
   };
 
   const handleRemoveIconOption = (index: number) => {
+    const removedIcon = iconOptions[index];
     const newIcons = iconOptions.filter((_, i) => i !== index);
-    updateFieldConfig({ icon_options: newIcons });
+    const shouldSyncSelectedIcon =
+      index === 0 || fieldConfig?.selected_icon === removedIcon;
+
+    updateFieldConfig({
+      icon_options: newIcons,
+      ...(shouldSyncSelectedIcon
+        ? { selected_icon: newIcons[0] || undefined }
+        : {}),
+    });
   };
 
   const handleAddIconOption = () => {

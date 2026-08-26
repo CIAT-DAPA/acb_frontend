@@ -35,7 +35,6 @@ export class RoleAPIService extends BaseAPIService {
     "review",
     "card_management",
     "access_control",
-    "external_integrations",
   ] as const;
 
   /**
@@ -271,7 +270,6 @@ export class RoleAPIService extends BaseAPIService {
       "review",
       "card_management",
       "access_control",
-      "external_integrations",
     ];
 
     // Verificar que todos los módulos requeridos estén presentes
