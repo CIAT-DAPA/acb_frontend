@@ -31,6 +31,7 @@ import {
   VisualResourceStatus,
 } from "@/types/visualResource";
 import { VisualResourcesService } from "@/services/visualResourcesService";
+import { MODULES, PERMISSION_ACTIONS } from "@/types/core";
 
 interface FileWithPreview {
   file: File; // El archivo original sin modificar
@@ -332,7 +333,18 @@ export default function UploadVisualResource() {
   }, []); // Solo se ejecuta al desmontar
 
   return (
-    <ProtectedRoute>
+    <ProtectedRoute
+      requiredAnyPermission={[
+        {
+          action: PERMISSION_ACTIONS.Create,
+          module: MODULES.TEMPLATE_MANAGEMENT,
+        },
+        {
+          action: PERMISSION_ACTIONS.Create,
+          module: MODULES.CARD_MANAGEMENT,
+        },
+      ]}
+    >
       <main>
         <section className="bg-white py-10">
           <div className={container}>

@@ -108,7 +108,6 @@ export const MODULES = {
   REVIEW: "review",
   CARD_MANAGEMENT: "card_management",
   ACCESS_CONTROL: "access_control",
-  EXTERNAL_INTEGRATIONS: "external_integrations",
 } as const;
 
 // Acciones de permisos: nombre explícito para dejar claro el propósito

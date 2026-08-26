@@ -1963,12 +1963,12 @@
       "enabledModules": "Enabled Modules",
       "actions": "Actions",
       "viewDetails": "View details",
-      "modulesCount": "{count} / 7 modules",
+      "modulesCount": "{count} / 6 modules",
       "edit": "Edit",
       "hide": "Hide",
       "activePermissionsLabel": "Active permissions:",
-      "enabledModulesLabel": "of 7 modules enabled",
-      "enabledModulesCount": "{count} of 7 modules enabled",
+      "enabledModulesLabel": "of 6 modules enabled",
+      "enabledModulesCount": "{count} of 6 modules enabled",
       "modulesAndPermissions": "Modules and CRUD Permissions:",
       "noModulesEnabled": "This role has no enabled modules"
     },
@@ -1979,7 +1979,7 @@
       "review": "Review",
       "cardmanagement": "Cards",
       "accesscontrol": "Access",
-      "externalintegrations": "Integrations"
+      "visualresources": "Visual Resources"
     },
     "crud": {
       "create": "Create",
@@ -1998,7 +1998,6 @@
       "review": "Manage review process",
       "cardManagement": "Manage reusable cards",
       "accessControl": "Manage users and roles",
-      "externalIntegrations": "Manage integrations",
       "crudNote": "Each module can have {create}, {read}, {update}, and {delete} permissions (CRUD).",
       "create": "Create",
       "read": "Read",
@@ -2066,10 +2065,6 @@
       "accesscontrol": {
         "name": "Access Control",
         "description": "Manage users, roles and groups"
-      },
-      "externalintegrations": {
-        "name": "External Integrations",
-        "description": "Configure integrations with external systems"
       }
     },
     "crud": {
@@ -2147,6 +2142,7 @@
     "userIdPlaceholder": "e.g. 507f1f77bcf86cd799439011",
     "selectUser": "Select a user",
     "noUsersFound": "No users found",
+    "usersLoadError": "Available users could not be loaded. Check that your role is allowed to query users.",
     "roleId": "Role",
     "roleIdPlaceholder": "e.g. 507f191e810c19729de860ea",
     "selectRole": "Select a role",

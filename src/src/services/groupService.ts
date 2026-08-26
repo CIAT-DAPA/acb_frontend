@@ -1,4 +1,5 @@
 import { Group, GroupUserRole } from "@/types/groups";
+import { User } from "@/types/user";
 import { LogObject } from "@/types/core";
 import { BaseAPIService } from "./apiConfig";
 
@@ -71,7 +72,9 @@ export class GroupAPIService extends BaseAPIService {
    * Obtiene la lista de todos los grupos
    * GET /groups/
    */
-  static async getGroups(params?: { include_users?: boolean }): Promise<GetGroupsResponse> {
+  static async getGroups(params?: {
+    include_users?: boolean;
+  }): Promise<GetGroupsResponse> {
     try {
       const data = await this.get<any>("/groups/", params);
       const groups = data.groups || data.data || data;
@@ -109,7 +112,7 @@ export class GroupAPIService extends BaseAPIService {
    * POST /groups/
    */
   static async createGroup(
-    groupData: Omit<Group, "_id" | "log"> & { log?: LogObject }
+    groupData: Omit<Group, "_id" | "log"> & { log?: LogObject },
   ): Promise<APIResponse<Group>> {
     try {
       const data = await this.post<any>("/groups/", groupData);
@@ -134,7 +137,7 @@ export class GroupAPIService extends BaseAPIService {
    * GET /groups/by-country/{country_code}
    */
   static async getGroupsByCountry(
-    countryCode: string
+    countryCode: string,
   ): Promise<GetGroupsResponse> {
     try {
       const data = await this.get<any>(`/groups/by-country/${countryCode}`);
@@ -209,7 +212,10 @@ export class GroupAPIService extends BaseAPIService {
    * Obtiene un grupo específico por ID
    * GET /groups/{group_id}
    */
-  static async getGroupById(id: string, params?: { include_users?: boolean }): Promise<APIResponse<Group>> {
+  static async getGroupById(
+    id: string,
+    params?: { include_users?: boolean },
+  ): Promise<APIResponse<Group>> {
     try {
       const data = await this.get<any>(`/groups/${id}`, params);
       const group = data.group || data.data || data;
@@ -241,7 +247,7 @@ export class GroupAPIService extends BaseAPIService {
    */
   static async updateGroup(
     id: string,
-    groupData: Partial<Group>
+    groupData: Partial<Group>,
   ): Promise<APIResponse<Group>> {
     try {
       const data = await this.put<any>(`/groups/${id}`, groupData);
@@ -264,6 +270,35 @@ export class GroupAPIService extends BaseAPIService {
   }
 
   /**
+   * Obtiene los usuarios activos que el administrador puede seleccionar
+   * al gestionar los miembros de un grupo.
+   * GET /groups/{group_id}/available-users
+   */
+  static async getAvailableUsers(
+    groupId: string,
+  ): Promise<APIResponse<User[]>> {
+    try {
+      const data = await this.get<any>(`/groups/${groupId}/available-users`);
+      const users = data.users || data.data || data;
+
+      return {
+        success: true,
+        data: Array.isArray(users) ? users : [],
+      };
+    } catch (error) {
+      console.error("Error fetching available users for group:", error);
+      return {
+        success: false,
+        data: [],
+        message:
+          error instanceof Error
+            ? error.message
+            : "Error al obtener los usuarios disponibles",
+      };
+    }
+  }
+
+  /**
    * Elimina un grupo
    * DELETE /groups/{group_id}
    */
@@ -280,9 +315,7 @@ export class GroupAPIService extends BaseAPIService {
       return {
         success: false,
         message:
-          error instanceof Error
-            ? error.message
-            : "Error al eliminar el grupo",
+          error instanceof Error ? error.message : "Error al eliminar el grupo",
       };
     }
   }
@@ -293,13 +326,10 @@ export class GroupAPIService extends BaseAPIService {
    */
   static async addUserToGroup(
     groupId: string,
-    payload: AddUserToGroupPayload
+    payload: AddUserToGroupPayload,
   ): Promise<APIResponse<Group>> {
     try {
-      const data = await this.post<any>(
-        `/groups/${groupId}/add-user`,
-        payload
-      );
+      const data = await this.post<any>(`/groups/${groupId}/add-user`, payload);
 
       return {
         success: true,
@@ -324,12 +354,12 @@ export class GroupAPIService extends BaseAPIService {
    */
   static async removeUserFromGroup(
     groupId: string,
-    payload: RemoveUserFromGroupPayload
+    payload: RemoveUserFromGroupPayload,
   ): Promise<APIResponse<Group>> {
     try {
       const data = await this.post<any>(
         `/groups/${groupId}/remove-user`,
-        payload
+        payload,
       );
 
       return {
@@ -355,12 +385,12 @@ export class GroupAPIService extends BaseAPIService {
    */
   static async updateUserRoleInGroup(
     groupId: string,
-    payload: UpdateUserRolePayload
+    payload: UpdateUserRolePayload,
   ): Promise<APIResponse<Group>> {
     try {
       const data = await this.post<any>(
         `/groups/${groupId}/update-user-role`,
-        payload
+        payload,
       );
 
       return {
@@ -385,7 +415,7 @@ export class GroupAPIService extends BaseAPIService {
    * GET /groups/{group_id}/users
    */
   static async getUsersInGroup(
-    groupId: string
+    groupId: string,
   ): Promise<APIResponse<GroupUserRole[]>> {
     try {
       const data = await this.get<any>(`/groups/${groupId}/users`);
@@ -415,7 +445,7 @@ export class GroupAPIService extends BaseAPIService {
    * GET /groups/user/{user_id}/groups-roles
    */
   static async getUserGroupsAndRoles(
-    userId: string
+    userId: string,
   ): Promise<UserGroupsRolesResponse> {
     try {
       const data = await this.get<any>(`/groups/user/${userId}/groups-roles`);
@@ -446,11 +476,11 @@ export class GroupAPIService extends BaseAPIService {
   static async userHasRoleInGroup(
     groupId: string,
     userId: string,
-    roleId: string
+    roleId: string,
   ): Promise<APIResponse<{ has_role: boolean }>> {
     try {
       const data = await this.get<any>(
-        `/groups/${groupId}/user/${userId}/has-role/${roleId}`
+        `/groups/${groupId}/user/${userId}/has-role/${roleId}`,
       );
 
       return {
@@ -492,13 +522,10 @@ export class GroupAPIService extends BaseAPIService {
   /**
    * Obtiene el rol de un usuario en un grupo
    */
-  static getUserRoleInGroup(
-    group: Group,
-    userId: string
-  ): string | null {
+  static getUserRoleInGroup(group: Group, userId: string): string | null {
     try {
       const userRole = group.users_access.find(
-        (user) => user.user_id === userId
+        (user) => user.user_id === userId,
       );
       return userRole?.role_id || null;
     } catch (error) {
@@ -568,20 +595,21 @@ export class GroupAPIService extends BaseAPIService {
       }
     }
 
-    if (
-      groupData.description &&
-      groupData.description.trim().length === 0
-    ) {
+    if (groupData.description && groupData.description.trim().length === 0) {
       errors.push("La descripción no puede estar vacía");
     }
 
     if (groupData.users_access) {
       groupData.users_access.forEach((user, index) => {
         if (!user.user_id || user.user_id.trim().length === 0) {
-          errors.push(`Usuario en posición ${index}: user_id no puede estar vacío`);
+          errors.push(
+            `Usuario en posición ${index}: user_id no puede estar vacío`,
+          );
         }
         if (!user.role_id || user.role_id.trim().length === 0) {
-          errors.push(`Usuario en posición ${index}: role_id no puede estar vacío`);
+          errors.push(
+            `Usuario en posición ${index}: role_id no puede estar vacío`,
+          );
         }
       });
     }

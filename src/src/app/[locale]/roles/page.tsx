@@ -438,13 +438,6 @@ export default function RolesPage() {
                     {t("permissionsInfo.accessControl")}
                   </span>
                 </div>
-                <div className="flex items-start gap-2">
-                  <span className="font-medium">•</span>
-                  <span>
-                    <strong>external_integrations:</strong>{" "}
-                    {t("permissionsInfo.externalIntegrations")}
-                  </span>
-                </div>
               </div>
               <p className="mt-3 text-xs text-[#283618]/90">
                 {t("permissionsInfo.crudNote", {
