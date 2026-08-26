@@ -1961,12 +1961,12 @@
       "enabledModules": "Módulos Habilitados",
       "actions": "Acciones",
       "viewDetails": "Ver detalles",
-      "modulesCount": "{count} / 7 módulos",
+      "modulesCount": "{count} / 6 módulos",
       "edit": "Editar",
       "hide": "Ocultar",
       "activePermissionsLabel": "Permisos activos:",
-      "enabledModulesLabel": "de 7 módulos habilitados",
-      "enabledModulesCount": "{count} de 7 módulos habilitados",
+      "enabledModulesLabel": "de 6 módulos habilitados",
+      "enabledModulesCount": "{count} de 6 módulos habilitados",
       "modulesAndPermissions": "Módulos y Permisos CRUD:",
       "noModulesEnabled": "Este rol no tiene módulos habilitados"
     },
@@ -1977,7 +1977,7 @@
       "review": "Revisión",
       "cardmanagement": "Cards",
       "accesscontrol": "Acceso",
-      "externalintegrations": "Integraciones"
+      "visualresources": "Recursos Visuales"
     },
     "crud": {
       "create": "Crear",
@@ -1996,7 +1996,7 @@
       "review": "Gestionar proceso de revisión",
       "cardManagement": "Gestionar cards reutilizables",
       "accessControl": "Gestionar usuarios y roles",
-      "externalIntegrations": "Gestionar integraciones",
+      "visualResources": "Gestionar imágenes e iconos de Recursos Visuales",
       "crudNote": "Cada módulo puede tener permisos de {create}, {read}, {update} y {delete} (CRUD).",
       "create": "Crear",
       "read": "Leer",
@@ -2065,9 +2065,9 @@
         "name": "Control de Acceso",
         "description": "Gestionar usuarios, roles y grupos"
       },
-      "externalintegrations": {
-        "name": "Integraciones Externas",
-        "description": "Configurar integraciones con sistemas externos"
+      "visualresources": {
+        "name": "Recursos Visuales",
+        "description": "Gestionar imágenes e iconos disponibles en Recursos Visuales"
       }
     },
     "crud": {
@@ -2145,6 +2145,7 @@
     "userIdPlaceholder": "ej. 507f1f77bcf86cd799439011",
     "selectUser": "Selecciona un usuario",
     "noUsersFound": "No se encontraron usuarios",
+    "usersLoadError": "No se pudieron cargar los usuarios disponibles. Verifica que tu rol tenga permiso para consultar usuarios.",
     "roleId": "Rol",
     "roleIdPlaceholder": "ej. 507f191e810c19729de860ea",
     "selectRole": "Selecciona un rol",
