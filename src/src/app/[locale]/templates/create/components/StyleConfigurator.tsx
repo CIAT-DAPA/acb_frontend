@@ -89,6 +89,11 @@ export interface StyleConfiguratorProps {
     bulletinWidth?: boolean;
     bulletinHeight?: boolean;
 
+    // Restricciones de tamaño del elemento
+    width?: boolean;
+    minWidth?: boolean;
+    maxWidth?: boolean;
+
     // Layout específico
     fieldsLayout?: boolean;
     justifyContent?: boolean; // Distribución de campos (justify-content)
@@ -703,6 +708,23 @@ export function StyleConfigurator({
           renderTextField("margin", getLabel("margin"), "8px")}
 
         {enabledFields.gap && renderTextField("gap", getLabel("gap"), "8px")}
+
+        {enabledFields.width &&
+          renderTextField("width", getLabel("width"), "100%")}
+
+        {enabledFields.minWidth &&
+          renderTextField("min_width", getLabel("minWidth"), "120px")}
+
+        {enabledFields.maxWidth &&
+          renderTextField("max_width", getLabel("maxWidth"), "320px")}
+
+        {(enabledFields.width ||
+          enabledFields.minWidth ||
+          enabledFields.maxWidth) && (
+          <p className="text-xs text-[#283618]/50 -mt-2">
+            {getLabel("sizeHelp")}
+          </p>
+        )}
 
         {enabledFields.borderWidth &&
           renderTextField("border_width", getLabel("borderWidth"), "1px")}

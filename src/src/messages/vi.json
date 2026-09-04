@@ -580,6 +580,7 @@
       "removeItem": "Xóa mục",
       "maxCharacters": "Tối đa {max} ký tự",
       "noItems": "Không có mục nào. Nhấn \"Thêm mục\" để bắt đầu.",
+      "nestingLimitReached": "Đã đạt tối đa {max} cấp danh sách lồng nhau. Hãy chỉnh sửa nội dung này ở cấp cao hơn.",
       "icons": "Biểu tượng",
       "changeIcon": "Thay đổi biểu tượng",
       "selectIcon": "Chọn biểu tượng",
@@ -1415,7 +1416,11 @@
         "title": "Kiểu trường thông tin",
         "padding": "Đệm (CSS)-Khoảng trống giữa nội dung và đường viền",
         "margin": "Lề (CSS)-Khoảng trống bên ngoài đường viền (Border), dùng để tạo khoảng cách giữa các phần tử.",
-        "gap": "Khoảng cách trường- Khoảng trống giữa các ô nhập liệu"
+        "gap": "Khoảng cách trường- Khoảng trống giữa các ô nhập liệu",
+        "width": "Chiều rộng",
+        "minWidth": "Chiều rộng tối thiểu",
+        "maxWidth": "Chiều rộng tối đa",
+        "sizeHelp": "Chấp nhận giá trị CSS: 320px, 100%, auto. Số đơn thuần được hiểu là pixel."
       },
       "preview": {
         "title": "Xem trước"
@@ -1613,7 +1618,8 @@
         "itemNumber": "Mục",
         "deleteItem": "Xóa mục",
         "noItemsMessage": "Không có mục nào. Nhấp vào 'Thêm mục' để bắt đầu.",
-        "defineSchemaFirst": "Trước tiên, hãy xác định sơ đồ các phần tử ở trên"
+        "defineSchemaFirst": "Trước tiên, hãy xác định sơ đồ các phần tử ở trên",
+        "nestingLimitReached": "Đã đạt tối đa {max} cấp danh sách lồng nhau."
       },
       "climateDataConfig": {
         "type": "Kiểu",
@@ -1987,6 +1993,10 @@
         "padding": "Đệm",
         "margin": "Lề",
         "gap": "Khoảng cách giữa các trường thông tin",
+        "width": "Chiều rộng",
+        "minWidth": "Chiều rộng tối thiểu",
+        "maxWidth": "Chiều rộng tối đa",
+        "sizeHelp": "Chấp nhận giá trị CSS: 320px, 100%, auto. Số đơn thuần được hiểu là pixel.",
         "bulletinWidth": "Chiều rộng bản tin (px)",
         "bulletinHeight": "Chiều cao bản tin (px)",
         "listStyleType": "Kiểu trình bày danh sách",

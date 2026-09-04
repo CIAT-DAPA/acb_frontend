@@ -12,6 +12,10 @@ import * as ui from "../../../components/ui";
 import { useTranslations } from "next-intl";
 import { Layers, GripVertical, Move, ZoomIn, X } from "lucide-react";
 import { shouldRenderBulletinSection } from "@/utils/sectionVisibility";
+import {
+  buildListSubfieldId,
+  parseFieldListElementId,
+} from "@/utils/listSubfieldPath";
 
 type CanvasInteractionMode = "edit" | "review";
 
@@ -736,44 +740,49 @@ export const Canvas: React.FC<CanvasProps> = ({
 
         return;
       }
-      const listSubfieldMatch = id.match(
-        /^field-(\d+)-(\d+)-(\d+)-item-(\d+)-subfield-(.+)$/,
-      );
+      const parsedListElement = parseFieldListElementId(id);
 
-      if (listSubfieldMatch) {
-        const sectionIndex = Number(listSubfieldMatch[1]);
-        const blockIndex = Number(listSubfieldMatch[2]);
-        const fieldIndex = Number(listSubfieldMatch[3]);
-        const itemIndex = Number(listSubfieldMatch[4]);
-        const schemaKey = listSubfieldMatch[5];
+      if (parsedListElement && parsedListElement.segments.length > 0) {
+        const { sectionIndex, blockIndex, fieldIndex, baseId, segments } =
+          parsedListElement;
+
+        const lastSegment = segments[segments.length - 1];
+
+        /*
+         * Al hacer clic en un ítem completo se edita la definición de la lista
+         * que lo contiene, no un subcampo: para eso se descarta el último tramo.
+         * Si no queda nada, la lista es la de primer nivel.
+         */
+        const editableSegments = lastSegment.schemaKey
+          ? segments
+          : segments.slice(0, -1);
+
+        if (editableSegments.length === 0) {
+          select({
+            type: "field",
+            id: baseId,
+            sectionIndex,
+            blockIndex,
+            fieldIndex,
+            schemaKey: undefined,
+            schemaPath: undefined,
+          });
+
+          return;
+        }
+
+        const editableLeaf = editableSegments[editableSegments.length - 1];
 
         select({
-          // El editor ya sabe editar fields usando schemaKey.
+          // El editor ya sabe editar fields del esquema usando la ruta.
           type: "field",
-          id,
+          id: buildListSubfieldId(baseId, editableSegments),
           sectionIndex,
           blockIndex,
           fieldIndex,
-          itemIndex,
-          schemaKey,
-        });
-
-        return;
-      }
-      const listItemMatch = id.match(/^field-(\d+)-(\d+)-(\d+)-item-(\d+)$/);
-
-      if (listItemMatch) {
-        const sectionIndex = Number(listItemMatch[1]);
-        const blockIndex = Number(listItemMatch[2]);
-        const fieldIndex = Number(listItemMatch[3]);
-
-        select({
-          type: "field",
-          id: `field-${sectionIndex}` + `-${blockIndex}` + `-${fieldIndex}`,
-          sectionIndex,
-          blockIndex,
-          fieldIndex,
-          schemaKey: undefined,
+          itemIndex: editableLeaf.itemIndex,
+          schemaKey: editableLeaf.schemaKey,
+          schemaPath: editableSegments,
         });
 
         return;
@@ -1000,34 +1009,27 @@ export const Canvas: React.FC<CanvasProps> = ({
       return;
     }
 
-    const listItemFieldMatch = id.match(
-      /^field-(\d+)-(\d+)-(\d+)-item-(\d+)-subfield-(.+)$/,
-    );
+    const parsedReviewListElement = parseFieldListElementId(id);
 
-    if (listItemFieldMatch) {
+    if (
+      parsedReviewListElement &&
+      parsedReviewListElement.segments.length > 0
+    ) {
+      const { sectionIndex, blockIndex, fieldIndex, segments } =
+        parsedReviewListElement;
+
+      const lastSegment = segments[segments.length - 1];
+
       select({
-        type: "list_item_field",
+        type: lastSegment.schemaKey ? "list_item_field" : "list_item",
         id,
-        sectionIndex: Number(listItemFieldMatch[1]),
-        blockIndex: Number(listItemFieldMatch[2]),
-        fieldIndex: Number(listItemFieldMatch[3]),
-        itemIndex: Number(listItemFieldMatch[4]),
-        schemaKey: listItemFieldMatch[5],
-      });
-
-      return;
-    }
-
-    const listItemMatch = id.match(/^field-(\d+)-(\d+)-(\d+)-item-(\d+)$/);
-
-    if (listItemMatch) {
-      select({
-        type: "list_item",
-        id,
-        sectionIndex: Number(listItemMatch[1]),
-        blockIndex: Number(listItemMatch[2]),
-        fieldIndex: Number(listItemMatch[3]),
-        itemIndex: Number(listItemMatch[4]),
+        sectionIndex,
+        blockIndex,
+        fieldIndex,
+        // El comentario cuelga del elemento apuntado por el último tramo.
+        itemIndex: lastSegment.itemIndex,
+        schemaKey: lastSegment.schemaKey,
+        schemaPath: segments,
       });
 
       return;
