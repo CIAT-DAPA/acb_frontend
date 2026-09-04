@@ -101,6 +101,12 @@ type BulletinPublicClientProps = {
   locale: string;
   templateSlug: string;
   bulletinSlug: string;
+  /**
+   * Modo embebible: oculta la navegación de la app y deja únicamente la
+   * previsualización del boletín y el botón de exportar, para incrustar la
+   * vista en un iframe externo.
+   */
+  embed?: boolean;
 };
 
 /**
@@ -116,6 +122,7 @@ export default function BulletinPublicClient({
   locale,
   templateSlug,
   bulletinSlug,
+  embed = false,
 }: BulletinPublicClientProps) {
   const router = useRouter();
   const t = useTranslations("CreateBulletin.bulletinPreview");
@@ -203,33 +210,47 @@ export default function BulletinPublicClient({
           <p className="text-sm text-[#283618]/50 mb-6">
             {t("errorSlug", { templateSlug, bulletinSlug })}
           </p>
-          <button
-            onClick={() => router.push(`/${locale}/bulletins`)}
-            className="px-6 py-3 bg-[#ffaf68] text-white rounded-lg hover:bg-[#ff9d4d] transition-colors flex items-center gap-2 mx-auto"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            {t("backToBulletins")}
-          </button>
+          {!embed && (
+            <button
+              onClick={() => router.push(`/${locale}/bulletins`)}
+              className="px-6 py-3 bg-[#ffaf68] text-white rounded-lg hover:bg-[#ff9d4d] transition-colors flex items-center gap-2 mx-auto"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              {t("backToBulletins")}
+            </button>
+          )}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-linear-to-b from-[#f8f9fa] to-white md:h-dvh md:overflow-hidden md:flex md:flex-col">
-      {/* Header con botón de regreso y exportación */}
-      <div className="hidden md:block bg-white border-b border-[#283618]/10 sticky top-0 z-40 shadow-sm shrink-0">
+    <div
+      className={
+        embed
+          ? "bg-linear-to-b from-[#f8f9fa] to-white h-dvh overflow-hidden flex flex-col"
+          : "bg-linear-to-b from-[#f8f9fa] to-white md:h-dvh md:overflow-hidden md:flex md:flex-col"
+      }
+    >
+      {/* Barra con título y exportación (sin regreso en modo embed) */}
+      <div
+        className={`${
+          embed ? "block" : "hidden md:block"
+        } bg-white border-b border-[#283618]/10 sticky top-0 z-40 shadow-sm shrink-0`}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-14 md:h-16">
-            <button
-              onClick={() => router.push(`/${locale}/bulletins`)}
-              className="flex items-center gap-2 text-[#283618] hover:text-[#606c38] transition-colors font-medium"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              <span className="hidden sm:inline">{t("backToBulletins")}</span>
-            </button>
+          <div className="flex items-center justify-between gap-4 h-14 md:h-16">
+            {!embed && (
+              <button
+                onClick={() => router.push(`/${locale}/bulletins`)}
+                className="flex items-center gap-2 text-[#283618] hover:text-[#606c38] transition-colors font-medium"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                <span className="hidden sm:inline">{t("backToBulletins")}</span>
+              </button>
+            )}
 
-            <h1 className="text-lg sm:text-xl font-bold text-[#283618] truncate px-4">
+            <h1 className="text-base sm:text-xl font-bold text-[#283618] truncate">
               {templateData.master.template_name}
             </h1>
 
@@ -245,8 +266,20 @@ export default function BulletinPublicClient({
       </div>
 
       {/* Preview Container */}
-      <div className="py-0 px-2 md:flex-1 md:min-h-0 md:py-8 md:px-4">
-        <div className="max-w-7xl mx-auto h-auto md:h-full">
+      <div
+        className={
+          embed
+            ? "flex-1 min-h-0 px-2 py-4 md:px-4 md:py-6"
+            : "py-0 px-2 md:flex-1 md:min-h-0 md:py-8 md:px-4"
+        }
+      >
+        <div
+          className={
+            embed
+              ? "max-w-7xl mx-auto h-full"
+              : "max-w-7xl mx-auto h-auto md:h-full"
+          }
+        >
           <UnifiedBulletinPreview
             data={templateData}
             variant="full-scroll"

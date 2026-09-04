@@ -12,6 +12,7 @@ import {
   AuthAPIService,
   TokenValidationResponse,
 } from "@/services/authService";
+import { isEmbedWindow } from "@/utils/embed";
 
 interface AuthContextType {
   userInfo: any | null;
@@ -77,6 +78,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Prevent multiple initializations
     if (isRun.current) return;
     isRun.current = true;
+
+    // En vistas embebibles (iframe) no se inicializa Keycloak: el flujo
+    // check-sso navega la ventana hacia el servidor de identidad, lo que un
+    // iframe de terceros bloquea. El embed siempre se trata como anónimo.
+    if (isEmbedWindow()) {
+      setLoading(false);
+      return;
+    }
 
     // Initialize Keycloak only on client side
     keycloak.current = new Keycloak({
