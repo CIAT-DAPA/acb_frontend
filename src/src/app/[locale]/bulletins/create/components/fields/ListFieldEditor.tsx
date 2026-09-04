@@ -25,12 +25,17 @@ import {
   SelectWithIconsField,
   ClimateDataField,
   ImageInput,
+  ImageUploadInput,
 } from "./index";
 import { btnOutlineSecondary } from "@/app/[locale]/components/ui";
 import { VisualResourceSelector } from "../../../../templates/create/components/VisualResourceSelector";
 import { ConfirmationModal } from "../../../../components/ConfirmationModal";
 import { BulletinComment } from "@/types/bulletin";
-import { encodeReviewFieldId } from "@/utils/reviewTarget";
+import {
+  encodeReviewFieldId,
+  type ReviewListPathSegment,
+} from "@/utils/reviewTarget";
+import { MAX_LIST_NESTING_LEVEL } from "@/utils/listSubfieldPath";
 
 interface ListFieldEditorProps {
   field: Field;
@@ -50,7 +55,19 @@ interface ListFieldEditorProps {
 
     cardFieldIndex?: number;
     cardFieldId?: string;
+
+    /*
+     * Tramos de lista ya recorridos hasta llegar a este editor.
+     * Está vacío en la lista de primer nivel y crece con cada anidamiento.
+     */
+    listPath?: ReviewListPathSegment[];
   };
+
+  /*
+   * Profundidad de anidamiento. 0 es la lista de primer nivel.
+   * Se usa para ajustar la densidad visual y para cortar la recursión.
+   */
+  nestingLevel?: number;
 }
 
 export function ListFieldEditor({
@@ -61,6 +78,7 @@ export function ListFieldEditor({
   renderComments,
   readOnly = false,
   reviewTargetContext,
+  nestingLevel = 0,
 }: ListFieldEditorProps) {
   const t = useTranslations("CreateBulletin.listField");
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set([0]));
@@ -117,34 +135,11 @@ export function ListFieldEditor({
     itemSchemaKeys.join("|"),
   ]);
 
-  const getItemTargetId = (itemIndex: number): string | undefined => {
-    const parentFieldId = reviewTargetContext?.parentFieldId || field.field_id;
+  // Tramos de lista heredados de los editores padres (vacío en el primer nivel).
+  const ancestorListPath = reviewTargetContext?.listPath ?? [];
 
-    if (!parentFieldId) {
-      return undefined;
-    }
-
-    return encodeReviewFieldId({
-      parentFieldId,
-
-      cardIndex: reviewTargetContext?.cardIndex,
-      cardId: reviewTargetContext?.cardId,
-
-      cardBlockIndex: reviewTargetContext?.cardBlockIndex,
-
-      cardBlockId: reviewTargetContext?.cardBlockId,
-
-      cardFieldIndex: reviewTargetContext?.cardFieldIndex,
-
-      cardFieldId: reviewTargetContext?.cardFieldId,
-
-      itemIndex,
-    });
-  };
-
-  const getSubfieldTargetId = (
-    itemIndex: number,
-    itemFieldId: string,
+  const buildTargetId = (
+    segment: ReviewListPathSegment,
   ): string | undefined => {
     const parentFieldId = reviewTargetContext?.parentFieldId || field.field_id;
 
@@ -166,10 +161,17 @@ export function ListFieldEditor({
 
       cardFieldId: reviewTargetContext?.cardFieldId,
 
-      itemIndex,
-      itemFieldId,
+      listPath: [...ancestorListPath, segment],
     });
   };
+
+  const getItemTargetId = (itemIndex: number): string | undefined =>
+    buildTargetId({ itemIndex });
+
+  const getSubfieldTargetId = (
+    itemIndex: number,
+    itemFieldId: string,
+  ): string | undefined => buildTargetId({ itemIndex, itemFieldId });
 
   const maxItems =
     field.field_config && "max_items" in field.field_config
@@ -198,6 +200,9 @@ export function ListFieldEditor({
           break;
         case "date":
           newItem[fieldId] = null;
+          break;
+        case "list":
+          newItem[fieldId] = [];
           break;
         default:
           newItem[fieldId] = "";
@@ -836,6 +841,8 @@ export function ListFieldEditor({
           return null;
         case "date":
           return null;
+        case "list":
+          return [];
         default:
           return "";
       }
@@ -1008,6 +1015,22 @@ export function ListFieldEditor({
         );
       }
 
+      case "image_upload": {
+        const imageUploadField = {
+          ...fieldDef,
+          field_id: fieldDef.field_id || fieldId,
+          type: "image_upload",
+        } as Field;
+
+        return (
+          <ImageUploadInput
+            field={imageUploadField}
+            value={typeof fieldValue === "string" ? fieldValue : ""}
+            onChange={handleChange}
+          />
+        );
+      }
+
       case "climate_data_puntual":
         return (
           <ClimateDataField
@@ -1016,6 +1039,62 @@ export function ListFieldEditor({
             fieldConfig={fieldDef.field_config}
           />
         );
+
+      case "list": {
+        /*
+         * Lista anidada: se reutiliza este mismo editor un nivel más abajo.
+         * El límite de profundidad evita que un esquema mal definido
+         * (una lista que se referencia a sí misma) provoque recursión infinita.
+         */
+        if (nestingLevel >= MAX_LIST_NESTING_LEVEL) {
+          return (
+            <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+              {t("nestingLimitReached", { max: MAX_LIST_NESTING_LEVEL + 1 })}
+            </div>
+          );
+        }
+
+        const nestedField = {
+          ...fieldDef,
+          field_id: fieldDef.field_id || fieldId,
+          type: "list",
+        } as Field;
+
+        const nestedValue = Array.isArray(fieldValue) ? fieldValue : [];
+
+        return (
+          <div className="rounded-md border border-[#606c38]/30 bg-[#fefae0]/40 p-3">
+            <ListFieldEditor
+              field={nestedField}
+              value={nestedValue}
+              onChange={handleChange}
+              commentsByTarget={commentsByTarget}
+              renderComments={renderComments}
+              readOnly={readOnly || fieldDef.form === false}
+              nestingLevel={nestingLevel + 1}
+              reviewTargetContext={{
+                parentFieldId:
+                  reviewTargetContext?.parentFieldId || field.field_id,
+
+                cardIndex: reviewTargetContext?.cardIndex,
+                cardId: reviewTargetContext?.cardId,
+
+                cardBlockIndex: reviewTargetContext?.cardBlockIndex,
+                cardBlockId: reviewTargetContext?.cardBlockId,
+
+                cardFieldIndex: reviewTargetContext?.cardFieldIndex,
+                cardFieldId: reviewTargetContext?.cardFieldId,
+
+                // Se añade el tramo que lleva desde esta lista hasta la anidada.
+                listPath: [
+                  ...ancestorListPath,
+                  { itemIndex, itemFieldId: fieldId },
+                ],
+              }}
+            />
+          </div>
+        );
+      }
 
       default:
         return (
@@ -1028,9 +1107,10 @@ export function ListFieldEditor({
     }
   };
 
-  // Inicializar con al menos minItems si el array está vacío
+  // Inicializar con al menos minItems si el array está vacío.
+  // En modo lectura no se escribe nada: la revisión no debe alterar el contenido.
   React.useEffect(() => {
-    if (value.length < minItems) {
+    if (!readOnly && value.length < minItems) {
       const itemsToAdd = minItems - value.length;
       const newValue = [
         ...value,
@@ -1064,6 +1144,35 @@ export function ListFieldEditor({
 
     if (typeof rawValue === "string" || typeof rawValue === "number") {
       return String(rawValue);
+    }
+
+    /*
+     * Sublistas: se resume cada ítem en una línea con sus valores legibles
+     * en lugar de volcar el JSON completo.
+     */
+    if (Array.isArray(rawValue)) {
+      if (rawValue.length === 0) {
+        return "Sin valor";
+      }
+
+      return rawValue
+        .map((item, index) => {
+          if (item === null || item === undefined) {
+            return `${index + 1}. Sin valor`;
+          }
+
+          if (typeof item !== "object" || Array.isArray(item)) {
+            return `${index + 1}. ${formatReadOnlyValue(item)}`;
+          }
+
+          const parts = Object.entries(item as Record<string, unknown>)
+            .filter(([key]) => !key.startsWith("__"))
+            .map(([, entryValue]) => formatReadOnlyValue(entryValue))
+            .filter((part) => part !== "Sin valor");
+
+          return `${index + 1}. ${parts.length > 0 ? parts.join(" · ") : "Sin valor"}`;
+        })
+        .join("\n");
     }
 
     if (
@@ -1392,7 +1501,8 @@ export function ListFieldEditor({
                             )}
                           </div>
 
-                          {readOnly || fieldDef.form === false ? (
+                          {(readOnly || fieldDef.form === false) &&
+                          fieldDef.type !== "list" ? (
                             <div className="whitespace-pre-wrap rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
                               {formatReadOnlyValue(currentValue)}
                             </div>

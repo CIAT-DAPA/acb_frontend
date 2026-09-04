@@ -1,3 +1,5 @@
+import type { ListSubfieldSegment } from "@/utils/listSubfieldPath";
+
 export type SelectionType =
   | "template"
   | "section"
@@ -24,6 +26,15 @@ export interface EditorSelection {
   // List selection
   itemIndex?: number;
   schemaKey?: string;
+
+  /*
+   * Ruta completa dentro de listas anidadas.
+   *
+   * itemIndex y schemaKey reflejan el primer tramo para mantener compatibilidad
+   * con el código que solo contempla un nivel; schemaPath manda cuando hay más
+   * de un nivel de anidamiento.
+   */
+  schemaPath?: ListSubfieldSegment[];
 
 
   cardIndex?: number;

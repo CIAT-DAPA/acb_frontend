@@ -84,6 +84,10 @@ export function combineStyles(
       combined.border_radius = childStyle.border_radius;
     if (childStyle.border_sides)
       combined.border_sides = childStyle.border_sides;
+    // Las dimensiones son propias del elemento y nunca se heredan del contenedor
+    if (childStyle.width) combined.width = childStyle.width;
+    if (childStyle.min_width) combined.min_width = childStyle.min_width;
+    if (childStyle.max_width) combined.max_width = childStyle.max_width;
     if (childStyle.font) combined.font = childStyle.font;
     if (childStyle.secondary_color)
       combined.secondary_color = childStyle.secondary_color;

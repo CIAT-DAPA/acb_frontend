@@ -1,9 +1,28 @@
+/**
+ * Un tramo de la ruta dentro de una lista.
+ *
+ * Las listas anidadas encadenan varios tramos: cada uno indica el ítem y, salvo
+ * el último, el subcampo de tipo lista por el que se sigue descendiendo.
+ */
+export type ReviewListPathSegment = {
+  itemIndex: number;
+  itemFieldId?: string;
+};
+
 export type DecodedReviewFieldId = {
   parentFieldId: string;
 
   // Listas
   itemIndex?: number;
   itemFieldId?: string;
+
+  /*
+   * Ruta completa para listas anidadas.
+   *
+   * itemIndex e itemFieldId siguen reflejando el primer tramo para no romper el
+   * código que solo contempla un nivel de anidamiento.
+   */
+  listPath?: ReviewListPathSegment[];
 
   // Cards
   cardIndex?: number;
@@ -26,11 +45,137 @@ const isValidIndex = (value: unknown): value is number =>
 const getOptionalString = (value: unknown): string | undefined =>
   typeof value === "string" && value.trim() !== "" ? value : undefined;
 
+/**
+ * Normaliza la ruta de lista a partir de listPath o del par itemIndex/itemFieldId.
+ *
+ * Descarta los tramos inválidos y todo lo que venga después del primer tramo sin
+ * itemFieldId, porque ese tramo ya identifica la hoja de la ruta.
+ */
+const normalizeListPath = ({
+  listPath,
+  itemIndex,
+  itemFieldId,
+}: Pick<
+  DecodedReviewFieldId,
+  "listPath" | "itemIndex" | "itemFieldId"
+>): ReviewListPathSegment[] => {
+  const rawSegments =
+    Array.isArray(listPath) && listPath.length > 0
+      ? listPath
+      : isValidIndex(itemIndex)
+        ? [{ itemIndex, itemFieldId }]
+        : [];
+
+  const segments: ReviewListPathSegment[] = [];
+
+  for (const segment of rawSegments) {
+    if (!segment || !isValidIndex(segment.itemIndex)) {
+      break;
+    }
+
+    const segmentFieldId = getOptionalString(segment.itemFieldId);
+
+    // Se omite itemFieldId cuando no aplica para que la ruta serializada a JSON
+    // y la reconstruida desde el texto tengan exactamente la misma forma.
+    segments.push(
+      segmentFieldId
+        ? { itemIndex: segment.itemIndex, itemFieldId: segmentFieldId }
+        : { itemIndex: segment.itemIndex },
+    );
+
+    if (!segmentFieldId) {
+      break;
+    }
+  }
+
+  return segments;
+};
+
+/**
+ * Serializa la ruta de lista al formato `::item::N::subfield::X`.
+ */
+const encodeListPath = (segments: ReviewListPathSegment[]): string =>
+  segments
+    .map((segment) => {
+      const itemTarget = `${ITEM_MARKER}${segment.itemIndex}`;
+
+      if (!segment.itemFieldId) {
+        return itemTarget;
+      }
+
+      return (
+        `${itemTarget}${SUBFIELD_MARKER}` +
+        encodeURIComponent(segment.itemFieldId)
+      );
+    })
+    .join("");
+
+/**
+ * Reconstruye la ruta de lista desde el texto que sigue al field padre.
+ */
+const decodeListPath = (encodedPath: string): ReviewListPathSegment[] => {
+  const segments: ReviewListPathSegment[] = [];
+
+  let rest = encodedPath;
+
+  while (rest !== "") {
+    const subfieldMarkerIndex = rest.indexOf(SUBFIELD_MARKER);
+
+    const itemIndexText =
+      subfieldMarkerIndex === -1 ? rest : rest.slice(0, subfieldMarkerIndex);
+
+    const itemIndex = Number(itemIndexText);
+
+    if (!isValidIndex(itemIndex)) {
+      break;
+    }
+
+    // Último tramo: apunta al ítem completo, no a un subcampo.
+    if (subfieldMarkerIndex === -1) {
+      segments.push({ itemIndex });
+      break;
+    }
+
+    const afterSubfield = rest.slice(
+      subfieldMarkerIndex + SUBFIELD_MARKER.length,
+    );
+
+    const nextItemMarkerIndex = afterSubfield.indexOf(ITEM_MARKER);
+
+    const encodedItemFieldId =
+      nextItemMarkerIndex === -1
+        ? afterSubfield
+        : afterSubfield.slice(0, nextItemMarkerIndex);
+
+    let itemFieldId: string;
+
+    try {
+      itemFieldId = decodeURIComponent(encodedItemFieldId);
+    } catch {
+      itemFieldId = encodedItemFieldId;
+    }
+
+    segments.push({
+      itemIndex,
+      itemFieldId: itemFieldId || undefined,
+    });
+
+    if (nextItemMarkerIndex === -1) {
+      break;
+    }
+
+    rest = afterSubfield.slice(nextItemMarkerIndex + ITEM_MARKER.length);
+  }
+
+  return segments;
+};
+
 export function encodeReviewFieldId({
   parentFieldId,
 
   itemIndex,
   itemFieldId,
+  listPath,
 
   cardIndex,
   cardId,
@@ -39,6 +184,7 @@ export function encodeReviewFieldId({
   cardFieldIndex,
   cardFieldId,
 }: DecodedReviewFieldId): string {
+  const listSegments = normalizeListPath({ listPath, itemIndex, itemFieldId });
   /*
    * Card completa, bloque interno o field interno.
    *
@@ -57,9 +203,12 @@ export function encodeReviewFieldId({
 
       cardFieldId: getOptionalString(cardFieldId),
 
-      itemIndex: isValidIndex(itemIndex) ? itemIndex : undefined,
+      itemIndex: listSegments[0]?.itemIndex,
 
-      itemFieldId: getOptionalString(itemFieldId),
+      itemFieldId: listSegments[0]?.itemFieldId,
+
+      // Solo se guarda cuando hay listas anidadas dentro de la card.
+      listPath: listSegments.length > 1 ? listSegments : undefined,
     };
 
     return (
@@ -70,19 +219,14 @@ export function encodeReviewFieldId({
 
   /*
    * Lista e ítems de lista.
-   * Se mantiene el formato actual para no romper comentarios existentes.
+   * Con un solo nivel el resultado es idéntico al formato anterior, así que los
+   * comentarios ya guardados siguen resolviéndose.
    */
-  if (!isValidIndex(itemIndex)) {
+  if (listSegments.length === 0) {
     return parentFieldId;
   }
 
-  const itemTarget = `${parentFieldId}${ITEM_MARKER}${itemIndex}`;
-
-  if (!itemFieldId) {
-    return itemTarget;
-  }
-
-  return `${itemTarget}${SUBFIELD_MARKER}` + encodeURIComponent(itemFieldId);
+  return `${parentFieldId}${encodeListPath(listSegments)}`;
 }
 
 export function decodeReviewFieldId(
@@ -142,11 +286,21 @@ export function decodeReviewFieldId(
         /*
          * Ruta opcional de lista dentro del field de card.
          */
-        itemIndex: isValidIndex(parsedPath.itemIndex)
-          ? parsedPath.itemIndex
-          : undefined,
+        ...(() => {
+          const segments = normalizeListPath({
+            listPath: parsedPath.listPath as
+              | ReviewListPathSegment[]
+              | undefined,
+            itemIndex: parsedPath.itemIndex as number | undefined,
+            itemFieldId: parsedPath.itemFieldId as string | undefined,
+          });
 
-        itemFieldId: getOptionalString(parsedPath.itemFieldId),
+          return {
+            itemIndex: segments[0]?.itemIndex,
+            itemFieldId: segments[0]?.itemFieldId,
+            listPath: segments.length > 0 ? segments : undefined,
+          };
+        })(),
       };
     } catch {
       // Si la ruta está dañada, al menos conservar el field padre.
@@ -172,43 +326,18 @@ export function decodeReviewFieldId(
 
   const nestedPath = encodedFieldId.slice(itemMarkerIndex + ITEM_MARKER.length);
 
-  const subfieldMarkerIndex = nestedPath.indexOf(SUBFIELD_MARKER);
+  const segments = decodeListPath(nestedPath);
 
-  const itemIndexText =
-    subfieldMarkerIndex === -1
-      ? nestedPath
-      : nestedPath.slice(0, subfieldMarkerIndex);
-
-  const itemIndex = Number(itemIndexText);
-
-  if (!parentFieldId || !Number.isInteger(itemIndex) || itemIndex < 0) {
+  if (!parentFieldId || segments.length === 0) {
     return {
       parentFieldId: encodedFieldId,
     };
   }
 
-  if (subfieldMarkerIndex === -1) {
-    return {
-      parentFieldId,
-      itemIndex,
-    };
-  }
-
-  const encodedItemFieldId = nestedPath.slice(
-    subfieldMarkerIndex + SUBFIELD_MARKER.length,
-  );
-
-  let itemFieldId: string | undefined;
-
-  try {
-    itemFieldId = decodeURIComponent(encodedItemFieldId);
-  } catch {
-    itemFieldId = encodedItemFieldId;
-  }
-
   return {
     parentFieldId,
-    itemIndex,
-    itemFieldId: itemFieldId || undefined,
+    itemIndex: segments[0].itemIndex,
+    itemFieldId: segments[0].itemFieldId,
+    listPath: segments,
   };
 }

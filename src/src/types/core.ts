@@ -42,6 +42,9 @@ export interface StyleConfig {
   border_sides?: string; // Qué lados del borde mostrar: "all", "top", "bottom", "left", "right", o combinación como "top,bottom"
   bulletin_width?: number; // Ancho del boletín en píxeles
   bulletin_height?: number; // Alto del boletín en píxeles
+  width?: string; // Ancho del elemento como valor CSS: "200px", "100%", "auto"
+  min_width?: string; // Ancho mínimo del elemento como valor CSS
+  max_width?: string; // Ancho máximo del elemento como valor CSS
   fields_layout?: "horizontal" | "vertical"; // Layout de los campos
   justify_content?:
     | "start"

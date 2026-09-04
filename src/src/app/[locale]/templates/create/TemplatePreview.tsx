@@ -279,6 +279,28 @@ function normalizeCSSValue(
   return strValue;
 }
 
+/**
+ * Genera las restricciones de tamaño configuradas en el style_config.
+ * Los valores se normalizan para aceptar tanto "200" como "200px" o "100%".
+ */
+function getSizeStyles(
+  styleConfig: StyleConfig | undefined,
+): React.CSSProperties {
+  const styles: React.CSSProperties = {};
+
+  if (!styleConfig) return styles;
+
+  const width = normalizeCSSValue(styleConfig.width);
+  const minWidth = normalizeCSSValue(styleConfig.min_width);
+  const maxWidth = normalizeCSSValue(styleConfig.max_width);
+
+  if (width) styles.width = width;
+  if (minWidth) styles.minWidth = minWidth;
+  if (maxWidth) styles.maxWidth = maxWidth;
+
+  return styles;
+}
+
 type OverflowSlice = {
   offset: number;
   height: number;
@@ -319,7 +341,50 @@ type BlockMeasurement = {
   listFieldItemHeights?: (number[] | undefined)[];
   listFieldStaticHeights?: (number | undefined)[];
   listFieldItemGapHeights?: (number | undefined)[];
+
+  /*
+   * Índices de ítems agrupados por fila visual, medidos en el DOM.
+   *
+   * En una lista vertical cada fila tiene un solo ítem, pero en los layouts
+   * multi-columna (grid-2, grid-3, horizontal) varios ítems comparten fila y
+   * ocupan alto una sola vez. Sin esta agrupación la paginación suma el alto de
+   * cada ítem por separado, cree que la lista es mucho más alta de lo que es y
+   * la parte en más páginas de las necesarias.
+   */
+  listFieldItemRows?: (number[][] | undefined)[];
 };
+
+/**
+ * Agrupa los ítems de una lista en filas.
+ *
+ * Sin información de filas medida se asume una lista vertical: un ítem por fila.
+ */
+function getListItemRows(
+  itemHeights: number[],
+  measuredRows?: number[][],
+): number[][] {
+  if (measuredRows && measuredRows.length > 0) {
+    return measuredRows;
+  }
+
+  return itemHeights.map((_, itemIndex) => [itemIndex]);
+}
+
+/**
+ * Alto de cada fila: el del ítem más alto que la compone.
+ */
+function getListRowHeights(
+  itemHeights: number[],
+  rows: number[][],
+): number[] {
+  return rows.map((rowItemIndexes) =>
+    rowItemIndexes.reduce(
+      (tallest, itemIndex) =>
+        Math.max(tallest, Math.max(itemHeights[itemIndex] || 0, 0)),
+      0,
+    ),
+  );
+}
 
 type FieldOverflowContext = {
   cardBlockPage?: PaginatedBlockPage;
@@ -518,6 +583,7 @@ function getOverflowPages(
     listFieldItemHeights?: (number[] | undefined)[],
     listFieldStaticHeights?: (number | undefined)[],
     listFieldItemGapHeights?: (number | undefined)[],
+    listFieldItemRows?: (number[][] | undefined)[],
   ): PaginatedFieldPage[] => {
     if (fieldHeights.length === 0 || fullPageAvailableHeight <= 0) {
       return [{ fieldIndexes: [], usedHeight: 0 }];
@@ -526,8 +592,8 @@ function getOverflowPages(
     const pages: PaginatedFieldPage[] = [];
     let currentFieldIndex = 0;
     let currentFieldOffset = 0;
-    let currentListItemIndex = 0;
-    let currentListItemOffset = 0;
+    let currentListRowIndex = 0;
+    let currentListRowOffset = 0;
     let isFirstPage = true;
 
     while (currentFieldIndex < fieldHeights.length) {
@@ -570,19 +636,26 @@ function getOverflowPages(
 
         if (isListField) {
           const normalizedItemHeights = currentListItems;
+          const listItemRows = getListItemRows(
+            normalizedItemHeights,
+            listFieldItemRows?.[currentFieldIndex],
+          );
+          const listRowHeights = getListRowHeights(
+            normalizedItemHeights,
+            listItemRows,
+          );
           const listItemGapHeight = Math.max(
             listFieldItemGapHeights?.[currentFieldIndex] ?? 0,
             0,
           );
           const inferredTotalGapHeight =
-            normalizedItemHeights.length > 1
-              ? listItemGapHeight * (normalizedItemHeights.length - 1)
+            listRowHeights.length > 1
+              ? listItemGapHeight * (listRowHeights.length - 1)
               : 0;
           const inferredStaticHeight = Math.max(
             currentFieldHeight -
-              normalizedItemHeights.reduce(
-                (totalHeight, itemHeight) =>
-                  totalHeight + Math.max(itemHeight, 0),
+              listRowHeights.reduce(
+                (totalHeight, rowHeight) => totalHeight + Math.max(rowHeight, 0),
                 0,
               ) -
               inferredTotalGapHeight,
@@ -600,68 +673,75 @@ function getOverflowPages(
             const pageItemSlices: Record<number, OverflowSlice> = {};
             let usedItemsHeight = 0;
 
+            // Se reparte fila a fila: los ítems que comparten fila entran
+            // o salen juntos y su alto se cuenta una sola vez.
             while (
-              currentListItemIndex < normalizedItemHeights.length &&
+              currentListRowIndex < listRowHeights.length &&
               availableHeightForItems > 0
             ) {
-              const currentItemHeight = Math.max(
-                normalizedItemHeights[currentListItemIndex] || 0,
+              const currentRowItemIndexes =
+                listItemRows[currentListRowIndex] || [];
+              const currentRowHeight = Math.max(
+                listRowHeights[currentListRowIndex] || 0,
                 0,
               );
-              const remainingItemHeight = Math.max(
-                currentItemHeight - currentListItemOffset,
+              const remainingRowHeight = Math.max(
+                currentRowHeight - currentListRowOffset,
                 0,
               );
-              const gapBeforeCurrentItem =
-                currentListItemOffset === 0 && pageItemIndexes.length > 0
+              const gapBeforeCurrentRow =
+                currentListRowOffset === 0 && pageItemIndexes.length > 0
                   ? listItemGapHeight
                   : 0;
-              const requiredItemHeight =
-                remainingItemHeight + gapBeforeCurrentItem;
+              const requiredRowHeight = remainingRowHeight + gapBeforeCurrentRow;
 
-              if (remainingItemHeight <= 0) {
-                currentListItemIndex += 1;
-                currentListItemOffset = 0;
+              if (remainingRowHeight <= 0) {
+                currentListRowIndex += 1;
+                currentListRowOffset = 0;
                 continue;
               }
 
-              if (requiredItemHeight <= availableHeightForItems) {
-                pageItemIndexes.push(currentListItemIndex);
+              if (requiredRowHeight <= availableHeightForItems) {
+                pageItemIndexes.push(...currentRowItemIndexes);
 
-                if (currentListItemOffset > 0) {
-                  pageItemSlices[currentListItemIndex] = {
-                    offset: currentListItemOffset,
-                    height: remainingItemHeight,
-                  };
+                if (currentListRowOffset > 0) {
+                  currentRowItemIndexes.forEach((itemIndex) => {
+                    pageItemSlices[itemIndex] = {
+                      offset: currentListRowOffset,
+                      height: remainingRowHeight,
+                    };
+                  });
                 }
 
-                availableHeightForItems -= requiredItemHeight;
-                usedItemsHeight += requiredItemHeight;
-                currentListItemIndex += 1;
-                currentListItemOffset = 0;
+                availableHeightForItems -= requiredRowHeight;
+                usedItemsHeight += requiredRowHeight;
+                currentListRowIndex += 1;
+                currentListRowOffset = 0;
                 continue;
               }
 
-              const shouldMoveCurrentItemToNextPage =
-                currentListItemOffset === 0 && pageItemIndexes.length > 0;
+              const shouldMoveCurrentRowToNextPage =
+                currentListRowOffset === 0 && pageItemIndexes.length > 0;
               const shouldMoveWholeListToNextPage =
-                currentListItemOffset === 0 &&
+                currentListRowOffset === 0 &&
                 pageItemIndexes.length === 0 &&
                 pageFieldIndexes.length > 0;
 
               if (
-                shouldMoveCurrentItemToNextPage ||
+                shouldMoveCurrentRowToNextPage ||
                 shouldMoveWholeListToNextPage
               ) {
                 break;
               }
 
-              pageItemIndexes.push(currentListItemIndex);
-              pageItemSlices[currentListItemIndex] = {
-                offset: currentListItemOffset,
-                height: availableHeightForItems,
-              };
-              currentListItemOffset += availableHeightForItems;
+              pageItemIndexes.push(...currentRowItemIndexes);
+              currentRowItemIndexes.forEach((itemIndex) => {
+                pageItemSlices[itemIndex] = {
+                  offset: currentListRowOffset,
+                  height: availableHeightForItems,
+                };
+              });
+              currentListRowOffset += availableHeightForItems;
               usedItemsHeight += availableHeightForItems;
               availableHeightForItems = 0;
             }
@@ -680,13 +760,13 @@ function getOverflowPages(
               availableHeightForPage = availableHeightForItems;
 
               if (
-                currentListItemIndex >= normalizedItemHeights.length &&
-                currentListItemOffset === 0
+                currentListRowIndex >= listRowHeights.length &&
+                currentListRowOffset === 0
               ) {
                 currentFieldIndex += 1;
                 currentFieldOffset = 0;
-                currentListItemIndex = 0;
-                currentListItemOffset = 0;
+                currentListRowIndex = 0;
+                currentListRowOffset = 0;
                 continue;
               }
 
@@ -709,8 +789,8 @@ function getOverflowPages(
         if (remainingFieldHeight <= 0) {
           currentFieldIndex += 1;
           currentFieldOffset = 0;
-          currentListItemIndex = 0;
-          currentListItemOffset = 0;
+          currentListRowIndex = 0;
+          currentListRowOffset = 0;
           continue;
         }
 
@@ -728,8 +808,8 @@ function getOverflowPages(
           usedFieldHeight += remainingFieldHeight;
           currentFieldIndex += 1;
           currentFieldOffset = 0;
-          currentListItemIndex = 0;
-          currentListItemOffset = 0;
+          currentListRowIndex = 0;
+          currentListRowOffset = 0;
           continue;
         }
 
@@ -774,8 +854,8 @@ function getOverflowPages(
         } else {
           currentFieldIndex += 1;
           currentFieldOffset = 0;
-          currentListItemIndex = 0;
-          currentListItemOffset = 0;
+          currentListRowIndex = 0;
+          currentListRowOffset = 0;
         }
       }
 
@@ -911,8 +991,16 @@ function getOverflowPages(
           Array.isArray(firstFieldListItems) &&
           firstFieldListItems.length > 0
         ) {
-          const firstItemHeight = Math.max(
-            firstFieldListItems.find((height) => height > 0) || 0,
+          const firstFieldRows = getListItemRows(
+            firstFieldListItems,
+            blockMeasurement.listFieldItemRows?.[firstMeasuredFieldIndex],
+          );
+          const firstFieldRowHeights = getListRowHeights(
+            firstFieldListItems,
+            firstFieldRows,
+          );
+          const firstRowHeight = Math.max(
+            firstFieldRowHeights.find((height) => height > 0) || 0,
             0,
           );
           const firstFieldGapHeight = Math.max(
@@ -922,14 +1010,13 @@ function getOverflowPages(
             0,
           );
           const inferredTotalGapHeight =
-            firstFieldListItems.length > 1
-              ? firstFieldGapHeight * (firstFieldListItems.length - 1)
+            firstFieldRowHeights.length > 1
+              ? firstFieldGapHeight * (firstFieldRowHeights.length - 1)
               : 0;
           const inferredStaticHeight = Math.max(
             firstFieldHeight -
-              firstFieldListItems.reduce(
-                (totalHeight, itemHeight) =>
-                  totalHeight + Math.max(itemHeight, 0),
+              firstFieldRowHeights.reduce(
+                (totalHeight, rowHeight) => totalHeight + Math.max(rowHeight, 0),
                 0,
               ) -
               inferredTotalGapHeight,
@@ -942,7 +1029,7 @@ function getOverflowPages(
             0,
           );
 
-          firstMeasuredFieldHeight = firstFieldStaticHeight + firstItemHeight;
+          firstMeasuredFieldHeight = firstFieldStaticHeight + firstRowHeight;
         } else {
           firstMeasuredFieldHeight = firstFieldHeight;
         }
@@ -964,7 +1051,9 @@ function getOverflowPages(
       } else {
         const canRepeatPreviousBlock =
           previousBlockIndex !== undefined &&
-          previousBlockHeight < availableHeight;
+          previousBlockHeight > 0 &&
+          previousBlockHeight <=
+            availableHeight * MAX_REPEATED_CONTEXT_RATIO;
         const includePreviousBlockOnFirstFieldPage =
           canRepeatPreviousBlock && !shouldShareCurrentPage;
 
@@ -977,6 +1066,7 @@ function getOverflowPages(
           blockMeasurement.listFieldItemHeights,
           blockMeasurement.listFieldStaticHeights,
           blockMeasurement.listFieldItemGapHeights,
+          blockMeasurement.listFieldItemRows,
         );
 
         if (shouldShareCurrentPage) {
@@ -1182,6 +1272,17 @@ const PLACEHOLDER_TEXT_CLASS = "text-gray-400 text-sm";
 const PAGINATION_BUTTON_CLASS =
   "px-4 py-2 bg-[#283618] text-white rounded-md disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-[#283618]/90 transition-colors";
 const OVERFLOW_SAFETY_MARGIN_PX = 4;
+
+/*
+ * Cuando un field se parte en varias páginas, el bloque anterior puede repetirse
+ * arriba a modo de contexto (por ejemplo, un título sobre una lista larga).
+ *
+ * Ese bloque se descuenta del alto disponible de cada página de continuación, así
+ * que solo merece la pena repetirlo si es pequeño. Sin este límite, un bloque
+ * anterior grande se duplicaba en todas las páginas y dejaba sitio para muy
+ * pocos ítems, partiendo la lista en muchas más páginas de las necesarias.
+ */
+const MAX_REPEATED_CONTEXT_RATIO = 1 / 3;
 
 export function TemplatePreview({
   data,
@@ -1609,6 +1710,7 @@ export function TemplatePreview({
       // alignItems is handled specifically in fields like List where it makes sense
       iconSize: effectiveStyles.icon_size, // Propiedad personalizada para referencia
       ...getBorderStyles(effectiveStyles),
+      ...getSizeStyles(effectiveStyles),
     };
 
     switch (field.type) {
@@ -2069,7 +2171,11 @@ export function TemplatePreview({
 
         if (listItemsLayout === "table") {
           return (
-            <div key={key} className="w-full overflow-x-auto">
+            <div
+              key={key}
+              className="w-full overflow-x-auto"
+              style={getSizeStyles(effectiveStyles)}
+            >
               <table
                 className="w-full border-collapse"
                 style={{
@@ -2306,6 +2412,8 @@ export function TemplatePreview({
                                       `${itemIndex}-${fieldIndex}`,
                                       effectiveStyles,
                                       "horizontal",
+                                      undefined,
+                                      subfieldId,
                                     )}
                                   </td>
                                 );
@@ -2399,7 +2507,7 @@ export function TemplatePreview({
         };
 
         return (
-          <div key={key}>
+          <div key={key} style={getSizeStyles(effectiveStyles)}>
             <div
               className={
                 listItemsLayout === "horizontal"
@@ -2524,10 +2632,12 @@ export function TemplatePreview({
                                   fieldSchema,
                                 );
 
-                              // Determinar si el campo debe expandirse (texto) o usar ancho natural (iconos, números, etc.)
+                              // Determinar si el campo debe expandirse (texto o
+                              // sublista) o usar ancho natural (iconos, números, etc.)
                               const shouldExpand =
                                 fieldSchema.type === "text" ||
-                                fieldSchema.type === "text_with_icon";
+                                fieldSchema.type === "text_with_icon" ||
+                                fieldSchema.type === "list";
 
                               // Para grid layouts: cada celda del grid contiene un flex interno
                               const isGridLayout =
@@ -2623,6 +2733,8 @@ export function TemplatePreview({
                                     `${absoluteItemIndex}-${fieldIndex}`,
                                     containerStyle,
                                     "horizontal",
+                                    undefined,
+                                    subfieldId,
                                   )}
                                 </div>
                               );
@@ -3942,6 +4054,7 @@ export function TemplatePreview({
         block.style_config?.gap !== undefined ? block.style_config.gap : "8px",
       boxSizing: "border-box",
       ...getBorderStyles(block.style_config),
+      ...getSizeStyles(block.style_config),
       ...(hasCardField && {
         display: "flex",
         flexDirection: "column",
@@ -4445,6 +4558,10 @@ export function TemplatePreview({
             Map<number, number>
           >();
           const measuredListItemGapHeightsByField = new Map<number, number>();
+          const measuredListItemOffsetsByField = new Map<
+            number,
+            Map<number, number>
+          >();
 
           measuredFieldElements.forEach(({ fieldIndex, fieldElement }) => {
             const computedStyle = window.getComputedStyle(fieldElement);
@@ -4483,6 +4600,15 @@ export function TemplatePreview({
 
               currentFieldMap.set(itemIndex, measuredHeight);
               measuredListItemHeightsByField.set(fieldIndex, currentFieldMap);
+
+              // La posición vertical permite saber qué ítems comparten fila en
+              // los layouts multi-columna.
+              const currentOffsetMap =
+                measuredListItemOffsetsByField.get(fieldIndex) ||
+                new Map<number, number>();
+
+              currentOffsetMap.set(itemIndex, itemElement.offsetTop);
+              measuredListItemOffsetsByField.set(fieldIndex, currentOffsetMap);
             },
           );
           measuredListContainerElements.forEach(
@@ -4530,6 +4656,50 @@ export function TemplatePreview({
                   );
                 })
               : [];
+          const measuredListFieldItemRows: (number[][] | undefined)[] =
+            measuredListFieldItemHeights.map((itemHeights, fieldIndex) => {
+              if (!itemHeights || itemHeights.length === 0) {
+                return undefined;
+              }
+
+              const offsets = measuredListItemOffsetsByField.get(fieldIndex);
+
+              if (!offsets || offsets.size === 0) {
+                return undefined;
+              }
+
+              /*
+               * Se agrupan los ítems por su posición vertical. Dos ítems que
+               * empiezan a la misma altura (con una tolerancia de un píxel para
+               * absorber redondeos del layout) comparten fila.
+               */
+              const rows: number[][] = [];
+              let currentRowOffset: number | undefined;
+
+              for (let itemIndex = 0; itemIndex < itemHeights.length; itemIndex++) {
+                const offset = offsets.get(itemIndex);
+
+                if (offset === undefined) {
+                  rows.push([itemIndex]);
+                  currentRowOffset = undefined;
+                  continue;
+                }
+
+                const startsNewRow =
+                  currentRowOffset === undefined ||
+                  Math.abs(offset - currentRowOffset) > 1;
+
+                if (startsNewRow) {
+                  rows.push([itemIndex]);
+                  currentRowOffset = offset;
+                  continue;
+                }
+
+                rows[rows.length - 1].push(itemIndex);
+              }
+
+              return rows;
+            });
           const measuredListFieldItemGapHeights: (number | undefined)[] =
             measuredListFieldItemHeights.map((itemHeights, fieldIndex) => {
               if (!itemHeights || itemHeights.length === 0) {
@@ -4564,14 +4734,20 @@ export function TemplatePreview({
                 0,
               );
 
-              const totalItemHeight = itemHeights.reduce(
-                (totalHeight, itemHeight) =>
-                  totalHeight + Math.max(itemHeight, 0),
+              const rowHeights = getListRowHeights(
+                itemHeights,
+                getListItemRows(
+                  itemHeights,
+                  measuredListFieldItemRows[fieldIndex],
+                ),
+              );
+              const totalItemHeight = rowHeights.reduce(
+                (totalHeight, rowHeight) => totalHeight + Math.max(rowHeight, 0),
                 0,
               );
               const totalGapHeight =
-                shouldApplyInterItemGap && itemHeights.length > 1
-                  ? itemGapHeight * (itemHeights.length - 1)
+                shouldApplyInterItemGap && rowHeights.length > 1
+                  ? itemGapHeight * (rowHeights.length - 1)
                   : 0;
               const totalFieldHeight =
                 measuredFieldHeightsByIndex.get(fieldIndex) || 0;
@@ -4615,6 +4791,10 @@ export function TemplatePreview({
             fieldStaticHeight:
               !hasCardField && bulletinFieldCount > 0
                 ? Math.max(blockMeasuredHeight - measuredFieldTotalHeight, 0)
+                : undefined,
+            listFieldItemRows:
+              !hasCardField && bulletinFieldCount > 0
+                ? measuredListFieldItemRows
                 : undefined,
             listFieldItemHeights:
               !hasCardField && bulletinFieldCount > 0
@@ -5468,6 +5648,7 @@ export function TemplatePreview({
                                       : "8px",
                                   boxSizing: "border-box",
                                   ...getBorderStyles(block.style_config),
+                                  ...getSizeStyles(block.style_config),
                                   // Si tiene un card field, ocupar todo el espacio disponible
                                   ...(hasCardField && {
                                     flex: 1,

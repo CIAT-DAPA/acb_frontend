@@ -47,6 +47,7 @@ import {
   CreateTemplateData,
   TemplateVersionContent,
   Field,
+  FieldBase,
   Section,
   Block,
 } from "@/types/template";
@@ -60,6 +61,52 @@ import {
   generateBreadcrumbSchema,
 } from "@/utils/seoUtils";
 import { encodeReviewFieldId, decodeReviewFieldId } from "@/utils/reviewTarget";
+import {
+  buildListSubfieldId,
+  fromReviewListPath,
+  toReviewListPath,
+  type ListSubfieldSegment,
+} from "@/utils/listSubfieldPath";
+
+/**
+ * Recorre los item_schema encadenados y devuelve la definición del subcampo
+ * apuntado por el último tramo de la ruta.
+ *
+ * Devuelve undefined si la ruta ya no existe en la plantilla, por ejemplo
+ * cuando un comentario antiguo apunta a un campo que se eliminó.
+ */
+const resolveItemSchemaField = (
+  listField: FieldBase | undefined,
+  segments: ListSubfieldSegment[] | undefined,
+): FieldBase | undefined => {
+  if (!listField || !segments || segments.length === 0) {
+    return undefined;
+  }
+
+  let currentField: FieldBase = listField;
+
+  for (const segment of segments) {
+    if (!segment.schemaKey) {
+      return undefined;
+    }
+
+    const itemSchema: Record<string, FieldBase> | undefined = (
+      currentField.field_config as
+        | { item_schema?: Record<string, FieldBase> }
+        | undefined
+    )?.item_schema;
+
+    const nextField = itemSchema?.[segment.schemaKey];
+
+    if (!nextField) {
+      return undefined;
+    }
+
+    currentField = nextField;
+  }
+
+  return currentField;
+};
 
 // Helper functions for decoding fields
 const decodeTextFieldValue = (value: any): any => {
@@ -630,6 +677,18 @@ export default function ReviewBulletinPage() {
       const decodedItemFieldId =
         decodedFieldTarget?.itemFieldId || target.item_field_id || undefined;
 
+      /*
+       * Ruta completa de listas anidadas.
+       * Con un solo nivel equivale al par itemIndex/itemFieldId de siempre.
+       */
+      const decodedListSegments =
+        fromReviewListPath(decodedFieldTarget?.listPath) ??
+        (typeof decodedItemIndex === "number"
+          ? decodedItemFieldId
+            ? [{ itemIndex: decodedItemIndex, schemaKey: decodedItemFieldId }]
+            : [{ itemIndex: decodedItemIndex }]
+          : undefined);
+
       const decodedCardIndex =
         typeof decodedFieldTarget?.cardIndex === "number"
           ? decodedFieldTarget.cardIndex
@@ -693,10 +752,21 @@ export default function ReviewBulletinPage() {
         const hasItemIndex =
           typeof decodedItemIndex === "number" && decodedItemIndex >= 0;
 
+        /*
+         * Lo que decide si el target es un ítem o un subcampo es el último
+         * tramo de la ruta: en una lista anidada los tramos intermedios siempre
+         * llevan la clave de la sublista por la que se desciende.
+         */
+        const leafListSegment =
+          decodedListSegments?.[decodedListSegments.length - 1];
+
+        const leafItemFieldId = decodedListSegments
+          ? leafListSegment?.schemaKey
+          : decodedItemFieldId;
+
         const itemFieldId =
-          typeof decodedItemFieldId === "string" &&
-          decodedItemFieldId.trim().length > 0
-            ? decodedItemFieldId
+          typeof leafItemFieldId === "string" && leafItemFieldId.trim().length > 0
+            ? leafItemFieldId
             : undefined;
 
         const listDisplayName =
@@ -761,10 +831,10 @@ export default function ReviewBulletinPage() {
            * Subcampo de un ítem de una lista dentro de card.
            */
           if (hasItemIndex && itemFieldId) {
-            frontendId =
-              `${cardFieldBaseId}` +
-              `-item-${decodedItemIndex}` +
-              `-subfield-${itemFieldId}`;
+            frontendId = buildListSubfieldId(
+              cardFieldBaseId,
+              decodedListSegments,
+            );
 
             /*
              * Reutilizamos el mismo tipo de las listas externas.
@@ -773,7 +843,7 @@ export default function ReviewBulletinPage() {
 
             displayName = t("elementNames.listItem", {
               list: listDisplayName,
-              item: decodedItemIndex + 1,
+              item: (leafListSegment?.itemIndex ?? decodedItemIndex) + 1,
             });
 
             didMapTarget = true;
@@ -784,7 +854,10 @@ export default function ReviewBulletinPage() {
            * Ítem de una lista dentro de card.
            */
           if (hasItemIndex) {
-            frontendId = `${cardFieldBaseId}` + `-item-${decodedItemIndex}`;
+            frontendId = buildListSubfieldId(
+              cardFieldBaseId,
+              decodedListSegments,
+            );
 
             targetType = "list_item";
 
@@ -792,7 +865,7 @@ export default function ReviewBulletinPage() {
               target.display_name ||
               t("elementNames.cardListItem", {
                 list: listDisplayName,
-                item: decodedItemIndex! + 1,
+                item: (leafListSegment?.itemIndex ?? decodedItemIndex!) + 1,
                 card: cardNumber,
               });
 
@@ -819,15 +892,14 @@ export default function ReviewBulletinPage() {
         }
 
         if (hasItemIndex && itemFieldId) {
-          frontendId =
-            `${baseFieldId}-item-${decodedItemIndex}` +
-            `-subfield-${itemFieldId}`;
+          frontendId = buildListSubfieldId(baseFieldId, decodedListSegments);
 
           targetType = "list_item_field";
 
-          const itemSchema = (field.field_config as any)?.item_schema;
-
-          const itemFieldConfig = itemSchema?.[itemFieldId];
+          const itemFieldConfig = resolveItemSchemaField(
+            field,
+            decodedListSegments,
+          );
 
           const itemFieldName =
             itemFieldConfig?.label ||
@@ -836,16 +908,16 @@ export default function ReviewBulletinPage() {
 
           displayName = t("elementNames.listItemField", {
             field: itemFieldName,
-            item: decodedItemIndex! + 1,
+            item: (leafListSegment?.itemIndex ?? decodedItemIndex!) + 1,
           });
         } else if (hasItemIndex) {
-          frontendId = `${baseFieldId}-item-${decodedItemIndex}`;
+          frontendId = buildListSubfieldId(baseFieldId, decodedListSegments);
 
           targetType = "list_item";
 
           displayName = t("elementNames.listItem", {
             list: listDisplayName,
-            item: decodedItemIndex! + 1,
+            item: (leafListSegment?.itemIndex ?? decodedItemIndex!) + 1,
           });
         } else {
           frontendId = baseFieldId;
@@ -1936,6 +2008,10 @@ export default function ReviewBulletinPage() {
         const hasCardContext =
           typeof selection.cardIndex === "number" && selection.cardIndex >= 0;
 
+        const isListSelection =
+          selection.type === "list_item" ||
+          selection.type === "list_item_field";
+
         const isCardTarget =
           selection.type === "card_item" ||
           selection.type === "card_block" ||
@@ -1972,12 +2048,16 @@ export default function ReviewBulletinPage() {
 
                   /*
                    * Lista.
+                   *
+                   * listPath cubre las listas anidadas; el par itemIndex/
+                   * itemFieldId queda como respaldo para las selecciones que no
+                   * traen ruta.
                    */
-                  itemIndex:
-                    selection.type === "list_item" ||
-                    selection.type === "list_item_field"
-                      ? selection.itemIndex
-                      : undefined,
+                  listPath: isListSelection
+                    ? toReviewListPath(selection.schemaPath)
+                    : undefined,
+
+                  itemIndex: isListSelection ? selection.itemIndex : undefined,
 
                   itemFieldId:
                     selection.type === "list_item_field"
@@ -2244,11 +2324,18 @@ export default function ReviewBulletinPage() {
               selection.blockIndex!
             ]?.fields?.[selection.fieldIndex!];
 
-          const itemSchema = (listField?.field_config as any)?.item_schema;
-
-          const itemField = selection.schemaKey
-            ? itemSchema?.[selection.schemaKey]
-            : undefined;
+          const itemField = resolveItemSchemaField(
+            listField,
+            selection.schemaPath ??
+              (selection.schemaKey
+                ? [
+                    {
+                      itemIndex: selection.itemIndex ?? 0,
+                      schemaKey: selection.schemaKey,
+                    },
+                  ]
+                : undefined),
+          );
 
           const itemFieldName =
             itemField?.label ||
@@ -2609,6 +2696,14 @@ export default function ReviewBulletinPage() {
                             : undefined,
 
                         schemaKey: target.item_field_id || undefined,
+
+                        /*
+                         * La ruta se reconstruye desde el field_id codificado,
+                         * que es lo único que conserva las listas anidadas.
+                         */
+                        schemaPath: fromReviewListPath(
+                          decodeReviewFieldId(target.field_id)?.listPath,
+                        ),
 
                         cardIndex: target.card_index ?? undefined,
                         cardId: target.card_id || undefined,
