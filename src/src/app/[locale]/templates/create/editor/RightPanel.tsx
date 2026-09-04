@@ -3,11 +3,13 @@ import {
   CreateTemplateData,
   FIELD_TYPES,
   Field,
+  FieldBase,
   Section,
   Block,
   HeaderFooterConfig,
 } from "@/types/template";
 import { EditorSelection } from "./types";
+import { getSchemaKeyPath } from "@/utils/listSubfieldPath";
 import { getFieldConfigDefaults } from "@/app/[locale]/templates/create/editor/utils";
 import { Trash2, Move, Plus, ArrowUp, ArrowDown, Copy, X } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -19,6 +21,78 @@ import { GroupSelector } from "../../../components/GroupSelector";
 import { slugify } from "@/utils/slugify";
 import { EnumAPIService, EnumValue } from "@/services/enumService";
 import { isSelectableCardType } from "@/types/card";
+
+/**
+ * Claves de item_schema que hay que recorrer para llegar al field seleccionado.
+ *
+ * Prioriza schemaPath (listas anidadas) y cae a schemaKey para las selecciones
+ * de un solo nivel que siguen produciendo el resto del editor.
+ */
+const getSelectionSchemaKeyPath = (selection: EditorSelection): string[] => {
+  const pathFromSegments = getSchemaKeyPath(selection.schemaPath);
+
+  if (pathFromSegments.length > 0) {
+    return pathFromSegments;
+  }
+
+  return selection.schemaKey ? [selection.schemaKey] : [];
+};
+
+type SchemaContainer = {
+  itemSchema: Record<string, FieldBase>;
+  key: string;
+};
+
+/**
+ * Localiza el item_schema que contiene la última clave de la ruta.
+ *
+ * Devuelve null si algún tramo intermedio no existe o no es una lista, para que
+ * quien llama pueda caer al comportamiento sobre el field padre.
+ */
+const resolveSchemaContainer = (
+  listField: FieldBase,
+  schemaKeyPath: string[],
+): SchemaContainer | null => {
+  let currentField: FieldBase = listField;
+
+  for (let index = 0; index < schemaKeyPath.length; index++) {
+    const itemSchema = (
+      currentField.field_config as
+        | { item_schema?: Record<string, FieldBase> }
+        | undefined
+    )?.item_schema;
+
+    const key = schemaKeyPath[index];
+
+    if (!itemSchema || !itemSchema[key]) {
+      return null;
+    }
+
+    if (index === schemaKeyPath.length - 1) {
+      return { itemSchema, key };
+    }
+
+    currentField = itemSchema[key];
+
+    if (currentField.type !== "list") {
+      return null;
+    }
+  }
+
+  return null;
+};
+
+/**
+ * Devuelve la definición del field al final de la ruta de item_schema.
+ */
+const resolveSchemaField = (
+  listField: FieldBase,
+  schemaKeyPath: string[],
+): FieldBase | null => {
+  const container = resolveSchemaContainer(listField, schemaKeyPath);
+
+  return container ? container.itemSchema[container.key] : null;
+};
 
 const DIMENSION_PRESETS = [
   { label: "Custom", width: 0, height: 0 },
@@ -155,12 +229,10 @@ export const RightPanel: React.FC<RightPanelProps> = ({
         sections[selection.sectionIndex]?.blocks?.[selection.blockIndex]
           ?.fields?.[selection.fieldIndex];
 
-      if (
-        selection.schemaKey &&
-        field?.type === "list" &&
-        field.field_config?.item_schema
-      ) {
-        return field.field_config.item_schema[selection.schemaKey];
+      const schemaKeyPath = getSelectionSchemaKeyPath(selection);
+
+      if (schemaKeyPath.length > 0 && field?.type === "list") {
+        return resolveSchemaField(field, schemaKeyPath) ?? field;
       }
 
       return field;
@@ -247,13 +319,16 @@ export const RightPanel: React.FC<RightPanelProps> = ({
           selection.blockIndex!
         ].fields[selection.fieldIndex!];
 
-      if (
-        selection.schemaKey &&
-        field.type === "list" &&
-        field.field_config?.item_schema?.[selection.schemaKey]
-      ) {
-        field.field_config.item_schema[selection.schemaKey] = {
-          ...field.field_config.item_schema[selection.schemaKey],
+      const schemaKeyPath = getSelectionSchemaKeyPath(selection);
+
+      const schemaTarget =
+        schemaKeyPath.length > 0 && field.type === "list"
+          ? resolveSchemaContainer(field, schemaKeyPath)
+          : null;
+
+      if (schemaTarget) {
+        schemaTarget.itemSchema[schemaTarget.key] = {
+          ...schemaTarget.itemSchema[schemaTarget.key],
           ...updates,
         };
       } else {
@@ -517,9 +592,26 @@ export const RightPanel: React.FC<RightPanelProps> = ({
           1,
         );
       } else if (selection.type === "field") {
-        sections[selection.sectionIndex!].blocks[
-          selection.blockIndex!
-        ].fields.splice(selection.fieldIndex!, 1);
+        const field =
+          sections[selection.sectionIndex!].blocks[selection.blockIndex!]
+            .fields[selection.fieldIndex!];
+
+        const schemaKeyPath = getSelectionSchemaKeyPath(selection);
+
+        const schemaTarget =
+          schemaKeyPath.length > 0 && field?.type === "list"
+            ? resolveSchemaContainer(field, schemaKeyPath)
+            : null;
+
+        // Con un subcampo seleccionado se borra la entrada del esquema,
+        // no el field lista que la contiene.
+        if (schemaTarget) {
+          delete schemaTarget.itemSchema[schemaTarget.key];
+        } else {
+          sections[selection.sectionIndex!].blocks[
+            selection.blockIndex!
+          ].fields.splice(selection.fieldIndex!, 1);
+        }
       } else if (selection.type === "header_field") {
         const section =
           selection.sectionIndex! >= 0
@@ -1779,6 +1871,9 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                     margin: true,
                     padding: true,
                     gap: true,
+                    width: true,
+                    minWidth: true,
+                    maxWidth: true,
                     borderWidth: true,
                     borderColor: true,
                     borderRadius: true,
@@ -2094,6 +2189,9 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                     padding: true,
                     margin: true,
                     gap: true,
+                    width: true,
+                    minWidth: true,
+                    maxWidth: true,
                     textAlign: true,
                     borderWidth: true,
                     borderColor: true,

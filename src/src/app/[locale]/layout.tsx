@@ -12,11 +12,9 @@ import {
   Archivo_Narrow,
 } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "./components/Navbar";
-import { Footer } from "./components/Footer";
+import { ChromeGate } from "./components/ChromeGate";
 import { AuthProviderWrapper } from "@/components/AuthProviderWrapper";
 import { ToastProvider } from "@/components/Toast";
-import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 
 type Props = {
   children: React.ReactNode;
@@ -113,10 +111,7 @@ export default async function RootLayout({ children, params }: Props) {
             messages={messages}
           >
             <ToastProvider>
-              <Navbar />
-              {children}
-              <Footer />
-              <CookieConsentBanner locale={locale} />
+              <ChromeGate locale={locale}>{children}</ChromeGate>
             </ToastProvider>
           </NextIntlClientProvider>
         </AuthProviderWrapper>

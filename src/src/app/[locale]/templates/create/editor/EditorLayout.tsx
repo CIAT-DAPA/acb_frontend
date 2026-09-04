@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { CreateTemplateData } from "@/types/template";
 import { EditorSelection } from "./types";
 import { slugify } from "@/utils/slugify";
+import { buildListSubfieldId } from "@/utils/listSubfieldPath";
 import { TopBar } from "@/app/[locale]/templates/create/editor/TopBar";
 import { Canvas } from "@/app/[locale]/templates/create/editor/Canvas";
 import { RightPanel } from "@/app/[locale]/templates/create/editor/RightPanel";
@@ -29,6 +30,11 @@ function buildSelectionId(selection: EditorSelection): string | null {
       }
 
       const baseId = `field-${selection.sectionIndex}-${selection.blockIndex}-${selection.fieldIndex}`;
+
+      if (selection.schemaPath && selection.schemaPath.length > 0) {
+        return buildListSubfieldId(baseId, selection.schemaPath);
+      }
+
       return selection.schemaKey
         ? `${baseId}-subfield-${selection.schemaKey}`
         : baseId;
