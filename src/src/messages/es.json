@@ -834,7 +834,8 @@
         "alignOptions": {
           "left": "Izquierda",
           "center": "Centro",
-          "right": "Derecha"
+          "right": "Derecha",
+          "justify": "Justificado"
         },
         "fontWeightOptions": {
           "thin": "Thin (100)",
@@ -900,7 +901,8 @@
           "options": {
             "left": "Izquierda",
             "center": "Centro",
-            "right": "Derecha"
+            "right": "Derecha",
+            "justify": "Justificado"
           }
         }
       },
@@ -1003,7 +1005,11 @@
           "evenly": "Espaciado Uniforme"
         },
         "listStyleType": "Estilo de Lista",
+        "listColumns": "Columnas de la lista",
+        "listColumnsHelp": "Define en cuántas columnas se muestran los items de la lista. Cada columna ocupa la misma parte del ancho disponible del campo.",
+        "listColumnsNarrowHint": "Con tantas columnas cada una puede quedar muy estrecha. Revísalo en la vista previa.",
         "listItemsLayout": "Layout de Items de Lista",
+        "listItemsLayoutHelp": "Coloca los campos que hay dentro de cada item, no los items entre sí. Para repartir los items usa “Columnas de la lista”.",
         "layoutOptions": {
           "horizontal": "Horizontal (lado a lado)",
           "vertical": "Vertical (uno debajo del otro)"
@@ -1025,7 +1031,8 @@
         "alignOptions": {
           "left": "Izquierda",
           "center": "Centro",
-          "right": "Derecha"
+          "right": "Derecha",
+          "justify": "Justificado"
         },
         "fontWeightOptions": {
           "thin": "Thin (100)",
@@ -1715,7 +1722,11 @@
           "stretch": "Estirar"
         },
         "listStyleType": "Estilo de Lista",
+        "listColumns": "Columnas de la lista",
+        "listColumnsHelp": "Define en cuántas columnas se muestran los items de la lista. Cada columna ocupa la misma parte del ancho disponible del campo.",
+        "listColumnsNarrowHint": "Con tantas columnas cada una puede quedar muy estrecha. Revísalo en la vista previa.",
         "listItemsLayout": "Layout de Items de Lista",
+        "listItemsLayoutHelp": "Coloca los campos que hay dentro de cada item, no los items entre sí. Para repartir los items usa “Columnas de la lista”.",
         "layoutOptions": {
           "horizontal": "Horizontal (lado a lado)",
           "vertical": "Vertical (uno debajo del otro)"
@@ -1743,7 +1754,8 @@
         "alignOptions": {
           "left": "Izquierda",
           "center": "Centro",
-          "right": "Derecha"
+          "right": "Derecha",
+          "justify": "Justificado"
         },
         "fontWeightOptions": {
           "thin": "Thin (100)",

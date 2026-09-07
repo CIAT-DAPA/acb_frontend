@@ -1351,7 +1351,8 @@
         "alignOptions": {
           "center": "Trung tâm",
           "left": "Bên trái",
-          "right": "Phải"
+          "right": "Phải",
+          "justify": "Canh đều"
         },
         "borderLeft": "Bên trái",
         "borderRight": "Phải",
@@ -1412,7 +1413,11 @@
         "bulletinWidth": "Chiều rộng bản tin (px)",
         "bulletinHeight": "Chiều cao bản tin (px)",
         "listStyleType": "Kiểu trình bày danh sách",
+        "listColumns": "Số cột của danh sách",
+        "listColumnsHelp": "Quy định số cột dùng để hiển thị các mục của danh sách. Mỗi cột chiếm phần bằng nhau trong chiều rộng khả dụng của trường.",
+        "listColumnsNarrowHint": "Với số cột này, mỗi cột có thể rất hẹp. Hãy kiểm tra trong bản xem trước.",
         "listItemsLayout": "Bố trí các phần tử trong Danh sách",
+        "listItemsLayoutHelp": "Sắp xếp các trường bên trong mỗi mục, không phải các mục với nhau. Để dàn các mục, dùng “Số cột của danh sách”.",
         "title": "Kiểu trường thông tin",
         "padding": "Đệm (CSS)-Khoảng trống giữa nội dung và đường viền",
         "margin": "Lề (CSS)-Khoảng trống bên ngoài đường viền (Border), dùng để tạo khoảng cách giữa các phần tử.",
@@ -1806,7 +1811,8 @@
         "alignOptions": {
           "center": "Trung tâm",
           "left": "Bên trái",
-          "right": "Phải"
+          "right": "Phải",
+          "justify": "Canh đều"
         },
         "alignItems": "Căn chỉnh mục",
         "alignItemsOptions": {
@@ -1819,7 +1825,8 @@
           "options": {
             "center": "Trung tâm",
             "left": "Bên trái",
-            "right": "Phải"
+            "right": "Phải",
+            "justify": "Canh đều"
           },
           "label": "Căn chỉnh văn bản"
         },
@@ -1932,7 +1939,8 @@
         "alignOptions": {
           "center": "Trung tâm",
           "left": "Bên trái",
-          "right": "Phải"
+          "right": "Phải",
+          "justify": "Canh đều"
         },
         "borderLeft": "Bên trái",
         "borderRight": "Phải",
@@ -2000,7 +2008,11 @@
         "bulletinWidth": "Chiều rộng bản tin (px)",
         "bulletinHeight": "Chiều cao bản tin (px)",
         "listStyleType": "Kiểu trình bày danh sách",
+        "listColumns": "Số cột của danh sách",
+        "listColumnsHelp": "Quy định số cột dùng để hiển thị các mục của danh sách. Mỗi cột chiếm phần bằng nhau trong chiều rộng khả dụng của trường.",
+        "listColumnsNarrowHint": "Với số cột này, mỗi cột có thể rất hẹp. Hãy kiểm tra trong bản xem trước.",
         "listItemsLayout": "Bố trí các phần tử trong Danh sách",
+        "listItemsLayoutHelp": "Sắp xếp các trường bên trong mỗi mục, không phải các mục với nhau. Để dàn các mục, dùng “Số cột của danh sách”.",
         "listLayoutOptions": {
           "vertical": "Thẳng đứng",
           "horizontal": "Nằm ngang",

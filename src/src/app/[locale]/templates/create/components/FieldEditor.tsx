@@ -586,6 +586,7 @@ export function FieldEditor({
             minWidth: true,
             maxWidth: true,
             listStyleType: currentField.type === "list",
+            listColumns: currentField.type === "list",
             listItemsLayout: currentField.type === "list",
             showTableHeader: currentField.type === "list",
             backgroundImage: true,

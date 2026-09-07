@@ -280,6 +280,19 @@ function normalizeCSSValue(
 }
 
 /**
+ * Normaliza la alineación de texto al tipo que espera React.
+ *
+ * style_config admite left, center, right y justify; el cast centralizado evita
+ * repetir la unión en cada punto donde se aplica.
+ */
+function getTextAlign(
+  textAlign: string | undefined,
+  fallback?: React.CSSProperties["textAlign"],
+): React.CSSProperties["textAlign"] {
+  return (textAlign as React.CSSProperties["textAlign"]) || fallback;
+}
+
+/**
  * Genera las restricciones de tamaño configuradas en el style_config.
  * Los valores se normalizan para aceptar tanto "200" como "200px" o "100%".
  */
@@ -1284,6 +1297,15 @@ const OVERFLOW_SAFETY_MARGIN_PX = 4;
  */
 const MAX_REPEATED_CONTEXT_RATIO = 1 / 3;
 
+/*
+ * Tope de columnas para una lista.
+ *
+ * No es un límite de diseño: el número razonable depende del ancho del boletín
+ * y del propio campo, así que se deja alto a propósito. Solo está para que un
+ * valor absurdo escrito por error no genere miles de pistas de rejilla.
+ */
+const MAX_LIST_COLUMNS = 24;
+
 export function TemplatePreview({
   data,
   selectedSectionIndex = 0,
@@ -1537,7 +1559,7 @@ export function TemplatePreview({
     wordSpacing: styleConfig?.word_space || undefined,
     backgroundColor: styleConfig?.background_color || "#ffffff",
     textAlign:
-      (styleConfig?.text_align as "left" | "center" | "right") || "left",
+      getTextAlign(styleConfig?.text_align, "left"),
   };
 
   // Helper para construir URL completa de imagen
@@ -1692,7 +1714,7 @@ export function TemplatePreview({
       fontStyle: effectiveStyles.font_style || "normal",
       textDecoration: effectiveStyles.text_decoration || "none",
       textAlign:
-        (effectiveStyles.text_align as "left" | "center" | "right") ||
+        getTextAlign(effectiveStyles.text_align) ||
         globalStyles.textAlign,
       fontFamily: effectiveStyles.font
         ? getFontFamily(effectiveStyles.font)
@@ -2494,16 +2516,44 @@ export function TemplatePreview({
           fontStyle: effectiveStyles.font_style || undefined,
           textDecoration: effectiveStyles.text_decoration || undefined,
           textAlign:
-            (effectiveStyles.text_align as "left" | "center" | "right") ||
+            getTextAlign(effectiveStyles.text_align) ||
             undefined,
           fontFamily: effectiveStyles.font
             ? getFontFamily(effectiveStyles.font)
             : undefined,
         };
 
+        /*
+         * Número de columnas en las que se reparten los ITEMS de la lista.
+         *
+         * Es independiente de list_items_layout, que decide cómo se colocan
+         * los campos dentro de cada item. El layout "horizontal" ya reparte los
+         * items con flex-wrap y el de tabla tiene su propia rama, así que las
+         * columnas solo aplican al contenedor en modo grid.
+         */
+        const listColumns = (() => {
+          const rawColumns = Number(effectiveStyles.list_columns);
+
+          if (!Number.isFinite(rawColumns)) {
+            return 1;
+          }
+
+          const columns = Math.max(Math.trunc(rawColumns), 1);
+
+          return Math.min(columns, MAX_LIST_COLUMNS);
+        })();
+
+        const usesItemColumns =
+          listColumns > 1 && listItemsLayout !== "horizontal";
+
         // Estilos para el contenedor de items con gap configurable
         const itemsContainerStyle: React.CSSProperties = {
           gap: effectiveStyles.gap || undefined,
+          // minmax(0, 1fr) reparte el ancho a partes iguales y deja que los
+          // textos largos se ajusten en vez de desbordar la columna.
+          gridTemplateColumns: usesItemColumns
+            ? `repeat(${listColumns}, minmax(0, 1fr))`
+            : undefined,
         };
 
         return (
@@ -2944,6 +2994,10 @@ export function TemplatePreview({
           ...fieldStyles,
           height: imageHeight ? `${imageHeight}px` : "200px", // Altura por defecto si no está definida
           width: imageWidth ? `${imageWidth}px` : "100%",
+          // Con la lista en varias columnas la pista puede ser más estrecha que
+          // el ancho configurado; sin este tope la imagen invade la columna
+          // vecina en lugar de encogerse.
+          maxWidth: "100%",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -5132,10 +5186,10 @@ export function TemplatePreview({
                   textDecoration:
                     headerConfig.style_config?.text_decoration || "none",
                   textAlign:
-                    (headerConfig.style_config?.text_align as
-                      | "left"
-                      | "center"
-                      | "right") || "center",
+                    getTextAlign(
+                      headerConfig.style_config?.text_align,
+                      "center",
+                    ),
                   padding: headerConfig.style_config?.padding || "16px",
                   margin: headerConfig.style_config?.margin,
                   gap: headerConfig.style_config?.gap || "16px",
@@ -5273,10 +5327,7 @@ export function TemplatePreview({
                     textDecoration:
                       section.style_config?.text_decoration || "none",
                     textAlign:
-                      (section.style_config?.text_align as
-                        | "left"
-                        | "center"
-                        | "right") || "left",
+                      getTextAlign(section.style_config?.text_align, "left"),
                     padding: section.style_config?.padding,
                     margin: section.style_config?.margin,
                     ...getBorderStyles(section.style_config),
@@ -5486,10 +5537,10 @@ export function TemplatePreview({
                               activeHeaderConfig.style_config
                                 ?.text_decoration || "none",
                             textAlign:
-                              (activeHeaderConfig.style_config?.text_align as
-                                | "left"
-                                | "center"
-                                | "right") || "center",
+                              getTextAlign(
+                                activeHeaderConfig.style_config?.text_align,
+                                "center",
+                              ),
                             padding:
                               activeHeaderConfig.style_config?.padding ||
                               "16px",
@@ -6049,10 +6100,10 @@ export function TemplatePreview({
                               activeFooterConfig.style_config
                                 ?.text_decoration || "none",
                             textAlign:
-                              (activeFooterConfig.style_config?.text_align as
-                                | "left"
-                                | "center"
-                                | "right") || "center",
+                              getTextAlign(
+                                activeFooterConfig.style_config?.text_align,
+                                "center",
+                              ),
                             padding:
                               activeFooterConfig.style_config?.padding ||
                               "16px",
@@ -6181,10 +6232,10 @@ export function TemplatePreview({
                   textDecoration:
                     footerConfig.style_config?.text_decoration || "none",
                   textAlign:
-                    (footerConfig.style_config?.text_align as
-                      | "left"
-                      | "center"
-                      | "right") || "center",
+                    getTextAlign(
+                      footerConfig.style_config?.text_align,
+                      "center",
+                    ),
                   padding: footerConfig.style_config?.padding || "16px",
                   margin: footerConfig.style_config?.margin,
                   gap: footerConfig.style_config?.gap || "16px",
