@@ -38,6 +38,8 @@ export function combineStyles(
       combined.list_style_type = parentStyle.list_style_type;
     if (parentStyle.list_items_layout)
       combined.list_items_layout = parentStyle.list_items_layout;
+    if (parentStyle.list_columns)
+      combined.list_columns = parentStyle.list_columns;
     if (parentStyle.show_table_header !== undefined)
       combined.show_table_header = parentStyle.show_table_header;
     if (parentStyle.header_background_color)
@@ -95,6 +97,7 @@ export function combineStyles(
       combined.list_style_type = childStyle.list_style_type;
     if (childStyle.list_items_layout)
       combined.list_items_layout = childStyle.list_items_layout;
+    if (childStyle.list_columns) combined.list_columns = childStyle.list_columns;
     if (childStyle.show_table_header !== undefined)
       combined.show_table_header = childStyle.show_table_header;
     if (childStyle.header_background_color)

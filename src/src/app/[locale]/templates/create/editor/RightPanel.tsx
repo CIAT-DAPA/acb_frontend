@@ -2204,6 +2204,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                     alignItems: (currentObject as Field).type === "list",
                     // Habilitar campos específicos para ListField
                     listStyleType: (currentObject as Field).type === "list",
+                    listColumns: (currentObject as Field).type === "list",
                     listItemsLayout: (currentObject as Field).type === "list",
                     showTableHeader: (currentObject as Field).type === "list",
                   }}
