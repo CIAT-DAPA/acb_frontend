@@ -7,6 +7,15 @@ import { Image as ImageIcon, X } from "lucide-react";
 import Image from "next/image";
 import { VisualResourceSelector } from "./VisualResourceSelector";
 
+/*
+ * Tope del control de columnas. Coincide con el que aplica el preview y solo
+ * está para que un dedazo no genere miles de columnas.
+ */
+const LIST_COLUMNS_LIMIT = 24;
+
+// A partir de aquí se avisa de que las columnas pueden quedar muy estrechas.
+const NARROW_COLUMNS_HINT_THRESHOLD = 5;
+
 // Fuentes disponibles
 const AVAILABLE_FONTS = [
   "Arial",
@@ -99,7 +108,8 @@ export interface StyleConfiguratorProps {
     justifyContent?: boolean; // Distribución de campos (justify-content)
     alignItems?: boolean; // Alineación de los campos en el eje transversal
     listStyleType?: boolean; // Estilo de bullet points para listas
-    listItemsLayout?: boolean; // Layout de items dentro de la lista
+    listColumns?: boolean; // Columnas en las que se reparten los items
+    listItemsLayout?: boolean; // Layout de los campos dentro de cada item
     showTableHeader?: boolean; // Mostrar encabezado en layout de tabla
   };
   title?: string;
@@ -474,6 +484,67 @@ export function StyleConfigurator({
     </div>
   );
 
+  /**
+   * Número de columnas en las que se reparten los items de la lista.
+   *
+   * Se escribe como número porque list_columns se consume como tal en el
+   * preview; renderSelectField guardaría una cadena.
+   *
+   * El tope solo evita valores absurdos escritos por error: cuántas columnas
+   * caben de verdad depende del ancho del boletín y del que tenga el propio
+   * campo, así que la referencia es la vista previa, no un número calculado.
+   */
+  const renderListColumnsField = () => {
+    const currentColumns = Number(styleConfig.list_columns) || 1;
+
+    return (
+      <div>
+        <label className={LABEL_CLASS}>{getLabel("listColumns")}</label>
+        <input
+          type="number"
+          min={1}
+          max={LIST_COLUMNS_LIMIT}
+          step={1}
+          // Se deja vaciar el campo mientras se escribe, como el resto de
+          // controles numéricos del panel.
+          value={(styleConfig.list_columns as number) || ""}
+          placeholder="1"
+          onChange={(e) => {
+            const parsedColumns = Number.parseInt(e.target.value, 10);
+
+            if (!Number.isFinite(parsedColumns)) {
+              onStyleChange({ list_columns: undefined });
+              return;
+            }
+
+            const columns = Math.min(
+              Math.max(parsedColumns, 1),
+              LIST_COLUMNS_LIMIT,
+            );
+
+            onStyleChange({
+              list_columns: columns > 1 ? columns : undefined,
+            });
+          }}
+          className={INPUT_BASE_CLASS}
+        />
+        <p className="text-xs text-[#283618]/50 mt-1">
+          {getLabel("listColumnsHelp")}
+        </p>
+        {currentColumns >= NARROW_COLUMNS_HINT_THRESHOLD && (
+          <p className="text-xs text-[#bc6c25] mt-1">
+            {getLabel("listColumnsNarrowHint")}
+          </p>
+        )}
+        {inheritedStyles?.list_columns && (
+          <p className={INHERITED_TEXT_CLASS}>
+            {t("inherited")}: {inheritedStyles.list_columns}
+          </p>
+        )}
+      </div>
+    );
+  };
+
   const renderSelectField = (
     key: keyof StyleConfig,
     label: string,
@@ -696,6 +767,7 @@ export function StyleConfigurator({
               { value: "left", label: t("alignOptions.left") },
               { value: "center", label: t("alignOptions.center") },
               { value: "right", label: t("alignOptions.right") },
+              { value: "justify", label: t("alignOptions.justify") },
             ],
             "left",
           )}
@@ -847,19 +919,32 @@ export function StyleConfigurator({
           )}
 
         {/* Layout de items de lista */}
-        {enabledFields.listItemsLayout &&
-          renderSelectField(
-            "list_items_layout",
-            t("listItemsLayout"),
-            [
-              { value: "vertical", label: t("listLayoutOptions.vertical") },
-              { value: "horizontal", label: t("listLayoutOptions.horizontal") },
-              { value: "grid-2", label: t("listLayoutOptions.grid2") },
-              { value: "grid-3", label: t("listLayoutOptions.grid3") },
-              { value: "table", label: t("listLayoutOptions.table") },
-            ],
-            "vertical",
-          )}
+        {enabledFields.listColumns &&
+          styleConfig.list_items_layout !== "table" &&
+          renderListColumnsField()}
+
+        {enabledFields.listItemsLayout && (
+          <div>
+            {renderSelectField(
+              "list_items_layout",
+              t("listItemsLayout"),
+              [
+                { value: "vertical", label: t("listLayoutOptions.vertical") },
+                {
+                  value: "horizontal",
+                  label: t("listLayoutOptions.horizontal"),
+                },
+                { value: "grid-2", label: t("listLayoutOptions.grid2") },
+                { value: "grid-3", label: t("listLayoutOptions.grid3") },
+                { value: "table", label: t("listLayoutOptions.table") },
+              ],
+              "vertical",
+            )}
+            <p className="text-xs text-[#283618]/50 mt-1">
+              {getLabel("listItemsLayoutHelp")}
+            </p>
+          </div>
+        )}
 
         {/* Show Table Header - Only for table layout */}
         {enabledFields.showTableHeader &&
@@ -968,7 +1053,7 @@ export function StyleConfigurator({
               fontStyle: styleConfig.font_style || "normal",
               textDecoration: styleConfig.text_decoration || "none",
               textAlign:
-                (styleConfig.text_align as "left" | "center" | "right") ||
+                (styleConfig.text_align as React.CSSProperties["textAlign"]) ||
                 "left",
               wordSpacing: styleConfig.word_space || undefined,
               padding: styleConfig.padding || "24px",

@@ -29,7 +29,7 @@ export interface StyleConfig {
   word_space?: string;
   font_style?: "normal" | "italic";
   text_decoration?: "none" | "underline" | "line-through";
-  text_align?: "left" | "center" | "right";
+  text_align?: "left" | "center" | "right" | "justify";
   padding?: string;
   margin?: string;
   gap?: string; // Espaciado entre campos
@@ -55,7 +55,10 @@ export interface StyleConfig {
     | "evenly"; // Distribución de los campos en layout horizontal
   align_items?: "start" | "end" | "center" | "stretch"; // Alineación de los campos en el eje transversal
   list_style_type?: "disc" | "circle" | "square" | "none" | "decimal"; // Estilo de bullet points para listas
-  list_items_layout?: "vertical" | "horizontal" | "grid-2" | "grid-3" | "table"; // Layout de items dentro de la lista
+  // Layout de los campos DENTRO de cada item de la lista
+  list_items_layout?: "vertical" | "horizontal" | "grid-2" | "grid-3" | "table";
+  // Número de columnas en las que se reparten los items de la lista
+  list_columns?: number;
   show_table_header?: boolean; // Mostrar encabezado en layout de tabla
   header_background_color?: string; // Color de fondo del encabezado de tabla
   header_text_color?: string; // Color de texto del encabezado de tabla
@@ -79,7 +82,12 @@ export interface ValidationRules {
 // Estados comunes
 export const TEMPLATE_STATUS = ["active", "archived"] as const;
 export const ACCESS_TYPES = ["public", "restricted", "private"] as const;
-export const TEXT_ALIGN_OPTIONS = ["left", "center", "right"] as const;
+export const TEXT_ALIGN_OPTIONS = [
+  "left",
+  "center",
+  "right",
+  "justify",
+] as const;
 export const FONT_WEIGHT_OPTIONS = [
   "100",
   "200",

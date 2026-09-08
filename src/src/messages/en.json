@@ -869,7 +869,8 @@
         "alignOptions": {
           "left": "Left",
           "center": "Center",
-          "right": "Right"
+          "right": "Right",
+          "justify": "Justified"
         },
         "fontWeightOptions": {
           "thin": "Thin (100)",
@@ -999,7 +1000,11 @@
           "stretch": "Stretch"
         },
         "listStyleType": "List Style",
+        "listColumns": "List columns",
+        "listColumnsHelp": "Sets how many columns the list items are shown in. Every column takes an equal share of the field's available width.",
+        "listColumnsNarrowHint": "With this many columns each one may end up very narrow. Check it in the preview.",
         "listItemsLayout": "List Items Layout",
+        "listItemsLayoutHelp": "Arranges the fields inside each item, not the items themselves. To spread the items out, use “List columns”.",
         "layoutOptions": {
           "horizontal": "Horizontal (side by side)",
           "vertical": "Vertical (stacked)"
@@ -1027,7 +1032,8 @@
         "alignOptions": {
           "left": "Left",
           "center": "Center",
-          "right": "Right"
+          "right": "Right",
+          "justify": "Justified"
         },
         "fontWeightOptions": {
           "thin": "Thin (100)",
@@ -1717,7 +1723,11 @@
           "stretch": "Stretch"
         },
         "listStyleType": "List Style",
+        "listColumns": "List columns",
+        "listColumnsHelp": "Sets how many columns the list items are shown in. Every column takes an equal share of the field's available width.",
+        "listColumnsNarrowHint": "With this many columns each one may end up very narrow. Check it in the preview.",
         "listItemsLayout": "List Items Layout",
+        "listItemsLayoutHelp": "Arranges the fields inside each item, not the items themselves. To spread the items out, use “List columns”.",
         "layoutOptions": {
           "horizontal": "Horizontal (side by side)",
           "vertical": "Vertical (stacked)"
@@ -1745,7 +1755,8 @@
         "alignOptions": {
           "left": "Left",
           "center": "Center",
-          "right": "Right"
+          "right": "Right",
+          "justify": "Justified"
         },
         "fontWeightOptions": {
           "thin": "Thin (100)",
