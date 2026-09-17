@@ -1414,10 +1414,10 @@
         "bulletinHeight": "Chiều cao bản tin (px)",
         "listStyleType": "Kiểu trình bày danh sách",
         "listColumns": "Số cột của danh sách",
-        "listColumnsHelp": "Quy định số cột dùng để hiển thị các mục của danh sách. Mỗi cột chiếm phần bằng nhau trong chiều rộng khả dụng của trường.",
+        "listColumnsHelp": "Số cột dùng để dàn các mục của danh sách.",
         "listColumnsNarrowHint": "Với số cột này, mỗi cột có thể rất hẹp. Hãy kiểm tra trong bản xem trước.",
         "listItemsLayout": "Bố trí các phần tử trong Danh sách",
-        "listItemsLayoutHelp": "Sắp xếp các trường bên trong mỗi mục, không phải các mục với nhau. Để dàn các mục, dùng “Số cột của danh sách”.",
+        "listItemsLayoutHelp": "Sắp xếp các trường bên trong mỗi mục, không phải các mục với nhau.",
         "title": "Kiểu trường thông tin",
         "padding": "Đệm (CSS)-Khoảng trống giữa nội dung và đường viền",
         "margin": "Lề (CSS)-Khoảng trống bên ngoài đường viền (Border), dùng để tạo khoảng cách giữa các phần tử.",
@@ -1773,7 +1773,13 @@
       },
       "imageUploadConfig": {
         "allowedFormatsLabel": "Định dạng ảnh được phép",
-        "summaryFormats": "Định dạng được phép"
+        "summaryFormats": "Định dạng được phép",
+        "objectFitLabel": "Cách vừa khung của ảnh",
+        "objectFitHelp": "Cover lấp kín khu vực bằng cách cắt phần dư. Contain giữ tỉ lệ và hiển thị trọn ảnh.",
+        "objectFitOptions": {
+          "cover": "Cover",
+          "contain": "Contain"
+        }
       }
     },
     "generalConfig": {
@@ -2009,10 +2015,10 @@
         "bulletinHeight": "Chiều cao bản tin (px)",
         "listStyleType": "Kiểu trình bày danh sách",
         "listColumns": "Số cột của danh sách",
-        "listColumnsHelp": "Quy định số cột dùng để hiển thị các mục của danh sách. Mỗi cột chiếm phần bằng nhau trong chiều rộng khả dụng của trường.",
+        "listColumnsHelp": "Số cột dùng để dàn các mục của danh sách.",
         "listColumnsNarrowHint": "Với số cột này, mỗi cột có thể rất hẹp. Hãy kiểm tra trong bản xem trước.",
         "listItemsLayout": "Bố trí các phần tử trong Danh sách",
-        "listItemsLayoutHelp": "Sắp xếp các trường bên trong mỗi mục, không phải các mục với nhau. Để dàn các mục, dùng “Số cột của danh sách”.",
+        "listItemsLayoutHelp": "Sắp xếp các trường bên trong mỗi mục, không phải các mục với nhau.",
         "listLayoutOptions": {
           "vertical": "Thẳng đứng",
           "horizontal": "Nằm ngang",

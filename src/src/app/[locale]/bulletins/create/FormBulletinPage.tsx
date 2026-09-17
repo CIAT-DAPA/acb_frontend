@@ -2257,6 +2257,7 @@ export default function FormBulletinPage({
                   <UnifiedBulletinPreview
                     data={previewData}
                     variant="single"
+                    fitToContainer={true}
                     moreInfo={true}
                     description={true}
                     selectedSectionIndex={previewSectionIndex}

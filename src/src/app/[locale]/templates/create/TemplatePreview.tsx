@@ -9,7 +9,12 @@ import React, {
 } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname } from "next/navigation";
-import { CreateTemplateData, Field, Section } from "../../../../types/template";
+import {
+  CreateTemplateData,
+  Field,
+  ImageUploadFieldConfig,
+  Section,
+} from "../../../../types/template";
 import { StyleConfig } from "../../../../types/core";
 import { getEffectiveFieldStyles } from "../../../../utils/styleInheritance";
 import { SmartIcon } from "../../components/AdaptiveSvgIcon";
@@ -1247,6 +1252,7 @@ interface TemplatePreviewProps {
   onPageChange?: (pageIndex: number) => void; // Callback cuando cambia la página
   onResolvedPageCount?: (pageCount: number) => void; // Callback cuando se resuelve el total real de páginas de la sección
   hidePagination?: boolean; // Ocultar controles de paginación
+  fitToContainer?: boolean;
   cardsMetadata?: Record<string, Card>; // Diccionario de cards precargadas para evitar HTTP calls
   cardsMetadataLoading?: boolean; // Indica que un contenedor padre está precargando cards
   resolvedSectionPageCounts?: number[]; // Cantidad de páginas reales por sección para page numbers globales
@@ -1331,6 +1337,7 @@ export function TemplatePreview({
   cardEmptyStateMode = "first-available",
   allowListSubfieldEditing = false,
   allowCardElementSelection = false,
+  fitToContainer = false,
 }: TemplatePreviewProps) {
   const t = useTranslations("CreateTemplate.preview");
   const tCreateCard = useTranslations("CreateCard");
@@ -1545,6 +1552,54 @@ export function TemplatePreview({
     section.blocks
       .map((block, blockIndex) => ({ block, blockIndex }))
       .filter(({ block }) => isBlockVisibleForRender(block));
+
+  const pageWidth = Number(styleConfig?.bulletin_width) || 366;
+  const pageHeight = Number(styleConfig?.bulletin_height) || 638;
+
+  const previewContainerRef = useRef<HTMLDivElement | null>(null);
+  const [previewContainerWidth, setPreviewContainerWidth] = useState(0);
+
+  useEffect(() => {
+    if (!fitToContainer) {
+      return;
+    }
+
+    const container = previewContainerRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    const updateWidth = () => {
+      setPreviewContainerWidth(container.clientWidth);
+    };
+
+    updateWidth();
+
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(container);
+
+    return () => observer.disconnect();
+  }, [fitToContainer]);
+
+  const previewScale = useMemo(() => {
+    if (!fitToContainer || previewContainerWidth <= 0 || pageWidth <= 0) {
+      return 1;
+    }
+
+    return Math.min(previewContainerWidth / pageWidth, 1);
+  }, [fitToContainer, previewContainerWidth, pageWidth]);
+
+  const pageScaleStyles: React.CSSProperties =
+    previewScale < 1
+      ? {
+          transform: `scale(${previewScale})`,
+          transformOrigin: "top left",
+          marginRight: `-${pageWidth * (1 - previewScale)}px`,
+          marginBottom: `-${pageHeight * (1 - previewScale)}px`,
+          flexShrink: 0,
+        }
+      : {};
 
   // Estilos globales aplicados
   const globalStyles = {
@@ -2986,8 +3041,13 @@ export function TemplatePreview({
       case "image_upload":
         // Mostrar placeholder con las dimensiones exactas configuradas
         const uploadedImageUrl = field.value as string | undefined;
-        const imageHeight = (field.field_config as any)?.max_height;
-        const imageWidth = (field.field_config as any)?.max_width;
+        const imageUploadConfig = field.field_config as
+          | ImageUploadFieldConfig
+          | undefined;
+        const imageHeight = imageUploadConfig?.max_height;
+        const imageWidth = imageUploadConfig?.max_width;
+        const imageObjectFit: "cover" | "contain" =
+          imageUploadConfig?.object_fit === "contain" ? "contain" : "cover";
 
         // Estilos del placeholder/imagen con dimensiones exactas
         const imageUploadContainerStyle: React.CSSProperties = {
@@ -3035,7 +3095,9 @@ export function TemplatePreview({
           );
         }
 
-        // Mostrar la imagen subida ocupando el espacio exacto y ajustándose con object-fit: cover
+        // El área reservada es la misma antes y después de subir la imagen,
+        // así que el placeholder marca dónde va a quedar y el diseño no salta
+        // al cargarla.
         return (
           <div
             key={key}
@@ -3048,7 +3110,7 @@ export function TemplatePreview({
               style={{
                 width: "100%",
                 height: "100%",
-                objectFit: "cover", // La imagen cubre todo el espacio, recortando si es necesario
+                objectFit: imageObjectFit,
               }}
               onError={(e) => {
                 (e.target as HTMLImageElement).src =
@@ -5116,16 +5178,18 @@ export function TemplatePreview({
       {/* Preview del documento */}
       <div
         id="template-preview-container"
+        ref={previewContainerRef}
         className="border-2 border-gray-300 rounded-lg overflow-hidden flex justify-center"
       >
         <div
           className="bg-white flex flex-col"
           style={{
             ...globalStyles,
-            width: `${styleConfig?.bulletin_width || 366}px`,
-            height: `${styleConfig?.bulletin_height || 638}px`,
+            width: `${pageWidth}px`,
+            height: `${pageHeight}px`,
             padding: 0,
             overflow: "hidden",
+            ...pageScaleStyles,
             backgroundImage:
               selectedSectionBackgroundImage ||
               (styleConfig?.background_image

@@ -163,6 +163,23 @@ export const ImageUploadFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
             <p className="text-xs text-gray-500 mt-1">{t("dimensionUnit")}</p>
           </div>
         </div>
+        <div className="mt-4">
+          <label className={labelClass}>{t("objectFitLabel")}</label>
+          <select
+            value={fieldConfig.object_fit || "cover"}
+            onChange={(e) =>
+              updateFieldConfig({
+                object_fit:
+                  e.target.value === "contain" ? "contain" : undefined,
+              })
+            }
+            className={inputClass}
+          >
+            <option value="cover">{t("objectFitOptions.cover")}</option>
+            <option value="contain">{t("objectFitOptions.contain")}</option>
+          </select>
+          <p className={`${helpTextClass} mt-1`}>{t("objectFitHelp")}</p>
+        </div>
       </div>
     </div>
   );

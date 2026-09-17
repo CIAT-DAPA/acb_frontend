@@ -1001,10 +1001,10 @@
         },
         "listStyleType": "List Style",
         "listColumns": "List columns",
-        "listColumnsHelp": "Sets how many columns the list items are shown in. Every column takes an equal share of the field's available width.",
+        "listColumnsHelp": "How many columns the list items are spread across.",
         "listColumnsNarrowHint": "With this many columns each one may end up very narrow. Check it in the preview.",
         "listItemsLayout": "List Items Layout",
-        "listItemsLayoutHelp": "Arranges the fields inside each item, not the items themselves. To spread the items out, use “List columns”.",
+        "listItemsLayoutHelp": "Arranges the fields inside each item, not the items themselves.",
         "layoutOptions": {
           "horizontal": "Horizontal (side by side)",
           "vertical": "Vertical (stacked)"
@@ -1532,6 +1532,12 @@
         "widthPlaceholder": "e.g. 400",
         "optional": "optional",
         "dimensionUnit": "pixels (px)",
+        "objectFitLabel": "Image fit",
+        "objectFitHelp": "Cover fills the area by cropping the overflow. Contain keeps the proportions and shows the whole image.",
+        "objectFitOptions": {
+          "cover": "Cover",
+          "contain": "Contain"
+        },
         "summaryTitle": "Configuration Summary",
         "summaryFormats": "Allowed formats",
         "summaryMaxSize": "Max. file size",
@@ -1724,10 +1730,10 @@
         },
         "listStyleType": "List Style",
         "listColumns": "List columns",
-        "listColumnsHelp": "Sets how many columns the list items are shown in. Every column takes an equal share of the field's available width.",
+        "listColumnsHelp": "How many columns the list items are spread across.",
         "listColumnsNarrowHint": "With this many columns each one may end up very narrow. Check it in the preview.",
         "listItemsLayout": "List Items Layout",
-        "listItemsLayoutHelp": "Arranges the fields inside each item, not the items themselves. To spread the items out, use “List columns”.",
+        "listItemsLayoutHelp": "Arranges the fields inside each item, not the items themselves.",
         "layoutOptions": {
           "horizontal": "Horizontal (side by side)",
           "vertical": "Vertical (stacked)"

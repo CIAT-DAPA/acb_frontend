@@ -95,6 +95,7 @@ export interface ImageUploadFieldConfig {
   allowed_formats: string[];
   max_width?: number;
   max_height?: number;
+  object_fit?: "cover" | "contain"; // Cómo se ajusta la imagen al área reservada: "cover" recorta, "contain" respeta proporciones
 }
 
 export interface AlgorithmFieldConfig {

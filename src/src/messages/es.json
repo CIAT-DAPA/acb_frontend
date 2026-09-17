@@ -1006,10 +1006,10 @@
         },
         "listStyleType": "Estilo de Lista",
         "listColumns": "Columnas de la lista",
-        "listColumnsHelp": "Define en cuántas columnas se muestran los items de la lista. Cada columna ocupa la misma parte del ancho disponible del campo.",
+        "listColumnsHelp": "En cuántas columnas se reparten los items de la lista.",
         "listColumnsNarrowHint": "Con tantas columnas cada una puede quedar muy estrecha. Revísalo en la vista previa.",
         "listItemsLayout": "Layout de Items de Lista",
-        "listItemsLayoutHelp": "Coloca los campos que hay dentro de cada item, no los items entre sí. Para repartir los items usa “Columnas de la lista”.",
+        "listItemsLayoutHelp": "Coloca los campos dentro de cada item, no los items entre sí.",
         "layoutOptions": {
           "horizontal": "Horizontal (lado a lado)",
           "vertical": "Vertical (uno debajo del otro)"
@@ -1531,6 +1531,12 @@
         "widthPlaceholder": "ej. 400",
         "optional": "opcional",
         "dimensionUnit": "píxeles (px)",
+        "objectFitLabel": "Ajuste de la imagen",
+        "objectFitHelp": "Cover llena el área recortando lo que sobra. Contain mantiene la proporción y muestra la imagen completa.",
+        "objectFitOptions": {
+          "cover": "Cover",
+          "contain": "Contain"
+        },
         "summaryTitle": "Resumen de Configuración",
         "summaryFormats": "Formatos permitidos",
         "summaryMaxSize": "Tamaño máx. archivo",
@@ -1723,10 +1729,10 @@
         },
         "listStyleType": "Estilo de Lista",
         "listColumns": "Columnas de la lista",
-        "listColumnsHelp": "Define en cuántas columnas se muestran los items de la lista. Cada columna ocupa la misma parte del ancho disponible del campo.",
+        "listColumnsHelp": "En cuántas columnas se reparten los items de la lista.",
         "listColumnsNarrowHint": "Con tantas columnas cada una puede quedar muy estrecha. Revísalo en la vista previa.",
         "listItemsLayout": "Layout de Items de Lista",
-        "listItemsLayoutHelp": "Coloca los campos que hay dentro de cada item, no los items entre sí. Para repartir los items usa “Columnas de la lista”.",
+        "listItemsLayoutHelp": "Coloca los campos dentro de cada item, no los items entre sí.",
         "layoutOptions": {
           "horizontal": "Horizontal (lado a lado)",
           "vertical": "Vertical (uno debajo del otro)"
