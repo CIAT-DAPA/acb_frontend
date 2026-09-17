@@ -94,6 +94,13 @@ const resolveSchemaField = (
   return container ? container.itemSchema[container.key] : null;
 };
 
+/**
+ * Campos que dibujan un icono junto al texto y por tanto admiten los ajustes
+ * de posición y alineación del icono.
+ */
+const hasIconField = (field: FieldBase | null | undefined): boolean =>
+  field?.type === "text_with_icon" || field?.type === "select_with_icons";
+
 const DIMENSION_PRESETS = [
   { label: "Custom", width: 0, height: 0 },
   { label: "A4 (Web - 794x1123)", width: 794, height: 1123 },
@@ -2201,10 +2208,16 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                     textDecoration: true,
                     iconSize: true,
                     iconUseOriginalColor: true,
-                    alignItems: (currentObject as Field).type === "list",
+                    iconPosition: hasIconField(currentObject as Field),
+                    // Mueven el conjunto icono + texto dentro del campo.
+                    alignItems:
+                      (currentObject as Field).type === "list" ||
+                      hasIconField(currentObject as Field),
+                    justifyContent: hasIconField(currentObject as Field),
                     // Habilitar campos específicos para ListField
                     listStyleType: (currentObject as Field).type === "list",
                     listColumns: (currentObject as Field).type === "list",
+                    listLastRowAlign: (currentObject as Field).type === "list",
                     listItemsLayout: (currentObject as Field).type === "list",
                     showTableHeader: (currentObject as Field).type === "list",
                   }}

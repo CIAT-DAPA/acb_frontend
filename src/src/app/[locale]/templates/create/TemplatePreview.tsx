@@ -17,7 +17,7 @@ import {
 } from "../../../../types/template";
 import { StyleConfig } from "../../../../types/core";
 import { getEffectiveFieldStyles } from "../../../../utils/styleInheritance";
-import { SmartIcon } from "../../components/AdaptiveSvgIcon";
+import { SmartIcon, isSvgUrl } from "../../components/AdaptiveSvgIcon";
 import { Card } from "../../../../types/card";
 import { CardAPIService } from "../../../../services/cardService";
 import { RefreshCw } from "lucide-react";
@@ -282,6 +282,67 @@ function normalizeCSSValue(
   // Si no cumple ningún patrón, devolverlo tal cual
   // (puede ser un valor CSS válido como "auto", "inherit", etc.)
   return strValue;
+}
+
+function getIconSizeStyles(
+  iconUrl: string,
+  iconSize: number,
+): React.CSSProperties {
+  if (isSvgUrl(iconUrl)) {
+    return { width: `${iconSize}px`, height: `${iconSize}px` };
+  }
+
+  return { height: `${iconSize}px`, width: "auto", maxWidth: "100%" };
+}
+
+/**
+ * Coloca el icono respecto al texto.
+ *
+ * Se traduce a flex-direction: "left" es el valor por defecto y equivale a lo
+ * que se hacía antes. align_items y justify_content siguen siendo los que
+ * mueven el conjunto dentro del campo.
+ */
+function getIconLayoutStyles(
+  styleConfig: StyleConfig | undefined,
+): React.CSSProperties {
+  const position = styleConfig?.icon_position || "left";
+
+  const flexDirection: React.CSSProperties["flexDirection"] =
+    position === "right"
+      ? "row-reverse"
+      : position === "top"
+        ? "column"
+        : position === "bottom"
+          ? "column-reverse"
+          : "row";
+
+  return {
+    display: "flex",
+    flexDirection,
+    alignItems: styleConfig?.align_items
+      ? getFlexAlignment(styleConfig.align_items)
+      : "center",
+    justifyContent: styleConfig?.justify_content
+      ? getFlexAlignment(styleConfig.justify_content)
+      : undefined,
+  };
+}
+
+/**
+ * Traduce los valores cortos de align_items/justify_content a CSS.
+ */
+function getFlexAlignment(value: string): string {
+  const alignmentMap: Record<string, string> = {
+    start: "flex-start",
+    end: "flex-end",
+    center: "center",
+    stretch: "stretch",
+    between: "space-between",
+    around: "space-around",
+    evenly: "space-evenly",
+  };
+
+  return alignmentMap[value] || value;
 }
 
 /**
@@ -1866,8 +1927,11 @@ export function TemplatePreview({
         return (
           <div
             key={key}
-            style={fieldStyles}
-            className="flex items-center gap-2"
+            style={{
+              ...fieldStyles,
+              ...getIconLayoutStyles(effectiveStyles),
+              gap: effectiveStyles.gap || "8px",
+            }}
           >
             {/* Icono - siempre se muestra (configurado desde el template o del valor) */}
             {selectedIcon ? (
@@ -1875,10 +1939,7 @@ export function TemplatePreview({
               selectedIcon.startsWith("/") ? (
                 <SmartIcon
                   src={selectedIcon}
-                  style={{
-                    width: `${iconSize}px`,
-                    height: `${iconSize}px`, // Asegurar altura igual al ancho
-                  }}
+                  style={getIconSizeStyles(selectedIcon, iconSize)}
                   color={useOriginalColor ? undefined : fieldStyles.color}
                   preserveOriginalColors={useOriginalColor}
                   alt={t("accessibility.icon")}
@@ -1958,16 +2019,21 @@ export function TemplatePreview({
         return (
           <div
             key={key}
-            style={{ ...fieldStyles, display: "flex", gap: "8px" }}
-            className={`flex items-center gap-2 ${justifyClass}`}
+            style={{
+              ...fieldStyles,
+              ...getIconLayoutStyles(effectiveStyles),
+              gap: effectiveStyles.gap || "8px",
+            }}
+            // text_align sigue decidiendo la distribución cuando el estilo no
+            // define un justify_content propio.
+            className={
+              effectiveStyles.justify_content ? undefined : justifyClass
+            }
           >
             {iconToShow && (
               <SmartIcon
                 src={iconToShow}
-                style={{
-                  width: `${selectIconSize}px`,
-                  height: `${selectIconSize}px`,
-                }}
+                style={getIconSizeStyles(iconToShow, selectIconSize)}
                 color={
                   selectUseOriginalColor
                     ? undefined
@@ -2601,14 +2667,49 @@ export function TemplatePreview({
         const usesItemColumns =
           listColumns > 1 && listItemsLayout !== "horizontal";
 
+        const renderedItemCount = itemsToRenderWithIndex.length;
+        const lastRowItemCount = usesItemColumns
+          ? renderedItemCount % listColumns
+          : 0;
+        const lastRowAlign = effectiveStyles.list_last_row_align || "start";
+        const usesLastRowOffset =
+          usesItemColumns && lastRowAlign !== "start" && lastRowItemCount > 0;
+
+        const gridTrackCount = usesLastRowOffset
+          ? listColumns * 2
+          : listColumns;
+        const itemColumnSpan = usesLastRowOffset ? 2 : 1;
+        const freeSubTracks = usesLastRowOffset
+          ? 2 * (listColumns - lastRowItemCount)
+          : 0;
+        const lastRowStartTrack = usesLastRowOffset
+          ? (lastRowAlign === "center" ? freeSubTracks / 2 : freeSubTracks) + 1
+          : undefined;
+        const firstLastRowIndex = renderedItemCount - lastRowItemCount;
+
         // Estilos para el contenedor de items con gap configurable
         const itemsContainerStyle: React.CSSProperties = {
           gap: effectiveStyles.gap || undefined,
           // minmax(0, 1fr) reparte el ancho a partes iguales y deja que los
           // textos largos se ajusten en vez de desbordar la columna.
           gridTemplateColumns: usesItemColumns
-            ? `repeat(${listColumns}, minmax(0, 1fr))`
+            ? `repeat(${gridTrackCount}, minmax(0, 1fr))`
             : undefined,
+        };
+
+        const getListItemGridStyles = (
+          visualItemIndex: number,
+        ): React.CSSProperties => {
+          if (!usesLastRowOffset) {
+            return {};
+          }
+
+          return {
+            gridColumn:
+              visualItemIndex === firstLastRowIndex
+                ? `${lastRowStartTrack} / span ${itemColumnSpan}`
+                : `span ${itemColumnSpan}`,
+          };
         };
 
         return (
@@ -2693,6 +2794,7 @@ export function TemplatePreview({
                         borderRadius: isHighlighted ? "8px" : undefined,
                         alignItems: effectiveStyles.align_items || "start",
                         gap: "8px",
+                        ...getListItemGridStyles(visualItemIndex),
                       }}
                     >
                       {listItemId &&
@@ -2862,6 +2964,7 @@ export function TemplatePreview({
                       style={{
                         overflow: "hidden",
                         height: `${itemSlice.height}px`,
+                        ...getListItemGridStyles(visualItemIndex),
                       }}
                     >
                       <div

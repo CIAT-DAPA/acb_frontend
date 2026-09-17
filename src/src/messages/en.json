@@ -953,6 +953,21 @@
         "opacity": "Opacity",
         "fontSize": "Font Size (px)",
         "iconSize": "Icon Size (px)",
+        "iconSizeHelp": "This is the height. The width follows the icon's proportions.",
+        "iconPosition": "Icon position",
+        "iconPositionOptions": {
+          "left": "Left",
+          "right": "Right",
+          "top": "Top",
+          "bottom": "Bottom"
+        },
+        "listLastRowAlign": "Leftover items alignment",
+        "listLastRowAlignHelp": "Where the items go when they do not fill the last row.",
+        "listLastRowAlignOptions": {
+          "start": "Left",
+          "center": "Center",
+          "end": "Right"
+        },
         "iconUseOriginalColor": "Keep original icon color",
         "iconUseOriginalColorHelp": "If disabled, the icon will use the primary color from the context",
         "fontWeight": "Font Weight",
@@ -1675,6 +1690,21 @@
         "font": "Font",
         "fontSize": "Font Size (px)",
         "iconSize": "Icon Size (px)",
+        "iconSizeHelp": "This is the height. The width follows the icon's proportions.",
+        "iconPosition": "Icon position",
+        "iconPositionOptions": {
+          "left": "Left",
+          "right": "Right",
+          "top": "Top",
+          "bottom": "Bottom"
+        },
+        "listLastRowAlign": "Leftover items alignment",
+        "listLastRowAlignHelp": "Where the items go when they do not fill the last row.",
+        "listLastRowAlignOptions": {
+          "start": "Left",
+          "center": "Center",
+          "end": "Right"
+        },
         "iconUseOriginalColor": "Keep original icon color",
         "iconUseOriginalColorHelp": "If disabled, the icon will use the primary color from the context",
         "fontWeight": "Font Weight",

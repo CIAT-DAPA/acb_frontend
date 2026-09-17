@@ -961,6 +961,21 @@
         "opacity": "Opacidad",
         "fontSize": "Tamaño de Fuente (px)",
         "iconSize": "Tamaño de Iconos (px)",
+        "iconSizeHelp": "Es el alto. El ancho sigue la proporción del icono.",
+        "iconPosition": "Posición del icono",
+        "iconPositionOptions": {
+          "left": "Izquierda",
+          "right": "Derecha",
+          "top": "Arriba",
+          "bottom": "Abajo"
+        },
+        "listLastRowAlign": "Alineación de los items sobrantes",
+        "listLastRowAlignHelp": "Dónde se colocan los items cuando no llegan a completar la última fila.",
+        "listLastRowAlignOptions": {
+          "start": "Izquierda",
+          "center": "Centro",
+          "end": "Derecha"
+        },
         "iconUseOriginalColor": "Mantener color original del icono",
         "iconUseOriginalColorHelp": "Si está desactivado, el icono usará el color primario del contexto",
         "fontWeight": "Grosor del Texto",
@@ -1003,6 +1018,13 @@
           "between": "Espaciado Entre",
           "around": "Espaciado Alrededor",
           "evenly": "Espaciado Uniforme"
+        },
+        "alignItems": "Alineación de Items",
+        "alignItemsOptions": {
+          "start": "Inicio",
+          "end": "Fin",
+          "center": "Centro",
+          "stretch": "Estirar"
         },
         "listStyleType": "Estilo de Lista",
         "listColumns": "Columnas de la lista",
@@ -1674,6 +1696,21 @@
         "font": "Fuente",
         "fontSize": "Tamaño de Fuente (px)",
         "iconSize": "Tamaño de Iconos (px)",
+        "iconSizeHelp": "Es el alto. El ancho sigue la proporción del icono.",
+        "iconPosition": "Posición del icono",
+        "iconPositionOptions": {
+          "left": "Izquierda",
+          "right": "Derecha",
+          "top": "Arriba",
+          "bottom": "Abajo"
+        },
+        "listLastRowAlign": "Alineación de los items sobrantes",
+        "listLastRowAlignHelp": "Dónde se colocan los items cuando no llegan a completar la última fila.",
+        "listLastRowAlignOptions": {
+          "start": "Izquierda",
+          "center": "Centro",
+          "end": "Derecha"
+        },
         "iconUseOriginalColor": "Mantener color original del icono",
         "iconUseOriginalColorHelp": "Si está desactivado, el icono usará el color primario del contexto",
         "fontWeight": "Grosor del Texto",

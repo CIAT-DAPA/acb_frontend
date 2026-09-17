@@ -569,6 +569,15 @@ export function FieldEditor({
             iconUseOriginalColor:
               currentField.type === "text_with_icon" ||
               currentField.type === "select_with_icons",
+            iconPosition:
+              currentField.type === "text_with_icon" ||
+              currentField.type === "select_with_icons",
+            alignItems:
+              currentField.type === "text_with_icon" ||
+              currentField.type === "select_with_icons",
+            justifyContent:
+              currentField.type === "text_with_icon" ||
+              currentField.type === "select_with_icons",
             fontWeight: true,
             lineHeight: true,
             wordSpace: true,
@@ -587,6 +596,7 @@ export function FieldEditor({
             maxWidth: true,
             listStyleType: currentField.type === "list",
             listColumns: currentField.type === "list",
+            listLastRowAlign: currentField.type === "list",
             listItemsLayout: currentField.type === "list",
             showTableHeader: currentField.type === "list",
             backgroundImage: true,
