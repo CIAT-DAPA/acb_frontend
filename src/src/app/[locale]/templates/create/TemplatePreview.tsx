@@ -5852,7 +5852,11 @@ export function TemplatePreview({
                                   onClick={(e) =>
                                     onElementClick("header_field", fieldId, e)
                                   }
-                                  className="relative hover:ring-2 hover:ring-yellow-400 cursor-pointer rounded transition-all group/field"
+                                  className={`relative cursor-pointer rounded transition-all group/field ${
+                                    selectedElementId === fieldId
+                                      ? "ring-2 ring-blue-500 z-20"
+                                      : "hover:ring-2 hover:ring-yellow-400"
+                                  }`}
                                 >
                                   {rendered}
                                   {renderCommentBadge(fieldId)}
@@ -6246,9 +6250,15 @@ export function TemplatePreview({
                                           `block-${sectionIndex}-${blockIndex}`
                                         : undefined
                                     }
+                                    data-editor-id={`block-${sectionIndex}-${blockIndex}`}
                                     className={`${hasCardField ? "flex-1" : ""} ${
                                       reviewMode
-                                        ? "hover:ring-2 hover:ring-blue-400 cursor-pointer relative group/block transition-all"
+                                        ? `cursor-pointer relative group/block transition-all ${
+                                            selectedElementId ===
+                                            `block-${sectionIndex}-${blockIndex}`
+                                              ? "ring-2 ring-blue-500 z-20"
+                                              : "hover:ring-2 hover:ring-blue-400"
+                                          }`
                                         : ""
                                     }`}
                                     onClick={

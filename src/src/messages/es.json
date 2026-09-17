@@ -1392,6 +1392,17 @@
         "image": "Imagen",
         "moon_calendar": "Calendario Lunar"
       },
+      "structure": {
+        "dragToReorder": "Arrastrar para reordenar",
+        "openSettings": "Abrir configuración",
+        "duplicate": "Duplicar",
+        "delete": "Eliminar",
+        "noBlocks": "Todavía no hay bloques",
+        "noFields": "Todavía no hay campos",
+        "untitledBlock": "Bloque sin nombre",
+        "untitledField": "Campo sin nombre",
+        "fieldCount": "{count, plural, =0 {sin campos} one {1 campo} other {# campos}}"
+      },
       "textConfig": {
         "subtype": "Tipo de Texto",
         "short": "Corto",

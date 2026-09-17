@@ -1477,6 +1477,17 @@
         "card": "Thẻ",
         "moon_calendar": "Lịch mặt trăng"
       },
+      "structure": {
+        "dragToReorder": "Kéo để sắp xếp lại",
+        "openSettings": "Mở cấu hình",
+        "duplicate": "Nhân bản",
+        "delete": "Xóa",
+        "noBlocks": "Chưa có khối nào",
+        "noFields": "Chưa có trường nào",
+        "untitledBlock": "Khối chưa đặt tên",
+        "untitledField": "Trường chưa đặt tên",
+        "fieldCount": "{count, plural, other {# trường}}"
+      },
       "selectWithIconsConfig": {
         "iconUrl": "Biểu tượng",
         "selectIcon": "Chọn biểu tượng",
