@@ -2872,15 +2872,26 @@ export function TemplatePreview({
                                 listItemsLayout === "grid-2" ||
                                 listItemsLayout === "grid-3";
 
-                              // Determinar la alineación según la posición en el grid
-                              /*
-                                * Si el subcampo define su propia alineación,
-                                * esa manda. Si no, se mantiene la regla por
-                                * posición, que es un buen valor por defecto
-                                * para los pares etiqueta/valor.
-                                */
+                              
                               const configuredSubfieldAlign =
                                 fieldSchema.style_config?.text_align;
+
+                              const subfieldWidth = normalizeCSSValue(
+                                fieldSchema.style_config?.width,
+                              );
+                              const wrapperHandlesWidth = Boolean(
+                                subfieldWidth && !isGridLayout,
+                              );
+                              const subfieldWrapperStyles: React.CSSProperties =
+                                wrapperHandlesWidth
+                                  ? listItemsLayout === "horizontal"
+                                    ? {
+                                        flexGrow: 0,
+                                        flexShrink: 0,
+                                        flexBasis: subfieldWidth,
+                                      }
+                                    : { width: subfieldWidth }
+                                  : {};
 
                               let justifyClass = "";
                               if (isGridLayout && configuredSubfieldAlign) {
@@ -2953,6 +2964,7 @@ export function TemplatePreview({
                                       ? " ring-2 ring-emerald-500 bg-emerald-50 z-30"
                                       : "")
                                   }
+                                  style={subfieldWrapperStyles}
                                   onDoubleClick={
                                     canActivateListSubfields && subfieldId
                                       ? (event) => {
@@ -2972,6 +2984,14 @@ export function TemplatePreview({
                                   {renderField(
                                     {
                                       ...fieldSchema,
+                                      // El ancho ya lo aplica el envoltorio;
+                                      // dejarlo aquí lo aplicaría dos veces.
+                                      style_config: wrapperHandlesWidth
+                                        ? {
+                                            ...fieldSchema.style_config,
+                                            width: undefined,
+                                          }
+                                        : fieldSchema.style_config,
                                       value: resolvedItemFieldValue,
                                     } as Field,
                                     `${absoluteItemIndex}-${fieldIndex}`,
