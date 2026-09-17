@@ -31,6 +31,7 @@ interface ClimateParameter {
   type: "number" | "text";
   col_name: string;
   showName?: boolean; // Si se muestra el nombre del parámetro en el preview
+  joinWithPrevious?: boolean; // Si se suprime el separador delante de este parámetro
   style_config?: StyleConfig; // Estilos individuales para este parámetro
 }
 
@@ -59,6 +60,10 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
     col_name: "",
     showName: true,
   });
+
+  const showsSeparator =
+    currentField.style_config?.climate_params_layout === "horizontal" &&
+    Boolean(currentField.style_config?.climate_params_separator);
 
   const [isAddingParameter, setIsAddingParameter] = useState(false);
   const [expandedStyleConfig, setExpandedStyleConfig] = useState<string | null>(
@@ -110,7 +115,9 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
     const updatedParameter = {
       ...availableParameters[parameterKey],
       [field]:
-        field === "showName" ? value === "true" || value === true : value,
+        field === "showName" || field === "joinWithPrevious"
+          ? value === "true" || value === true
+          : value,
     };
 
     // Si se cambia el tipo a "text", limpiar la unidad
@@ -149,8 +156,8 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
           {parameterKeys.map((paramKey) => {
             const param = availableParameters[paramKey];
             return (
-              <div key={paramKey} className={parameterCardClass}>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div key={paramKey} className={`${parameterCardClass} @container`}>
+                <div className="grid grid-cols-1 gap-3 items-end @min-[220px]:grid-cols-2 @lg:grid-cols-3">
                   {/* Clave del parámetro */}
                   <div>
                     <label className={labelXsClass}>{t("parameterKey")}</label>
@@ -246,6 +253,28 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                     </label>
                   </div>
 
+                  {showsSeparator && (
+                    <div className="flex items-end">
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={param.joinWithPrevious === true}
+                          onChange={(e) =>
+                            updateParameter(
+                              paramKey,
+                              "joinWithPrevious",
+                              e.target.checked,
+                            )
+                          }
+                          className={checkboxClass}
+                        />
+                        <span className="text-xs text-gray-700">
+                          {t("joinWithPrevious")}
+                        </span>
+                      </label>
+                    </div>
+                  )}
+
                   {/* Eliminar */}
                   <div className="flex items-end">
                     <button
@@ -298,11 +327,11 @@ export const ClimateDataFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
 
           {/* Formulario para agregar nuevo parámetro */}
           {isAddingParameter && (
-            <div className={newParameterCardClass}>
+            <div className={`${newParameterCardClass} @container`}>
               <h4 className="text-sm font-medium text-blue-900 mb-3">
                 {t("addNewParameter")}
               </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 gap-3 items-end @min-[220px]:grid-cols-2 @lg:grid-cols-3">
                 <div>
                   <label className={labelXsClass}>{t("parameterKey")} *</label>
                   <input

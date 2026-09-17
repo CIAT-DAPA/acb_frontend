@@ -953,6 +953,21 @@
         "opacity": "Opacity",
         "fontSize": "Font Size (px)",
         "iconSize": "Icon Size (px)",
+        "iconSizeHelp": "This is the height. The width follows the icon's proportions.",
+        "iconPosition": "Icon position",
+        "iconPositionOptions": {
+          "left": "Left",
+          "right": "Right",
+          "top": "Top",
+          "bottom": "Bottom"
+        },
+        "listLastRowAlign": "Leftover items alignment",
+        "listLastRowAlignHelp": "Where the items go when they do not fill the last row.",
+        "listLastRowAlignOptions": {
+          "start": "Left",
+          "center": "Center",
+          "end": "Right"
+        },
         "iconUseOriginalColor": "Keep original icon color",
         "iconUseOriginalColorHelp": "If disabled, the icon will use the primary color from the context",
         "fontWeight": "Font Weight",
@@ -1001,10 +1016,17 @@
         },
         "listStyleType": "List Style",
         "listColumns": "List columns",
-        "listColumnsHelp": "Sets how many columns the list items are shown in. Every column takes an equal share of the field's available width.",
+        "listColumnsHelp": "How many columns the list items are spread across.",
         "listColumnsNarrowHint": "With this many columns each one may end up very narrow. Check it in the preview.",
+        "climateParamsLayout": "Parameters layout",
+        "climateParamsLayoutOptions": {
+          "vertical": "Stacked",
+          "horizontal": "In line"
+        },
+        "climateParamsSeparator": "Separator between parameters",
+        "climateParamsSeparatorHelp": "Text drawn between one parameter and the next, for example / or a comma.",
         "listItemsLayout": "List Items Layout",
-        "listItemsLayoutHelp": "Arranges the fields inside each item, not the items themselves. To spread the items out, use “List columns”.",
+        "listItemsLayoutHelp": "Arranges the fields inside each item, not the items themselves.",
         "layoutOptions": {
           "horizontal": "Horizontal (side by side)",
           "vertical": "Vertical (stacked)"
@@ -1364,6 +1386,17 @@
         "image": "Image",
         "moon_calendar": "Moon Calendar"
       },
+      "structure": {
+        "dragToReorder": "Drag to reorder",
+        "openSettings": "Open settings",
+        "duplicate": "Duplicate",
+        "delete": "Delete",
+        "noBlocks": "No blocks yet",
+        "noFields": "No fields yet",
+        "untitledBlock": "Untitled block",
+        "untitledField": "Untitled field",
+        "fieldCount": "{count, plural, =0 {no fields} one {1 field} other {# fields}}"
+      },
       "textConfig": {
         "subtype": "Text Type",
         "short": "Short",
@@ -1532,6 +1565,12 @@
         "widthPlaceholder": "e.g. 400",
         "optional": "optional",
         "dimensionUnit": "pixels (px)",
+        "objectFitLabel": "Image fit",
+        "objectFitHelp": "Cover fills the area by cropping the overflow. Contain keeps the proportions and shows the whole image.",
+        "objectFitOptions": {
+          "cover": "Cover",
+          "contain": "Contain"
+        },
         "summaryTitle": "Configuration Summary",
         "summaryFormats": "Allowed formats",
         "summaryMaxSize": "Max. file size",
@@ -1606,6 +1645,7 @@
         },
         "previewExampleValue": "Example value",
         "showNameInPreview": "Show name in preview",
+        "joinWithPrevious": "Join with the previous one (no separator)",
         "parameterStyles": "Parameter styles"
       },
       "cardConfig": {
@@ -1669,6 +1709,21 @@
         "font": "Font",
         "fontSize": "Font Size (px)",
         "iconSize": "Icon Size (px)",
+        "iconSizeHelp": "This is the height. The width follows the icon's proportions.",
+        "iconPosition": "Icon position",
+        "iconPositionOptions": {
+          "left": "Left",
+          "right": "Right",
+          "top": "Top",
+          "bottom": "Bottom"
+        },
+        "listLastRowAlign": "Leftover items alignment",
+        "listLastRowAlignHelp": "Where the items go when they do not fill the last row.",
+        "listLastRowAlignOptions": {
+          "start": "Left",
+          "center": "Center",
+          "end": "Right"
+        },
         "iconUseOriginalColor": "Keep original icon color",
         "iconUseOriginalColorHelp": "If disabled, the icon will use the primary color from the context",
         "fontWeight": "Font Weight",
@@ -1724,10 +1779,17 @@
         },
         "listStyleType": "List Style",
         "listColumns": "List columns",
-        "listColumnsHelp": "Sets how many columns the list items are shown in. Every column takes an equal share of the field's available width.",
+        "listColumnsHelp": "How many columns the list items are spread across.",
         "listColumnsNarrowHint": "With this many columns each one may end up very narrow. Check it in the preview.",
+        "climateParamsLayout": "Parameters layout",
+        "climateParamsLayoutOptions": {
+          "vertical": "Stacked",
+          "horizontal": "In line"
+        },
+        "climateParamsSeparator": "Separator between parameters",
+        "climateParamsSeparatorHelp": "Text drawn between one parameter and the next, for example / or a comma.",
         "listItemsLayout": "List Items Layout",
-        "listItemsLayoutHelp": "Arranges the fields inside each item, not the items themselves. To spread the items out, use “List columns”.",
+        "listItemsLayoutHelp": "Arranges the fields inside each item, not the items themselves.",
         "layoutOptions": {
           "horizontal": "Horizontal (side by side)",
           "vertical": "Vertical (stacked)"

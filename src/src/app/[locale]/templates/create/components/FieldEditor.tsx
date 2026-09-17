@@ -293,7 +293,7 @@ export function FieldEditor({
                 value={currentField.label || ""}
                 onChange={(e) => updateField({ label: e.target.value })}
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                placeholder={t("formConfig.labelPlaceholder")}
+                placeholder={t("editor.formConfig.labelPlaceholder")}
               />
             </div>
 
@@ -306,7 +306,7 @@ export function FieldEditor({
                 value={currentField.description || ""}
                 onChange={(e) => updateField({ description: e.target.value })}
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                placeholder={t("formConfig.descriptionPlaceholder")}
+                placeholder={t("editor.formConfig.descriptionPlaceholder")}
               />
             </div>
           </>
@@ -394,10 +394,10 @@ export function FieldEditor({
                         <div className="text-sm font-medium text-[#283618] truncate">
                           {option}
                         </div>
-                        <div className="text-xs text-[#283618]/50">
+                        <div className="text-xs text-[#283618]/50 truncate">
                           {isSelected
-                            ? t("bulletinConfig.selectWithIcons.selectedDefault")
-                            : t("bulletinConfig.selectWithIcons.selectDefault")}
+                            ? t("editor.bulletinConfig.selectWithIcons.selectedDefault")
+                            : t("editor.bulletinConfig.selectWithIcons.selectDefault")}
                         </div>
                       </div>
                     </button>
@@ -406,7 +406,7 @@ export function FieldEditor({
               </div>
             ) : (
               <p className="text-sm text-amber-600">
-                {t("bulletinConfig.selectWithIcons.noOptionsMessage")}
+                {t("editor.bulletinConfig.selectWithIcons.noOptionsMessage")}
               </p>
             )}
 
@@ -569,6 +569,15 @@ export function FieldEditor({
             iconUseOriginalColor:
               currentField.type === "text_with_icon" ||
               currentField.type === "select_with_icons",
+            iconPosition:
+              currentField.type === "text_with_icon" ||
+              currentField.type === "select_with_icons",
+            alignItems:
+              currentField.type === "text_with_icon" ||
+              currentField.type === "select_with_icons",
+            justifyContent:
+              currentField.type === "text_with_icon" ||
+              currentField.type === "select_with_icons",
             fontWeight: true,
             lineHeight: true,
             wordSpace: true,
@@ -587,6 +596,8 @@ export function FieldEditor({
             maxWidth: true,
             listStyleType: currentField.type === "list",
             listColumns: currentField.type === "list",
+            climateParams: currentField.type === "climate_data_puntual",
+            listLastRowAlign: currentField.type === "list",
             listItemsLayout: currentField.type === "list",
             showTableHeader: currentField.type === "list",
             backgroundImage: true,

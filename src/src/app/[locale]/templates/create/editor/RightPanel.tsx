@@ -9,6 +9,7 @@ import {
   HeaderFooterConfig,
 } from "@/types/template";
 import { EditorSelection } from "./types";
+import { StructureList, StructureItem } from "./StructureList";
 import { getSchemaKeyPath } from "@/utils/listSubfieldPath";
 import { getFieldConfigDefaults } from "@/app/[locale]/templates/create/editor/utils";
 import { Trash2, Move, Plus, ArrowUp, ArrowDown, Copy, X } from "lucide-react";
@@ -94,6 +95,66 @@ const resolveSchemaField = (
   return container ? container.itemSchema[container.key] : null;
 };
 
+function reorderArray<T>(items: T[], fromIndex: number, toIndex: number): T[] {
+  if (
+    fromIndex === toIndex ||
+    fromIndex < 0 ||
+    toIndex < 0 ||
+    fromIndex >= items.length ||
+    toIndex >= items.length
+  ) {
+    return items;
+  }
+
+  const next = [...items];
+  const [moved] = next.splice(fromIndex, 1);
+  next.splice(toIndex, 0, moved);
+
+  return next;
+}
+
+function duplicateField(field: Field): Field {
+  return {
+    ...structuredClone(field),
+    field_id: crypto.randomUUID(),
+  };
+}
+
+/**
+ * Copia de un bloque con identificadores nuevos, también en sus campos.
+ */
+function duplicateBlock(block: Block): Block {
+  const copy = structuredClone(block);
+
+  return {
+    ...copy,
+    block_id: crypto.randomUUID(),
+    fields: (copy.fields || []).map(duplicateField),
+  };
+}
+
+function remapIndexAfterMove(
+  index: number,
+  fromIndex: number,
+  toIndex: number,
+): number {
+  if (index === fromIndex) return toIndex;
+  if (fromIndex < toIndex && index > fromIndex && index <= toIndex) {
+    return index - 1;
+  }
+  if (fromIndex > toIndex && index >= toIndex && index < fromIndex) {
+    return index + 1;
+  }
+  return index;
+}
+
+/**
+ * Campos que dibujan un icono junto al texto y por tanto admiten los ajustes
+ * de posición y alineación del icono.
+ */
+const hasIconField = (field: FieldBase | null | undefined): boolean =>
+  field?.type === "text_with_icon" || field?.type === "select_with_icons";
+
 const DIMENSION_PRESETS = [
   { label: "Custom", width: 0, height: 0 },
   { label: "A4 (Web - 794x1123)", width: 794, height: 1123 },
@@ -110,6 +171,9 @@ interface RightPanelProps {
   onUpdate: (updater: (prev: CreateTemplateData) => CreateTemplateData) => void;
   onMoveSection?: (fromIndex: number, toIndex: number) => void;
   onDuplicateSection?: (sectionIndex: number) => void;
+  onSelect?: (selection: EditorSelection) => void;
+  markedElementId?: string | null;
+  onMarkElement?: (elementId: string | null) => void;
   // Card specific props
   isCardMode?: boolean;
   cardType?: string;
@@ -124,6 +188,9 @@ export const RightPanel: React.FC<RightPanelProps> = ({
   onUpdate,
   onMoveSection,
   onDuplicateSection,
+  onSelect,
+  markedElementId,
+  onMarkElement,
   isCardMode = false,
   cardType,
   cardTags,
@@ -644,6 +711,195 @@ export const RightPanel: React.FC<RightPanelProps> = ({
     }
     setRestoreModalOpen(false);
     setRestoreType(null);
+  };
+
+  const sectionIndex = selection.sectionIndex ?? -1;
+
+  const updateSectionBlocks = (updater: (blocks: Block[]) => Block[]) => {
+    onUpdate((prev) => {
+      const newData = structuredClone(prev);
+      const section = newData.version.content.sections[sectionIndex];
+
+      if (!section) {
+        return prev;
+      }
+
+      section.blocks = updater(section.blocks || []);
+      return newData;
+    });
+  };
+
+  const updateBlockFields = (updater: (fields: Field[]) => Field[]) => {
+    onUpdate((prev) => {
+      const newData = structuredClone(prev);
+      const block =
+        newData.version.content.sections[sectionIndex]?.blocks?.[
+          selection.blockIndex!
+        ];
+
+      if (!block) {
+        return prev;
+      }
+
+      block.fields = updater(block.fields || []);
+      return newData;
+    });
+  };
+
+  const updateHeaderFooterFields = (
+    kind: "header" | "footer",
+    updater: (fields: Field[]) => Field[],
+  ) => {
+    onUpdate((prev) => {
+      const newData = structuredClone(prev);
+      const section =
+        sectionIndex >= 0
+          ? newData.version.content.sections[sectionIndex]
+          : null;
+      const key = kind === "header" ? "header_config" : "footer_config";
+      const config = section?.[key] ? section[key] : newData.version.content[key];
+
+      if (!config) {
+        return prev;
+      }
+
+      config.fields = updater(config.fields || []);
+      return newData;
+    });
+  };
+
+  const remapSelectionIndex = (
+    key: "blockIndex" | "fieldIndex",
+    fromIndex: number,
+    toIndex: number | null,
+  ) => {
+    if (!onSelect) {
+      return;
+    }
+
+    const current = selection[key];
+
+    if (typeof current !== "number") {
+      return;
+    }
+
+    if (toIndex === null && current === fromIndex) {
+      onSelect(
+        key === "fieldIndex"
+          ? { type: "block", id: null, sectionIndex, blockIndex: selection.blockIndex }
+          : { type: "section", id: null, sectionIndex },
+      );
+      return;
+    }
+
+    const next =
+      toIndex === null
+        ? current > fromIndex
+          ? current - 1
+          : current
+        : remapIndexAfterMove(current, fromIndex, toIndex);
+
+    if (next !== current) {
+      onSelect({ ...selection, [key]: next });
+    }
+  };
+
+  const renderFieldsStructure = ({
+    fields,
+    buildElementId,
+    buildSelection,
+    applyUpdate,
+    indexKey,
+  }: {
+    fields: Field[];
+    buildElementId: (index: number) => string;
+    buildSelection: (index: number) => EditorSelection;
+    applyUpdate: (updater: (fields: Field[]) => Field[]) => void;
+    indexKey: "fieldIndex";
+  }) => {
+    const items: StructureItem[] = fields.map((field, index) => ({
+      id: field.field_id || `${buildElementId(index)}`,
+      index,
+      name:
+        field.label ||
+        field.display_name ||
+        t("fieldEditor.structure.untitledField"),
+      detail: t(`fieldEditor.fieldTypes.${field.type}`),
+    }));
+
+    return (
+      <StructureList
+        items={items}
+        markedId={markedElementId}
+        emptyMessage={t("fieldEditor.structure.noFields")}
+        onMark={(item) => onMarkElement?.(buildElementId(item.index))}
+        onOpen={(item) => onSelect?.(buildSelection(item.index))}
+        onReorder={(from, to) => {
+          applyUpdate((current) => reorderArray(current, from, to));
+          remapSelectionIndex(indexKey, from, to);
+        }}
+        onDuplicate={(item) => {
+          applyUpdate((current) => {
+            const next = [...current];
+            next.splice(item.index + 1, 0, duplicateField(current[item.index]));
+            return next;
+          });
+        }}
+        onDelete={(item) => {
+          applyUpdate((current) =>
+            current.filter((_, index) => index !== item.index),
+          );
+          remapSelectionIndex(indexKey, item.index, null);
+        }}
+      />
+    );
+  };
+
+  const renderBlocksStructure = (blocks: Block[]) => {
+    const items: StructureItem[] = blocks.map((block, index) => ({
+      id: block.block_id || `block-${sectionIndex}-${index}`,
+      index,
+      name: block.display_name || t("fieldEditor.structure.untitledBlock"),
+      detail: t("fieldEditor.structure.fieldCount", {
+        count: block.fields?.length || 0,
+      }),
+    }));
+
+    return (
+      <StructureList
+        items={items}
+        markedId={markedElementId}
+        emptyMessage={t("fieldEditor.structure.noBlocks")}
+        onMark={(item) =>
+          onMarkElement?.(`block-${sectionIndex}-${item.index}`)
+        }
+        onOpen={(item) =>
+          onSelect?.({
+            type: "block",
+            id: `block-${sectionIndex}-${item.index}`,
+            sectionIndex,
+            blockIndex: item.index,
+          })
+        }
+        onReorder={(from, to) => {
+          updateSectionBlocks((current) => reorderArray(current, from, to));
+          remapSelectionIndex("blockIndex", from, to);
+        }}
+        onDuplicate={(item) => {
+          updateSectionBlocks((current) => {
+            const next = [...current];
+            next.splice(item.index + 1, 0, duplicateBlock(current[item.index]));
+            return next;
+          });
+        }}
+        onDelete={(item) => {
+          updateSectionBlocks((current) =>
+            current.filter((_, index) => index !== item.index),
+          );
+          remapSelectionIndex("blockIndex", item.index, null);
+        }}
+      />
+    );
   };
 
   const handleAddBlock = () => {
@@ -1426,6 +1682,10 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                 <Plus size={14} />
                 {t("fieldEditor.editor.addBlock")}
               </button>
+
+              <div className="mt-3">
+                {renderBlocksStructure((currentObject as Section)?.blocks || [])}
+              </div>
             </div>
 
             <div className="pt-4 border-t border-gray-200">
@@ -1771,6 +2031,30 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                 </div>
               )}
 
+              {(() => {
+                const kind = selection.type === "header" ? "header" : "footer";
+                const prefix = sectionIndex >= 0 ? `${sectionIndex}` : "global";
+
+                return (
+                  <div className="mb-3">
+                    {renderFieldsStructure({
+                      fields:
+                        (currentObject as HeaderFooterConfig)?.fields || [],
+                      indexKey: "fieldIndex",
+                      buildElementId: (index) => `${kind}-${prefix}-${index}`,
+                      buildSelection: (index) => ({
+                        type: kind === "header" ? "header_field" : "footer_field",
+                        id: `${kind}-${prefix}-${index}`,
+                        sectionIndex,
+                        fieldIndex: index,
+                      }),
+                      applyUpdate: (updater) =>
+                        updateHeaderFooterFields(kind, updater),
+                    })}
+                  </div>
+                );
+              })()}
+
               <div className="pr-1">
                 <StyleConfigurator
                   styleConfig={
@@ -1847,6 +2131,23 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                 <Plus size={14} />
                 {t("fieldEditor.editor.addField")}
               </button>
+
+              <div className="mt-3">
+                {renderFieldsStructure({
+                  fields: (currentObject as Block)?.fields || [],
+                  indexKey: "fieldIndex",
+                  buildElementId: (index) =>
+                    `field-${sectionIndex}-${selection.blockIndex}-${index}`,
+                  buildSelection: (index) => ({
+                    type: "field",
+                    id: `field-${sectionIndex}-${selection.blockIndex}-${index}`,
+                    sectionIndex,
+                    blockIndex: selection.blockIndex,
+                    fieldIndex: index,
+                  }),
+                  applyUpdate: updateBlockFields,
+                })}
+              </div>
             </div>
 
             <div className="pt-4 border-t border-gray-200">
@@ -2201,10 +2502,18 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                     textDecoration: true,
                     iconSize: true,
                     iconUseOriginalColor: true,
-                    alignItems: (currentObject as Field).type === "list",
+                    iconPosition: hasIconField(currentObject as Field),
+                    // Mueven el conjunto icono + texto dentro del campo.
+                    alignItems:
+                      (currentObject as Field).type === "list" ||
+                      hasIconField(currentObject as Field),
+                    justifyContent: hasIconField(currentObject as Field),
                     // Habilitar campos específicos para ListField
                     listStyleType: (currentObject as Field).type === "list",
                     listColumns: (currentObject as Field).type === "list",
+                    climateParams:
+                      (currentObject as Field).type === "climate_data_puntual",
+                    listLastRowAlign: (currentObject as Field).type === "list",
                     listItemsLayout: (currentObject as Field).type === "list",
                     showTableHeader: (currentObject as Field).type === "list",
                   }}

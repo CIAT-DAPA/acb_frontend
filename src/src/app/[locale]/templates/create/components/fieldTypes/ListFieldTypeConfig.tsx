@@ -2,7 +2,11 @@
 
 import React, { useState } from "react";
 import { useTranslations } from "next-intl";
-import { ListFieldConfig, Field } from "../../../../../../types/template";
+import {
+  ListFieldConfig,
+  Field,
+  FieldBase,
+} from "../../../../../../types/template";
 import { BaseFieldTypeConfigProps } from "./BaseFieldTypeConfig";
 import { FieldEditor } from "../FieldEditor";
 import {
@@ -377,12 +381,52 @@ const ListItemsValueEditor: React.FC<ListItemsValueEditorProps> = ({
   );
 };
 
+/**
+ * Devuelve el item_schema con una clave movida a otra posición.
+ *
+ * El esquema es un objeto y no un array, así que el orden es el de inserción de
+ * sus claves: para reordenarlo hay que reconstruirlo entero. El orden importa
+ * porque el preview dibuja los subcampos recorriendo Object.entries.
+ *
+ * JavaScript adelanta las claves que parecen enteros, así que un esquema con
+ * una clave como "0" no respetaría el orden elegido. Las que genera el editor
+ * son `field_<timestamp>` y las de las plantillas base llevan texto, de modo
+ * que en la práctica no ocurre.
+ */
+function reorderItemSchema(
+  itemSchema: Record<string, FieldBase>,
+  fromKey: string,
+  toKey: string,
+): Record<string, FieldBase> {
+  const keys = Object.keys(itemSchema);
+  const fromIndex = keys.indexOf(fromKey);
+  const toIndex = keys.indexOf(toKey);
+
+  if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) {
+    return itemSchema;
+  }
+
+  keys.splice(toIndex, 0, ...keys.splice(fromIndex, 1));
+
+  const reordered: Record<string, FieldBase> = {};
+  keys.forEach((key) => {
+    reordered[key] = itemSchema[key];
+  });
+
+  return reordered;
+}
+
 // Componente para configurar cada campo del esquema usando el FieldEditor completo
 interface ItemSchemaFieldProps {
   fieldId: string;
   fieldDef: any;
   onUpdate: (updatedField: any) => void;
   onDelete: () => void;
+  isDragging?: boolean;
+  onDragStart?: () => void;
+  onDragEnd?: () => void;
+  onDragOver?: (event: React.DragEvent) => void;
+  onDrop?: () => void;
 }
 
 const ItemSchemaField: React.FC<ItemSchemaFieldProps> = ({
@@ -390,10 +434,16 @@ const ItemSchemaField: React.FC<ItemSchemaFieldProps> = ({
   fieldDef,
   onUpdate,
   onDelete,
+  isDragging = false,
+  onDragStart,
+  onDragEnd,
+  onDragOver,
+  onDrop,
 }) => {
   const t = useTranslations("CreateTemplate.fieldEditor.listConfig");
   const [isExpanded, setIsExpanded] = useState(false);
   const [showFieldEditor, setShowFieldEditor] = useState(false);
+  const [isDraggable, setIsDraggable] = useState(false);
 
   // Convertir el fieldDef a un Field completo para el FieldEditor
   const fieldForEditor: Field = {
@@ -412,11 +462,40 @@ const ItemSchemaField: React.FC<ItemSchemaFieldProps> = ({
   };
 
   return (
-    <div className="border rounded-lg p-4 transition-all duration-200 border-gray-200 bg-gray-50 hover:shadow-md hover:border-gray-300">
+    <div
+      // El arrastre se activa desde el asa: así el resto de la tarjeta sigue
+      // permitiendo seleccionar texto y pulsar sus botones con normalidad.
+      draggable={isDraggable}
+      onDragStart={(event) => {
+        if (!isDraggable) {
+          event.preventDefault();
+          return;
+        }
+
+        event.dataTransfer.effectAllowed = "move";
+        onDragStart?.();
+      }}
+      onDragEnd={() => {
+        setIsDraggable(false);
+        onDragEnd?.();
+      }}
+      onDragOver={onDragOver}
+      onDrop={(event) => {
+        event.preventDefault();
+        onDrop?.();
+      }}
+      className={[
+        "border rounded-lg p-4 transition-all duration-200",
+        "border-gray-200 bg-gray-50 hover:shadow-md hover:border-gray-300",
+        isDragging ? "opacity-50" : "",
+      ].join(" ")}
+    >
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center space-x-3">
           {/* Icono de arrastre */}
           <div
+            onMouseDown={() => setIsDraggable(true)}
+            onMouseUp={() => setIsDraggable(false)}
             className="text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing p-1 rounded hover:bg-gray-200 transition-colors"
             title={t("dragToReorder")}
           >
@@ -522,6 +601,26 @@ export const ListFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
 
   // Helper para obtener config tipada
   const fieldConfig = currentField.field_config as ListFieldConfig;
+
+  // Clave del campo que se está arrastrando para reordenar el esquema.
+  const [draggedSchemaKey, setDraggedSchemaKey] = useState<string | null>(null);
+
+  const handleSchemaDrop = (targetFieldId: string) => {
+    if (!draggedSchemaKey || draggedSchemaKey === targetFieldId) {
+      setDraggedSchemaKey(null);
+      return;
+    }
+
+    updateFieldConfig({
+      item_schema: reorderItemSchema(
+        fieldConfig?.item_schema || {},
+        draggedSchemaKey,
+        targetFieldId,
+      ),
+    });
+
+    setDraggedSchemaKey(null);
+  };
 
   return (
     <div className="space-y-4">
@@ -644,6 +743,18 @@ export const ListFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                   key={fieldId}
                   fieldId={fieldId}
                   fieldDef={fieldDef}
+                  isDragging={draggedSchemaKey === fieldId}
+                  onDragStart={() => setDraggedSchemaKey(fieldId)}
+                  onDragEnd={() => setDraggedSchemaKey(null)}
+                  onDragOver={(event) => {
+                    // Sin esto el navegador no considera la tarjeta un destino
+                    // válido y nunca llega a dispararse el drop.
+                    if (draggedSchemaKey) {
+                      event.preventDefault();
+                      event.dataTransfer.dropEffect = "move";
+                    }
+                  }}
+                  onDrop={() => handleSchemaDrop(fieldId)}
                   onUpdate={(updatedField) => {
                     const currentSchema = fieldConfig?.item_schema || {};
                     updateFieldConfig({

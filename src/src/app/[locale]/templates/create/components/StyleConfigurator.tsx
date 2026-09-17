@@ -107,8 +107,11 @@ export interface StyleConfiguratorProps {
     fieldsLayout?: boolean;
     justifyContent?: boolean; // Distribución de campos (justify-content)
     alignItems?: boolean; // Alineación de los campos en el eje transversal
+    iconPosition?: boolean; // Posición del icono respecto al texto
     listStyleType?: boolean; // Estilo de bullet points para listas
+    listLastRowAlign?: boolean; // Alineación de los items de la última fila
     listColumns?: boolean; // Columnas en las que se reparten los items
+    climateParams?: boolean; // Colocación y separador de los parámetros de clima
     listItemsLayout?: boolean; // Layout de los campos dentro de cada item
     showTableHeader?: boolean; // Mostrar encabezado en layout de tabla
   };
@@ -637,8 +640,30 @@ export function StyleConfigurator({
         {enabledFields.fontSize &&
           renderNumberField("font_size", getLabel("fontSize"), 8, 72, 16)}
 
-        {enabledFields.iconSize &&
-          renderNumberField("icon_size", getLabel("iconSize"), 8, 128, 24)}
+        {enabledFields.iconSize && (
+          <div>
+            {renderNumberField("icon_size", getLabel("iconSize"), 8, 128, 24)}
+            <p className="text-xs text-[#283618]/50 mt-1">
+              {getLabel("iconSizeHelp")}
+            </p>
+          </div>
+        )}
+
+        {enabledFields.iconPosition &&
+          renderSelectField(
+            "icon_position",
+            getLabel("iconPosition"),
+            [
+              { value: "left", label: getLabel("iconPositionOptions.left") },
+              { value: "right", label: getLabel("iconPositionOptions.right") },
+              { value: "top", label: getLabel("iconPositionOptions.top") },
+              {
+                value: "bottom",
+                label: getLabel("iconPositionOptions.bottom"),
+              },
+            ],
+            "left",
+          )}
 
         {enabledFields.iconUseOriginalColor && (
           <div>
@@ -919,9 +944,72 @@ export function StyleConfigurator({
           )}
 
         {/* Layout de items de lista */}
+        {enabledFields.climateParams && (
+          <>
+            {renderSelectField(
+              "climate_params_layout",
+              getLabel("climateParamsLayout"),
+              [
+                {
+                  value: "vertical",
+                  label: getLabel("climateParamsLayoutOptions.vertical"),
+                },
+                {
+                  value: "horizontal",
+                  label: getLabel("climateParamsLayoutOptions.horizontal"),
+                },
+              ],
+              "vertical",
+            )}
+
+            {/* El separador solo tiene sentido con los parámetros en fila */}
+            {styleConfig.climate_params_layout === "horizontal" && (
+              <div>
+                {renderTextField(
+                  "climate_params_separator",
+                  getLabel("climateParamsSeparator"),
+                  "/",
+                )}
+                <p className="text-xs text-[#283618]/50 mt-1">
+                  {getLabel("climateParamsSeparatorHelp")}
+                </p>
+              </div>
+            )}
+          </>
+        )}
+
         {enabledFields.listColumns &&
           styleConfig.list_items_layout !== "table" &&
           renderListColumnsField()}
+
+        {enabledFields.listLastRowAlign &&
+          styleConfig.list_items_layout !== "table" &&
+          Number(styleConfig.list_columns) > 1 && (
+            <div>
+              {renderSelectField(
+                "list_last_row_align",
+                getLabel("listLastRowAlign"),
+                [
+                  {
+                    value: "start",
+                    label: getLabel("listLastRowAlignOptions.start"),
+                  },
+                  {
+                    value: "center",
+                    label: getLabel("listLastRowAlignOptions.center"),
+                  },
+                  {
+                    value: "end",
+                    label: getLabel("listLastRowAlignOptions.end"),
+                  },
+                ],
+                "start",
+              )}
+              <p className="text-xs text-[#283618]/50 mt-1">
+                {getLabel("listLastRowAlignHelp")}
+              </p>
+            </div>
+          )}
 
         {enabledFields.listItemsLayout && (
           <div>

@@ -60,6 +60,7 @@ interface UnifiedBulletinPreviewProps {
   commentCounts?: Record<string, number>;
   cardEmptyStateMode?: "first-available" | "select-card";
   allowListSubfieldEditing?: boolean;
+  fitToContainer?: boolean;
 }
 
 export function UnifiedBulletinPreview({
@@ -93,6 +94,7 @@ export function UnifiedBulletinPreview({
   cardEmptyStateMode = "first-available",
   allowListSubfieldEditing = false,
   allowCardElementSelection = false,
+  fitToContainer = false,
 }: UnifiedBulletinPreviewProps) {
   if (variant === "full-scroll") {
     return (
@@ -117,6 +119,7 @@ export function UnifiedBulletinPreview({
     <div className={className}>
       <TemplatePreview
         data={data}
+        fitToContainer={fitToContainer}
         selectedSectionIndex={selectedSectionIndex}
         sectionOrder={sectionOrder}
         moreInfo={moreInfo}
