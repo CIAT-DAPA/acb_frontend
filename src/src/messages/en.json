@@ -1018,6 +1018,13 @@
         "listColumns": "List columns",
         "listColumnsHelp": "How many columns the list items are spread across.",
         "listColumnsNarrowHint": "With this many columns each one may end up very narrow. Check it in the preview.",
+        "climateParamsLayout": "Parameters layout",
+        "climateParamsLayoutOptions": {
+          "vertical": "Stacked",
+          "horizontal": "In line"
+        },
+        "climateParamsSeparator": "Separator between parameters",
+        "climateParamsSeparatorHelp": "Text drawn between one parameter and the next, for example / or a comma.",
         "listItemsLayout": "List Items Layout",
         "listItemsLayoutHelp": "Arranges the fields inside each item, not the items themselves.",
         "layoutOptions": {
@@ -1627,6 +1634,7 @@
         },
         "previewExampleValue": "Example value",
         "showNameInPreview": "Show name in preview",
+        "joinWithPrevious": "Join with the previous one (no separator)",
         "parameterStyles": "Parameter styles"
       },
       "cardConfig": {
@@ -1762,6 +1770,13 @@
         "listColumns": "List columns",
         "listColumnsHelp": "How many columns the list items are spread across.",
         "listColumnsNarrowHint": "With this many columns each one may end up very narrow. Check it in the preview.",
+        "climateParamsLayout": "Parameters layout",
+        "climateParamsLayoutOptions": {
+          "vertical": "Stacked",
+          "horizontal": "In line"
+        },
+        "climateParamsSeparator": "Separator between parameters",
+        "climateParamsSeparatorHelp": "Text drawn between one parameter and the next, for example / or a comma.",
         "listItemsLayout": "List Items Layout",
         "listItemsLayoutHelp": "Arranges the fields inside each item, not the items themselves.",
         "layoutOptions": {

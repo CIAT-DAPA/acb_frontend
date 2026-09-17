@@ -1437,6 +1437,13 @@
         "listColumns": "Số cột của danh sách",
         "listColumnsHelp": "Số cột dùng để dàn các mục của danh sách.",
         "listColumnsNarrowHint": "Với số cột này, mỗi cột có thể rất hẹp. Hãy kiểm tra trong bản xem trước.",
+        "climateParamsLayout": "Cách sắp xếp tham số",
+        "climateParamsLayoutOptions": {
+          "vertical": "Xếp chồng",
+          "horizontal": "Trên một hàng"
+        },
+        "climateParamsSeparator": "Dấu phân cách giữa các tham số",
+        "climateParamsSeparatorHelp": "Ký tự hiển thị giữa tham số này và tham số kế tiếp, ví dụ / hoặc dấu phẩy.",
         "listItemsLayout": "Bố trí các phần tử trong Danh sách",
         "listItemsLayoutHelp": "Sắp xếp các trường bên trong mỗi mục, không phải các mục với nhau.",
         "title": "Kiểu trường thông tin",
@@ -1672,6 +1679,7 @@
         },
         "previewExampleValue": "Giá trị mẫu",
         "showNameInPreview": "Hiển thị tên trong bản xem trước",
+        "joinWithPrevious": "Nối với tham số trước (không có dấu phân cách)",
         "parameterStyles": "Kiểu tham số"
       },
       "cardConfig": {
@@ -2060,6 +2068,13 @@
         "listColumns": "Số cột của danh sách",
         "listColumnsHelp": "Số cột dùng để dàn các mục của danh sách.",
         "listColumnsNarrowHint": "Với số cột này, mỗi cột có thể rất hẹp. Hãy kiểm tra trong bản xem trước.",
+        "climateParamsLayout": "Cách sắp xếp tham số",
+        "climateParamsLayoutOptions": {
+          "vertical": "Xếp chồng",
+          "horizontal": "Trên một hàng"
+        },
+        "climateParamsSeparator": "Dấu phân cách giữa các tham số",
+        "climateParamsSeparatorHelp": "Ký tự hiển thị giữa tham số này và tham số kế tiếp, ví dụ / hoặc dấu phẩy.",
         "listItemsLayout": "Bố trí các phần tử trong Danh sách",
         "listItemsLayoutHelp": "Sắp xếp các trường bên trong mỗi mục, không phải các mục với nhau.",
         "listLayoutOptions": {

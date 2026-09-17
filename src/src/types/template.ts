@@ -38,6 +38,7 @@ export interface ClimateDataFieldConfig {
       type: "number" | "text";
       col_name: string;
       showName?: boolean; // Si true, muestra el nombre del parámetro; si false, solo muestra valor y unidad
+      joinWithPrevious?: boolean; // Si true, se pega al parámetro anterior sin separador
       style_config?: StyleConfig; // Estilos individuales para este parámetro
     }
   >;

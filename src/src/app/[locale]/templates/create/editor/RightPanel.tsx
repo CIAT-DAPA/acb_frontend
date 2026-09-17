@@ -2217,6 +2217,8 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                     // Habilitar campos específicos para ListField
                     listStyleType: (currentObject as Field).type === "list",
                     listColumns: (currentObject as Field).type === "list",
+                    climateParams:
+                      (currentObject as Field).type === "climate_data_puntual",
                     listLastRowAlign: (currentObject as Field).type === "list",
                     listItemsLayout: (currentObject as Field).type === "list",
                     showTableHeader: (currentObject as Field).type === "list",

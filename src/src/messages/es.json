@@ -1030,6 +1030,13 @@
         "listColumns": "Columnas de la lista",
         "listColumnsHelp": "En cuántas columnas se reparten los items de la lista.",
         "listColumnsNarrowHint": "Con tantas columnas cada una puede quedar muy estrecha. Revísalo en la vista previa.",
+        "climateParamsLayout": "Colocación de los parámetros",
+        "climateParamsLayoutOptions": {
+          "vertical": "Uno debajo de otro",
+          "horizontal": "En línea"
+        },
+        "climateParamsSeparator": "Separador entre parámetros",
+        "climateParamsSeparatorHelp": "Texto que se dibuja entre un parámetro y el siguiente, por ejemplo / o una coma.",
         "listItemsLayout": "Layout de Items de Lista",
         "listItemsLayoutHelp": "Coloca los campos dentro de cada item, no los items entre sí.",
         "layoutOptions": {
@@ -1633,6 +1640,7 @@
         },
         "previewExampleValue": "Valor ejemplo",
         "showNameInPreview": "Mostrar nombre en preview",
+        "joinWithPrevious": "Unir con el anterior (sin separador)",
         "parameterStyles": "Estilos del parámetro"
       },
       "cardConfig": {
@@ -1768,6 +1776,13 @@
         "listColumns": "Columnas de la lista",
         "listColumnsHelp": "En cuántas columnas se reparten los items de la lista.",
         "listColumnsNarrowHint": "Con tantas columnas cada una puede quedar muy estrecha. Revísalo en la vista previa.",
+        "climateParamsLayout": "Colocación de los parámetros",
+        "climateParamsLayoutOptions": {
+          "vertical": "Uno debajo de otro",
+          "horizontal": "En línea"
+        },
+        "climateParamsSeparator": "Separador entre parámetros",
+        "climateParamsSeparatorHelp": "Texto que se dibuja entre un parámetro y el siguiente, por ejemplo / o una coma.",
         "listItemsLayout": "Layout de Items de Lista",
         "listItemsLayoutHelp": "Coloca los campos dentro de cada item, no los items entre sí.",
         "layoutOptions": {

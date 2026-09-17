@@ -111,6 +111,7 @@ export interface StyleConfiguratorProps {
     listStyleType?: boolean; // Estilo de bullet points para listas
     listLastRowAlign?: boolean; // Alineación de los items de la última fila
     listColumns?: boolean; // Columnas en las que se reparten los items
+    climateParams?: boolean; // Colocación y separador de los parámetros de clima
     listItemsLayout?: boolean; // Layout de los campos dentro de cada item
     showTableHeader?: boolean; // Mostrar encabezado en layout de tabla
   };
@@ -943,6 +944,40 @@ export function StyleConfigurator({
           )}
 
         {/* Layout de items de lista */}
+        {enabledFields.climateParams && (
+          <>
+            {renderSelectField(
+              "climate_params_layout",
+              getLabel("climateParamsLayout"),
+              [
+                {
+                  value: "vertical",
+                  label: getLabel("climateParamsLayoutOptions.vertical"),
+                },
+                {
+                  value: "horizontal",
+                  label: getLabel("climateParamsLayoutOptions.horizontal"),
+                },
+              ],
+              "vertical",
+            )}
+
+            {/* El separador solo tiene sentido con los parámetros en fila */}
+            {styleConfig.climate_params_layout === "horizontal" && (
+              <div>
+                {renderTextField(
+                  "climate_params_separator",
+                  getLabel("climateParamsSeparator"),
+                  "/",
+                )}
+                <p className="text-xs text-[#283618]/50 mt-1">
+                  {getLabel("climateParamsSeparatorHelp")}
+                </p>
+              </div>
+            )}
+          </>
+        )}
+
         {enabledFields.listColumns &&
           styleConfig.list_items_layout !== "table" &&
           renderListColumnsField()}

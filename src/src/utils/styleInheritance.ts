@@ -42,6 +42,10 @@ export function combineStyles(
       combined.list_items_layout = parentStyle.list_items_layout;
     if (parentStyle.list_columns)
       combined.list_columns = parentStyle.list_columns;
+    if (parentStyle.climate_params_layout)
+      combined.climate_params_layout = parentStyle.climate_params_layout;
+    if (parentStyle.climate_params_separator)
+      combined.climate_params_separator = parentStyle.climate_params_separator;
     if (parentStyle.list_last_row_align)
       combined.list_last_row_align = parentStyle.list_last_row_align;
     if (parentStyle.show_table_header !== undefined)
@@ -104,6 +108,10 @@ export function combineStyles(
     if (childStyle.list_items_layout)
       combined.list_items_layout = childStyle.list_items_layout;
     if (childStyle.list_columns) combined.list_columns = childStyle.list_columns;
+    if (childStyle.climate_params_layout)
+      combined.climate_params_layout = childStyle.climate_params_layout;
+    if (childStyle.climate_params_separator)
+      combined.climate_params_separator = childStyle.climate_params_separator;
     if (childStyle.list_last_row_align)
       combined.list_last_row_align = childStyle.list_last_row_align;
     if (childStyle.show_table_header !== undefined)

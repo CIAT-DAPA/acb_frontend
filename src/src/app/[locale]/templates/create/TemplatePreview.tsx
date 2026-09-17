@@ -329,6 +329,27 @@ function getIconLayoutStyles(
 }
 
 /**
+ * Traduce la alineación de texto a su equivalente de flexbox.
+ *
+ * Hace falta porque varios campos dibujan su contenido dentro de un contenedor
+ * flex, y ahí text-align no coloca a los hijos: eso lo decide justify-content
+ * (o align-items si la dirección es en columna).
+ */
+function getFlexAlignmentFromTextAlign(
+  textAlign: string | undefined,
+): string | undefined {
+  if (!textAlign) {
+    return undefined;
+  }
+
+  if (textAlign === "center") return "center";
+  if (textAlign === "right") return "flex-end";
+
+  // left y justify caen al inicio, que es lo más parecido en flexbox.
+  return "flex-start";
+}
+
+/**
  * Traduce los valores cortos de align_items/justify_content a CSS.
  */
 function getFlexAlignment(value: string): string {
@@ -2852,8 +2873,24 @@ export function TemplatePreview({
                                 listItemsLayout === "grid-3";
 
                               // Determinar la alineación según la posición en el grid
+                              /*
+                                * Si el subcampo define su propia alineación,
+                                * esa manda. Si no, se mantiene la regla por
+                                * posición, que es un buen valor por defecto
+                                * para los pares etiqueta/valor.
+                                */
+                              const configuredSubfieldAlign =
+                                fieldSchema.style_config?.text_align;
+
                               let justifyClass = "";
-                              if (isGridLayout) {
+                              if (isGridLayout && configuredSubfieldAlign) {
+                                justifyClass =
+                                  configuredSubfieldAlign === "right"
+                                    ? "justify-end"
+                                    : configuredSubfieldAlign === "center"
+                                      ? "justify-center"
+                                      : "justify-start";
+                              } else if (isGridLayout) {
                                 // En grid-2: índices impares (1, 3, 5...) van a la derecha
                                 // En grid-3: índices 2, 5, 8... van a la derecha
                                 const colsCount =
@@ -2993,10 +3030,51 @@ export function TemplatePreview({
             ? (field.value as { [key: string]: any })
             : {};
 
+        /*
+         * Colocación de los parámetros.
+         *
+         * En horizontal van en fila con flex-wrap, y entre uno y otro se pinta
+         * el separador como elemento propio. En vertical no se pinta: ahí cada
+         * parámetro ya ocupa su renglón y un separador no aportaría nada.
+         */
+        const climateLayout =
+          effectiveStyles.climate_params_layout || "vertical";
+        const isClimateHorizontal = climateLayout === "horizontal";
+        const climateSeparator = isClimateHorizontal
+          ? effectiveStyles.climate_params_separator || ""
+          : "";
+
         return (
-          <div key={key} className="flex flex-col gap-4" style={fieldStyles}>
+          <div
+            key={key}
+            className={
+              isClimateHorizontal
+                ? "flex flex-row flex-wrap items-baseline"
+                : "flex flex-col"
+            }
+            style={{
+              ...fieldStyles,
+              gap: effectiveStyles.gap || (isClimateHorizontal ? "4px" : "16px"),
+              /*
+               * En un contenedor flex, text-align no mueve a los hijos. Se
+               * traduce al eje que corresponda: justify-content cuando los
+               * parámetros van en fila y align-items cuando van en columna.
+               */
+              ...(isClimateHorizontal
+                ? {
+                    justifyContent: getFlexAlignmentFromTextAlign(
+                      effectiveStyles.text_align,
+                    ),
+                  }
+                : {
+                    alignItems: getFlexAlignmentFromTextAlign(
+                      effectiveStyles.text_align,
+                    ),
+                  }),
+            }}
+          >
             {paramEntries.length > 0 ? (
-              paramEntries.map(([paramKey, paramConfig]: [string, any]) => {
+              paramEntries.map(([paramKey, paramConfig]: [string, any], paramIndex) => {
                 // Por defecto showName es true si no está definido
                 const showName = paramConfig.showName !== false;
 
@@ -3035,11 +3113,32 @@ export function TemplatePreview({
                         undefined,
                 };
 
+                /*
+                 * El separador es un elemento aparte y no hereda el
+                 * style_config del parámetro: toma el color y la tipografía del
+                 * campo, para que no se tiña del color del valor anterior.
+                 */
+                const separatorNode =
+                  climateSeparator &&
+                  paramIndex > 0 &&
+                  paramConfig.joinWithPrevious !== true ? (
+                    <span
+                      key={`${paramKey}-separator`}
+                      className="text-sm"
+                      aria-hidden="true"
+                    >
+                      {climateSeparator}
+                    </span>
+                  ) : null;
+
                 return (
-                  <div key={paramKey} className="text-sm" style={paramStyles}>
-                    {showName && `${paramConfig.label}: `}
-                    {displayValue} {paramConfig.unit}
-                  </div>
+                  <React.Fragment key={paramKey}>
+                    {separatorNode}
+                    <div className="text-sm" style={paramStyles}>
+                      {showName && `${paramConfig.label}: `}
+                      {displayValue} {paramConfig.unit}
+                    </div>
+                  </React.Fragment>
                 );
               })
             ) : (

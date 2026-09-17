@@ -596,6 +596,7 @@ export function FieldEditor({
             maxWidth: true,
             listStyleType: currentField.type === "list",
             listColumns: currentField.type === "list",
+            climateParams: currentField.type === "climate_data_puntual",
             listLastRowAlign: currentField.type === "list",
             listItemsLayout: currentField.type === "list",
             showTableHeader: currentField.type === "list",
