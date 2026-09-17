@@ -9,10 +9,15 @@ import React, {
 } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname } from "next/navigation";
-import { CreateTemplateData, Field, Section } from "../../../../types/template";
+import {
+  CreateTemplateData,
+  Field,
+  ImageUploadFieldConfig,
+  Section,
+} from "../../../../types/template";
 import { StyleConfig } from "../../../../types/core";
 import { getEffectiveFieldStyles } from "../../../../utils/styleInheritance";
-import { SmartIcon } from "../../components/AdaptiveSvgIcon";
+import { SmartIcon, isSvgUrl } from "../../components/AdaptiveSvgIcon";
 import { Card } from "../../../../types/card";
 import { CardAPIService } from "../../../../services/cardService";
 import { RefreshCw } from "lucide-react";
@@ -277,6 +282,88 @@ function normalizeCSSValue(
   // Si no cumple ningún patrón, devolverlo tal cual
   // (puede ser un valor CSS válido como "auto", "inherit", etc.)
   return strValue;
+}
+
+function getIconSizeStyles(
+  iconUrl: string,
+  iconSize: number,
+): React.CSSProperties {
+  if (isSvgUrl(iconUrl)) {
+    return { width: `${iconSize}px`, height: `${iconSize}px` };
+  }
+
+  return { height: `${iconSize}px`, width: "auto", maxWidth: "100%" };
+}
+
+/**
+ * Coloca el icono respecto al texto.
+ *
+ * Se traduce a flex-direction: "left" es el valor por defecto y equivale a lo
+ * que se hacía antes. align_items y justify_content siguen siendo los que
+ * mueven el conjunto dentro del campo.
+ */
+function getIconLayoutStyles(
+  styleConfig: StyleConfig | undefined,
+): React.CSSProperties {
+  const position = styleConfig?.icon_position || "left";
+
+  const flexDirection: React.CSSProperties["flexDirection"] =
+    position === "right"
+      ? "row-reverse"
+      : position === "top"
+        ? "column"
+        : position === "bottom"
+          ? "column-reverse"
+          : "row";
+
+  return {
+    display: "flex",
+    flexDirection,
+    alignItems: styleConfig?.align_items
+      ? getFlexAlignment(styleConfig.align_items)
+      : "center",
+    justifyContent: styleConfig?.justify_content
+      ? getFlexAlignment(styleConfig.justify_content)
+      : undefined,
+  };
+}
+
+/**
+ * Traduce la alineación de texto a su equivalente de flexbox.
+ *
+ * Hace falta porque varios campos dibujan su contenido dentro de un contenedor
+ * flex, y ahí text-align no coloca a los hijos: eso lo decide justify-content
+ * (o align-items si la dirección es en columna).
+ */
+function getFlexAlignmentFromTextAlign(
+  textAlign: string | undefined,
+): string | undefined {
+  if (!textAlign) {
+    return undefined;
+  }
+
+  if (textAlign === "center") return "center";
+  if (textAlign === "right") return "flex-end";
+
+  // left y justify caen al inicio, que es lo más parecido en flexbox.
+  return "flex-start";
+}
+
+/**
+ * Traduce los valores cortos de align_items/justify_content a CSS.
+ */
+function getFlexAlignment(value: string): string {
+  const alignmentMap: Record<string, string> = {
+    start: "flex-start",
+    end: "flex-end",
+    center: "center",
+    stretch: "stretch",
+    between: "space-between",
+    around: "space-around",
+    evenly: "space-evenly",
+  };
+
+  return alignmentMap[value] || value;
 }
 
 /**
@@ -1247,6 +1334,7 @@ interface TemplatePreviewProps {
   onPageChange?: (pageIndex: number) => void; // Callback cuando cambia la página
   onResolvedPageCount?: (pageCount: number) => void; // Callback cuando se resuelve el total real de páginas de la sección
   hidePagination?: boolean; // Ocultar controles de paginación
+  fitToContainer?: boolean;
   cardsMetadata?: Record<string, Card>; // Diccionario de cards precargadas para evitar HTTP calls
   cardsMetadataLoading?: boolean; // Indica que un contenedor padre está precargando cards
   resolvedSectionPageCounts?: number[]; // Cantidad de páginas reales por sección para page numbers globales
@@ -1331,6 +1419,7 @@ export function TemplatePreview({
   cardEmptyStateMode = "first-available",
   allowListSubfieldEditing = false,
   allowCardElementSelection = false,
+  fitToContainer = false,
 }: TemplatePreviewProps) {
   const t = useTranslations("CreateTemplate.preview");
   const tCreateCard = useTranslations("CreateCard");
@@ -1545,6 +1634,54 @@ export function TemplatePreview({
     section.blocks
       .map((block, blockIndex) => ({ block, blockIndex }))
       .filter(({ block }) => isBlockVisibleForRender(block));
+
+  const pageWidth = Number(styleConfig?.bulletin_width) || 366;
+  const pageHeight = Number(styleConfig?.bulletin_height) || 638;
+
+  const previewContainerRef = useRef<HTMLDivElement | null>(null);
+  const [previewContainerWidth, setPreviewContainerWidth] = useState(0);
+
+  useEffect(() => {
+    if (!fitToContainer) {
+      return;
+    }
+
+    const container = previewContainerRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    const updateWidth = () => {
+      setPreviewContainerWidth(container.clientWidth);
+    };
+
+    updateWidth();
+
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(container);
+
+    return () => observer.disconnect();
+  }, [fitToContainer]);
+
+  const previewScale = useMemo(() => {
+    if (!fitToContainer || previewContainerWidth <= 0 || pageWidth <= 0) {
+      return 1;
+    }
+
+    return Math.min(previewContainerWidth / pageWidth, 1);
+  }, [fitToContainer, previewContainerWidth, pageWidth]);
+
+  const pageScaleStyles: React.CSSProperties =
+    previewScale < 1
+      ? {
+          transform: `scale(${previewScale})`,
+          transformOrigin: "top left",
+          marginRight: `-${pageWidth * (1 - previewScale)}px`,
+          marginBottom: `-${pageHeight * (1 - previewScale)}px`,
+          flexShrink: 0,
+        }
+      : {};
 
   // Estilos globales aplicados
   const globalStyles = {
@@ -1811,8 +1948,11 @@ export function TemplatePreview({
         return (
           <div
             key={key}
-            style={fieldStyles}
-            className="flex items-center gap-2"
+            style={{
+              ...fieldStyles,
+              ...getIconLayoutStyles(effectiveStyles),
+              gap: effectiveStyles.gap || "8px",
+            }}
           >
             {/* Icono - siempre se muestra (configurado desde el template o del valor) */}
             {selectedIcon ? (
@@ -1820,10 +1960,7 @@ export function TemplatePreview({
               selectedIcon.startsWith("/") ? (
                 <SmartIcon
                   src={selectedIcon}
-                  style={{
-                    width: `${iconSize}px`,
-                    height: `${iconSize}px`, // Asegurar altura igual al ancho
-                  }}
+                  style={getIconSizeStyles(selectedIcon, iconSize)}
                   color={useOriginalColor ? undefined : fieldStyles.color}
                   preserveOriginalColors={useOriginalColor}
                   alt={t("accessibility.icon")}
@@ -1903,16 +2040,21 @@ export function TemplatePreview({
         return (
           <div
             key={key}
-            style={{ ...fieldStyles, display: "flex", gap: "8px" }}
-            className={`flex items-center gap-2 ${justifyClass}`}
+            style={{
+              ...fieldStyles,
+              ...getIconLayoutStyles(effectiveStyles),
+              gap: effectiveStyles.gap || "8px",
+            }}
+            // text_align sigue decidiendo la distribución cuando el estilo no
+            // define un justify_content propio.
+            className={
+              effectiveStyles.justify_content ? undefined : justifyClass
+            }
           >
             {iconToShow && (
               <SmartIcon
                 src={iconToShow}
-                style={{
-                  width: `${selectIconSize}px`,
-                  height: `${selectIconSize}px`,
-                }}
+                style={getIconSizeStyles(iconToShow, selectIconSize)}
                 color={
                   selectUseOriginalColor
                     ? undefined
@@ -2546,14 +2688,49 @@ export function TemplatePreview({
         const usesItemColumns =
           listColumns > 1 && listItemsLayout !== "horizontal";
 
+        const renderedItemCount = itemsToRenderWithIndex.length;
+        const lastRowItemCount = usesItemColumns
+          ? renderedItemCount % listColumns
+          : 0;
+        const lastRowAlign = effectiveStyles.list_last_row_align || "start";
+        const usesLastRowOffset =
+          usesItemColumns && lastRowAlign !== "start" && lastRowItemCount > 0;
+
+        const gridTrackCount = usesLastRowOffset
+          ? listColumns * 2
+          : listColumns;
+        const itemColumnSpan = usesLastRowOffset ? 2 : 1;
+        const freeSubTracks = usesLastRowOffset
+          ? 2 * (listColumns - lastRowItemCount)
+          : 0;
+        const lastRowStartTrack = usesLastRowOffset
+          ? (lastRowAlign === "center" ? freeSubTracks / 2 : freeSubTracks) + 1
+          : undefined;
+        const firstLastRowIndex = renderedItemCount - lastRowItemCount;
+
         // Estilos para el contenedor de items con gap configurable
         const itemsContainerStyle: React.CSSProperties = {
           gap: effectiveStyles.gap || undefined,
           // minmax(0, 1fr) reparte el ancho a partes iguales y deja que los
           // textos largos se ajusten en vez de desbordar la columna.
           gridTemplateColumns: usesItemColumns
-            ? `repeat(${listColumns}, minmax(0, 1fr))`
+            ? `repeat(${gridTrackCount}, minmax(0, 1fr))`
             : undefined,
+        };
+
+        const getListItemGridStyles = (
+          visualItemIndex: number,
+        ): React.CSSProperties => {
+          if (!usesLastRowOffset) {
+            return {};
+          }
+
+          return {
+            gridColumn:
+              visualItemIndex === firstLastRowIndex
+                ? `${lastRowStartTrack} / span ${itemColumnSpan}`
+                : `span ${itemColumnSpan}`,
+          };
         };
 
         return (
@@ -2638,6 +2815,7 @@ export function TemplatePreview({
                         borderRadius: isHighlighted ? "8px" : undefined,
                         alignItems: effectiveStyles.align_items || "start",
                         gap: "8px",
+                        ...getListItemGridStyles(visualItemIndex),
                       }}
                     >
                       {listItemId &&
@@ -2694,9 +2872,36 @@ export function TemplatePreview({
                                 listItemsLayout === "grid-2" ||
                                 listItemsLayout === "grid-3";
 
-                              // Determinar la alineación según la posición en el grid
+                              
+                              const configuredSubfieldAlign =
+                                fieldSchema.style_config?.text_align;
+
+                              const subfieldWidth = normalizeCSSValue(
+                                fieldSchema.style_config?.width,
+                              );
+                              const wrapperHandlesWidth = Boolean(
+                                subfieldWidth && !isGridLayout,
+                              );
+                              const subfieldWrapperStyles: React.CSSProperties =
+                                wrapperHandlesWidth
+                                  ? listItemsLayout === "horizontal"
+                                    ? {
+                                        flexGrow: 0,
+                                        flexShrink: 0,
+                                        flexBasis: subfieldWidth,
+                                      }
+                                    : { width: subfieldWidth }
+                                  : {};
+
                               let justifyClass = "";
-                              if (isGridLayout) {
+                              if (isGridLayout && configuredSubfieldAlign) {
+                                justifyClass =
+                                  configuredSubfieldAlign === "right"
+                                    ? "justify-end"
+                                    : configuredSubfieldAlign === "center"
+                                      ? "justify-center"
+                                      : "justify-start";
+                              } else if (isGridLayout) {
                                 // En grid-2: índices impares (1, 3, 5...) van a la derecha
                                 // En grid-3: índices 2, 5, 8... van a la derecha
                                 const colsCount =
@@ -2759,6 +2964,7 @@ export function TemplatePreview({
                                       ? " ring-2 ring-emerald-500 bg-emerald-50 z-30"
                                       : "")
                                   }
+                                  style={subfieldWrapperStyles}
                                   onDoubleClick={
                                     canActivateListSubfields && subfieldId
                                       ? (event) => {
@@ -2778,6 +2984,14 @@ export function TemplatePreview({
                                   {renderField(
                                     {
                                       ...fieldSchema,
+                                      // El ancho ya lo aplica el envoltorio;
+                                      // dejarlo aquí lo aplicaría dos veces.
+                                      style_config: wrapperHandlesWidth
+                                        ? {
+                                            ...fieldSchema.style_config,
+                                            width: undefined,
+                                          }
+                                        : fieldSchema.style_config,
                                       value: resolvedItemFieldValue,
                                     } as Field,
                                     `${absoluteItemIndex}-${fieldIndex}`,
@@ -2807,6 +3021,7 @@ export function TemplatePreview({
                       style={{
                         overflow: "hidden",
                         height: `${itemSlice.height}px`,
+                        ...getListItemGridStyles(visualItemIndex),
                       }}
                     >
                       <div
@@ -2835,10 +3050,51 @@ export function TemplatePreview({
             ? (field.value as { [key: string]: any })
             : {};
 
+        /*
+         * Colocación de los parámetros.
+         *
+         * En horizontal van en fila con flex-wrap, y entre uno y otro se pinta
+         * el separador como elemento propio. En vertical no se pinta: ahí cada
+         * parámetro ya ocupa su renglón y un separador no aportaría nada.
+         */
+        const climateLayout =
+          effectiveStyles.climate_params_layout || "vertical";
+        const isClimateHorizontal = climateLayout === "horizontal";
+        const climateSeparator = isClimateHorizontal
+          ? effectiveStyles.climate_params_separator || ""
+          : "";
+
         return (
-          <div key={key} className="flex flex-col gap-4" style={fieldStyles}>
+          <div
+            key={key}
+            className={
+              isClimateHorizontal
+                ? "flex flex-row flex-wrap items-baseline"
+                : "flex flex-col"
+            }
+            style={{
+              ...fieldStyles,
+              gap: effectiveStyles.gap || (isClimateHorizontal ? "4px" : "16px"),
+              /*
+               * En un contenedor flex, text-align no mueve a los hijos. Se
+               * traduce al eje que corresponda: justify-content cuando los
+               * parámetros van en fila y align-items cuando van en columna.
+               */
+              ...(isClimateHorizontal
+                ? {
+                    justifyContent: getFlexAlignmentFromTextAlign(
+                      effectiveStyles.text_align,
+                    ),
+                  }
+                : {
+                    alignItems: getFlexAlignmentFromTextAlign(
+                      effectiveStyles.text_align,
+                    ),
+                  }),
+            }}
+          >
             {paramEntries.length > 0 ? (
-              paramEntries.map(([paramKey, paramConfig]: [string, any]) => {
+              paramEntries.map(([paramKey, paramConfig]: [string, any], paramIndex) => {
                 // Por defecto showName es true si no está definido
                 const showName = paramConfig.showName !== false;
 
@@ -2877,11 +3133,32 @@ export function TemplatePreview({
                         undefined,
                 };
 
+                /*
+                 * El separador es un elemento aparte y no hereda el
+                 * style_config del parámetro: toma el color y la tipografía del
+                 * campo, para que no se tiña del color del valor anterior.
+                 */
+                const separatorNode =
+                  climateSeparator &&
+                  paramIndex > 0 &&
+                  paramConfig.joinWithPrevious !== true ? (
+                    <span
+                      key={`${paramKey}-separator`}
+                      className="text-sm"
+                      aria-hidden="true"
+                    >
+                      {climateSeparator}
+                    </span>
+                  ) : null;
+
                 return (
-                  <div key={paramKey} className="text-sm" style={paramStyles}>
-                    {showName && `${paramConfig.label}: `}
-                    {displayValue} {paramConfig.unit}
-                  </div>
+                  <React.Fragment key={paramKey}>
+                    {separatorNode}
+                    <div className="text-sm" style={paramStyles}>
+                      {showName && `${paramConfig.label}: `}
+                      {displayValue} {paramConfig.unit}
+                    </div>
+                  </React.Fragment>
                 );
               })
             ) : (
@@ -2986,8 +3263,13 @@ export function TemplatePreview({
       case "image_upload":
         // Mostrar placeholder con las dimensiones exactas configuradas
         const uploadedImageUrl = field.value as string | undefined;
-        const imageHeight = (field.field_config as any)?.max_height;
-        const imageWidth = (field.field_config as any)?.max_width;
+        const imageUploadConfig = field.field_config as
+          | ImageUploadFieldConfig
+          | undefined;
+        const imageHeight = imageUploadConfig?.max_height;
+        const imageWidth = imageUploadConfig?.max_width;
+        const imageObjectFit: "cover" | "contain" =
+          imageUploadConfig?.object_fit === "contain" ? "contain" : "cover";
 
         // Estilos del placeholder/imagen con dimensiones exactas
         const imageUploadContainerStyle: React.CSSProperties = {
@@ -3035,7 +3317,9 @@ export function TemplatePreview({
           );
         }
 
-        // Mostrar la imagen subida ocupando el espacio exacto y ajustándose con object-fit: cover
+        // El área reservada es la misma antes y después de subir la imagen,
+        // así que el placeholder marca dónde va a quedar y el diseño no salta
+        // al cargarla.
         return (
           <div
             key={key}
@@ -3048,7 +3332,7 @@ export function TemplatePreview({
               style={{
                 width: "100%",
                 height: "100%",
-                objectFit: "cover", // La imagen cubre todo el espacio, recortando si es necesario
+                objectFit: imageObjectFit,
               }}
               onError={(e) => {
                 (e.target as HTMLImageElement).src =
@@ -5116,16 +5400,18 @@ export function TemplatePreview({
       {/* Preview del documento */}
       <div
         id="template-preview-container"
+        ref={previewContainerRef}
         className="border-2 border-gray-300 rounded-lg overflow-hidden flex justify-center"
       >
         <div
           className="bg-white flex flex-col"
           style={{
             ...globalStyles,
-            width: `${styleConfig?.bulletin_width || 366}px`,
-            height: `${styleConfig?.bulletin_height || 638}px`,
+            width: `${pageWidth}px`,
+            height: `${pageHeight}px`,
             padding: 0,
             overflow: "hidden",
+            ...pageScaleStyles,
             backgroundImage:
               selectedSectionBackgroundImage ||
               (styleConfig?.background_image
@@ -5586,7 +5872,11 @@ export function TemplatePreview({
                                   onClick={(e) =>
                                     onElementClick("header_field", fieldId, e)
                                   }
-                                  className="relative hover:ring-2 hover:ring-yellow-400 cursor-pointer rounded transition-all group/field"
+                                  className={`relative cursor-pointer rounded transition-all group/field ${
+                                    selectedElementId === fieldId
+                                      ? "ring-2 ring-blue-500 z-20"
+                                      : "hover:ring-2 hover:ring-yellow-400"
+                                  }`}
                                 >
                                   {rendered}
                                   {renderCommentBadge(fieldId)}
@@ -5980,9 +6270,15 @@ export function TemplatePreview({
                                           `block-${sectionIndex}-${blockIndex}`
                                         : undefined
                                     }
+                                    data-editor-id={`block-${sectionIndex}-${blockIndex}`}
                                     className={`${hasCardField ? "flex-1" : ""} ${
                                       reviewMode
-                                        ? "hover:ring-2 hover:ring-blue-400 cursor-pointer relative group/block transition-all"
+                                        ? `cursor-pointer relative group/block transition-all ${
+                                            selectedElementId ===
+                                            `block-${sectionIndex}-${blockIndex}`
+                                              ? "ring-2 ring-blue-500 z-20"
+                                              : "hover:ring-2 hover:ring-blue-400"
+                                          }`
                                         : ""
                                     }`}
                                     onClick={

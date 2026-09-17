@@ -35,6 +35,8 @@ export function ImageUploadInput({
   const maxFileSize = fieldConfig?.max_file_size || 5; // MB
   const maxHeight = fieldConfig?.max_height;
   const maxWidth = fieldConfig?.max_width;
+  const objectFitClass =
+    fieldConfig?.object_fit === "contain" ? "object-contain" : "object-cover";
 
   // Convertir formatos a MIME types
   const acceptedTypes = allowedFormats
@@ -229,7 +231,7 @@ export function ImageUploadInput({
             <img
               src={value}
               alt="Imagen subida"
-              className="w-full h-full object-cover"
+              className={`w-full h-full ${objectFitClass}`}
               onError={(e) => {
                 (e.target as HTMLImageElement).src =
                   "/assets/img/imageNotFound.png";

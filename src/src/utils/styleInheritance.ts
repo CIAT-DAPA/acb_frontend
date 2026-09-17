@@ -22,6 +22,8 @@ export function combineStyles(
     // background_color NO se hereda - se mantendrá transparente por defecto
     if (parentStyle.font_size) combined.font_size = parentStyle.font_size;
     if (parentStyle.icon_size) combined.icon_size = parentStyle.icon_size;
+    if (parentStyle.icon_position)
+      combined.icon_position = parentStyle.icon_position;
     if (parentStyle.icon_use_original_color !== undefined)
       combined.icon_use_original_color = parentStyle.icon_use_original_color;
     if (parentStyle.font_weight) combined.font_weight = parentStyle.font_weight;
@@ -40,6 +42,12 @@ export function combineStyles(
       combined.list_items_layout = parentStyle.list_items_layout;
     if (parentStyle.list_columns)
       combined.list_columns = parentStyle.list_columns;
+    if (parentStyle.climate_params_layout)
+      combined.climate_params_layout = parentStyle.climate_params_layout;
+    if (parentStyle.climate_params_separator)
+      combined.climate_params_separator = parentStyle.climate_params_separator;
+    if (parentStyle.list_last_row_align)
+      combined.list_last_row_align = parentStyle.list_last_row_align;
     if (parentStyle.show_table_header !== undefined)
       combined.show_table_header = parentStyle.show_table_header;
     if (parentStyle.header_background_color)
@@ -61,6 +69,8 @@ export function combineStyles(
       combined.background_color = childStyle.background_color;
     if (childStyle.font_size) combined.font_size = childStyle.font_size;
     if (childStyle.icon_size) combined.icon_size = childStyle.icon_size;
+    if (childStyle.icon_position)
+      combined.icon_position = childStyle.icon_position;
     if (childStyle.icon_use_original_color !== undefined)
       combined.icon_use_original_color = childStyle.icon_use_original_color;
     if (childStyle.font_weight) combined.font_weight = childStyle.font_weight;
@@ -98,6 +108,12 @@ export function combineStyles(
     if (childStyle.list_items_layout)
       combined.list_items_layout = childStyle.list_items_layout;
     if (childStyle.list_columns) combined.list_columns = childStyle.list_columns;
+    if (childStyle.climate_params_layout)
+      combined.climate_params_layout = childStyle.climate_params_layout;
+    if (childStyle.climate_params_separator)
+      combined.climate_params_separator = childStyle.climate_params_separator;
+    if (childStyle.list_last_row_align)
+      combined.list_last_row_align = childStyle.list_last_row_align;
     if (childStyle.show_table_header !== undefined)
       combined.show_table_header = childStyle.show_table_header;
     if (childStyle.header_background_color)

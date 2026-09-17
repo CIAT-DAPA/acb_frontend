@@ -160,6 +160,8 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({
     id: null,
   });
 
+  const [markedElementId, setMarkedElementId] = useState<string | null>(null);
+
   // Handle global key events like Delete for selection
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -178,6 +180,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({
 
   const handleSelection = (sel: EditorSelection) => {
     setSelection(sel);
+    setMarkedElementId(null);
   };
 
   const deselectAll = () => {
@@ -354,6 +357,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({
             isCardMode={isCardMode}
             interactionMode="edit"
             renderAllPages={false}
+            markedElementId={markedElementId}
           />
         </div>
 
@@ -365,6 +369,9 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({
             onUpdate={onUpdate}
             onMoveSection={handleMoveSection}
             onDuplicateSection={handleDuplicateSection}
+            onSelect={handleSelection}
+            markedElementId={markedElementId}
+            onMarkElement={setMarkedElementId}
             // @ts-ignore - Dynamic props for Card Mode
             isCardMode={isCardMode}
             cardType={cardType}

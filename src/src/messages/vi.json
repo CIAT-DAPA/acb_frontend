@@ -1245,7 +1245,6 @@
           "header_field": "Trường Đầu trang",
           "footer_field": "Trường Chân trang"
         },
-
         "noRenderableSections": "Không có phần nào có nội dung để hiển thị.",
         "noSections": "Mẫu này chưa có phần nào.",
         "untitled": "Không có tiêu đề",
@@ -1348,6 +1347,13 @@
           "around": "Chia khoảng cách xung quanh",
           "evenly": "Chia đều khoảng cách"
         },
+        "alignItems": "Căn các phần tử",
+        "alignItemsOptions": {
+          "start": "Đầu",
+          "end": "Cuối",
+          "center": "Giữa",
+          "stretch": "Kéo giãn"
+        },
         "alignOptions": {
           "center": "Trung tâm",
           "left": "Bên trái",
@@ -1395,6 +1401,21 @@
         "color": "Màu văn bản",
         "opacity": "Độ trong suốt",
         "iconSize": "Kích thước biểu tượng (px)",
+        "iconSizeHelp": "Đây là chiều cao. Chiều rộng theo đúng tỉ lệ của biểu tượng.",
+        "iconPosition": "Vị trí biểu tượng",
+        "iconPositionOptions": {
+          "left": "Trái",
+          "right": "Phải",
+          "top": "Trên",
+          "bottom": "Dưới"
+        },
+        "listLastRowAlign": "Căn các mục còn lại",
+        "listLastRowAlignHelp": "Vị trí của các mục khi chúng không lấp đầy hàng cuối.",
+        "listLastRowAlignOptions": {
+          "start": "Trái",
+          "center": "Giữa",
+          "end": "Phải"
+        },
         "iconUseOriginalColor": "Giữ màu biểu tượng ban đầu",
         "iconUseOriginalColorHelp": "Nếu bị vô hiệu hóa, biểu tượng sẽ sử dụng màu chính từ ngữ cảnh.",
         "fontWeight": "Độ đậm của phông chữ",
@@ -1414,10 +1435,17 @@
         "bulletinHeight": "Chiều cao bản tin (px)",
         "listStyleType": "Kiểu trình bày danh sách",
         "listColumns": "Số cột của danh sách",
-        "listColumnsHelp": "Quy định số cột dùng để hiển thị các mục của danh sách. Mỗi cột chiếm phần bằng nhau trong chiều rộng khả dụng của trường.",
+        "listColumnsHelp": "Số cột dùng để dàn các mục của danh sách.",
         "listColumnsNarrowHint": "Với số cột này, mỗi cột có thể rất hẹp. Hãy kiểm tra trong bản xem trước.",
+        "climateParamsLayout": "Cách sắp xếp tham số",
+        "climateParamsLayoutOptions": {
+          "vertical": "Xếp chồng",
+          "horizontal": "Trên một hàng"
+        },
+        "climateParamsSeparator": "Dấu phân cách giữa các tham số",
+        "climateParamsSeparatorHelp": "Ký tự hiển thị giữa tham số này và tham số kế tiếp, ví dụ / hoặc dấu phẩy.",
         "listItemsLayout": "Bố trí các phần tử trong Danh sách",
-        "listItemsLayoutHelp": "Sắp xếp các trường bên trong mỗi mục, không phải các mục với nhau. Để dàn các mục, dùng “Số cột của danh sách”.",
+        "listItemsLayoutHelp": "Sắp xếp các trường bên trong mỗi mục, không phải các mục với nhau.",
         "title": "Kiểu trường thông tin",
         "padding": "Đệm (CSS)-Khoảng trống giữa nội dung và đường viền",
         "margin": "Lề (CSS)-Khoảng trống bên ngoài đường viền (Border), dùng để tạo khoảng cách giữa các phần tử.",
@@ -1448,6 +1476,17 @@
         "page_number": "Số trang",
         "card": "Thẻ",
         "moon_calendar": "Lịch mặt trăng"
+      },
+      "structure": {
+        "dragToReorder": "Kéo để sắp xếp lại",
+        "openSettings": "Mở cấu hình",
+        "duplicate": "Nhân bản",
+        "delete": "Xóa",
+        "noBlocks": "Chưa có khối nào",
+        "noFields": "Chưa có trường nào",
+        "untitledBlock": "Khối chưa đặt tên",
+        "untitledField": "Trường chưa đặt tên",
+        "fieldCount": "{count, plural, other {# trường}}"
       },
       "selectWithIconsConfig": {
         "iconUrl": "Biểu tượng",
@@ -1651,6 +1690,7 @@
         },
         "previewExampleValue": "Giá trị mẫu",
         "showNameInPreview": "Hiển thị tên trong bản xem trước",
+        "joinWithPrevious": "Nối với tham số trước (không có dấu phân cách)",
         "parameterStyles": "Kiểu tham số"
       },
       "cardConfig": {
@@ -1773,7 +1813,13 @@
       },
       "imageUploadConfig": {
         "allowedFormatsLabel": "Định dạng ảnh được phép",
-        "summaryFormats": "Định dạng được phép"
+        "summaryFormats": "Định dạng được phép",
+        "objectFitLabel": "Cách vừa khung của ảnh",
+        "objectFitHelp": "Cover lấp kín khu vực bằng cách cắt phần dư. Contain giữ tỉ lệ và hiển thị trọn ảnh.",
+        "objectFitOptions": {
+          "cover": "Cover",
+          "contain": "Contain"
+        }
       }
     },
     "generalConfig": {
@@ -1808,18 +1854,18 @@
           "around": "Chia khoảng cách xung quanh",
           "evenly": "Chia đều khoảng cách"
         },
-        "alignOptions": {
-          "center": "Trung tâm",
-          "left": "Bên trái",
-          "right": "Phải",
-          "justify": "Canh đều"
-        },
         "alignItems": "Căn chỉnh mục",
         "alignItemsOptions": {
           "start": "Bắt đầu",
           "end": "Kết thúc",
           "center": "Trung tâm",
           "stretch": "Kéo giãn"
+        },
+        "alignOptions": {
+          "center": "Trung tâm",
+          "left": "Bên trái",
+          "right": "Phải",
+          "justify": "Canh đều"
         },
         "textAlign": {
           "options": {
@@ -1912,6 +1958,13 @@
     },
     "headerFooter": {
       "globalStyles": {
+        "alignItems": "Căn các phần tử",
+        "alignItemsOptions": {
+          "start": "Đầu",
+          "end": "Cuối",
+          "center": "Giữa",
+          "stretch": "Kéo giãn"
+        },
         "previewTitle": "Xem trước",
         "title": "Phong cách chung cho toàn bộ bản tin",
         "colorPickerTitle": "Bộ chọn màu",
@@ -1983,6 +2036,21 @@
         "color": "Màu văn bản",
         "opacity": "Độ trong suốt",
         "iconSize": "Kích thước biểu tượng (px)",
+        "iconSizeHelp": "Đây là chiều cao. Chiều rộng theo đúng tỉ lệ của biểu tượng.",
+        "iconPosition": "Vị trí biểu tượng",
+        "iconPositionOptions": {
+          "left": "Trái",
+          "right": "Phải",
+          "top": "Trên",
+          "bottom": "Dưới"
+        },
+        "listLastRowAlign": "Căn các mục còn lại",
+        "listLastRowAlignHelp": "Vị trí của các mục khi chúng không lấp đầy hàng cuối.",
+        "listLastRowAlignOptions": {
+          "start": "Trái",
+          "center": "Giữa",
+          "end": "Phải"
+        },
         "iconUseOriginalColor": "Giữ màu biểu tượng ban đầu",
         "iconUseOriginalColorHelp": "Nếu bị vô hiệu hóa, biểu tượng sẽ sử dụng màu chính từ ngữ cảnh.",
         "fontWeight": "Độ đậm của phông chữ",
@@ -2009,10 +2077,17 @@
         "bulletinHeight": "Chiều cao bản tin (px)",
         "listStyleType": "Kiểu trình bày danh sách",
         "listColumns": "Số cột của danh sách",
-        "listColumnsHelp": "Quy định số cột dùng để hiển thị các mục của danh sách. Mỗi cột chiếm phần bằng nhau trong chiều rộng khả dụng của trường.",
+        "listColumnsHelp": "Số cột dùng để dàn các mục của danh sách.",
         "listColumnsNarrowHint": "Với số cột này, mỗi cột có thể rất hẹp. Hãy kiểm tra trong bản xem trước.",
+        "climateParamsLayout": "Cách sắp xếp tham số",
+        "climateParamsLayoutOptions": {
+          "vertical": "Xếp chồng",
+          "horizontal": "Trên một hàng"
+        },
+        "climateParamsSeparator": "Dấu phân cách giữa các tham số",
+        "climateParamsSeparatorHelp": "Ký tự hiển thị giữa tham số này và tham số kế tiếp, ví dụ / hoặc dấu phẩy.",
         "listItemsLayout": "Bố trí các phần tử trong Danh sách",
-        "listItemsLayoutHelp": "Sắp xếp các trường bên trong mỗi mục, không phải các mục với nhau. Để dàn các mục, dùng “Số cột của danh sách”.",
+        "listItemsLayoutHelp": "Sắp xếp các trường bên trong mỗi mục, không phải các mục với nhau.",
         "listLayoutOptions": {
           "vertical": "Thẳng đứng",
           "horizontal": "Nằm ngang",

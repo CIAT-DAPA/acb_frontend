@@ -19,6 +19,8 @@ import {
 
 type CanvasInteractionMode = "edit" | "review";
 
+const PAN_CLICK_THRESHOLD_PX = 4;
+
 interface CanvasProps {
   data: CreateTemplateData;
   selection: EditorSelection;
@@ -34,6 +36,7 @@ interface CanvasProps {
   commentCounts?: Record<string, number>;
   interactionMode?: CanvasInteractionMode;
   renderAllPages?: boolean;
+  markedElementId?: string | null;
 }
 
 const normalizeCardFieldValue = (value: unknown): any[] => {
@@ -156,6 +159,7 @@ export const Canvas: React.FC<CanvasProps> = ({
   commentCounts,
   interactionMode = "edit",
   renderAllPages = false,
+  markedElementId,
 }) => {
   const isReviewInteraction = interactionMode === "review";
   const shouldRenderAllPages = renderAllPages;
@@ -189,6 +193,9 @@ export const Canvas: React.FC<CanvasProps> = ({
     Record<number, number>
   >({});
   const spacePressed = useRef(false);
+
+  const panOriginRef = useRef<{ x: number; y: number } | null>(null);
+  const didPanRef = useRef(false);
   const paginationResetKey = JSON.stringify({
     bulletinHeight: data.version.content.style_config?.bulletin_height,
 
@@ -364,6 +371,65 @@ export const Canvas: React.FC<CanvasProps> = ({
     },
     [],
   );
+
+  
+  useEffect(() => {
+    if (!markedElementId) {
+      return;
+    }
+
+    const container = containerRef.current;
+    const content = contentRef.current;
+
+    if (!container || !content) {
+      return;
+    }
+
+    const element = content.querySelector<HTMLElement>(
+      `[data-editor-id="${markedElementId}"], [data-review-id="${markedElementId}"]`,
+    );
+
+    if (!element) {
+      return;
+    }
+
+    const bounds = getElementBounds(element);
+
+    if (!bounds) {
+      return;
+    }
+
+    setCanvasState((previous) => {
+      const { scale, position } = previous;
+
+      // Rectángulo del elemento en coordenadas de pantalla.
+      const left = position.x + bounds.x * scale;
+      const top = position.y + bounds.y * scale;
+      const right = left + bounds.width * scale;
+      const bottom = top + bounds.height * scale;
+
+      const margin = 16;
+      const isVisible =
+        left >= margin &&
+        top >= margin &&
+        right <= container.clientWidth - margin &&
+        bottom <= container.clientHeight - margin;
+
+      if (isVisible) {
+        return previous;
+      }
+
+      return {
+        scale,
+        position: {
+          x: (container.clientWidth - bounds.width * scale) / 2 - bounds.x * scale,
+          y:
+            (container.clientHeight - bounds.height * scale) / 2 -
+            bounds.y * scale,
+        },
+      };
+    });
+  }, [markedElementId, getElementBounds]);
 
   const getOverviewCanvasState = useCallback((): CanvasState | null => {
     const content = contentRef.current;
@@ -605,12 +671,25 @@ export const Canvas: React.FC<CanvasProps> = ({
     if (!isInteractive || isMiddleClick || spacePressed.current) {
       setIsDragging(true);
       setLastMousePos({ x: e.clientX, y: e.clientY });
+      panOriginRef.current = { x: e.clientX, y: e.clientY };
+      didPanRef.current = false;
       e.preventDefault(); // Always prevent default (text selection) when panning
     }
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (isDragging) {
+      const origin = panOriginRef.current;
+
+      if (origin) {
+        const movedX = Math.abs(e.clientX - origin.x);
+        const movedY = Math.abs(e.clientY - origin.y);
+
+        if (movedX > PAN_CLICK_THRESHOLD_PX || movedY > PAN_CLICK_THRESHOLD_PX) {
+          didPanRef.current = true;
+        }
+      }
+
       const dx = e.clientX - lastMousePos.x;
       const dy = e.clientY - lastMousePos.y;
 
@@ -1124,6 +1203,12 @@ export const Canvas: React.FC<CanvasProps> = ({
     <div
       ref={containerRef}
       className="w-full h-full overflow-hidden bg-[#e5e5e5] relative cursor-grab select-none canvas-bg"
+      onClickCapture={(event) => {
+        if (didPanRef.current) {
+          event.stopPropagation();
+          event.preventDefault();
+        }
+      }}
       onMouseDownCapture={cancelIntroAnimation}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
@@ -1216,7 +1301,7 @@ export const Canvas: React.FC<CanvasProps> = ({
                             shouldRenderAllPages ? pageIndex : undefined
                           }
                           hidePagination={shouldRenderAllPages}
-                          selectedElementId={selection.id}
+                          selectedElementId={markedElementId || selection.id}
                           commentCounts={
                             isReviewInteraction ? commentCounts : undefined
                           }

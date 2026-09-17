@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useTranslations } from "next-intl";
 import { BaseFieldTypeConfigProps } from "./BaseFieldTypeConfig";
-import { Plus } from "lucide-react";
+import { Plus, Ban, X } from "lucide-react";
 import {
   btnOutlineSecondary,
   inputXsClass,
@@ -105,7 +105,13 @@ export const SelectWithIconsFieldTypeConfig: React.FC<
     </div>
   );
 
-  // Componente para mostrar icono seleccionado
+  /*
+   * Icono seleccionado.
+   *
+   * Solo miniatura y acción de cambiar: el texto "icono seleccionado" repetía
+   * lo que la propia miniatura ya comunica y era lo que obligaba a la fila a
+   * medir casi 100px más de lo necesario.
+   */
   const SelectedIconDisplay = ({
     iconUrl,
     index,
@@ -115,24 +121,48 @@ export const SelectWithIconsFieldTypeConfig: React.FC<
     index: number;
     onChangeClick: () => void;
   }) => (
-    <div className={`${iconContainerClass} bg-green-50 border-green-200`}>
+    <div
+      className={`flex items-center space-x-2 p-1 rounded border bg-green-50 border-green-200 min-w-0 flex-1`}
+    >
       <img
         src={iconUrl}
         alt={`${t("selectWithIconsConfig.optionLabel")} ${index + 1}`}
-        className="w-6 h-6 object-contain"
+        className="w-6 h-6 object-contain shrink-0"
         onError={handleImageError}
       />
-      <span className="text-xs text-green-700 flex-1 truncate">
-        {t("selectWithIconsConfig.iconSelected")}
-      </span>
       <button
         type="button"
         onClick={onChangeClick}
-        className="text-xs text-blue-600 hover:text-blue-800"
+        className="text-xs text-blue-600 hover:text-blue-800 truncate"
       >
         {t("selectWithIconsConfig.changeIcon")}
       </button>
     </div>
+  );
+
+  const ClearIconButton = ({ index }: { index: number }) => (
+    <button
+      type="button"
+      onClick={() => updateIcon(index, "")}
+      className="shrink-0 p-1.5 border border-gray-300 rounded text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+      title={t("selectWithIconsConfig.noIcon")}
+      aria-label={t("selectWithIconsConfig.noIcon")}
+    >
+      <Ban className="w-4 h-4" />
+    </button>
+  );
+
+  const RemoveOptionButton = ({ index }: { index: number }) => (
+    <button
+      type="button"
+      onClick={() => removeOption(index)}
+      className="shrink-0 text-red-500 hover:text-red-700 disabled:opacity-40 disabled:cursor-not-allowed p-1"
+      disabled={options.length <= 1}
+      title={t("actions.remove")}
+      aria-label={t("actions.remove")}
+    >
+      <X className="w-4 h-4" />
+    </button>
   );
 
   return (
@@ -168,83 +198,59 @@ export const SelectWithIconsFieldTypeConfig: React.FC<
           </button>
         </div>
 
-        <div className="space-y-3">
+        <div className="@container space-y-3">
           {options.map((option, index) => (
             <div
               key={index}
-              className="grid grid-cols-12 gap-3 items-center p-3 border border-gray-200 rounded-md bg-gray-50"
+              className="relative p-3 border border-gray-200 rounded-md bg-gray-50"
             >
-              {/* Opción */}
-              <div className="col-span-5">
-                <label className={labelXsClass}>
-                  {t("selectWithIconsConfig.optionLabel")} {index + 1}
-                </label>
-                <input
-                  type="text"
-                  value={option}
-                  onChange={(e) => updateOption(index, e.target.value)}
-                  className={inputXsClass}
-                  placeholder={t("selectWithIconsConfig.optionPlaceholder")}
-                />
+              <div className="absolute top-2 right-2 @sm:hidden">
+                <RemoveOptionButton index={index} />
               </div>
-
-              {/* Selector de icono */}
-              <div className="col-span-5">
-                <label className={labelXsClass}>
-                  {t("selectWithIconsConfig.iconUrl")}
-                </label>
-                <div className="flex items-center space-x-2">
-                  {iconsUrl[index] ? (
-                    <SelectedIconDisplay
-                      iconUrl={iconsUrl[index]}
-                      index={index}
-                      onChangeClick={() => setShowIconSelectorForIndex(index)}
-                    />
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setShowIconSelectorForIndex(index)}
-                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50 text-left text-gray-500"
-                    >
-                      {t("selectWithIconsConfig.selectIcon")}
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => updateIcon(index, "")}
-                    className="px-2 py-1.5 text-xs border border-gray-300 rounded hover:bg-gray-50 text-gray-600 whitespace-nowrap"
-                    title={t("selectWithIconsConfig.noIcon")}
-                  >
-                    {t("selectWithIconsConfig.noIcon")}
-                  </button>
-                </div>
-              </div>
-
-              {/* Preview del icono */}
-              <div className="col-span-1 flex justify-center">
-                {iconsUrl[index] && (
-                  <img
-                    src={iconsUrl[index]}
-                    alt={`${t("selectWithIconsConfig.optionLabel")} ${
-                      index + 1
-                    }`}
-                    className="w-6 h-6 object-contain"
-                    onError={handleImageError}
+              <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-2 @sm:grid-cols-12 @sm:gap-3 @sm:pr-0 @sm:items-end">
+                {/* Opción */}
+                <div className="@sm:col-span-6">
+                  <label className={labelXsClass}>
+                    {t("selectWithIconsConfig.optionLabel")} {index + 1}
+                  </label>
+                  <input
+                    type="text"
+                    value={option}
+                    onChange={(e) => updateOption(index, e.target.value)}
+                    className={inputXsClass}
+                    placeholder={t("selectWithIconsConfig.optionPlaceholder")}
                   />
-                )}
-              </div>
+                </div>
 
-              {/* Eliminar */}
-              <div className="col-span-1 flex justify-center">
-                <button
-                  type="button"
-                  onClick={() => removeOption(index)}
-                  className="text-red-500 hover:text-red-700 p-1"
-                  disabled={options.length <= 1}
-                  title={t("actions.remove")}
-                >
-                  ✕
-                </button>
+                {/* Icono */}
+                <div className="@sm:col-span-5">
+                  <label className={labelXsClass}>
+                    {t("selectWithIconsConfig.iconUrl")}
+                  </label>
+                  <div className="flex items-center gap-2">
+                    {iconsUrl[index] ? (
+                      <SelectedIconDisplay
+                        iconUrl={iconsUrl[index]}
+                        index={index}
+                        onChangeClick={() => setShowIconSelectorForIndex(index)}
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setShowIconSelectorForIndex(index)}
+                        className="flex-1 min-w-0 px-2 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50 text-left text-gray-500 truncate"
+                      >
+                        {t("selectWithIconsConfig.selectIcon")}
+                      </button>
+                    )}
+
+                    {iconsUrl[index] && <ClearIconButton index={index} />}
+                  </div>
+                </div>
+
+                <div className="hidden @sm:flex @sm:col-span-1 justify-center pb-1">
+                  <RemoveOptionButton index={index} />
+                </div>
               </div>
             </div>
           ))}

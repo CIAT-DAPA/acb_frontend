@@ -116,14 +116,14 @@ export const SelectBackgroundFieldTypeConfig: React.FC<
           </button>
         </div>
 
-        <div className="space-y-3">
+        <div className="@container space-y-3">
           {options.map((option, index) => (
             <div
               key={index}
-              className="grid grid-cols-12 gap-3 items-start p-3 border border-gray-200 rounded-md bg-gray-50"
+              className="grid grid-cols-1 gap-3 p-3 border border-gray-200 rounded-md bg-gray-50 @sm:grid-cols-12 @sm:items-start"
             >
               {/* Label de la opción */}
-              <div className="col-span-4">
+              <div className="@sm:col-span-4">
                 <label className={labelXsClass}>
                   {t("selectBackgroundConfig.optionLabel")} {index + 1}
                 </label>
@@ -137,7 +137,7 @@ export const SelectBackgroundFieldTypeConfig: React.FC<
               </div>
 
               {/* Vista previa del fondo */}
-              <div className="col-span-4">
+              <div className="@sm:col-span-4">
                 <label className={labelXsClass}>
                   {t("selectBackgroundConfig.backgroundImage")}
                 </label>
@@ -148,11 +148,11 @@ export const SelectBackgroundFieldTypeConfig: React.FC<
               </div>
 
               {/* Botones de acción */}
-              <div className="col-span-4 flex items-end justify-end gap-2 h-full pb-1">
+              <div className="flex items-center justify-end gap-2 @sm:col-span-4 @sm:items-end @sm:h-full @sm:pb-1">
                 <button
                   type="button"
                   onClick={() => setShowBackgroundSelectorForIndex(index)}
-                  className={`${btnOutlineSecondary} text-xs px-3 py-2 whitespace-nowrap`}
+                  className={`${btnOutlineSecondary} text-xs px-3 py-2 min-w-0 truncate`}
                 >
                   {backgroundsUrl[index]
                     ? t("selectBackgroundConfig.change")

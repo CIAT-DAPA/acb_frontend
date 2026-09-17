@@ -961,6 +961,21 @@
         "opacity": "Opacidad",
         "fontSize": "Tamaño de Fuente (px)",
         "iconSize": "Tamaño de Iconos (px)",
+        "iconSizeHelp": "Es el alto. El ancho sigue la proporción del icono.",
+        "iconPosition": "Posición del icono",
+        "iconPositionOptions": {
+          "left": "Izquierda",
+          "right": "Derecha",
+          "top": "Arriba",
+          "bottom": "Abajo"
+        },
+        "listLastRowAlign": "Alineación de los items sobrantes",
+        "listLastRowAlignHelp": "Dónde se colocan los items cuando no llegan a completar la última fila.",
+        "listLastRowAlignOptions": {
+          "start": "Izquierda",
+          "center": "Centro",
+          "end": "Derecha"
+        },
         "iconUseOriginalColor": "Mantener color original del icono",
         "iconUseOriginalColorHelp": "Si está desactivado, el icono usará el color primario del contexto",
         "fontWeight": "Grosor del Texto",
@@ -1004,12 +1019,26 @@
           "around": "Espaciado Alrededor",
           "evenly": "Espaciado Uniforme"
         },
+        "alignItems": "Alineación de Items",
+        "alignItemsOptions": {
+          "start": "Inicio",
+          "end": "Fin",
+          "center": "Centro",
+          "stretch": "Estirar"
+        },
         "listStyleType": "Estilo de Lista",
         "listColumns": "Columnas de la lista",
-        "listColumnsHelp": "Define en cuántas columnas se muestran los items de la lista. Cada columna ocupa la misma parte del ancho disponible del campo.",
+        "listColumnsHelp": "En cuántas columnas se reparten los items de la lista.",
         "listColumnsNarrowHint": "Con tantas columnas cada una puede quedar muy estrecha. Revísalo en la vista previa.",
+        "climateParamsLayout": "Colocación de los parámetros",
+        "climateParamsLayoutOptions": {
+          "vertical": "Uno debajo de otro",
+          "horizontal": "En línea"
+        },
+        "climateParamsSeparator": "Separador entre parámetros",
+        "climateParamsSeparatorHelp": "Texto que se dibuja entre un parámetro y el siguiente, por ejemplo / o una coma.",
         "listItemsLayout": "Layout de Items de Lista",
-        "listItemsLayoutHelp": "Coloca los campos que hay dentro de cada item, no los items entre sí. Para repartir los items usa “Columnas de la lista”.",
+        "listItemsLayoutHelp": "Coloca los campos dentro de cada item, no los items entre sí.",
         "layoutOptions": {
           "horizontal": "Horizontal (lado a lado)",
           "vertical": "Vertical (uno debajo del otro)"
@@ -1363,6 +1392,17 @@
         "image": "Imagen",
         "moon_calendar": "Calendario Lunar"
       },
+      "structure": {
+        "dragToReorder": "Arrastrar para reordenar",
+        "openSettings": "Abrir configuración",
+        "duplicate": "Duplicar",
+        "delete": "Eliminar",
+        "noBlocks": "Todavía no hay bloques",
+        "noFields": "Todavía no hay campos",
+        "untitledBlock": "Bloque sin nombre",
+        "untitledField": "Campo sin nombre",
+        "fieldCount": "{count, plural, =0 {sin campos} one {1 campo} other {# campos}}"
+      },
       "textConfig": {
         "subtype": "Tipo de Texto",
         "short": "Corto",
@@ -1531,6 +1571,12 @@
         "widthPlaceholder": "ej. 400",
         "optional": "opcional",
         "dimensionUnit": "píxeles (px)",
+        "objectFitLabel": "Ajuste de la imagen",
+        "objectFitHelp": "Cover llena el área recortando lo que sobra. Contain mantiene la proporción y muestra la imagen completa.",
+        "objectFitOptions": {
+          "cover": "Cover",
+          "contain": "Contain"
+        },
         "summaryTitle": "Resumen de Configuración",
         "summaryFormats": "Formatos permitidos",
         "summaryMaxSize": "Tamaño máx. archivo",
@@ -1605,6 +1651,7 @@
         },
         "previewExampleValue": "Valor ejemplo",
         "showNameInPreview": "Mostrar nombre en preview",
+        "joinWithPrevious": "Unir con el anterior (sin separador)",
         "parameterStyles": "Estilos del parámetro"
       },
       "cardConfig": {
@@ -1668,6 +1715,21 @@
         "font": "Fuente",
         "fontSize": "Tamaño de Fuente (px)",
         "iconSize": "Tamaño de Iconos (px)",
+        "iconSizeHelp": "Es el alto. El ancho sigue la proporción del icono.",
+        "iconPosition": "Posición del icono",
+        "iconPositionOptions": {
+          "left": "Izquierda",
+          "right": "Derecha",
+          "top": "Arriba",
+          "bottom": "Abajo"
+        },
+        "listLastRowAlign": "Alineación de los items sobrantes",
+        "listLastRowAlignHelp": "Dónde se colocan los items cuando no llegan a completar la última fila.",
+        "listLastRowAlignOptions": {
+          "start": "Izquierda",
+          "center": "Centro",
+          "end": "Derecha"
+        },
         "iconUseOriginalColor": "Mantener color original del icono",
         "iconUseOriginalColorHelp": "Si está desactivado, el icono usará el color primario del contexto",
         "fontWeight": "Grosor del Texto",
@@ -1723,10 +1785,17 @@
         },
         "listStyleType": "Estilo de Lista",
         "listColumns": "Columnas de la lista",
-        "listColumnsHelp": "Define en cuántas columnas se muestran los items de la lista. Cada columna ocupa la misma parte del ancho disponible del campo.",
+        "listColumnsHelp": "En cuántas columnas se reparten los items de la lista.",
         "listColumnsNarrowHint": "Con tantas columnas cada una puede quedar muy estrecha. Revísalo en la vista previa.",
+        "climateParamsLayout": "Colocación de los parámetros",
+        "climateParamsLayoutOptions": {
+          "vertical": "Uno debajo de otro",
+          "horizontal": "En línea"
+        },
+        "climateParamsSeparator": "Separador entre parámetros",
+        "climateParamsSeparatorHelp": "Texto que se dibuja entre un parámetro y el siguiente, por ejemplo / o una coma.",
         "listItemsLayout": "Layout de Items de Lista",
-        "listItemsLayoutHelp": "Coloca los campos que hay dentro de cada item, no los items entre sí. Para repartir los items usa “Columnas de la lista”.",
+        "listItemsLayoutHelp": "Coloca los campos dentro de cada item, no los items entre sí.",
         "layoutOptions": {
           "horizontal": "Horizontal (lado a lado)",
           "vertical": "Vertical (uno debajo del otro)"
