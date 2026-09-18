@@ -379,6 +379,39 @@ function getTextAlign(
   return (textAlign as React.CSSProperties["textAlign"]) || fallback;
 }
 
+// Geometría de la sección que condiciona el alto de sus bloques: el contenedor
+// de medición tiene que reproducirla para medir con el mismo ancho y la misma
+// tipografía que el render real. Los colores quedan fuera, no cambian el alto.
+function getSectionLayoutStyles(
+  sectionStyleConfig: StyleConfig | undefined,
+  fallback: {
+    fontFamily?: string;
+    fontSize?: string;
+    fontWeight?: string | number;
+    globalFont?: string;
+  },
+): React.CSSProperties {
+  return {
+    boxSizing: "border-box",
+    fontFamily: sectionStyleConfig?.font
+      ? getFontFamily(sectionStyleConfig.font)
+      : fallback.fontFamily,
+    fontSize: sectionStyleConfig?.font_size
+      ? `${sectionStyleConfig.font_size}px`
+      : fallback.fontSize,
+    fontWeight: getResolvedFontWeight(
+      sectionStyleConfig?.font || fallback.globalFont,
+      sectionStyleConfig?.font_weight || fallback.fontWeight,
+    ),
+    fontStyle: sectionStyleConfig?.font_style || "normal",
+    textDecoration: sectionStyleConfig?.text_decoration || "none",
+    textAlign: getTextAlign(sectionStyleConfig?.text_align, "left"),
+    padding: sectionStyleConfig?.padding,
+    margin: sectionStyleConfig?.margin,
+    ...getBorderStyles(sectionStyleConfig),
+  };
+}
+
 /**
  * Genera las restricciones de tamaño configuradas en el style_config.
  * Los valores se normalizan para aceptar tanto "200" como "200px" o "100%".
@@ -1518,6 +1551,7 @@ export function TemplatePreview({
 
   const headerMeasureRef = useRef<HTMLDivElement | null>(null);
   const footerMeasureRef = useRef<HTMLDivElement | null>(null);
+  const sectionMeasureRef = useRef<HTMLDivElement | null>(null);
   const blockMeasureRefs = useRef<(HTMLDivElement | null)[]>([]);
   const pendingOverflowPageRef = useRef<number | null>(null);
   const previousMeasuredSectionIdRef = useRef<string | null>(null);
@@ -4759,8 +4793,33 @@ export function TemplatePreview({
       const bulletinHeight = Number(styleConfig?.bulletin_height || 638);
       const headerHeight = headerMeasureRef.current?.offsetHeight || 0;
       const footerHeight = footerMeasureRef.current?.offsetHeight || 0;
+      // El padding, el borde y el margen de la sección también gastan alto. Se
+      // leen ya resueltos del DOM para no reimplementar los atajos de CSS.
+      const sectionChromeHeight = (() => {
+        const sectionElement = sectionMeasureRef.current;
+
+        if (!sectionElement) {
+          return 0;
+        }
+
+        const computedStyle = window.getComputedStyle(sectionElement);
+        const verticalSizes = [
+          computedStyle.paddingTop,
+          computedStyle.paddingBottom,
+          computedStyle.borderTopWidth,
+          computedStyle.borderBottomWidth,
+          computedStyle.marginTop,
+          computedStyle.marginBottom,
+        ];
+
+        return verticalSizes.reduce((total, size) => {
+          const parsedSize = Number.parseFloat(size || "0");
+
+          return total + (Number.isFinite(parsedSize) ? parsedSize : 0);
+        }, 0);
+      })();
       const availableHeight = Math.max(
-        bulletinHeight - headerHeight - footerHeight,
+        bulletinHeight - headerHeight - footerHeight - sectionChromeHeight,
         0,
       );
       const blockMeasurements: BlockMeasurement[] = measuredSection.blocks.map(
@@ -4773,8 +4832,22 @@ export function TemplatePreview({
           const hasCardField = block.fields
             .filter(isFieldVisibleForRender)
             .some((field) => field.type === "card");
+          // scrollHeight no incluye el margen, y ahí es donde vive tanto el
+          // margin del bloque como la separación que añade space-y-1.
+          const blockMarginHeight = blockElement
+            ? (() => {
+                const computedStyle = window.getComputedStyle(blockElement);
+                const marginTop =
+                  Number.parseFloat(computedStyle.marginTop || "0") || 0;
+                const marginBottom =
+                  Number.parseFloat(computedStyle.marginBottom || "0") || 0;
+
+                return marginTop + marginBottom;
+              })()
+            : 0;
           const blockMeasuredHeight =
-            blockElement?.scrollHeight || blockElement?.offsetHeight || 0;
+            (blockElement?.scrollHeight || blockElement?.offsetHeight || 0) +
+            blockMarginHeight;
           const cardBlockElements = blockElement
             ? Array.from(
                 blockElement.querySelectorAll<HTMLElement>(
@@ -5579,15 +5652,17 @@ export function TemplatePreview({
                         );
 
                   // Estilos aplicados a la sección completa
-                  const sectionStyles = {
-                    fontFamily: section.style_config?.font
-                      ? getFontFamily(section.style_config.font)
-                      : globalStyles.fontFamily,
+                  const sectionStyles: React.CSSProperties = {
+                    // Mismo helper que el contenedor de medición: si la
+                    // geometría cambia aquí, allí cambia igual.
+                    ...getSectionLayoutStyles(section.style_config, {
+                      fontFamily: globalStyles.fontFamily,
+                      fontSize: globalStyles.fontSize,
+                      fontWeight: globalStyles.fontWeight,
+                      globalFont: styleConfig?.font,
+                    }),
                     color:
                       section.style_config?.primary_color || globalStyles.color,
-                    fontSize: section.style_config?.font_size
-                      ? `${section.style_config.font_size}px`
-                      : globalStyles.fontSize,
                     backgroundColor: hasUnifiedSectionBackground
                       ? "transparent"
                       : getColorWithOpacity(
@@ -5604,19 +5679,6 @@ export function TemplatePreview({
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                     backgroundRepeat: "no-repeat",
-                    fontWeight: getResolvedFontWeight(
-                      section.style_config?.font || styleConfig?.font,
-                      section.style_config?.font_weight ||
-                        globalStyles.fontWeight,
-                    ),
-                    fontStyle: section.style_config?.font_style || "normal",
-                    textDecoration:
-                      section.style_config?.text_decoration || "none",
-                    textAlign:
-                      getTextAlign(section.style_config?.text_align, "left"),
-                    padding: section.style_config?.padding,
-                    margin: section.style_config?.margin,
-                    ...getBorderStyles(section.style_config),
                   };
 
                   // Buscar si hay algún field de tipo "card" en los blocks de esta section
@@ -6295,7 +6357,9 @@ export function TemplatePreview({
                                       ...(blockSlice
                                         ? slicedBlockWrapperStyles
                                         : blockStyles),
-                                      overflow: "hidden",
+                                      ...(hasCardField
+                                        ? { overflow: "hidden" }
+                                        : { flexShrink: 0 }),
                                     }}
                                   >
                                     {reviewMode && (
@@ -6606,11 +6670,21 @@ export function TemplatePreview({
               padding: 0,
             }}
           >
-            <div className="space-y-1 w-full flex flex-col">
-              {getVisibleSectionBlocks(measuredSection).map(
-                ({ block, blockIndex }) =>
-                  renderMeasurementBlock(measuredSection, block, blockIndex),
-              )}
+            <div
+              ref={sectionMeasureRef}
+              style={getSectionLayoutStyles(measuredSection.style_config, {
+                fontFamily: globalStyles.fontFamily,
+                fontSize: globalStyles.fontSize,
+                fontWeight: globalStyles.fontWeight,
+                globalFont: styleConfig?.font,
+              })}
+            >
+              <div className="space-y-1 w-full flex flex-col">
+                {getVisibleSectionBlocks(measuredSection).map(
+                  ({ block, blockIndex }) =>
+                    renderMeasurementBlock(measuredSection, block, blockIndex),
+                )}
+              </div>
             </div>
           </div>
         </div>
