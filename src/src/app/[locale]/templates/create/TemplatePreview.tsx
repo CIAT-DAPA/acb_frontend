@@ -11,6 +11,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { usePathname } from "next/navigation";
 import {
   CreateTemplateData,
+  DateRangeFieldConfig,
   Field,
   ImageUploadFieldConfig,
   Section,
@@ -22,6 +23,12 @@ import { Card } from "../../../../types/card";
 import { CardAPIService } from "../../../../services/cardService";
 import { RefreshCw } from "lucide-react";
 import { normalizeAssetUrl } from "@/utils/assetUrl";
+import {
+  applyRangeTemplate,
+  COMBINED_RANGE_FORMAT,
+  DEFAULT_RANGE_TEMPLATE,
+  formatDateWithPattern,
+} from "@/utils/dateFormat";
 import {
   getLocalizedWeekdayLabels,
   getMonthIndexFromName,
@@ -1794,43 +1801,7 @@ export function TemplatePreview({
       return t("invalidDate");
     }
 
-    const day = dateObj.getDate().toString().padStart(2, "0");
-    const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
-    const year = dateObj.getFullYear();
-    const shortYear = year.toString().slice(-2);
-
-    const dayName = dateObj.toLocaleDateString(localeCode, { weekday: "long" });
-    const dayNameCapitalized =
-      dayName.charAt(0).toUpperCase() + dayName.slice(1);
-
-    const monthName = dateObj.toLocaleDateString(localeCode, { month: "long" });
-    const monthNameCapitalized =
-      monthName.charAt(0).toUpperCase() + monthName.slice(1);
-
-    switch (format) {
-      case "DD/MM/YYYY":
-        return `${day}/${month}/${year}`;
-      case "MM/DD/YYYY":
-        return `${month}/${day}/${year}`;
-      case "DD-MM-YYYY":
-        return `${day}-${month}-${year}`;
-      case "dddd, DD - MM":
-        return `${dayNameCapitalized}, ${day} - ${month}`;
-      case "DD, MMMM YYYY":
-        return `${day}, ${monthNameCapitalized} ${year}`;
-      case "DD de MMMM":
-        return new Intl.DateTimeFormat(localeCode, {
-          day: "2-digit",
-          month: "long",
-        }).format(dateObj);
-      case "MMMM":
-        return monthNameCapitalized;
-      case "MMMM/YY":
-        return `${monthNameCapitalized}/${shortYear}`;
-      case "YYYY-MM-DD":
-      default:
-        return `${year}-${month}-${day}`;
-    }
+    return formatDateWithPattern(dateObj, format, localeCode);
   };
 
   // Helper function to render field values safely
@@ -2153,6 +2124,13 @@ export function TemplatePreview({
           : null;
         const showMoonPhases =
           (field.field_config as any)?.show_moon_phases || false;
+        const dateRangeConfig = field.field_config as
+          | DateRangeFieldConfig
+          | undefined;
+        // El fin usa su propio formato solo si se configuró uno.
+        const dateRangeEndFormat =
+          dateRangeConfig?.end_format || dateRangeFormat;
+        const dateRangeTemplate = dateRangeConfig?.range_template;
 
         // Obtener las fases de luna configuradas o desde el valor
         let startMoonPhase = (field.field_config as any)?.start_moon_phase;
@@ -2175,7 +2153,8 @@ export function TemplatePreview({
         };
 
         // Si el formato es DD-DD, MMMM YYYY, combinar en un solo formato
-        const isRangeFormat = dateRangeFormat === "DD-DD, MMMM YYYY";
+        const isRangeFormat =
+          dateRangeFormat === COMBINED_RANGE_FORMAT && !dateRangeTemplate;
 
         if (isRangeFormat) {
           // Para formato de rango combinado: "15-26, Abril 2025"
@@ -2224,7 +2203,7 @@ export function TemplatePreview({
 
         // Para formatos normales: mostrar dos fechas separadas
         let startDateDisplay = dateRangeFormat;
-        let endDateDisplay = dateRangeFormat;
+        let endDateDisplay = dateRangeEndFormat;
 
         if (
           field.value &&
@@ -2241,7 +2220,7 @@ export function TemplatePreview({
           if (field.value.end_date) {
             endDateDisplay = formatDateValue(
               field.value.end_date as Date | string,
-              dateRangeFormat,
+              dateRangeEndFormat,
             );
           }
         }
@@ -2300,7 +2279,13 @@ export function TemplatePreview({
             }
           >
             {displayDateRangeLabel && <span>{displayDateRangeLabel}:</span>}
-            <span>{`${startDateDisplay} - ${endDateDisplay}`}</span>
+            <span>
+              {applyRangeTemplate(
+                dateRangeTemplate || DEFAULT_RANGE_TEMPLATE,
+                startDateDisplay,
+                endDateDisplay,
+              )}
+            </span>
           </div>
         );
 
