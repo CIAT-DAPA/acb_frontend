@@ -161,6 +161,25 @@ export function applyRangeTemplate(
   );
 }
 
+/*
+ * Número del ítem dentro de su lista, 1-based, igual que las viñetas numeradas.
+ *
+ * Sirve en cualquier texto que se pinte dentro de un ítem: el valor, la
+ * etiqueta, el formato de una fecha o la plantilla de un rango.
+ */
+const ITEM_NUMBER_TOKEN_PATTERN = /\{item\}/g;
+
+export function applyItemNumberToken(
+  text: string,
+  itemNumber?: number,
+): string {
+  if (typeof itemNumber !== "number" || !text.includes("{item}")) {
+    return text;
+  }
+
+  return text.replace(ITEM_NUMBER_TOKEN_PATTERN, String(itemNumber));
+}
+
 export function isKnownDateFormat(format: string): boolean {
   return (
     (DATE_FORMATS as readonly string[]).includes(format) ||
