@@ -5962,17 +5962,13 @@ export function TemplatePreview({
                               clampOpacity(card.content.background_opacity) ??
                               1;
 
-                            // Si la card tiene header, usarlo
                             if (
-                              card.content.header_config &&
-                              (card.content.header_config as any).fields
+                              card.content.header_config?.fields?.length
                             ) {
                               cardHeaderConfig = card.content.header_config;
                             }
-                            // Si la card tiene footer, usarlo
                             if (
-                              card.content.footer_config &&
-                              (card.content.footer_config as any).fields
+                              card.content.footer_config?.fields?.length
                             ) {
                               cardFooterConfig = card.content.footer_config;
                             }
@@ -6030,7 +6026,7 @@ export function TemplatePreview({
                   return (
                     <>
                       {/* Header con lógica de prioridad */}
-                      {activeHeaderConfig && (
+                      {activeHeaderConfig?.fields?.length ? (
                         <div
                           ref={
                             isMeasuringOverflow ? headerMeasureRef : undefined
@@ -6176,7 +6172,7 @@ export function TemplatePreview({
                             return withFieldHighlight(field, rendered, fieldId);
                           })}
                         </div>
-                      )}
+                      ) : null}
 
                       {/* Sección con bloques - ocupa todo el espacio disponible */}
                       <div
@@ -6604,7 +6600,7 @@ export function TemplatePreview({
                       </div>
 
                       {/* Footer con lógica de prioridad */}
-                      {activeFooterConfig && (
+                      {activeFooterConfig?.fields?.length ? (
                         <div
                           ref={
                             isMeasuringOverflow ? footerMeasureRef : undefined
@@ -6751,7 +6747,7 @@ export function TemplatePreview({
                             return withFieldHighlight(field, rendered, fieldId);
                           })}
                         </div>
-                      )}
+                      ) : null}
                     </>
                   );
                 })()}
