@@ -22,6 +22,7 @@ import { GroupSelector } from "../../../components/GroupSelector";
 import { slugify } from "@/utils/slugify";
 import { EnumAPIService, EnumValue } from "@/services/enumService";
 import { isSelectableCardType } from "@/types/card";
+import { FieldValueInput } from "@/app/[locale]/bulletins/create/components/fields/FieldValueInput";
 
 /**
  * Claves de item_schema que hay que recorrer para llegar al field seleccionado.
@@ -2317,9 +2318,13 @@ export const RightPanel: React.FC<RightPanelProps> = ({
 
             {/* Bulletin Specifics: Default Value */}
             {(currentObject as Field)?.bulletin &&
-              !["page_number", "text_with_icon", "image", "list"].includes(
-                (currentObject as Field).type,
-              ) && (
+              ![
+                "page_number",
+                "text_with_icon",
+                "image",
+                "list",
+                "card",
+              ].includes((currentObject as Field).type) && (
                 <div className="space-y-3 pt-4 border-t border-gray-100">
                   <div>
                     <label className={ui.labelClass}>
@@ -2398,19 +2403,17 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                         )}
                       </div>
                     ) : (
-                      <input
-                        type="text"
-                        className={ui.inputClass}
-                        value={
-                          ((currentObject as Field)?.value as string) || ""
-                        }
-                        onChange={(e) =>
-                          handleUpdateField({ value: e.target.value })
-                        }
-                        placeholder={t(
-                          "fieldEditor.editor.bulletinConfig.valuePlaceholder",
-                        )}
-                      />
+                      <div className="mt-2">
+                        <FieldValueInput
+                          field={currentObject as Field}
+                          value={(currentObject as Field)?.value}
+                          onChange={(value) =>
+                            handleUpdateField({
+                              value: value as Field["value"],
+                            })
+                          }
+                        />
+                      </div>
                     )}
                   </div>
                 </div>
@@ -2507,7 +2510,9 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                     alignItems:
                       (currentObject as Field).type === "list" ||
                       hasIconField(currentObject as Field),
-                    justifyContent: hasIconField(currentObject as Field),
+                    justifyContent:
+                      (currentObject as Field).type === "list" ||
+                      hasIconField(currentObject as Field),
                     // Habilitar campos específicos para ListField
                     listStyleType: (currentObject as Field).type === "list",
                     listColumns: (currentObject as Field).type === "list",

@@ -1328,7 +1328,8 @@ export function ListFieldEditor({
               data-list-item-index={itemIndex}
               data-list-field-id={field.field_id}
               className={[
-                "overflow-hidden rounded-lg transition-all duration-200",
+                "rounded-lg transition-all duration-200",
+                expandedItems.has(itemIndex) ? "" : "overflow-hidden",
                 isHighlighted ? "font-bold **:font-bold!" : "",
                 hasItemComments
                   ? "border-2 border-amber-400 bg-amber-50/60 shadow-sm"
@@ -1340,7 +1341,7 @@ export function ListFieldEditor({
               {/* Header del ítem */}
               <div
                 className={[
-                  "flex items-center justify-between px-4 py-2 transition-colors",
+                  "flex items-center justify-between rounded-t-lg px-4 py-2 transition-colors",
                   hasAnyItemComments
                     ? "bg-amber-50"
                     : isHighlighted
@@ -1430,7 +1431,7 @@ export function ListFieldEditor({
               {expandedItems.has(itemIndex) && (
                 <div
                   className={[
-                    "space-y-3 p-4",
+                    "space-y-3 rounded-b-lg p-4",
                     isHighlighted ? "bg-[#fefae0]/30" : "bg-white",
                   ].join(" ")}
                 >
