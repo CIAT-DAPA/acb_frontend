@@ -848,14 +848,17 @@ export function CardFieldInput({
               <div
                 key={`${selectedCard.cardId}-${index}`}
                 className={[
-                  "overflow-hidden rounded-lg bg-white transition-all",
+                  "rounded-lg bg-white transition-all",
+                  isExpanded && cardBlocksToRender.length > 0
+                    ? ""
+                    : "overflow-hidden",
                   hasDirectCardComments
                     ? "border-2 border-amber-400 shadow-sm"
                     : "border border-gray-200",
                 ].join(" ")}
               >
                 {/* Header de la card */}
-                <div className="flex items-center justify-between p-4 bg-gray-50 border-b">
+                <div className="flex items-center justify-between rounded-t-lg p-4 bg-gray-50 border-b">
                   <button
                     type="button"
                     onClick={() => toggleCardExpanded(index)}
@@ -920,7 +923,7 @@ export function CardFieldInput({
 
                 {/* Campos del form de la card */}
                 {isExpanded && cardBlocksToRender.length > 0 && (
-                  <div className="space-y-4 p-4">
+                  <div className="space-y-4 rounded-b-lg p-4">
                     {cardBlocksToRender.map(
                       ({ block, cardBlockIndex, blockTargetId, fields }) => {
                         const directBlockComments =
