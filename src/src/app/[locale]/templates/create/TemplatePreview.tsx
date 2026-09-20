@@ -5516,13 +5516,18 @@ export function TemplatePreview({
       );
     }
 
-    const pageIndex = paginationInfo.paginatedSections.findIndex((section) =>
-      section.blocks.some((block) =>
-        block.fields.some((field) => field.field_id === highlightedFieldId),
-      ),
+    const pageIndexes = paginationInfo.paginatedSections.reduce<number[]>(
+      (found, section, pageIndex) => {
+        const hasField = section.blocks.some((block) =>
+          block.fields.some((field) => field.field_id === highlightedFieldId),
+        );
+
+        return hasField ? [...found, pageIndex] : found;
+      },
+      [],
     );
 
-    return pageIndex >= 0 ? pageIndex : null;
+    return pageIndexes.length === 1 ? pageIndexes[0] : null;
   })();
 
   const highlightedFieldOverflowPageIndex = (() => {
