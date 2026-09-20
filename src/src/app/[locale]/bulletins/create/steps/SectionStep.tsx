@@ -10,19 +10,9 @@ import {
 } from "../../../../../types/bulletin";
 import { Field } from "../../../../../types/template";
 import {
-  ListFieldEditor,
-  TextInput,
-  TextWithIconInput,
-  NumberInput,
-  DateInput,
-  DateRangeInput,
-  SelectInput,
-  SearchableInput,
-  SelectBackgroundField,
   CardFieldInput,
-  ImageInput,
-  ImageUploadInput,
-  MoonCalendarInput,
+  FieldValueInput,
+  ListFieldEditor,
 } from "../components/fields";
 import { ReviewCommentThread } from "../components/ReviewCommentThread";
 import { Info, MessageCircle } from "lucide-react";
@@ -40,27 +30,12 @@ interface SectionStepProps {
   fieldAllComments?: Record<string, BulletinComment[]>;
   invalidFieldIds?: string[];
   onReplyToComment?: (commentId: string, text: string) => Promise<void>;
+  onFieldFocusChange?: (
+    fieldId: string | null,
+    listItemIndex: number | null,
+    listSubfieldKey: string | null,
+  ) => void;
 }
-
-// Helper para normalizar valores de date_range
-const normalizeDateRangeValue = (
-  value: any,
-): {
-  start_date: string;
-  end_date: string;
-  start_moon_phase?: string;
-  end_moon_phase?: string;
-} => {
-  if (typeof value === "object" && value !== null && !Array.isArray(value)) {
-    return {
-      start_date: value.start_date || "",
-      end_date: value.end_date || "",
-      start_moon_phase: value.start_moon_phase,
-      end_moon_phase: value.end_moon_phase,
-    };
-  }
-  return { start_date: "", end_date: "" };
-};
 
 // Helper para extraer tags de cards seleccionadas en la primera sección con cards
 const getFirstCardSectionTags = (
@@ -123,6 +98,7 @@ export function SectionStep({
   fieldAllComments = {},
   invalidFieldIds = [],
   onReplyToComment,
+  onFieldFocusChange,
 }: SectionStepProps) {
   const t = useTranslations("CreateBulletin.section");
   const tComments = useTranslations("CreateBulletin.comments");
@@ -670,6 +646,7 @@ export function SectionStep({
 
     const fieldValue = field.value ?? "";
 
+    const control = (() => {
     switch (field.type) {
       case "list":
         const listValue = Array.isArray(fieldValue) ? fieldValue : [];
@@ -683,80 +660,6 @@ export function SectionStep({
             }}
             commentsByTarget={fieldComments}
             renderComments={renderComments}
-          />
-        );
-
-      case "text":
-        return (
-          <TextInput
-            field={field}
-            value={fieldValue as string}
-            onChange={onChange}
-            maxLength={field.validation?.max_length}
-          />
-        );
-
-      case "number":
-        return (
-          <NumberInput
-            field={field}
-            value={fieldValue as number}
-            onChange={onChange}
-          />
-        );
-
-      case "date":
-        return (
-          <DateInput
-            field={field}
-            value={fieldValue as string}
-            onChange={onChange}
-          />
-        );
-
-      case "date_range":
-        return (
-          <DateRangeInput
-            field={field}
-            value={normalizeDateRangeValue(fieldValue)}
-            onChange={onChange}
-          />
-        );
-
-      case "select":
-        return (
-          <SelectInput
-            field={field}
-            value={fieldValue as string}
-            onChange={onChange}
-          />
-        );
-
-      case "searchable":
-        return (
-          <SearchableInput
-            field={field}
-            value={fieldValue as string}
-            onChange={onChange}
-          />
-        );
-
-      case "select_background":
-        return (
-          <SelectBackgroundField
-            field={field}
-            value={fieldValue as string}
-            onChange={onChange}
-          />
-        );
-
-      case "text_with_icon":
-        return (
-          <TextWithIconInput
-            field={field}
-            value={fieldValue as string}
-            onChange={onChange}
-            maxLength={field.validation?.max_length}
           />
         );
 
@@ -779,49 +682,75 @@ export function SectionStep({
           />
         );
 
-      case "image":
-        return (
-          <ImageInput
-            field={field}
-            value={fieldValue as string}
-            onChange={onChange}
-          />
-        );
-
-      case "image_upload":
-        return (
-          <ImageUploadInput
-            field={field}
-            value={fieldValue as string}
-            onChange={onChange}
-          />
-        );
-
-      case "moon_calendar":
-        const moonCalendarValue =
-          typeof fieldValue === "object" && fieldValue !== null
-            ? fieldValue
-            : {};
-        return (
-          <MoonCalendarInput
-            field={field}
-            value={moonCalendarValue as any}
-            onChange={onChange}
-          />
-        );
-
       default:
+        // El resto de los tipos usan el mismo control que el editor de
+        // plantillas ofrece para el valor por defecto.
         return (
-          <input
-            type="text"
-            value={fieldValue as string}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={field.description || field.label}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#283618]"
-            maxLength={field.validation?.max_length}
+          <FieldValueInput
+            field={field}
+            value={field.value}
+            onChange={onChange}
           />
         );
     }
+    })();
+
+    const emptyListTarget = { itemIndex: null, subfieldKey: null };
+
+    const resolveFocusedListTarget = (target: EventTarget | null) => {
+      if (!(target instanceof Element)) {
+        return emptyListTarget;
+      }
+
+      let itemElement: Element | null = null;
+      let subfieldElement: Element | null = null;
+
+      for (
+        let node: Element | null = target;
+        node;
+        node = node.parentElement
+      ) {
+        if (node.hasAttribute("data-list-subfield-key")) {
+          subfieldElement = node;
+        }
+
+        if (
+          node.hasAttribute("data-list-item-index") &&
+          node.getAttribute("data-list-field-id") === field.field_id
+        ) {
+          itemElement = node;
+        }
+      }
+
+      if (!itemElement) {
+        return emptyListTarget;
+      }
+
+      const itemIndex = Number(
+        itemElement.getAttribute("data-list-item-index"),
+      );
+
+      return {
+        itemIndex: Number.isInteger(itemIndex) ? itemIndex : null,
+        subfieldKey:
+          subfieldElement?.getAttribute("data-list-subfield-key") ?? null,
+      };
+    };
+
+    return (
+      <div
+        onFocusCapture={(event) => {
+          const { itemIndex, subfieldKey } = resolveFocusedListTarget(
+            event.target,
+          );
+
+          onFieldFocusChange?.(field.field_id, itemIndex, subfieldKey);
+        }}
+        onBlurCapture={() => onFieldFocusChange?.(null, null, null)}
+      >
+        {control}
+      </div>
+    );
   };
 
   const formatReadOnlyValue = (value: unknown): string => {

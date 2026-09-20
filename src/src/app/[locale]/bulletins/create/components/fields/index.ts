@@ -22,3 +22,9 @@ export { ClimateDataField } from "./ClimateDataField";
 export { ListFieldEditor } from "./ListFieldEditor";
 export { CardFieldInput } from "./CardFieldInput";
 export { MoonCalendarInput } from "./MoonCalendarInput";
+
+export {
+  FieldValueInput,
+  normalizeDateRangeValue,
+  supportsFieldValueInput,
+} from "./FieldValueInput";

@@ -430,6 +430,27 @@ export default function FormBulletinPage({
 
   // Estado de paginación del preview (para sincronizar con CardFieldInput)
   const [previewPageIndex, setPreviewPageIndex] = useState(0);
+  const [highlightedFieldId, setHighlightedFieldId] = useState<string | null>(
+    null,
+  );
+  const [highlightedListItemIndex, setHighlightedListItemIndex] = useState<
+    number | null
+  >(null);
+  const [highlightedListSubfieldKey, setHighlightedListSubfieldKey] = useState<
+    string | null
+  >(null);
+  const handleFieldFocusChange = useCallback(
+    (
+      fieldId: string | null,
+      listItemIndex: number | null,
+      listSubfieldKey: string | null,
+    ) => {
+      setHighlightedFieldId(fieldId);
+      setHighlightedListItemIndex(listItemIndex);
+      setHighlightedListSubfieldKey(listSubfieldKey);
+    },
+    [],
+  );
 
   // Estado para el modal de exportación
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -2108,6 +2129,7 @@ export default function FormBulletinPage({
               onReplyToComment={
                 canReplyToComments ? handleReplyToComment : undefined
               }
+              onFieldFocusChange={handleFieldFocusChange}
             />
           );
         }
@@ -2256,6 +2278,9 @@ export default function FormBulletinPage({
                 >
                   <UnifiedBulletinPreview
                     data={previewData}
+                    highlightedFieldId={highlightedFieldId}
+                    highlightedListItemIndex={highlightedListItemIndex}
+                    highlightedListSubfieldKey={highlightedListSubfieldKey}
                     variant="single"
                     fitToContainer={true}
                     moreInfo={true}

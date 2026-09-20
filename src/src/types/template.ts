@@ -81,6 +81,8 @@ export interface DateFieldConfig {
 
 export interface DateRangeFieldConfig {
   date_format?: string;
+  end_format?: string; // Formato de la fecha final si difiere del de inicio
+  range_template?: string; // Texto del rango con {start} y {end}; las lunas lo ignoran
   showLabel?: boolean; // Si true, muestra la etiqueta del rango al lado del valor
   start_date_label: string;
   start_date_description: string;
