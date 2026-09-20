@@ -1323,6 +1323,8 @@ export function ListFieldEditor({
             <div
               key={itemTargetId || itemIndex}
               id={itemTargetId ? `review-target-${itemTargetId}` : undefined}
+              data-list-item-index={itemIndex}
+              data-list-field-id={field.field_id}
               className={[
                 "overflow-hidden rounded-lg transition-all duration-200",
                 isHighlighted ? "font-bold **:font-bold!" : "",
@@ -1468,6 +1470,7 @@ export function ListFieldEditor({
                               ? `review-target-${subfieldTargetId}`
                               : undefined
                           }
+                          data-list-subfield-key={itemFieldId}
                           className={[
                             "relative rounded-lg p-3 transition-all duration-200",
                             hasSubfieldComments

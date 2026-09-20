@@ -19,6 +19,7 @@ import {
 } from "../../../../../utils/styleInheritance";
 import { StyleConfigurator } from "./StyleConfigurator";
 import { useFieldTypeComponent } from "./fieldTypes";
+import { FieldValueInput } from "@/app/[locale]/bulletins/create/components/fields/FieldValueInput";
 
 interface FieldEditorProps {
   field: Field;
@@ -319,6 +320,7 @@ export function FieldEditor({
         currentField.type !== "text_with_icon" &&
         currentField.type !== "image" &&
         currentField.type !== "list" &&
+        currentField.type !== "card" &&
         currentField.type !== "select_with_icons" && (
           <div>
             <h3 className="text-lg font-medium text-[#283618] mb-4">
@@ -330,16 +332,12 @@ export function FieldEditor({
               <label className="block text-sm font-medium text-[#283618]/70 mb-2">
                 {t("value.label")}
               </label>
-              <input
-                type="text"
-                value={
-                  typeof currentField.value === "string"
-                    ? currentField.value
-                    : ""
+              <FieldValueInput
+                field={currentField}
+                value={currentField.value}
+                onChange={(value) =>
+                  updateField({ value: value as Field["value"] })
                 }
-                onChange={(e) => updateField({ value: e.target.value })}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                placeholder={t("value.placeholder")}
               />
               <p className="mt-1 text-xs text-[#283618]/50">
                 {t("value.help")}

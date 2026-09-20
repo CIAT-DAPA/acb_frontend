@@ -1570,6 +1570,13 @@
         }
       },
       "dateRangeConfig": {
+        "useEndFormat": "Dùng định dạng khác cho ngày kết thúc",
+        "useEndFormatHelp": "Nếu tắt, ngày kết thúc dùng cùng định dạng với ngày bắt đầu.",
+        "endFormat": "Định dạng ngày kết thúc",
+        "rangeTemplate": "Mẫu khoảng thời gian",
+        "rangeTemplateHelp": "Phần văn bản còn lại được giữ nguyên. Ký hiệu:",
+        "rangeTemplateIgnored": "Pha mặt trăng hiển thị hai ngày riêng biệt nên bỏ qua mẫu này.",
+        "rangePreview": "Khoảng thời gian",
         "showLabel": "Hiển thị nhãn của phạm vi",
         "showLabelHelp": "Nếu bật, nhãn của trường sẽ hiển thị bên cạnh phạm vi ngày",
         "showMoonPhases": "Hiển thị chu kỳ mặt trăng",
@@ -1804,7 +1811,11 @@
         "decimalPlaces": "Chữ số thập phân"
       },
       "dateConfig": {
-        "format": "Định dạng ngày tháng"
+        "format": "Định dạng ngày tháng",
+        "custom": "Tùy chỉnh",
+        "customFormat": "Định dạng tùy chỉnh",
+        "customFormatHelp": "Mã: DD/D ngày, MM/M tháng, MMMM tên tháng, YYYY/YY năm, dddd thứ. Văn bản trong dấu ngoặc vuông được giữ nguyên: [Ngày] DD/MM/YYYY.",
+        "preview": "Xem trước"
       },
       "defaultConfig": {
         "title": "Cấu hình cho kiểu \"{type}\"",

@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { usePathname } from "next/navigation";
 import { DateRangeFieldConfig } from "../../../../../../types/template";
 import { BaseFieldTypeConfigProps } from "./BaseFieldTypeConfig";
 import {
@@ -12,17 +13,15 @@ import {
   sectionTitleDark,
 } from "@/app/[locale]/components/ui";
 
-// Date format options
-const DATE_FORMATS = [
-  "YYYY-MM-DD",
-  "DD/MM/YYYY",
-  "MM/DD/YYYY",
-  "DD-MM-YYYY",
-  "dddd, DD - MM",
-  "DD-DD, MMMM YYYY",
-  "DD de MMMM",
-  "MMMM/YY",
-] as const;
+import { resolveAppLocale, toDateLocaleCode } from "@/utils/locale";
+import {
+  applyRangeTemplate,
+  DATE_RANGE_FORMATS,
+  DEFAULT_DATE_FORMAT,
+  DEFAULT_RANGE_TEMPLATE,
+  formatDateWithPattern,
+} from "@/utils/dateFormat";
+import { DateFormatSelector } from "./DateFormatSelector";
 
 export const DateRangeFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
   currentField,
@@ -32,26 +31,83 @@ export const DateRangeFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
   t: fieldT,
 }) => {
   const t = useTranslations("CreateTemplate.fieldEditor.dateRangeConfig");
+  const hookLocale = useLocale();
+  const pathname = usePathname();
+  const localeCode = toDateLocaleCode(resolveAppLocale(pathname, hookLocale));
 
   const config = (currentField.field_config as DateRangeFieldConfig) || {};
   const showLabel = config.showLabel ?? false;
+  const startFormat = config.date_format || DEFAULT_DATE_FORMAT;
+  const usesEndFormat = config.end_format !== undefined;
+  const endFormat = config.end_format || startFormat;
+
+  const previewStart = new Date();
+  const previewEnd = new Date();
+  previewEnd.setDate(previewEnd.getDate() + 10);
+  const rangePreview = applyRangeTemplate(
+    config.range_template || DEFAULT_RANGE_TEMPLATE,
+    formatDateWithPattern(previewStart, startFormat, localeCode),
+    formatDateWithPattern(previewEnd, endFormat, localeCode),
+  );
 
   return (
     <div className="space-y-4">
       {/* Formato de Fecha */}
+      <DateFormatSelector
+        value={config.date_format}
+        presets={DATE_RANGE_FORMATS}
+        onChange={(format) => updateFieldConfig({ date_format: format })}
+      />
+
       <div>
-        <label className={labelClass}>{t("format")}</label>
-        <select
-          value={config.date_format || "YYYY-MM-DD"}
-          onChange={(e) => updateFieldConfig({ date_format: e.target.value })}
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={usesEndFormat}
+            onChange={(e) =>
+              updateFieldConfig({
+                end_format: e.target.checked ? startFormat : undefined,
+              })
+            }
+            className="w-4 h-4 text-[#283618] border-gray-300 rounded focus:ring-[#283618]"
+          />
+          <span className={labelClass}>{t("useEndFormat")}</span>
+        </label>
+        <p className={helpTextClass}>{t("useEndFormatHelp")}</p>
+      </div>
+
+      {usesEndFormat && (
+        <DateFormatSelector
+          label={t("endFormat")}
+          value={config.end_format}
+          presets={DATE_RANGE_FORMATS}
+          onChange={(format) => updateFieldConfig({ end_format: format })}
+        />
+      )}
+
+      <div>
+        <label className={labelClass}>{t("rangeTemplate")}</label>
+        <input
+          type="text"
+          value={config.range_template || ""}
+          onChange={(e) =>
+            updateFieldConfig({ range_template: e.target.value || undefined })
+          }
+          placeholder={DEFAULT_RANGE_TEMPLATE}
           className={inputClass}
-        >
-          {DATE_FORMATS.map((format) => (
-            <option key={format} value={format}>
-              {format}
-            </option>
-          ))}
-        </select>
+        />
+        <p className={helpTextClass}>
+          {t("rangeTemplateHelp")}{" "}
+          <code className="font-mono">{"{start}"}</code>,{" "}
+          <code className="font-mono">{"{end}"}</code>
+        </p>
+        {config.show_moon_phases && (
+          <p className={helpTextClass}>{t("rangeTemplateIgnored")}</p>
+        )}
+        <p className={helpTextClass}>
+          {t("rangePreview")}:{" "}
+          <span className="font-medium">{rangePreview}</span>
+        </p>
       </div>
 
       {/* Mostrar etiqueta del rango */}

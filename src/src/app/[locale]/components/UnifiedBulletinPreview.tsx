@@ -61,6 +61,9 @@ interface UnifiedBulletinPreviewProps {
   cardEmptyStateMode?: "first-available" | "select-card";
   allowListSubfieldEditing?: boolean;
   fitToContainer?: boolean;
+  highlightedFieldId?: string | null;
+  highlightedListItemIndex?: number | null;
+  highlightedListSubfieldKey?: string | null;
 }
 
 export function UnifiedBulletinPreview({
@@ -95,6 +98,9 @@ export function UnifiedBulletinPreview({
   allowListSubfieldEditing = false,
   allowCardElementSelection = false,
   fitToContainer = false,
+  highlightedFieldId,
+  highlightedListItemIndex,
+  highlightedListSubfieldKey,
 }: UnifiedBulletinPreviewProps) {
   if (variant === "full-scroll") {
     return (
@@ -120,6 +126,9 @@ export function UnifiedBulletinPreview({
       <TemplatePreview
         data={data}
         fitToContainer={fitToContainer}
+        highlightedFieldId={highlightedFieldId}
+        highlightedListItemIndex={highlightedListItemIndex}
+        highlightedListSubfieldKey={highlightedListSubfieldKey}
         selectedSectionIndex={selectedSectionIndex}
         sectionOrder={sectionOrder}
         moreInfo={moreInfo}

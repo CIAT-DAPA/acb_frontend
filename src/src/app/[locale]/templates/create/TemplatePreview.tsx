@@ -11,6 +11,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { usePathname } from "next/navigation";
 import {
   CreateTemplateData,
+  DateRangeFieldConfig,
   Field,
   ImageUploadFieldConfig,
   Section,
@@ -22,6 +23,12 @@ import { Card } from "../../../../types/card";
 import { CardAPIService } from "../../../../services/cardService";
 import { RefreshCw } from "lucide-react";
 import { normalizeAssetUrl } from "@/utils/assetUrl";
+import {
+  applyRangeTemplate,
+  COMBINED_RANGE_FORMAT,
+  DEFAULT_RANGE_TEMPLATE,
+  formatDateWithPattern,
+} from "@/utils/dateFormat";
 import {
   getLocalizedWeekdayLabels,
   getMonthIndexFromName,
@@ -1397,6 +1404,9 @@ interface TemplatePreviewProps {
   allowListItemSelection?: boolean;
   allowListSubfieldEditing?: boolean;
   allowCardElementSelection?: boolean;
+  highlightedFieldId?: string | null; // field_id del campo que se está editando en el formulario
+  highlightedListItemIndex?: number | null; // Ítem de esa lista que se está editando
+  highlightedListSubfieldKey?: string | null; // Subcampo de ese ítem que se está editando
 }
 
 // Constantes para estilos repetidos
@@ -1406,6 +1416,10 @@ const PLACEHOLDER_TEXT_CLASS = "text-gray-400 text-sm";
 const PAGINATION_BUTTON_CLASS =
   "px-4 py-2 bg-[#283618] text-white rounded-md disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-[#283618]/90 transition-colors";
 const OVERFLOW_SAFETY_MARGIN_PX = 4;
+
+const MULTILINE_TEXT_STYLES: React.CSSProperties = {
+  whiteSpace: "pre-line",
+};
 
 /*
  * Cuando un field se parte en varias páginas, el bloque anterior puede repetirse
@@ -1453,6 +1467,9 @@ export function TemplatePreview({
   allowListSubfieldEditing = false,
   allowCardElementSelection = false,
   fitToContainer = false,
+  highlightedFieldId,
+  highlightedListItemIndex,
+  highlightedListSubfieldKey,
 }: TemplatePreviewProps) {
   const t = useTranslations("CreateTemplate.preview");
   const tCreateCard = useTranslations("CreateCard");
@@ -1664,6 +1681,52 @@ export function TemplatePreview({
   const isFieldVisibleForRender = (field: Field) =>
     field.bulletin && (!renderForPrint || field.print !== false);
 
+  const isHighlightedField = (field: Field) =>
+    Boolean(highlightedFieldId) && field.field_id === highlightedFieldId;
+
+  const isHighlightedListItem = (field: Field, absoluteItemIndex: number) =>
+    isHighlightedField(field) && highlightedListItemIndex === absoluteItemIndex;
+
+  const isHighlightedListSubfield = (
+    field: Field,
+    absoluteItemIndex: number,
+    fieldKey: string,
+  ) =>
+    isHighlightedListItem(field, absoluteItemIndex) &&
+    highlightedListSubfieldKey === fieldKey;
+
+  /*
+   * Marca en el boletín el campo que se está editando en el formulario.
+   *
+   * En una lista se marca el ítem y dentro de él el subcampo, así que el campo
+   * entero no se envuelve: dos marcos encajados no dejaban ver cuál era cuál.
+   * Un campo que no pinta nada (el selector de fondo, una imagen vacía) tampoco
+   * se marca, porque el marco quedaría flotando vacío.
+   */
+  const withFieldHighlight = (
+    field: Field,
+    rendered: React.ReactNode,
+    fieldId: string,
+  ): React.ReactNode => {
+    if (!isHighlightedField(field) || !rendered) {
+      return rendered;
+    }
+
+    if (highlightedListItemIndex !== null && field.type === "list") {
+      return rendered;
+    }
+
+    return (
+      <div
+        key={`highlight-wrapper-${fieldId}`}
+        data-highlight-target="true"
+        className="relative rounded-xs ring-2 ring-blue-500 ring-offset-1"
+      >
+        {rendered}
+      </div>
+    );
+  };
+
   const getVisibleSectionBlocks = (section: Section) =>
     section.blocks
       .map((block, blockIndex) => ({ block, blockIndex }))
@@ -1794,43 +1857,7 @@ export function TemplatePreview({
       return t("invalidDate");
     }
 
-    const day = dateObj.getDate().toString().padStart(2, "0");
-    const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
-    const year = dateObj.getFullYear();
-    const shortYear = year.toString().slice(-2);
-
-    const dayName = dateObj.toLocaleDateString(localeCode, { weekday: "long" });
-    const dayNameCapitalized =
-      dayName.charAt(0).toUpperCase() + dayName.slice(1);
-
-    const monthName = dateObj.toLocaleDateString(localeCode, { month: "long" });
-    const monthNameCapitalized =
-      monthName.charAt(0).toUpperCase() + monthName.slice(1);
-
-    switch (format) {
-      case "DD/MM/YYYY":
-        return `${day}/${month}/${year}`;
-      case "MM/DD/YYYY":
-        return `${month}/${day}/${year}`;
-      case "DD-MM-YYYY":
-        return `${day}-${month}-${year}`;
-      case "dddd, DD - MM":
-        return `${dayNameCapitalized}, ${day} - ${month}`;
-      case "DD, MMMM YYYY":
-        return `${day}, ${monthNameCapitalized} ${year}`;
-      case "DD de MMMM":
-        return new Intl.DateTimeFormat(localeCode, {
-          day: "2-digit",
-          month: "long",
-        }).format(dateObj);
-      case "MMMM":
-        return monthNameCapitalized;
-      case "MMMM/YY":
-        return `${monthNameCapitalized}/${shortYear}`;
-      case "YYYY-MM-DD":
-      default:
-        return `${year}-${month}-${day}`;
-    }
+    return formatDateWithPattern(dateObj, format, localeCode);
   };
 
   // Helper function to render field values safely
@@ -1918,15 +1945,20 @@ export function TemplatePreview({
         const displayPlainTextLabel = showPlainTextLabel
           ? field.label || field.display_name
           : null;
+        const isLongPlainText = field.field_config?.subtype === "long";
 
         return (
           <div
             key={key}
             style={fieldStyles}
-            className="flex items-center gap-2"
+            className={`flex gap-2 ${
+              isLongPlainText ? "items-start" : "items-center"
+            }`}
           >
             {displayPlainTextLabel && <span>{displayPlainTextLabel}:</span>}
-            <span>{textValue}</span>
+            <span style={isLongPlainText ? MULTILINE_TEXT_STYLES : undefined}>
+              {textValue}
+            </span>
           </div>
         );
 
@@ -1972,6 +2004,10 @@ export function TemplatePreview({
 
         // Verificar si se debe mostrar el label
         const showTextLabel = (field.field_config as any)?.showLabel ?? true;
+        const isLongIconText = field.field_config?.subtype === "long";
+        const iconTextStyles = isLongIconText
+          ? MULTILINE_TEXT_STYLES
+          : undefined;
 
         // Si form=true y showLabel=true, mostrar "label: value"
         // Si form=false y showLabel=true, mostrar solo "label" antes del icono
@@ -2011,14 +2047,14 @@ export function TemplatePreview({
             {/* Label y valor */}
             {displayLabel && field.form ? (
               // Cuando form=true y showLabel=true: "label: value"
-              <span>
+              <span style={iconTextStyles}>
                 {displayLabel}: {textWithIconValue}
               </span>
             ) : (
               // Cuando form=false o showLabel=false
               <>
                 {displayLabel && <span>{displayLabel}:</span>}
-                <span>{textWithIconValue}</span>
+                <span style={iconTextStyles}>{textWithIconValue}</span>
               </>
             )}
           </div>
@@ -2153,6 +2189,13 @@ export function TemplatePreview({
           : null;
         const showMoonPhases =
           (field.field_config as any)?.show_moon_phases || false;
+        const dateRangeConfig = field.field_config as
+          | DateRangeFieldConfig
+          | undefined;
+        // El fin usa su propio formato solo si se configuró uno.
+        const dateRangeEndFormat =
+          dateRangeConfig?.end_format || dateRangeFormat;
+        const dateRangeTemplate = dateRangeConfig?.range_template;
 
         // Obtener las fases de luna configuradas o desde el valor
         let startMoonPhase = (field.field_config as any)?.start_moon_phase;
@@ -2175,7 +2218,8 @@ export function TemplatePreview({
         };
 
         // Si el formato es DD-DD, MMMM YYYY, combinar en un solo formato
-        const isRangeFormat = dateRangeFormat === "DD-DD, MMMM YYYY";
+        const isRangeFormat =
+          dateRangeFormat === COMBINED_RANGE_FORMAT && !dateRangeTemplate;
 
         if (isRangeFormat) {
           // Para formato de rango combinado: "15-26, Abril 2025"
@@ -2224,7 +2268,7 @@ export function TemplatePreview({
 
         // Para formatos normales: mostrar dos fechas separadas
         let startDateDisplay = dateRangeFormat;
-        let endDateDisplay = dateRangeFormat;
+        let endDateDisplay = dateRangeEndFormat;
 
         if (
           field.value &&
@@ -2241,7 +2285,7 @@ export function TemplatePreview({
           if (field.value.end_date) {
             endDateDisplay = formatDateValue(
               field.value.end_date as Date | string,
-              dateRangeFormat,
+              dateRangeEndFormat,
             );
           }
         }
@@ -2300,7 +2344,13 @@ export function TemplatePreview({
             }
           >
             {displayDateRangeLabel && <span>{displayDateRangeLabel}:</span>}
-            <span>{`${startDateDisplay} - ${endDateDisplay}`}</span>
+            <span>
+              {applyRangeTemplate(
+                dateRangeTemplate || DEFAULT_RANGE_TEMPLATE,
+                startDateDisplay,
+                endDateDisplay,
+              )}
+            </span>
           </div>
         );
 
@@ -2492,6 +2542,9 @@ export function TemplatePreview({
                               ? isListItemSelected
                                 ? "outline-2 outline-emerald-500 cursor-pointer"
                                 : "hover:outline-2 hover:outline-emerald-300 cursor-pointer"
+                              : "",
+                            isHighlightedListItem(field, absoluteItemIndex)
+                              ? "outline-2 outline-blue-500"
                               : "",
                           ]
                             .filter(Boolean)
@@ -2831,10 +2884,17 @@ export function TemplatePreview({
                       } ${
                         isListItemSelected
                           ? "ring-2 ring-emerald-500"
-                          : canSelectListItems
-                            ? "hover:ring-2 hover:ring-emerald-300"
-                            : ""
+                          : isHighlightedListItem(field, absoluteItemIndex)
+                            ? "ring-2 ring-blue-500 ring-offset-1"
+                            : canSelectListItems
+                              ? "hover:ring-2 hover:ring-emerald-300"
+                              : ""
                       }`}
+                      data-highlight-target={
+                        isHighlightedListItem(field, absoluteItemIndex)
+                          ? "true"
+                          : undefined
+                      }
                       style={{
                         ...listItemStyles,
                         backgroundColor:
@@ -2994,7 +3054,12 @@ export function TemplatePreview({
                                               ? "cursor-pointer hover:bg-black/5 rounded transition-colors"
                                               : ""
                                           }`) +
-                                    (isSubfieldSelected
+                                    (isSubfieldSelected ||
+                                    isHighlightedListSubfield(
+                                      field,
+                                      absoluteItemIndex,
+                                      fieldKey,
+                                    )
                                       ? " ring-2 ring-emerald-500 bg-emerald-50 z-30"
                                       : "")
                                   }
@@ -5402,6 +5467,129 @@ export function TemplatePreview({
       ? measuredOverflowPages[resolvedOverflowPageIndex]?.blockFieldPages
       : undefined;
 
+
+  const highlightedPaginationField = paginationInfo.paginationField;
+  const highlightedPaginatedFieldId =
+    highlightedPaginationField?.type === "list"
+      ? currentSection?.blocks[highlightedPaginationField.blockIndex]?.fields[
+          highlightedPaginationField.fieldIndex
+        ]?.field_id
+      : undefined;
+  const isHighlightedPaginatedList =
+    Boolean(highlightedFieldId) &&
+    highlightedPaginatedFieldId === highlightedFieldId &&
+    typeof highlightedListItemIndex === "number" &&
+    (highlightedPaginationField?.maxItemsPerPage || 0) > 0;
+
+  const highlightedFieldBasePageIndex = (() => {
+    if (!highlightedFieldId) {
+      return null;
+    }
+
+    if (isHighlightedPaginatedList && highlightedPaginationField) {
+      return Math.min(
+        Math.floor(
+          (highlightedListItemIndex as number) /
+            highlightedPaginationField.maxItemsPerPage,
+        ),
+        Math.max(paginationInfo.totalPages - 1, 0),
+      );
+    }
+
+    const pageIndex = paginationInfo.paginatedSections.findIndex((section) =>
+      section.blocks.some((block) =>
+        block.fields.some((field) => field.field_id === highlightedFieldId),
+      ),
+    );
+
+    return pageIndex >= 0 ? pageIndex : null;
+  })();
+
+  const highlightedFieldOverflowPageIndex = (() => {
+    if (
+      !highlightedFieldId ||
+      !baseSectionToRender ||
+      highlightedFieldBasePageIndex !== activeBasePageIndex ||
+      !hasMeasuredOverflowLayout
+    ) {
+      return null;
+    }
+
+    for (const { block, blockIndex } of getVisibleSectionBlocks(
+      baseSectionToRender,
+    )) {
+      const visibleFields = block.fields.filter(isFieldVisibleForRender);
+      const fieldIndex = visibleFields.findIndex(
+        (field) => field.field_id === highlightedFieldId,
+      );
+
+      if (fieldIndex < 0) {
+        continue;
+      }
+
+      const looksUpListItem =
+        visibleFields[fieldIndex].type === "list" &&
+        typeof highlightedListItemIndex === "number";
+
+      const itemIndexOffset =
+        looksUpListItem &&
+        highlightedPaginationField?.type === "list" &&
+        highlightedPaginationField.blockIndex === blockIndex &&
+        highlightedPaginationField.fieldIndex === fieldIndex
+          ? activeBasePageIndex * highlightedPaginationField.maxItemsPerPage
+          : 0;
+      const itemIndexInPage =
+        (highlightedListItemIndex as number) - itemIndexOffset;
+
+      const pageIndex = measuredOverflowPages.findIndex((page) => {
+        if (!page.blockIndexes.includes(blockIndex)) {
+          return false;
+        }
+
+        const fieldPage = page.blockFieldPages?.[blockIndex];
+
+        if (!fieldPage) {
+          return true;
+        }
+
+        if (!fieldPage.fieldIndexes.includes(fieldIndex)) {
+          return false;
+        }
+
+        if (!looksUpListItem) {
+          return true;
+        }
+
+        const itemPage = fieldPage.listFieldItemPages?.[fieldIndex];
+
+        return !itemPage || itemPage.itemIndexes.includes(itemIndexInPage);
+      });
+
+      return pageIndex >= 0 ? pageIndex : null;
+    }
+
+    return null;
+  })();
+
+  useEffect(() => {
+    if (
+      highlightedFieldBasePageIndex !== null &&
+      highlightedFieldBasePageIndex !== activeBasePageIndex
+    ) {
+      handlePageChange(highlightedFieldBasePageIndex);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [highlightedFieldBasePageIndex, activeBasePageIndex]);
+
+  useEffect(() => {
+    if (
+      highlightedFieldOverflowPageIndex !== null &&
+      highlightedFieldOverflowPageIndex !== resolvedOverflowPageIndex
+    ) {
+      setCurrentOverflowPageIndex(highlightedFieldOverflowPageIndex);
+    }
+  }, [highlightedFieldOverflowPageIndex, resolvedOverflowPageIndex]);
+
   const goToPreviousPreviewPage = () => {
     if (resolvedOverflowPageIndex > 0) {
       setCurrentOverflowPageIndex((previousIndex) => previousIndex - 1);
@@ -5603,7 +5791,7 @@ export function TemplatePreview({
                         </div>
                       );
                     }
-                    return rendered;
+                    return withFieldHighlight(field, rendered, fieldId);
                   });
                 })()}
               </div>
@@ -5960,7 +6148,7 @@ export function TemplatePreview({
                                 </div>
                               );
                             }
-                            return rendered;
+                            return withFieldHighlight(field, rendered, fieldId);
                           })}
                         </div>
                       )}
@@ -6270,7 +6458,11 @@ export function TemplatePreview({
                                                   </div>
                                                 </div>
                                               ) : (
-                                                renderedField
+                                                withFieldHighlight(
+                                                  field,
+                                                  renderedField,
+                                                  fieldId,
+                                                )
                                               );
 
                                             if (!fieldSlice) {
@@ -6531,7 +6723,7 @@ export function TemplatePreview({
                                 </div>
                               );
                             }
-                            return rendered;
+                            return withFieldHighlight(field, rendered, fieldId);
                           })}
                         </div>
                       )}
@@ -6644,7 +6836,7 @@ export function TemplatePreview({
                       </div>
                     );
                   }
-                  return rendered;
+                  return withFieldHighlight(field, rendered, fieldId);
                 })}
               </div>
             )}
