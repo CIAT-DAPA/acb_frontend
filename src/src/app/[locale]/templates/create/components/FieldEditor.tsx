@@ -139,10 +139,9 @@ export function FieldEditor({
       fieldToSave = {
         ...fieldToSave,
         field_config: {
+          ...currentConfig,
           subtype: currentConfig?.subtype || "short",
           icon_options: currentConfig?.icon_options || [""],
-          selected_icon: currentConfig?.selected_icon, // Preservar el icono seleccionado
-          showLabel: currentConfig?.showLabel, // Preservar la configuración de showLabel
         },
       } as Field;
     }
@@ -153,16 +152,12 @@ export function FieldEditor({
       fieldToSave = {
         ...fieldToSave,
         field_config: {
+          ...currentConfig,
           date_format: currentConfig?.date_format || "YYYY-MM-DD",
-          showLabel: currentConfig?.showLabel,
           start_date_label: currentConfig?.start_date_label || "Start Date",
           start_date_description: currentConfig?.start_date_description || "",
           end_date_label: currentConfig?.end_date_label || "End Date",
           end_date_description: currentConfig?.end_date_description || "",
-          // Preservar las configuraciones de fases de luna
-          show_moon_phases: currentConfig?.show_moon_phases,
-          start_moon_phase: currentConfig?.start_moon_phase,
-          end_moon_phase: currentConfig?.end_moon_phase,
         },
       } as Field;
     }
@@ -574,6 +569,7 @@ export function FieldEditor({
               currentField.type === "text_with_icon" ||
               currentField.type === "select_with_icons",
             justifyContent:
+              currentField.type === "list" ||
               currentField.type === "text_with_icon" ||
               currentField.type === "select_with_icons",
             fontWeight: true,

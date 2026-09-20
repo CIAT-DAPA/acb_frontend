@@ -27,6 +27,7 @@ import {
   ImageInput,
   ImageUploadInput,
 } from "./index";
+import { FieldValueInput } from "./FieldValueInput";
 import { btnOutlineSecondary } from "@/app/[locale]/components/ui";
 import { VisualResourceSelector } from "../../../../templates/create/components/VisualResourceSelector";
 import { ConfirmationModal } from "../../../../components/ConfirmationModal";
@@ -1098,10 +1099,11 @@ export function ListFieldEditor({
 
       default:
         return (
-          <TextField
-            value={fieldValue as string}
+          <FieldValueInput
+            field={fieldDef as Field}
+            value={fieldValue}
             onChange={handleChange}
-            placeholder={fieldDef.description || fieldDef.label}
+            disabled={readOnly}
           />
         );
     }

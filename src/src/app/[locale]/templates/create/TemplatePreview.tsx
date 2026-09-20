@@ -24,6 +24,7 @@ import { CardAPIService } from "../../../../services/cardService";
 import { RefreshCw } from "lucide-react";
 import { normalizeAssetUrl } from "@/utils/assetUrl";
 import {
+  applyItemNumberToken,
   applyRangeTemplate,
   COMBINED_RANGE_FORMAT,
   DEFAULT_RANGE_TEMPLATE,
@@ -533,6 +534,9 @@ type FieldOverflowContext = {
 
   // Offset del ítem dentro de la lista original
   listItemIndexOffset?: number;
+
+  // Número del ítem (1-based) para resolver {item} en sus subcampos
+  listItemNumber?: number;
 };
 
 type CompositePageDescriptor = {
@@ -1892,6 +1896,8 @@ export function TemplatePreview({
     fieldId?: string,
     overflowContext?: FieldOverflowContext,
   ) => {
+    const withItemNumber = (text: string) =>
+      applyItemNumberToken(text, overflowContext?.listItemNumber);
     // Usar herencia de estilos
     const effectiveStyles = getEffectiveFieldStyles(field, containerStyle);
     const resolvedFieldFont = effectiveStyles.font || styleConfig?.font;
@@ -1936,14 +1942,16 @@ export function TemplatePreview({
     switch (field.type) {
       case "text":
         // Mostrar el valor si existe, sino mostrar placeholder
-        const textValue = field.value
-          ? renderFieldValue(field.value)
-          : field.display_name || field.label || t("fallbacks.textField");
+        const textValue = withItemNumber(
+          field.value
+            ? renderFieldValue(field.value)
+            : field.display_name || field.label || t("fallbacks.textField"),
+        );
 
         const showPlainTextLabel =
           (field.field_config as any)?.showLabel ?? false;
         const displayPlainTextLabel = showPlainTextLabel
-          ? field.label || field.display_name
+          ? withItemNumber(field.label || field.display_name)
           : null;
         const isLongPlainText = field.field_config?.subtype === "long";
 
@@ -2012,7 +2020,7 @@ export function TemplatePreview({
         // Si form=true y showLabel=true, mostrar "label: value"
         // Si form=false y showLabel=true, mostrar solo "label" antes del icono
         const displayLabel = showTextLabel
-          ? field.label || field.display_name
+          ? withItemNumber(field.label || field.display_name)
           : null;
 
         return (
@@ -2156,11 +2164,12 @@ export function TemplatePreview({
         return null;
 
       case "date":
-        const dateFormat =
-          (field.field_config as any)?.date_format || "DD/MM/YYYY";
+        const dateFormat = withItemNumber(
+          (field.field_config as any)?.date_format || "DD/MM/YYYY",
+        );
         const showDateLabel = (field.field_config as any)?.showLabel ?? false;
         const displayDateLabel = showDateLabel
-          ? field.label || field.display_name
+          ? withItemNumber(field.label || field.display_name)
           : null;
 
         // Si no tiene valor, mostrar el patrón del formato
@@ -2180,12 +2189,13 @@ export function TemplatePreview({
         );
 
       case "date_range":
-        const dateRangeFormat =
-          (field.field_config as any)?.date_format || "DD/MM/YYYY";
+        const dateRangeFormat = withItemNumber(
+          (field.field_config as any)?.date_format || "DD/MM/YYYY",
+        );
         const showDateRangeLabel =
           (field.field_config as any)?.showLabel ?? false;
         const displayDateRangeLabel = showDateRangeLabel
-          ? field.label || field.display_name
+          ? withItemNumber(field.label || field.display_name)
           : null;
         const showMoonPhases =
           (field.field_config as any)?.show_moon_phases || false;
@@ -2193,9 +2203,12 @@ export function TemplatePreview({
           | DateRangeFieldConfig
           | undefined;
         // El fin usa su propio formato solo si se configuró uno.
-        const dateRangeEndFormat =
-          dateRangeConfig?.end_format || dateRangeFormat;
-        const dateRangeTemplate = dateRangeConfig?.range_template;
+        const dateRangeEndFormat = withItemNumber(
+          dateRangeConfig?.end_format || dateRangeFormat,
+        );
+        const dateRangeTemplate = dateRangeConfig?.range_template
+          ? withItemNumber(dateRangeConfig.range_template)
+          : undefined;
 
         // Obtener las fases de luna configuradas o desde el valor
         let startMoonPhase = (field.field_config as any)?.start_moon_phase;
@@ -2665,6 +2678,9 @@ export function TemplatePreview({
                                       "horizontal",
                                       undefined,
                                       subfieldId,
+                                      {
+                                        listItemNumber: absoluteItemIndex + 1,
+                                      },
                                     )}
                                   </td>
                                 );
@@ -2693,7 +2709,10 @@ export function TemplatePreview({
         const getItemLayoutClasses = () => {
           switch (listItemsLayout) {
             case "horizontal":
-              return "flex flex-wrap justify-between";
+              // "between" por defecto: es lo que hacía antes de ser configurable.
+              return `flex flex-wrap ${getJustifyClass(
+                effectiveStyles.justify_content || "between",
+              )}`;
             case "grid-2":
               return "grid w-full";
             case "grid-3":
@@ -3098,6 +3117,7 @@ export function TemplatePreview({
                                     "horizontal",
                                     undefined,
                                     subfieldId,
+                                    { listItemNumber: absoluteItemIndex + 1 },
                                   )}
                                 </div>
                               );
