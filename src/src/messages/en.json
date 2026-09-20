@@ -1442,10 +1442,21 @@
         "decimalPlaces": "Decimal Places"
       },
       "dateConfig": {
-        "format": "Date Format"
+        "format": "Date Format",
+        "custom": "Custom",
+        "customFormat": "Custom format",
+        "customFormatHelp": "Tokens: DD/D day, MM/M month, MMMM month name, YYYY/YY year, dddd weekday. Text in square brackets is copied as is: [Ngày] DD/MM/YYYY.",
+        "preview": "Preview"
       },
       "dateRangeConfig": {
         "format": "Date Format",
+        "useEndFormat": "Use a different format for the end date",
+        "useEndFormatHelp": "When off, the end date uses the same format as the start date.",
+        "endFormat": "End date format",
+        "rangeTemplate": "Range template",
+        "rangeTemplateHelp": "Any other text is written as is. Placeholders:",
+        "rangeTemplateIgnored": "Moon phases draw both dates separately, so they ignore the template.",
+        "rangePreview": "Range",
         "showLabel": "Show range label",
         "showLabelHelp": "If enabled, the field label will be shown next to the date range",
         "showMoonPhases": "Show moon phases with dates",

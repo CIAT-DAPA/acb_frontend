@@ -16,6 +16,7 @@ import {
   resolveAppLocale,
   toDateLocaleCode,
 } from "@/utils/locale";
+import { formatDateWithPattern } from "@/utils/dateFormat";
 
 interface DateInputProps {
   field?: Field;
@@ -123,50 +124,7 @@ export function DateInput({
       });
     }
 
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    const shortYear = String(year).slice(-2);
-
-    const dayName = capitalizeLocalizedValue(
-      date.toLocaleDateString(localeCode, { weekday: "long" }),
-    );
-    const monthName = capitalizeLocalizedValue(
-      date.toLocaleDateString(localeCode, { month: "long" }),
-    );
-
-    switch (configuredDateFormat) {
-      case "DD/MM/YYYY":
-        return `${day}/${month}/${year}`;
-
-      case "MM/DD/YYYY":
-        return `${month}/${day}/${year}`;
-
-      case "DD-MM-YYYY":
-        return `${day}-${month}-${year}`;
-
-      case "dddd, DD - MM":
-        return `${dayName}, ${day} - ${month}`;
-
-      case "DD, MMMM YYYY":
-        return `${day}, ${monthName} ${year}`;
-
-      case "DD de MMMM":
-        return new Intl.DateTimeFormat(localeCode, {
-          day: "2-digit",
-          month: "long",
-        }).format(date);
-
-      case "MMMM":
-        return monthName;
-
-      case "MMMM/YY":
-        return `${monthName}/${shortYear}`;
-
-      case "YYYY-MM-DD":
-      default:
-        return `${year}-${month}-${day}`;
-    }
+    return formatDateWithPattern(date, configuredDateFormat, localeCode);
   };
 
   const getDaysInMonth = (year: number, month: number) => {

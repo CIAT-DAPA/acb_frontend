@@ -1448,10 +1448,21 @@
         "decimalPlaces": "Lugares Decimales"
       },
       "dateConfig": {
-        "format": "Formato de Fecha"
+        "format": "Formato de Fecha",
+        "custom": "Personalizado",
+        "customFormat": "Formato personalizado",
+        "customFormatHelp": "Tokens: DD/D dia, MM/M mes, MMMM nombre del mes, YYYY/YY año, dddd dia de la semana. El texto entre corchetes se copia tal cual: [Ngày] DD/MM/YYYY.",
+        "preview": "Vista previa"
       },
       "dateRangeConfig": {
         "format": "Formato de Fecha",
+        "useEndFormat": "Usar otro formato para la fecha final",
+        "useEndFormatHelp": "Si está desactivado, la fecha final usa el mismo formato que la inicial.",
+        "endFormat": "Formato de la fecha final",
+        "rangeTemplate": "Plantilla del rango",
+        "rangeTemplateHelp": "El resto del texto se escribe tal cual. Marcadores:",
+        "rangeTemplateIgnored": "Las fases de luna dibujan las dos fechas por separado, así que ignoran la plantilla.",
+        "rangePreview": "Rango",
         "showLabel": "Mostrar etiqueta del rango",
         "showLabelHelp": "Si está activado, se mostrará el label del campo junto al rango de fechas",
         "showMoonPhases": "Mostrar fases de luna con fechas",
