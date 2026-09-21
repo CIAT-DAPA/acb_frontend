@@ -38,6 +38,31 @@ import {
 } from "@/utils/reviewTarget";
 import { MAX_LIST_NESTING_LEVEL } from "@/utils/listSubfieldPath";
 
+const addDaysToIsoDate = (isoDate: unknown, days: number): string | null => {
+  if (typeof isoDate !== "string") return null;
+
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate);
+  if (!match) return null;
+
+  const [year, month, day] = [match[1], match[2], match[3]].map(Number);
+  const date = new Date(year, month - 1, day);
+
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return null;
+  }
+
+  date.setDate(date.getDate() + days);
+
+  const nextMonth = String(date.getMonth() + 1).padStart(2, "0");
+  const nextDay = String(date.getDate()).padStart(2, "0");
+
+  return `${date.getFullYear()}-${nextMonth}-${nextDay}`;
+};
+
 interface ListFieldEditorProps {
   field: Field;
   value: any[];
@@ -228,6 +253,8 @@ export function ListFieldEditor({
     (key) => itemSchema[key].type === "text",
   );
   const showCsvUpload = allowCsvImport && climateDataFieldId && dateFieldId;
+
+  const isDateSeriesList = Boolean(dateFieldId && climateDataFieldId);
 
   const getExpectedColumns = () => {
     const columns = ["date"];
@@ -608,27 +635,10 @@ export function ListFieldEditor({
       const lastItem = value[value.length - 1];
       const lastDateVal = lastItem[dateFieldId];
 
-      if (lastDateVal && typeof lastDateVal === "string") {
-        try {
-          // Asumiendo formato YYYY-MM-DD
-          const parts = lastDateVal.split("-");
-          if (parts.length === 3) {
-            const year = parseInt(parts[0], 10);
-            const month = parseInt(parts[1], 10) - 1; // Meses en JS son 0-11
-            const day = parseInt(parts[2], 10);
+      const nextDate = addDaysToIsoDate(lastDateVal, 1);
 
-            const date = new Date(year, month, day);
-            date.setDate(date.getDate() + 1);
-
-            const nextYear = date.getFullYear();
-            const nextMonth = String(date.getMonth() + 1).padStart(2, "0");
-            const nextDay = String(date.getDate()).padStart(2, "0");
-
-            newItem[dateFieldId] = `${nextYear}-${nextMonth}-${nextDay}`;
-          }
-        } catch (e) {
-          console.error("Error calculating next date", e);
-        }
+      if (nextDate) {
+        newItem[dateFieldId] = nextDate;
       }
     }
 
@@ -665,6 +675,42 @@ export function ListFieldEditor({
   };
 
   // Actualizar el valor de un campo dentro de un item
+  // Rellena las fechas siguientes (+1 dia cada una). Una fecha puesta a mano corta la propagacion.
+  const propagateDateSeries = (
+    items: typeof value,
+    fromIndex: number,
+    newDate: unknown,
+  ) => {
+    if (!dateFieldId || !addDaysToIsoDate(newDate, 0)) {
+      return items;
+    }
+
+    const previousDate = value[fromIndex]?.[dateFieldId];
+
+    const nextItems = [...items];
+
+    for (let index = fromIndex + 1; index < nextItems.length; index += 1) {
+      const offset = index - fromIndex;
+      const currentDate = nextItems[index]?.[dateFieldId];
+      const expectedFromPrevious = addDaysToIsoDate(previousDate, offset);
+
+      const isEmpty = !currentDate;
+      const keptPreviousSeries =
+        Boolean(expectedFromPrevious) && currentDate === expectedFromPrevious;
+
+      if (!isEmpty && !keptPreviousSeries) {
+        break;
+      }
+
+      nextItems[index] = {
+        ...nextItems[index],
+        [dateFieldId]: addDaysToIsoDate(newDate, offset),
+      };
+    }
+
+    return nextItems;
+  };
+
   const handleFieldChange = (
     itemIndex: number,
     fieldId: string,
@@ -673,12 +719,12 @@ export function ListFieldEditor({
     const newValue = value.map((item, idx) =>
       idx === itemIndex ? { ...item, [fieldId]: fieldValue } : item,
     );
-    console.log("ListFieldEditor - Updating value:", {
-      itemIndex,
-      fieldId,
-      fieldValue,
-      newValue,
-    });
+
+    if (isDateSeriesList && fieldId === dateFieldId) {
+      onChange(propagateDateSeries(newValue, itemIndex, fieldValue));
+      return;
+    }
+
     onChange(newValue);
   };
 
