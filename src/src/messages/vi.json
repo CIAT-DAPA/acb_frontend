@@ -1726,7 +1726,8 @@
         "noResultsTags": "Không tìm thấy tag phù hợp",
         "noMoreCards": "Không còn thẻ nào khả dụng",
         "noMoreTags": "Không còn tag nào khả dụng",
-        "cardsCount": "{count} thẻ{plural} có sẵn để lựa chọn"
+        "cardsCount": "{count} thẻ{plural} có sẵn để lựa chọn",
+        "designedFor": "Được thiết kế ở {width} x {height} px"
       },
       "selectBackgroundConfig": {
         "backgroundImage": "Hình nền",
@@ -1965,6 +1966,10 @@
         "subtitle": "Phụ đề mẫu",
         "text": "Đây là đoạn văn bản nội dung mẫu cho thấy nội dung của bạn sẽ trông như thế nào với các kiểu dáng đã chọn.",
         "smallText": "Chữ nhỏ để ghi chú và  bổ sung thông tin chi tiết."
+      },
+      "cardPreviewSize": {
+        "title": "Kích thước tham chiếu của thẻ (px)",
+        "help": "Chỉ thay đổi vùng hiển thị của thẻ trong trình chỉnh sửa này và cách nội dung được chia trang ở đây. Trong bản tin, thẻ luôn thích ứng với khối chứa nó."
       }
     },
     "headerFooter": {

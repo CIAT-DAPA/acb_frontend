@@ -915,6 +915,10 @@
         "subtitle": "Subtítulo de ejemplo",
         "text": "Este es un texto de ejemplo que muestra cómo se verá tu contenido con los estilos seleccionados.",
         "smallText": "Texto pequeño para detalles adicionales y notas."
+      },
+      "cardPreviewSize": {
+        "title": "Medidas de referencia de la card (px)",
+        "help": "Solo cambian el área en la que se dibuja la card dentro de este editor y cómo se reparte su contenido en páginas aquí. En un boletín la card siempre se adapta al bloque que la contiene."
       }
     },
     "headerFooter": {
@@ -1691,7 +1695,8 @@
         "noResultsTags": "No se encontraron tags con ese criterio",
         "noMoreCards": "No hay más cards disponibles",
         "noMoreTags": "No hay más tags disponibles",
-        "cardsCount": "{count} card{plural} disponible{plural} para selección"
+        "cardsCount": "{count} card{plural} disponible{plural} para selección",
+        "designedFor": "Diseñada a {width} x {height} px"
       },
       "moonCalendarConfig": {
         "titleLabel": "Título del Calendario",

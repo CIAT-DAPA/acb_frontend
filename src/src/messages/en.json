@@ -907,6 +907,10 @@
         "subtitle": "Sample subtitle",
         "text": "This is sample body text that shows how your content will look with the selected styles.",
         "smallText": "Small text for additional details and notes."
+      },
+      "cardPreviewSize": {
+        "title": "Card Reference Size (px)",
+        "help": "Only changes the area the card is drawn in inside this editor, and how its content is split into pages here. In a bulletin the card always adapts to the block that contains it."
       }
     },
     "headerFooter": {
@@ -1685,7 +1689,8 @@
         "noResultsTags": "No tags found for that search",
         "noMoreCards": "No more cards available",
         "noMoreTags": "No more tags available",
-        "cardsCount": "{count} card{plural} available for selection"
+        "cardsCount": "{count} card{plural} available for selection",
+        "designedFor": "Designed at {width} x {height} px"
       },
       "moonCalendarConfig": {
         "titleLabel": "Calendar Title",

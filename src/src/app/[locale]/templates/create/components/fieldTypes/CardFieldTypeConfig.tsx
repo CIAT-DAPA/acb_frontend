@@ -13,7 +13,11 @@ import {
   infoBoxClass,
 } from "@/app/[locale]/components/ui";
 import { CardAPIService } from "../../../../../../services/cardService";
-import { Card } from "../../../../../../types/card";
+import {
+  CARD_EDITOR_DEFAULT_PREVIEW_HEIGHT,
+  CARD_EDITOR_DEFAULT_PREVIEW_WIDTH,
+  Card,
+} from "../../../../../../types/card";
 import { slugify } from "@/utils/slugify";
 
 interface CardFieldConfig {
@@ -297,6 +301,16 @@ export const CardFieldTypeConfig: React.FC<BaseFieldTypeConfigProps> = ({
                   <h4 className={CARD_TITLE_CLASS}>{card.card_name}</h4>
                   <p className={CARD_META_CLASS}>
                     {t("type")}: {getCardTypeLabel(card.card_type)}
+                  </p>
+                  <p className={CARD_META_CLASS}>
+                    {t("designedFor", {
+                      width:
+                        card.content?.style_config?.editor_preview_width ||
+                        CARD_EDITOR_DEFAULT_PREVIEW_WIDTH,
+                      height:
+                        card.content?.style_config?.editor_preview_height ||
+                        CARD_EDITOR_DEFAULT_PREVIEW_HEIGHT,
+                    })}
                   </p>
                   <p className={CARD_META_CLASS}>ID: {card._id}</p>
                 </div>

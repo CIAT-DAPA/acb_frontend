@@ -83,6 +83,8 @@ export function CardPreview({ data }: CardPreviewProps) {
             primary_color: "#000000",
             secondary_color: "#666666",
             background_color: "#ffffff",
+            bulletin_width: data.content.style_config?.editor_preview_width,
+            bulletin_height: data.content.style_config?.editor_preview_height,
           },
           sections: [section],
         },

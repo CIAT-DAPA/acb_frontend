@@ -42,6 +42,8 @@ export interface StyleConfig {
   border_sides?: string; // Qué lados del borde mostrar: "all", "top", "bottom", "left", "right", o combinación como "top,bottom"
   bulletin_width?: number; // Ancho del boletín en píxeles
   bulletin_height?: number; // Alto del boletín en píxeles
+  editor_preview_width?: number; // Solo cards: ancho de referencia del editor, no afecta al render del boletín
+  editor_preview_height?: number; // Solo cards: alto de referencia del editor, no afecta al render del boletín
   width?: string; // Ancho del elemento como valor CSS: "200px", "100%", "auto"
   min_width?: string; // Ancho mínimo del elemento como valor CSS
   max_width?: string; // Ancho máximo del elemento como valor CSS

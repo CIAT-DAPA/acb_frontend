@@ -1,7 +1,10 @@
 "use client";
 
 import React from "react";
-import { Field } from "../../../../../../types/template";
+import {
+  Field,
+  SelectWithIconsFieldConfig,
+} from "../../../../../../types/template";
 import { TextInput } from "./TextInput";
 import { TextWithIconInput } from "./TextWithIconInput";
 import { NumberInput } from "./NumberInput";
@@ -10,6 +13,7 @@ import { DateRangeInput } from "./DateRangeInput";
 import { SelectInput } from "./SelectInput";
 import { SearchableInput } from "./SearchableInput";
 import { SelectBackgroundField } from "./SelectBackgroundField";
+import { SelectWithIconsField } from "./SelectWithIconsField";
 import { ImageInput } from "./ImageInput";
 import { ImageUploadInput } from "./ImageUploadInput";
 import { MoonCalendarInput } from "./MoonCalendarInput";
@@ -45,6 +49,7 @@ const SELF_CONTAINED_TYPES = new Set<Field["type"]>([
   "date_range",
   "select",
   "searchable",
+  "select_with_icons",
   "select_background",
   "image",
   "image_upload",
@@ -143,6 +148,22 @@ export function FieldValueInput({
           disabled={disabled}
         />
       );
+
+    case "select_with_icons": {
+      const iconsConfig = field.field_config as
+        | SelectWithIconsFieldConfig
+        | undefined;
+
+      return (
+        <SelectWithIconsField
+          value={fieldValue as string}
+          onChange={onChange}
+          options={iconsConfig?.options || []}
+          icons={iconsConfig?.icons_url || []}
+          disabled={disabled}
+        />
+      );
+    }
 
     case "select_background":
       return (
