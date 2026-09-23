@@ -1043,6 +1043,7 @@ export function ListFieldEditor({
             value={fieldValue as string}
             onChange={handleChange}
             options={selectOptions}
+            icons={fieldDef.field_config?.icons_url || []}
           />
         );
 

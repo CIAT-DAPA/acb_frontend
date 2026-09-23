@@ -639,6 +639,11 @@ export function CardFieldInput({
                 ? cardField.field_config.options || []
                 : []
             }
+            icons={
+              cardField.field_config && "icons_url" in cardField.field_config
+                ? cardField.field_config.icons_url || []
+                : []
+            }
             disabled={fieldDisabled}
           />
         );

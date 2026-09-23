@@ -452,8 +452,6 @@ export function ExportModal({
     setConfig((previousConfig) => ({
       ...previousConfig,
       target,
-      // Mobile admite únicamente JPG; impresión admite JPG o PDF.
-      format: target === "mobile" ? "jpg" : previousConfig.format,
     }));
   };
 
@@ -847,8 +845,7 @@ export function ExportModal({
       : config.selectedSections.length > 0
         ? config.selectedSections
         : allSections;
-  const availableFormats: DownloadFormat[] =
-    config.target === "print" ? ["jpg", "pdf"] : ["jpg"];
+  const availableFormats: DownloadFormat[] = ["jpg", "pdf"];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">

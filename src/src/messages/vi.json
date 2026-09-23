@@ -354,7 +354,7 @@
       "contentIdLabel": "ID",
       "closeAriaLabel": "Đóng hộp thoại xuất",
       "destinationInfoAriaLabel": "Thông tin về các chế độ xuất",
-      "mobileDescription": "Xuất mỗi phần thành một ảnh JPG riêng. Phù hợp với các mẩu thông tin ngắn và xem trên thiết bị di động.",
+      "mobileDescription": "Xuất mỗi mục trên một trang riêng, dưới dạng các ảnh JPG riêng lẻ hoặc một tệp PDF duy nhất theo khổ trang bạn chọn. Phù hợp cho các mẩu thông tin ngắn, để xem trên thiết bị di động và để chia sẻ bản tin dưới dạng tài liệu.",
       "printDescription": "Cho phép xuất dưới dạng JPG hoặc PDF và sắp xếp nhiều phần trên mỗi trang theo bố cục dạng tờ in.",
       "low": "Thấp",
       "medium": "Trung bình",
@@ -1726,7 +1726,8 @@
         "noResultsTags": "Không tìm thấy tag phù hợp",
         "noMoreCards": "Không còn thẻ nào khả dụng",
         "noMoreTags": "Không còn tag nào khả dụng",
-        "cardsCount": "{count} thẻ{plural} có sẵn để lựa chọn"
+        "cardsCount": "{count} thẻ{plural} có sẵn để lựa chọn",
+        "designedFor": "Được thiết kế ở {width} x {height} px"
       },
       "selectBackgroundConfig": {
         "backgroundImage": "Hình nền",
@@ -1965,6 +1966,10 @@
         "subtitle": "Phụ đề mẫu",
         "text": "Đây là đoạn văn bản nội dung mẫu cho thấy nội dung của bạn sẽ trông như thế nào với các kiểu dáng đã chọn.",
         "smallText": "Chữ nhỏ để ghi chú và  bổ sung thông tin chi tiết."
+      },
+      "cardPreviewSize": {
+        "title": "Kích thước tham chiếu của thẻ (px)",
+        "help": "Chỉ thay đổi vùng hiển thị của thẻ trong trình chỉnh sửa này và cách nội dung được chia trang ở đây. Trong bản tin, thẻ luôn thích ứng với khối chứa nó."
       }
     },
     "headerFooter": {

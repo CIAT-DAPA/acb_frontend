@@ -8,6 +8,9 @@ import { Field, Block } from "./template";
 // CARD TYPES
 // ============================================
 
+export const CARD_EDITOR_DEFAULT_PREVIEW_WIDTH = 366;
+export const CARD_EDITOR_DEFAULT_PREVIEW_HEIGHT = 638;
+
 /**
  * Tipos de cards disponibles para categorización
  * Los tipos reales se obtienen dinámicamente desde la API
