@@ -1283,19 +1283,11 @@ export async function exportContent(
       // Importar jsPDF dinámicamente
       const { jsPDF } = await import("jspdf");
 
-      // Determinar el formato de página
-      // Si es "auto", se ajustará al tamaño de cada imagen
+      // "auto" ajusta cada página al tamaño exacto de su captura.
       const useAutoSize = !options.pageSize || options.pageSize === "auto";
-      const pageFormat = useAutoSize ? "a4" : options.pageSize;
+      const fixedPageFormat = options.pageSize || "a4";
 
-      // Crear documento PDF
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "px",
-        format: pageFormat,
-      });
-
-      let isFirstPage = true;
+      let pdf: JsPdfType | null = null;
 
       // Obtener todos los archivos del ZIP
       const files = capturedFiles;
@@ -1327,66 +1319,41 @@ export async function exportContent(
           image.src = dataUrl;
         });
 
-        // Si es modo "auto", ajustar el tamaño de página a la imagen
-        if (useAutoSize) {
-          // Agregar nueva página con el tamaño exacto de la imagen
-          if (!isFirstPage) {
-            pdf.addPage([img.width, img.height], "portrait");
-          } else {
-            // Para la primera página, configurar el tamaño
-            pdf.internal.pageSize.width = img.width;
-            pdf.internal.pageSize.height = img.height;
-          }
+        // La orientación sale de la captura: con "portrait" fijo jsPDF
+        // intercambia las medidas de una página apaisada y recorta el contenido.
+        const orientation = img.width > img.height ? "landscape" : "portrait";
+        const pageFormat = useAutoSize
+          ? [img.width, img.height]
+          : fixedPageFormat;
 
-          // En modo auto, la imagen ocupa toda la página
-          pdf.addImage(
-            dataUrl,
-            imageFormat.toUpperCase(),
-            0,
-            0,
-            img.width,
-            img.height,
-          );
+        if (!pdf) {
+          pdf = new jsPDF({ orientation, unit: "px", format: pageFormat });
         } else {
-          // Modo con tamaño de página fijo (a4, letter, legal)
-          // Calcular dimensiones para ajustar a la página
-          const pdfWidth = pdf.internal.pageSize.getWidth();
-          const pdfHeight = pdf.internal.pageSize.getHeight();
-          const imgRatio = img.width / img.height;
-          const pageRatio = pdfWidth / pdfHeight;
-
-          let finalWidth = pdfWidth;
-          let finalHeight = pdfHeight;
-
-          if (imgRatio > pageRatio) {
-            // Imagen más ancha
-            finalHeight = pdfWidth / imgRatio;
-          } else {
-            // Imagen más alta
-            finalWidth = pdfHeight * imgRatio;
-          }
-
-          // Agregar nueva página si no es la primera
-          if (!isFirstPage) {
-            pdf.addPage();
-          }
-
-          // Agregar imagen al PDF ajustada al tamaño de página
-          pdf.addImage(
-            dataUrl,
-            imageFormat.toUpperCase(),
-            0,
-            0,
-            finalWidth,
-            finalHeight,
-          );
+          pdf.addPage(pageFormat, orientation);
         }
 
-        isFirstPage = false;
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+
+        // Encajar la captura completa sin deformarla y centrarla en la página.
+        const fitScale = Math.min(pdfWidth / img.width, pdfHeight / img.height);
+        const drawWidth = img.width * fitScale;
+        const drawHeight = img.height * fitScale;
+
+        pdf.addImage(
+          dataUrl,
+          imageFormat.toUpperCase(),
+          (pdfWidth - drawWidth) / 2,
+          (pdfHeight - drawHeight) / 2,
+          drawWidth,
+          drawHeight,
+        );
       }
 
       // Descargar el PDF
-      pdf.save(`${options.contentName}.pdf`);
+      if (pdf) {
+        pdf.save(`${options.contentName}.pdf`);
+      }
     } else {
       // Generar el archivo ZIP para imágenes
       // Incrementar paso final (compresión)

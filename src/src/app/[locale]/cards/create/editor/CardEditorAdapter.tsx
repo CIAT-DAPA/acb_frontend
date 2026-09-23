@@ -100,6 +100,8 @@ export const CardEditorAdapter: React.FC<CardEditorAdapterProps> = ({
             font_weight: data.content.style_config?.font_weight,
             line_height: data.content.style_config?.line_height,
             text_align: data.content.style_config?.text_align,
+            bulletin_width: data.content.style_config?.editor_preview_width,
+            bulletin_height: data.content.style_config?.editor_preview_height,
           },
           header_config: data.content.header_config,
           footer_config: data.content.footer_config,
@@ -113,6 +115,14 @@ export const CardEditorAdapter: React.FC<CardEditorAdapterProps> = ({
   const handleTemplateUpdate = useCallback(
     (updater: (prev: CreateTemplateData) => CreateTemplateData) => {
       const nextTemplate = updater(templateData);
+
+      const nextGlobalStyles = {
+        ...(nextTemplate.version.content.style_config || {}),
+      };
+      const nextPreviewWidth = nextGlobalStyles.bulletin_width;
+      const nextPreviewHeight = nextGlobalStyles.bulletin_height;
+      delete nextGlobalStyles.bulletin_width;
+      delete nextGlobalStyles.bulletin_height;
 
       // We expect at least one section. If user added more, we might just take the first one
       // or warned them. For now, let's take the first section as the card content.
@@ -150,7 +160,13 @@ export const CardEditorAdapter: React.FC<CardEditorAdapterProps> = ({
             background_opacity: primarySection.style_config?.background_opacity,
             style_config: {
               ...prevCard.content.style_config,
-              ...nextTemplate.version.content.style_config,
+              ...nextGlobalStyles,
+              ...(nextPreviewWidth
+                ? { editor_preview_width: nextPreviewWidth }
+                : {}),
+              ...(nextPreviewHeight
+                ? { editor_preview_height: nextPreviewHeight }
+                : {}),
               padding: primarySection.style_config?.padding,
               gap: primarySection.style_config?.gap,
               // Sync other style props

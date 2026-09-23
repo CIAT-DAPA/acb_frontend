@@ -646,7 +646,7 @@
       "contentIdLabel": "ID",
       "closeAriaLabel": "Cerrar modal de exportación",
       "destinationInfoAriaLabel": "Información sobre los destinos de exportación",
-      "mobileDescription": "Exporta cada sección como una imagen JPG independiente. Es ideal para cápsulas de información cortas y para visualizar en dispositivos móviles.",
+      "mobileDescription": "Exporta cada sección en su propia página, como imágenes JPG independientes o como un único PDF en el tamaño de página que elijas. Es ideal para cápsulas de información cortas, para visualizar en dispositivos móviles y para compartir el boletín como documento.",
       "printDescription": "Permite exportar en JPG o PDF y organizar varias secciones por página con un formato tipo pliego.",
       "low": "Baja",
       "medium": "Media",
@@ -915,6 +915,10 @@
         "subtitle": "Subtítulo de ejemplo",
         "text": "Este es un texto de ejemplo que muestra cómo se verá tu contenido con los estilos seleccionados.",
         "smallText": "Texto pequeño para detalles adicionales y notas."
+      },
+      "cardPreviewSize": {
+        "title": "Medidas de referencia de la card (px)",
+        "help": "Solo cambian el área en la que se dibuja la card dentro de este editor y cómo se reparte su contenido en páginas aquí. En un boletín la card siempre se adapta al bloque que la contiene."
       }
     },
     "headerFooter": {
@@ -1691,7 +1695,8 @@
         "noResultsTags": "No se encontraron tags con ese criterio",
         "noMoreCards": "No hay más cards disponibles",
         "noMoreTags": "No hay más tags disponibles",
-        "cardsCount": "{count} card{plural} disponible{plural} para selección"
+        "cardsCount": "{count} card{plural} disponible{plural} para selección",
+        "designedFor": "Diseñada a {width} x {height} px"
       },
       "moonCalendarConfig": {
         "titleLabel": "Título del Calendario",

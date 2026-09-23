@@ -21,7 +21,11 @@ import { ConfirmationModal } from "../../../components/ConfirmationModal";
 import { GroupSelector } from "../../../components/GroupSelector";
 import { slugify } from "@/utils/slugify";
 import { EnumAPIService, EnumValue } from "@/services/enumService";
-import { isSelectableCardType } from "@/types/card";
+import {
+  CARD_EDITOR_DEFAULT_PREVIEW_HEIGHT,
+  CARD_EDITOR_DEFAULT_PREVIEW_WIDTH,
+  isSelectableCardType,
+} from "@/types/card";
 import { FieldValueInput } from "@/app/[locale]/bulletins/create/components/fields/FieldValueInput";
 
 /**
@@ -1285,6 +1289,83 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                   />
                 </div>
               </div>
+            </div>
+          )}
+
+          {isCardMode && (
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                {t("generalConfig.cardPreviewSize.title")}
+              </label>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[10px] text-gray-500 mb-1">
+                    W (px)
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    className="w-full text-sm border border-gray-200 rounded p-1.5"
+                    value={
+                      data.version.content.style_config?.bulletin_width ||
+                      CARD_EDITOR_DEFAULT_PREVIEW_WIDTH
+                    }
+                    onChange={(e) =>
+                      onUpdate((prev) => ({
+                        ...prev,
+                        version: {
+                          ...prev.version,
+                          content: {
+                            ...prev.version.content,
+                            style_config: {
+                              ...prev.version.content.style_config,
+                              bulletin_width:
+                                parseInt(e.target.value) ||
+                                CARD_EDITOR_DEFAULT_PREVIEW_WIDTH,
+                            },
+                          },
+                        },
+                      }))
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-gray-500 mb-1">
+                    H (px)
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    className="w-full text-sm border border-gray-200 rounded p-1.5"
+                    value={
+                      data.version.content.style_config?.bulletin_height ||
+                      CARD_EDITOR_DEFAULT_PREVIEW_HEIGHT
+                    }
+                    onChange={(e) =>
+                      onUpdate((prev) => ({
+                        ...prev,
+                        version: {
+                          ...prev.version,
+                          content: {
+                            ...prev.version.content,
+                            style_config: {
+                              ...prev.version.content.style_config,
+                              bulletin_height:
+                                parseInt(e.target.value) ||
+                                CARD_EDITOR_DEFAULT_PREVIEW_HEIGHT,
+                            },
+                          },
+                        },
+                      }))
+                    }
+                  />
+                </div>
+              </div>
+
+              <p className="mt-1 text-[10px] text-gray-500">
+                {t("generalConfig.cardPreviewSize.help")}
+              </p>
             </div>
           )}
 
