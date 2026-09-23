@@ -646,7 +646,7 @@
       "contentIdLabel": "ID",
       "closeAriaLabel": "Cerrar modal de exportación",
       "destinationInfoAriaLabel": "Información sobre los destinos de exportación",
-      "mobileDescription": "Exporta cada sección como una imagen JPG independiente. Es ideal para cápsulas de información cortas y para visualizar en dispositivos móviles.",
+      "mobileDescription": "Exporta cada sección en su propia página, como imágenes JPG independientes o como un único PDF en el tamaño de página que elijas. Es ideal para cápsulas de información cortas, para visualizar en dispositivos móviles y para compartir el boletín como documento.",
       "printDescription": "Permite exportar en JPG o PDF y organizar varias secciones por página con un formato tipo pliego.",
       "low": "Baja",
       "medium": "Media",

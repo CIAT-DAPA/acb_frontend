@@ -354,7 +354,7 @@
       "contentIdLabel": "ID",
       "closeAriaLabel": "Đóng hộp thoại xuất",
       "destinationInfoAriaLabel": "Thông tin về các chế độ xuất",
-      "mobileDescription": "Xuất mỗi phần thành một ảnh JPG riêng. Phù hợp với các mẩu thông tin ngắn và xem trên thiết bị di động.",
+      "mobileDescription": "Xuất mỗi mục trên một trang riêng, dưới dạng các ảnh JPG riêng lẻ hoặc một tệp PDF duy nhất theo khổ trang bạn chọn. Phù hợp cho các mẩu thông tin ngắn, để xem trên thiết bị di động và để chia sẻ bản tin dưới dạng tài liệu.",
       "printDescription": "Cho phép xuất dưới dạng JPG hoặc PDF và sắp xếp nhiều phần trên mỗi trang theo bố cục dạng tờ in.",
       "low": "Thấp",
       "medium": "Trung bình",
