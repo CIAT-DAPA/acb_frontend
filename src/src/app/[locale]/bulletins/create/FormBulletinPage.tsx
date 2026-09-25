@@ -30,6 +30,7 @@ import { ExportStep } from "./steps/ExportStep";
 import { UnifiedBulletinPreview } from "../../components/UnifiedBulletinPreview";
 import { CreateTemplateData } from "../../../../types/template";
 import { ExportModal } from "../../components/ExportModal";
+import { shouldRenderBulletinSection } from "@/utils/sectionVisibility";
 import { ConfirmationModal } from "../../components/ConfirmationModal";
 import Link from "next/link";
 import {
@@ -1381,6 +1382,15 @@ export default function FormBulletinPage({
           10,
         );
         const section = creationState.data.version.data.sections[sectionIndex];
+
+        // Una sección que no va a salir en el boletín no exige sus requeridos.
+        if (section && !shouldRenderBulletinSection(section)) {
+          return {
+            isValid: true,
+            issues: [],
+            invalidFieldIds: [],
+          };
+        }
 
         return toRequiredFieldValidationResult(
           getSectionRequiredFieldIssues(section, sectionIndex),

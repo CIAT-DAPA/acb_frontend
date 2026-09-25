@@ -17,6 +17,7 @@ import {
 import { ReviewCommentThread } from "../components/ReviewCommentThread";
 import { Info, MessageCircle } from "lucide-react";
 import { getListItemConstraintViolation } from "@/utils/bulletinRequiredFields";
+import { shouldRenderBulletinSection } from "@/utils/sectionVisibility";
 
 interface SectionStepProps {
   bulletinData: CreateBulletinData;
@@ -190,6 +191,30 @@ export function SectionStep({
   if (!section) {
     return <div className="text-center py-8 text-red-500">{t("notFound")}</div>;
   }
+
+  // El interruptor refleja el resultado real: mientras el usuario no lo toque,
+  // una sección omitible vacía ya cuenta como excluida.
+  const isSectionIncluded = shouldRenderBulletinSection(section);
+
+  // Los campos solo se bloquean cuando el usuario excluyó la sección a
+  // propósito. Una sección vacía sin tocar sigue siendo editable, si no nunca
+  // se podría llenar.
+  const isSectionExcluded = Boolean(section.skippable && section.skipped);
+
+  const handleToggleSectionSkipped = () => {
+    onUpdate((prev) => ({
+      ...prev,
+      version: {
+        ...prev.version,
+        data: {
+          ...prev.version.data,
+          sections: prev.version.data.sections.map((sec, sIdx) =>
+            sIdx === sectionIndex ? { ...sec, skipped: isSectionIncluded } : sec,
+          ),
+        },
+      },
+    }));
+  };
 
   const isRepeatableSection = Boolean(
     section.repeatable && section.repeatable_pages?.length,
@@ -660,6 +685,7 @@ export function SectionStep({
             }}
             commentsByTarget={fieldComments}
             renderComments={renderComments}
+            readOnly={isSectionExcluded}
           />
         );
 
@@ -679,6 +705,7 @@ export function SectionStep({
             precedingCardIds={precedingCardIds}
             commentsByTarget={fieldComments}
             renderComments={renderComments}
+            disabled={isSectionExcluded}
           />
         );
 
@@ -690,6 +717,7 @@ export function SectionStep({
             field={field}
             value={field.value}
             onChange={onChange}
+            disabled={isSectionExcluded}
           />
         );
     }
@@ -739,6 +767,7 @@ export function SectionStep({
 
     return (
       <div
+        className={isSectionExcluded ? "opacity-60" : undefined}
         onFocusCapture={(event) => {
           const { itemIndex, subfieldKey } = resolveFocusedListTarget(
             event.target,
@@ -841,7 +870,7 @@ export function SectionStep({
               <Info className="h-4 w-4 text-[#bc6c25]" />
             </div>
 
-            <div>
+            <div className="flex-1">
               <p className="text-sm font-semibold text-[#283618]">
                 {t("skippableNotice.title")}
               </p>
@@ -849,6 +878,28 @@ export function SectionStep({
               <p className="mt-1 text-sm leading-relaxed text-[#606c38]">
                 {t("skippableNotice.description")}
               </p>
+
+              <div className="mt-3 flex items-center justify-between">
+                <span className="text-sm font-medium text-[#283618]">
+                  {t("skippableNotice.includeSection")}
+                </span>
+
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={isSectionIncluded}
+                  onClick={handleToggleSectionSkipped}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    isSectionIncluded ? "bg-[#606c38]" : "bg-gray-300"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      isSectionIncluded ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -862,7 +913,7 @@ export function SectionStep({
           <button
             type="button"
             onClick={handleDeletePage}
-            disabled={repeatablePages.length <= 1}
+            disabled={isSectionExcluded || repeatablePages.length <= 1}
             className="px-3 py-3 text-sm bg-red-600 text-white rounded hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {t("deleteCurrentPage")}
@@ -870,7 +921,8 @@ export function SectionStep({
           <button
             type="button"
             onClick={handleAddPage}
-            className="px-3 py-3 text-sm bg-[#283618] text-white rounded hover:bg-[#606c38] transition-colors"
+            disabled={isSectionExcluded}
+            className="px-3 py-3 text-sm bg-[#283618] text-white rounded hover:bg-[#606c38] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             + {t("addNewPage")}
           </button>

@@ -2,6 +2,7 @@ import type { CreateTemplateData, Field, Section } from "@/types/template";
 
 type SectionLike = Section & {
   skippable?: boolean;
+  skipped?: boolean;
   repeatable_pages?: Array<{
     header_config?: Section["header_config"];
     footer_config?: Section["footer_config"];
@@ -204,9 +205,29 @@ export const isEmptySkippableSection = (
   section?: SectionLike | null,
 ): boolean => Boolean(section?.skippable) && !sectionHasUserContent(section);
 
+/**
+ * Una sección omitible se resuelve en tres estados: el interruptor del
+ * formulario manda cuando el usuario lo tocó (skipped true o false) y, mientras
+ * no lo toque, decide el contenido como se hacía antes. Así los boletines
+ * guardados sin el atributo conservan su comportamiento.
+ */
 export const shouldRenderBulletinSection = (
   section?: SectionLike | null,
-): boolean => Boolean(section) && !isEmptySkippableSection(section);
+): boolean => {
+  if (!section) {
+    return false;
+  }
+
+  if (!section.skippable) {
+    return true;
+  }
+
+  if (typeof section.skipped === "boolean") {
+    return !section.skipped;
+  }
+
+  return !isEmptySkippableSection(section);
+};
 
 export const filterRenderableSections = <T extends SectionLike>(
   sections: T[],

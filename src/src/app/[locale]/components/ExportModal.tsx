@@ -19,7 +19,7 @@ import {
   GripVertical,
   Info,
 } from "lucide-react";
-import { CreateTemplateData } from "@/types/template";
+import { CreateTemplateData, Section } from "@/types/template";
 import { ScrollView } from "./ScrollView";
 import { ContentService } from "@/services/contentService";
 import { ContentType, NormalizedContent } from "@/types/content";
@@ -27,6 +27,10 @@ import * as ui from "@/app/[locale]/components/ui";
 import { useTranslations } from "next-intl";
 import { exportContent } from "@/utils/exportContent";
 import { useCardsMetadata } from "@/hooks/useCardsMetadata";
+import {
+  filterRenderableSections,
+  filterTemplateDataForOutput,
+} from "@/utils/sectionVisibility";
 
 // Tipos para la configuración de exportación
 export type DownloadFormat = "png" | "jpg" | "pdf";
@@ -266,12 +270,25 @@ export function ExportModal({
   const [loadingContent, setLoadingContent] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  // Determinar qué datos usar (externos o cargados)
-  const templateData =
-    externalTemplateData ||
-    (loadedContent ? convertToTemplateData(loadedContent) : undefined);
-  const totalSections =
-    externalTotalSections || templateData?.version.content.sections.length || 0;
+  // Determinar qué datos usar (externos o cargados). El filtro de secciones
+  // omitibles vacías se aplica aquí para que cualquier pantalla que abra el
+  // modal exporte lo mismo que muestra el boletín publicado.
+  const templateData = useMemo(() => {
+    const sourceData =
+      externalTemplateData ||
+      (loadedContent ? convertToTemplateData(loadedContent) : undefined);
+
+    return sourceData ? filterTemplateDataForOutput(sourceData) : undefined;
+  }, [externalTemplateData, loadedContent]);
+
+  const renderableSections = useMemo(
+    () =>
+      templateData?.version.content.sections ||
+      filterRenderableSections((externalSections || []) as Section[]),
+    [templateData, externalSections],
+  );
+
+  const totalSections = renderableSections.length || externalTotalSections || 0;
   const contentName =
     externalContentName ||
     loadedContent?.master.name ||
@@ -695,8 +712,7 @@ export function ExportModal({
 
       // MODO AUTO-EXPORT: El modal ejecuta la exportación internamente
       if (autoExport) {
-        const sectionsForExport =
-          templateData?.version.content.sections || externalSections || [];
+        const sectionsForExport = renderableSections;
         const useInternalPreview = Boolean(templateData);
 
         const resolvedExportConfig: ExportTechnicalConfig | undefined =

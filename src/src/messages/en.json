@@ -441,8 +441,9 @@
       },
       "skippableNotice": {
         "title": "This section is optional",
-        "message": "You can continue without completing it. If all editable fields remain empty, it will not appear in review, exports, or the published bulletin.",
-        "description": "If you leave all fields in this section empty, it will be automatically omitted and will not appear when exporting or publishing the bulletin."
+        "message": "You can continue without completing it. If you leave every editable field empty it will not appear in review, exports, or the published bulletin.",
+        "description": "If you leave every field empty, this section is omitted automatically. Use the switch if you want to force it in or out.",
+        "includeSection": "Include this section in the bulletin"
       }
     },
     "fillData": {
@@ -1132,7 +1133,7 @@
         "sectionId": "Section ID",
         "iconUrl": "Icon URL",
         "skippable": "Allow this section to be skipped",
-        "skippableHelp": "If the bulletin creator leaves every editable field empty, the section will not appear in review, exports, or the published bulletin.",
+        "skippableHelp": "If the bulletin creator leaves every editable field empty, the section will not appear in review, exports, or the published bulletin. The creator can also force it in or out from the bulletin form.",
         "repeatable": "Allow this section to be repeated"
       },
       "block": {
