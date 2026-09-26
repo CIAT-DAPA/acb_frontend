@@ -459,7 +459,9 @@
       "fieldsToComplete": "{count} campo(s) para completar",
       "unsupportedFieldType": "Tipo de campo no soportado en cards: {type}",
       "noFieldsToComplete": "Esta card no tiene campos para completar",
-      "noCardsSelected": "No hay cards seleccionadas. Selecciona una card para comenzar."
+      "noCardsSelected": "No hay cards seleccionadas. Selecciona una card para comenzar.",
+      "headerFields": "Campos del Encabezado",
+      "footerFields": "Campos del Pie de Página"
     },
     "imageInput": {
       "uploadedImageAlt": "Imagen subida",

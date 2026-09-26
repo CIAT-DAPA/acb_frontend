@@ -725,10 +725,17 @@ export function SectionStep({
 
     const emptyListTarget = { itemIndex: null, subfieldKey: null };
 
+    // Listas y cards publican los mismos datos con distinto prefijo: el índice
+    // del ítem o de la card, y la clave del subcampo enfocado.
     const resolveFocusedListTarget = (target: EventTarget | null) => {
       if (!(target instanceof Element)) {
         return emptyListTarget;
       }
+
+      const prefix = field.type === "card" ? "card" : "list";
+      const itemIndexAttribute = `data-${prefix}-item-index`;
+      const fieldIdAttribute = `data-${prefix}-field-id`;
+      const subfieldKeyAttribute = `data-${prefix}-subfield-key`;
 
       let itemElement: Element | null = null;
       let subfieldElement: Element | null = null;
@@ -738,13 +745,13 @@ export function SectionStep({
         node;
         node = node.parentElement
       ) {
-        if (node.hasAttribute("data-list-subfield-key")) {
+        if (node.hasAttribute(subfieldKeyAttribute)) {
           subfieldElement = node;
         }
 
         if (
-          node.hasAttribute("data-list-item-index") &&
-          node.getAttribute("data-list-field-id") === field.field_id
+          node.hasAttribute(itemIndexAttribute) &&
+          node.getAttribute(fieldIdAttribute) === field.field_id
         ) {
           itemElement = node;
         }
@@ -754,14 +761,11 @@ export function SectionStep({
         return emptyListTarget;
       }
 
-      const itemIndex = Number(
-        itemElement.getAttribute("data-list-item-index"),
-      );
+      const itemIndex = Number(itemElement.getAttribute(itemIndexAttribute));
 
       return {
         itemIndex: Number.isInteger(itemIndex) ? itemIndex : null,
-        subfieldKey:
-          subfieldElement?.getAttribute("data-list-subfield-key") ?? null,
+        subfieldKey: subfieldElement?.getAttribute(subfieldKeyAttribute) ?? null,
       };
     };
 

@@ -550,7 +550,9 @@
       "fieldsToComplete": "{count} trường cần hoàn thành",
       "unsupportedFieldType": "Loại trường không được hỗ trợ trong thẻ: {type}",
       "noFieldsToComplete": "Thẻ này không có trường nào cần hoàn thành",
-      "noCardsSelected": "Chưa chọn cây trồng nào. Vui lòng chọn và nhấn + thêm"
+      "noCardsSelected": "Chưa chọn cây trồng nào. Vui lòng chọn và nhấn + thêm",
+      "headerFields": "Các ô nhập liệu ở Đầu trang",
+      "footerFields": "Các ô nhập liệu ở Chân trang"
     },
     "imageInput": {
       "uploadedImageAlt": "Hình ảnh đã tải lên",

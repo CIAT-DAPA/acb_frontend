@@ -459,7 +459,9 @@
       "fieldsToComplete": "{count} field(s) to complete",
       "unsupportedFieldType": "Unsupported field type in cards: {type}",
       "noFieldsToComplete": "This card has no fields to complete",
-      "noCardsSelected": "No cards selected. Select a card to begin."
+      "noCardsSelected": "No cards selected. Select a card to begin.",
+      "headerFields": "Header Fields",
+      "footerFields": "Footer Fields"
     },
     "imageInput": {
       "uploadedImageAlt": "Uploaded image",
