@@ -1699,6 +1699,19 @@ export function TemplatePreview({
     isHighlightedListItem(field, absoluteItemIndex) &&
     highlightedListSubfieldKey === fieldKey;
 
+  const wrapWithHighlightRing = (
+    rendered: React.ReactNode,
+    keySuffix: string,
+  ): React.ReactNode => (
+    <div
+      key={`highlight-wrapper-${keySuffix}`}
+      data-highlight-target="true"
+      className="relative rounded-xs ring-2 ring-blue-500 ring-offset-1"
+    >
+      {rendered}
+    </div>
+  );
+
   /*
    * Marca en el boletín el campo que se está editando en el formulario.
    *
@@ -1720,15 +1733,12 @@ export function TemplatePreview({
       return rendered;
     }
 
-    return (
-      <div
-        key={`highlight-wrapper-${fieldId}`}
-        data-highlight-target="true"
-        className="relative rounded-xs ring-2 ring-blue-500 ring-offset-1"
-      >
-        {rendered}
-      </div>
-    );
+    // En una card se marca el subcampo, no el campo completo.
+    if (highlightedListSubfieldKey !== null && field.type === "card") {
+      return rendered;
+    }
+
+    return wrapWithHighlightRing(rendered, fieldId);
   };
 
   const getVisibleSectionBlocks = (section: Section) =>
@@ -3969,7 +3979,7 @@ export function TemplatePreview({
                             Boolean(cardFieldReviewId) &&
                             selectedElementId === cardFieldReviewId;
 
-                          const renderedCardField = renderField(
+                          const renderedCardFieldBase = renderField(
                             safeField,
                             `card-${cardOrderIndex}-${cardBlockIndex}-${cardFieldIndex}`,
                             block.style_config,
@@ -3979,6 +3989,23 @@ export function TemplatePreview({
                               ? cardFieldReviewId
                               : undefined,
                           );
+
+                          // El formulario reporta la card y el subcampo que se
+                          // está editando; si solo se pinta una card el índice
+                          // no aporta nada.
+                          const isHighlightedCardField =
+                            isHighlightedField(field) &&
+                            highlightedListSubfieldKey ===
+                              blockField.field_id &&
+                            (cardItems.length <= 1 ||
+                              highlightedListItemIndex === cardOrderIndex);
+
+                          const renderedCardField = isHighlightedCardField
+                            ? wrapWithHighlightRing(
+                                renderedCardFieldBase,
+                                `card-${cardOrderIndex}-${cardBlockIndex}-${cardFieldIndex}`,
+                              )
+                            : renderedCardFieldBase;
 
                           if (!canSelectCardElements || !cardFieldReviewId) {
                             return renderedCardField;
@@ -6112,16 +6139,32 @@ export function TemplatePreview({
                             </div>
                           )}
                           {activeHeaderConfig.fields.map((field, index) => {
-                            // Si estamos renderizando el header de una card y el campo tiene form: true, usar fieldValues
-                            const fieldToRender =
+                            /*
+                             * Header de una card con campos form: true. Igual que en
+                             * los bloques, hasOwnProperty conserva 0, false y "".
+                             */
+                            const hasCardConfigValue =
+                              Boolean(cardHeaderConfig) &&
+                              field.form === true &&
+                              Object.prototype.hasOwnProperty.call(
+                                cardFieldValues,
+                                field.field_id,
+                              );
+
+                            const fieldToRender = hasCardConfigValue
+                              ? {
+                                  ...field,
+                                  value: cardFieldValues[field.field_id],
+                                }
+                              : field;
+
+                            // Un campo editable del encabezado o el pie de una
+                            // card también se marca mientras se edita.
+                            const isHighlightedCardConfigField = Boolean(
                               cardHeaderConfig &&
-                              field.form &&
-                              cardFieldValues[field.field_id]
-                                ? {
-                                    ...field,
-                                    value: cardFieldValues[field.field_id],
-                                  }
-                                : field;
+                                highlightedFieldId &&
+                                highlightedListSubfieldKey === field.field_id,
+                            );
 
                             const fieldId = `header-${sectionIndex}-${index}`;
                             const rendered = renderField(
@@ -6135,6 +6178,10 @@ export function TemplatePreview({
                                 totalPages: totalDocumentPages,
                               },
                             );
+                            if (isHighlightedCardConfigField) {
+                              return wrapWithHighlightRing(rendered, fieldId);
+                            }
+
                             if (reviewMode && onElementClick) {
                               return (
                                 <div
@@ -6691,16 +6738,32 @@ export function TemplatePreview({
                             </div>
                           )}
                           {activeFooterConfig.fields.map((field, index) => {
-                            // Si estamos renderizando el footer de una card y el campo tiene form: true, usar fieldValues
-                            const fieldToRender =
+                            /*
+                             * Footer de una card con campos form: true. Igual que en
+                             * los bloques, hasOwnProperty conserva 0, false y "".
+                             */
+                            const hasCardConfigValue =
+                              Boolean(cardFooterConfig) &&
+                              field.form === true &&
+                              Object.prototype.hasOwnProperty.call(
+                                cardFieldValues,
+                                field.field_id,
+                              );
+
+                            const fieldToRender = hasCardConfigValue
+                              ? {
+                                  ...field,
+                                  value: cardFieldValues[field.field_id],
+                                }
+                              : field;
+
+                            // Un campo editable del encabezado o el pie de una
+                            // card también se marca mientras se edita.
+                            const isHighlightedCardConfigField = Boolean(
                               cardFooterConfig &&
-                              field.form &&
-                              cardFieldValues[field.field_id]
-                                ? {
-                                    ...field,
-                                    value: cardFieldValues[field.field_id],
-                                  }
-                                : field;
+                                highlightedFieldId &&
+                                highlightedListSubfieldKey === field.field_id,
+                            );
 
                             const fieldId = `footer-${sectionIndex}-${index}`;
                             const rendered = renderField(
@@ -6714,6 +6777,10 @@ export function TemplatePreview({
                                 totalPages: totalDocumentPages,
                               },
                             );
+                            if (isHighlightedCardConfigField) {
+                              return wrapWithHighlightRing(rendered, fieldId);
+                            }
+
                             if (reviewMode && onElementClick) {
                               return (
                                 <div
