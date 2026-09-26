@@ -441,8 +441,9 @@
       },
       "skippableNotice": {
         "title": "Esta sección es opcional",
-        "message": "Puedes continuar sin completarla. Si todos sus campos editables quedan vacíos, no aparecerá en la revisión, la exportación ni el boletín publicado.",
-        "description": "Si dejas todos los campos de esta sección vacíos, se omitirá automáticamente y no aparecerá al exportar ni al publicar el boletín."
+        "message": "Puedes continuar sin completarla. Si dejas todos sus campos editables vacíos, no aparecerá en la revisión, la exportación ni el boletín publicado.",
+        "description": "Si dejas todos los campos vacíos, esta sección se omite automáticamente. Usa el interruptor si quieres forzar que se incluya o que se omita.",
+        "includeSection": "Incluir esta sección en el boletín"
       }
     },
     "fillData": {
@@ -458,7 +459,9 @@
       "fieldsToComplete": "{count} campo(s) para completar",
       "unsupportedFieldType": "Tipo de campo no soportado en cards: {type}",
       "noFieldsToComplete": "Esta card no tiene campos para completar",
-      "noCardsSelected": "No hay cards seleccionadas. Selecciona una card para comenzar."
+      "noCardsSelected": "No hay cards seleccionadas. Selecciona una card para comenzar.",
+      "headerFields": "Campos del Encabezado",
+      "footerFields": "Campos del Pie de Página"
     },
     "imageInput": {
       "uploadedImageAlt": "Imagen subida",
@@ -1138,7 +1141,7 @@
         "sectionId": "ID de Sección",
         "iconUrl": "URL del Icono",
         "skippable": "Permitir omitir esta sección",
-        "skippableHelp": "Si el creador del boletín no completa ningún campo editable, la sección no aparecerá en la revisión, la exportación ni el boletín publicado.",
+        "skippableHelp": "Si el creador del boletín no completa ningún campo editable, la sección no aparecerá en la revisión, la exportación ni el boletín publicado. El creador también puede forzar que se incluya u omita desde el formulario del boletín.",
         "repeatable": "Permitir repetir esta sección"
       },
       "block": {

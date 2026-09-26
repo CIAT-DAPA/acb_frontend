@@ -319,12 +319,20 @@ export function CardFieldInput({
         sectionIndex !== undefined &&
         sectionIndex > 0;
 
+      console.log("loadAvailableCards: fieldConfig:", fieldConfig);
+      console.log("loadAvailableCards: precedingCardIds:", precedingCardIds);
+      console.log("loadAvailableCards: sectionIndex:", sectionIndex);
+
       const explicitIds = Array.isArray(availableCardIds)
         ? availableCardIds.filter(Boolean)
         : [];
       const configuredTags = Array.isArray(availableCardTags)
         ? availableCardTags.filter(Boolean)
         : [];
+
+      console.log("loadAvailableCards: explicitIds:", explicitIds);
+      console.log("loadAvailableCards: configuredTags:", configuredTags);
+      console.log("loadAvailableCards: shouldCascadeFilter:", shouldCascadeFilter);
 
       if (
         explicitIds.length === 0 &&
@@ -349,6 +357,9 @@ export function CardFieldInput({
           ? CardAPIService.getCardsByTags(configuredTags)
           : Promise.resolve(fallbackResponse),
       ]);
+
+      console.log("loadAvailableCards: explicitCardsResult:", explicitCardsResult);
+      console.log("loadAvailableCards: tagsCardsResult:", tagsCardsResult);
 
       if (!explicitCardsResult.success && !tagsCardsResult.success) {
         throw new Error(
@@ -379,6 +390,8 @@ export function CardFieldInput({
           }
         });
       }
+
+      console.log("loadAvailableCards: mergedCards:", Array.from(mergedCards.values()).map(c => c._id));
 
       let filtered = Array.from(mergedCards.values()).filter(
         (card) => card.status === "active",
@@ -427,6 +440,7 @@ export function CardFieldInput({
           );
         });
       }
+      console.log("loadAvailableCards: final filtered cards:", filtered.map(c => c._id));
 
       setAvailableCards(filtered);
     } catch (err) {
@@ -443,6 +457,8 @@ export function CardFieldInput({
 
     const card = availableCards.find((c) => c._id === cardId);
     const defaultValues = card ? getDefaultFieldValues(card) : {};
+
+    console.log("Agregando card:", cardId, "con valores por defecto:", defaultValues);
 
     // Notificar al padre con la estructura completa de datos
     const fullData = [
@@ -683,6 +699,63 @@ export function CardFieldInput({
     }
   };
 
+  // Encabezado y pie de la card: mismos controles que los bloques, sin
+  // objetivos de revisión porque el preview no los expone para comentarios.
+  const renderCardConfigGroup = (
+    group: {
+      groupKey: "header" | "footer";
+      label: string;
+      fields: Array<{ cardField: Field; cardFieldIndex: number }>;
+    },
+    cardIndex: number,
+    selectedCard: SelectedCardData,
+    parentFieldId: string,
+  ) => (
+    <div
+      key={`${selectedCard.cardId}-${group.groupKey}`}
+      className="relative rounded-lg border border-gray-100 p-3"
+    >
+      <p className="mb-3 text-sm font-semibold text-[#283618]">{group.label}</p>
+
+      <div className="space-y-4">
+        {group.fields.map(({ cardField, cardFieldIndex }) => (
+          <div
+            key={`${selectedCard.cardId}-${group.groupKey}-${cardFieldIndex}`}
+            data-card-subfield-key={cardField.field_id}
+            className="relative rounded-lg border-2 border-transparent p-3"
+          >
+            <label className="mb-1 block text-sm font-medium text-[#283618]">
+              {cardField.label ||
+                cardField.display_name ||
+                `Campo ${cardFieldIndex + 1}`}
+            </label>
+
+            {renderCardField(
+              cardField,
+              cardIndex,
+              selectedCard.fieldValues[cardField.field_id] ?? cardField.value,
+              (newValue) =>
+                handleFieldChange(cardIndex, cardField.field_id, newValue),
+              {
+                parentFieldId,
+                cardIndex,
+                cardId: selectedCard.cardId,
+                cardFieldIndex,
+                cardFieldId: cardField.field_id,
+              },
+            )}
+
+            {cardField.description && (
+              <p className="mt-1 text-xs text-[#283618]/60">
+                {cardField.description}
+              </p>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -844,19 +917,57 @@ export function CardFieldInput({
                   fields.length > 0 || hasDirectBlockComments,
               );
 
-            const totalVisibleFields = cardBlocksToRender.reduce(
-              (total, blockEntry) => total + blockEntry.fields.length,
-              0,
-            );
+            // El encabezado y el pie de la card también pueden traer campos
+            // editables; el preview ya los resuelve con fieldValues.
+            const buildConfigGroup = (
+              groupKey: "header" | "footer",
+              label: string,
+              config?: { fields?: Field[] },
+            ) => ({
+              groupKey,
+              label,
+              fields: (config?.fields || [])
+                .map((cardField, cardFieldIndex) => ({
+                  cardField,
+                  cardFieldIndex,
+                }))
+                .filter(({ cardField }) => cardField.form),
+            });
+
+            const cardConfigGroups = [
+              buildConfigGroup(
+                "header",
+                t("headerFields"),
+                selectedCard.card.content.header_config,
+              ),
+              buildConfigGroup(
+                "footer",
+                t("footerFields"),
+                selectedCard.card.content.footer_config,
+              ),
+            ].filter((group) => group.fields.length > 0);
+
+            const totalVisibleFields =
+              cardBlocksToRender.reduce(
+                (total, blockEntry) => total + blockEntry.fields.length,
+                0,
+              ) +
+              cardConfigGroups.reduce(
+                (total, group) => total + group.fields.length,
+                0,
+              );
+
+            const hasCardContentToShow =
+              cardBlocksToRender.length > 0 || cardConfigGroups.length > 0;
 
             return (
               <div
                 key={`${selectedCard.cardId}-${index}`}
+                data-card-item-index={index}
+                data-card-field-id={field?.field_id}
                 className={[
                   "rounded-lg bg-white transition-all",
-                  isExpanded && cardBlocksToRender.length > 0
-                    ? ""
-                    : "overflow-hidden",
+                  isExpanded && hasCardContentToShow ? "" : "overflow-hidden",
                   hasDirectCardComments
                     ? "border-2 border-amber-400 shadow-sm"
                     : "border border-gray-200",
@@ -927,8 +1038,17 @@ export function CardFieldInput({
                 </div>
 
                 {/* Campos del form de la card */}
-                {isExpanded && cardBlocksToRender.length > 0 && (
+                {isExpanded && hasCardContentToShow && (
                   <div className="space-y-4 rounded-b-lg p-4">
+                    {cardConfigGroups.map((group) =>
+                      renderCardConfigGroup(
+                        group,
+                        index,
+                        selectedCard,
+                        field?.field_id || "",
+                      ),
+                    )}
+
                     {cardBlocksToRender.map(
                       ({ block, cardBlockIndex, blockTargetId, fields }) => {
                         const directBlockComments =
@@ -993,6 +1113,9 @@ export function CardFieldInput({
                                   return (
                                     <div
                                       key={`${selectedCard.cardId}-${cardBlockIndex}-${cardFieldIndex}`}
+                                      data-card-subfield-key={
+                                        cardField.field_id
+                                      }
                                       className={[
                                         "relative rounded-lg p-3 transition-all",
                                         hasDirectFieldComments

@@ -53,6 +53,7 @@ export interface BulletinSection {
   icon_url: string;
   repeatable?: boolean;
   skippable?: boolean;
+  skipped?: boolean; // Nuevo atributo para indicar si la sección fue saltada por el usuario
   header_config?: BulletinHeaderFooterConfig; // Header específico de la sección con valores
   footer_config?: BulletinHeaderFooterConfig; // Footer específico de la sección con valores
   blocks: BulletinBlock[];

@@ -461,8 +461,9 @@
       },
       "skippableNotice": {
         "title": "Phần này là tùy chọn",
-        "message": "Bạn có thể tiếp tục mà không cần hoàn thành phần này. Nếu tất cả các trường có thể chỉnh sửa vẫn để trống, phần này sẽ không xuất hiện khi duyệt, xuất tệp hoặc trong bản tin đã xuất bản.",
-        "description": "Nếu bạn để trống tất cả các trường trong phần này, phần đó sẽ tự động bị bỏ qua và không xuất hiện khi xuất hoặc xuất bản bản tin."
+        "message": "Bạn có thể tiếp tục mà không cần điền. Nếu để trống tất cả các trường có thể chỉnh sửa, phần này sẽ không xuất hiện khi duyệt, khi xuất hay trong bản tin đã xuất bản.",
+        "description": "Nếu bạn để trống tất cả các trường, phần này sẽ tự động bị bỏ qua. Dùng công tắc nếu bạn muốn buộc đưa vào hoặc bỏ ra.",
+        "includeSection": "Đưa phần này vào bản tin"
       }
     },
     "confirmation": {
@@ -549,7 +550,9 @@
       "fieldsToComplete": "{count} trường cần hoàn thành",
       "unsupportedFieldType": "Loại trường không được hỗ trợ trong thẻ: {type}",
       "noFieldsToComplete": "Thẻ này không có trường nào cần hoàn thành",
-      "noCardsSelected": "Chưa chọn cây trồng nào. Vui lòng chọn và nhấn + thêm"
+      "noCardsSelected": "Chưa chọn cây trồng nào. Vui lòng chọn và nhấn + thêm",
+      "headerFields": "Các ô nhập liệu ở Đầu trang",
+      "footerFields": "Các ô nhập liệu ở Chân trang"
     },
     "imageInput": {
       "uploadedImageAlt": "Hình ảnh đã tải lên",
@@ -1061,7 +1064,7 @@
         "sectionId": "ID phần",
         "iconUrl": "Biểu tượng đường dẫn",
         "skippable": "Cho phép bỏ qua phần này",
-        "skippableHelp": "Nếu người tạo bản tin để trống tất cả các trường có thể chỉnh sửa, phần này sẽ không xuất hiện khi duyệt, xuất tệp hoặc trong bản tin đã xuất bản.",
+        "skippableHelp": "Nếu người tạo bản tin để trống tất cả các trường có thể chỉnh sửa, phần này sẽ không xuất hiện khi duyệt, khi xuất hay trong bản tin đã xuất bản. Người tạo cũng có thể buộc đưa vào hoặc bỏ ra từ biểu mẫu bản tin.",
         "repeatable": "Cho phép lặp lại phần"
       },
       "overview": {
