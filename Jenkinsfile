@@ -46,6 +46,8 @@ pipeline {
                 script {
                     sshCommand remote: remote, command: """
                         cd /var/www/docs/bulletin_builder/acb_frontend/src
+                        source /home/lamardeployer/.miniforge3/etc/profile.d/conda.sh
+                        conda activate bulletin-frontend
                         npm install
                         npm run build
                         cd /var/www/docs/bulletin_builder/acb_frontend
